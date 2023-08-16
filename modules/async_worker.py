@@ -78,12 +78,12 @@ def worker():
                 metadata = PngInfo()
                 metadata.add_text("parameters", f"Prompt: {p_txt}, Negative: {n_txt}, Steps: {steps}, Resolution: {width}X{height}, Seed: {seed}")
                 Image.fromarray(x).save(local_temp_filename, pnginfo=metadata)
+                results.append(local_temp_filename)
                 # local_temp_filename = generate_temp_filename(folder=modules.path.temp_outputs_path, extension='txt')
                 # with open(local_temp_filename, "w") as f:
                 #     f.write(f)
 
             seed += 1
-            results += imgs
 
         outputs.append(['results', results])
         return
