@@ -33,7 +33,7 @@ def worker():
 
     def handler(task):
         prompt, negative_prompt, style_selction, performance_selction, \
-        aspect_ratios_selction, image_number, image_seed, sharpness, base_model_name, refiner_model_name, \
+        aspect_ratios_selction, image_number, image_seed, sharpness, save_metadata, base_model_name, refiner_model_name, \
         l1, w1, l2, w2, l3, w3, l4, w4, l5, w5 = task
 
         loras = [(l1, w1), (l2, w2), (l3, w3), (l4, w4), (l5, w5)]
@@ -76,21 +76,20 @@ def worker():
             for x in imgs:
                 local_temp_filename = generate_temp_filename(folder=modules.path.temp_outputs_path, extension='png')
                 os.makedirs(os.path.dirname(local_temp_filename), exist_ok=True)
-                prompt = {
-                    'Prompt': p_txt, 'Negative': n_txt, 'steps': steps, 'switch': switch,
-                    'width': width, 'height': height, 'seed': seed, 'sampler_name': 'dpmpp_2m_sde_gpu',
-                    'base_model_name': base_model_name, 'refiner_model_name': refiner_model_name,
-                    'l1': l1, 'w1': w1, 'l2': l2, 'w2': w2, 'l3': l3, 'w3': w3,
-                    'l4': l4, 'w4': w4, 'l5': l5, 'w5': w5,
-                    'sharpness': sharpness, 'software': 'RuinedFooocus'
-                }                
-                metadata = PngInfo()
-                metadata.add_text("parameters", json.dumps(prompt))
+                metadata = None
+                if save_metadata:
+                    prompt = {
+                        'Prompt': p_txt, 'Negative': n_txt, 'steps': steps, 'switch': switch, 'cfg': '7.0',
+                        'width': width, 'height': height, 'seed': seed, 'sampler_name': 'dpmpp_2m_sde_gpu',
+                        'base_model_name': base_model_name, 'refiner_model_name': refiner_model_name,
+                        'l1': l1, 'w1': w1, 'l2': l2, 'w2': w2, 'l3': l3, 'w3': w3,
+                        'l4': l4, 'w4': w4, 'l5': l5, 'w5': w5,
+                        'sharpness': sharpness, 'software': 'RuinedFooocus'
+                    }                
+                    metadata = PngInfo()
+                    metadata.add_text("parameters", json.dumps(prompt))
                 Image.fromarray(x).save(local_temp_filename, pnginfo=metadata)
                 results.append(local_temp_filename)
-                # local_temp_filename = generate_temp_filename(folder=modules.path.temp_outputs_path, extension='txt')
-                # with open(local_temp_filename, "w") as f:
-                #     f.write(f)
 
             seed += 1
 
