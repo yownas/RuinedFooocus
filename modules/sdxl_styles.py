@@ -595,5 +595,11 @@ aspect_ratios = {str(v[0])+'×'+str(v[1]):v for k, v in SD_XL_BASE_RATIOS.items(
 
 
 def apply_style(style, positive, negative):
-    p, n = styles.get(style, default_style)
-    return p.replace('{prompt}', positive), n + ', ' + negative
+    prompt = ""
+    negative_prompt = ""
+    for item in style:
+        p, n = styles.get(item, default_style)
+        prompt += p + ', '
+        negative_prompt += n + ', '
+        
+    return prompt.replace('{prompt}', positive), negative_prompt + ', ' + negative
