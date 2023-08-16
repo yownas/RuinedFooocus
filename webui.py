@@ -39,7 +39,7 @@ def generate_clicked(*args):
     return
 
 
-shared.gradio_root = gr.Blocks(title='Fooocus ' + fooocus_version.version, css=modules.html.css).queue()
+shared.gradio_root = gr.Blocks(title='RuinedFooocus ' + fooocus_version.version, css=modules.html.css).queue()
 with shared.gradio_root:
     with gr.Row():
         with gr.Column():
@@ -57,9 +57,9 @@ with shared.gradio_root:
             with gr.Tab(label='Setting'):
                 performance_selction = gr.Radio(label='Performance', choices=['Speed', 'Quality'], value='Speed')
                 aspect_ratios_selction = gr.Dropdown(label='Aspect Ratios (width × height)', choices=list(aspect_ratios.keys()), value='1152×896')
-                style_selction = gr.Dropdown(show_label="Style Selection", container=True,choices=style_keys, value='cinematic-default')
+                style_selction = gr.Dropdown(label="Style Selection", container=True,choices=style_keys, value='cinematic-default')
 
-                image_number = gr.Slider(label='Image Number', minimum=1, maximum=32, step=1, value=1)
+                image_number = gr.Slider(label='Images To Create', minimum=1, maximum=50, step=1, value=1)
                 image_seed = gr.Number(label='Random Seed', value=-1, precision=0)
                 negative_prompt = gr.Textbox(label='Negative Prompt', show_label=True, placeholder="Type prompt here.")
             with gr.Tab(label='Advanced'):
@@ -71,7 +71,7 @@ with shared.gradio_root:
                     for i in range(5):
                         with gr.Row():
                             lora_model = gr.Dropdown(label=f'SDXL LoRA {i+1}', choices=['None'] + modules.path.lora_filenames, value=modules.path.default_lora_name if i == 0 else 'None')
-                            lora_weight = gr.Slider(label='Weight', minimum=-2, maximum=2, step=0.01, value=modules.path.default_lora_weight)
+                            lora_weight = gr.Slider(label='Strength', minimum=-2, maximum=2, step=0.01, value=modules.path.default_lora_weight)
                             lora_ctrls += [lora_model, lora_weight]
                 with gr.Row():
                     model_refresh = gr.Button(label='Refresh', value='\U0001f504 Refresh All Files', variant='secondary', elem_classes='refresh_button')

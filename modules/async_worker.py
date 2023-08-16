@@ -17,6 +17,7 @@ def worker():
     import modules.patch
 
     from PIL import Image
+    from PIL.PngImagePlugin import PngInfo
     from modules.sdxl_styles import apply_style, aspect_ratios
     from modules.util import generate_temp_filename
 
@@ -74,7 +75,12 @@ def worker():
             for x in imgs:
                 local_temp_filename = generate_temp_filename(folder=modules.path.temp_outputs_path, extension='png')
                 os.makedirs(os.path.dirname(local_temp_filename), exist_ok=True)
-                Image.fromarray(x).save(local_temp_filename)
+                metadata = PngInfo()
+                metadata.add_text("parameters", f"Prompt: {p_txt}, Negative: {n_txt}, Steps: {steps}, Resolution: {width}X{height}, Seed: {seed}")
+                Image.fromarray(x).save(local_temp_filename, pnginfo=metadata)
+                # local_temp_filename = generate_temp_filename(folder=modules.path.temp_outputs_path, extension='txt')
+                # with open(local_temp_filename, "w") as f:
+                #     f.write(f)
 
             seed += 1
             results += imgs
