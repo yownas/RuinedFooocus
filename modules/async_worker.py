@@ -8,6 +8,7 @@ outputs = []
 def worker():
     global buffer, outputs
 
+    import json
     import os
     import time
     import shared
@@ -75,8 +76,16 @@ def worker():
             for x in imgs:
                 local_temp_filename = generate_temp_filename(folder=modules.path.temp_outputs_path, extension='png')
                 os.makedirs(os.path.dirname(local_temp_filename), exist_ok=True)
+                prompt = {
+                    'Prompt': p_txt, 'Negative': n_txt, 'steps': steps, 'switch': switch,
+                    'width': width, 'height': height, 'seed': seed, 'sampler_name': 'dpmpp_2m_sde_gpu',
+                    'base_model_name': base_model_name, 'refiner_model_name': refiner_model_name,
+                    'l1': l1, 'w1': w1, 'l2': l2, 'w2': w2, 'l3': l3, 'w3': w3,
+                    'l4': l4, 'w4': w4, 'l5': l5, 'w5': w5,
+                    'sharpness': sharpness, 'software': 'RuinedFooocus'
+                }                
                 metadata = PngInfo()
-                metadata.add_text("parameters", f"Prompt: {p_txt}, Negative: {n_txt}, Steps: {steps}, Resolution: {width}X{height}, Seed: {seed}")
+                metadata.add_text("parameters", json.dumps(prompt))
                 Image.fromarray(x).save(local_temp_filename, pnginfo=metadata)
                 results.append(local_temp_filename)
                 # local_temp_filename = generate_temp_filename(folder=modules.path.temp_outputs_path, extension='txt')
