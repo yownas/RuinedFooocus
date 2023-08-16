@@ -56,14 +56,12 @@ with shared.gradio_root:
         with gr.Column(scale=0.5, visible=False) as right_col:
             with gr.Tab(label='Setting'):
                 performance_selction = gr.Radio(label='Performance', choices=['Speed', 'Quality'], value='Speed')
-                aspect_ratios_selction = gr.Radio(label='Aspect Ratios (width × height)', choices=list(aspect_ratios.keys()),
-                                                  value='1152×896')
-                image_number = gr.Slider(label='Image Number', minimum=1, maximum=32, step=1, value=2)
+                aspect_ratios_selction = gr.Dropdown(label='Aspect Ratios (width × height)', choices=list(aspect_ratios.keys()), value='1152×896')
+                style_selction = gr.Dropdown(show_label="Style Selection", container=True,choices=style_keys, value='cinematic-default')
+
+                image_number = gr.Slider(label='Image Number', minimum=1, maximum=32, step=1, value=1)
                 image_seed = gr.Number(label='Random Seed', value=-1, precision=0)
                 negative_prompt = gr.Textbox(label='Negative Prompt', show_label=True, placeholder="Type prompt here.")
-            with gr.Tab(label='Style'):
-                style_selction = gr.Radio(show_label=False, container=True,
-                                          choices=style_keys, value='cinematic-default')
             with gr.Tab(label='Advanced'):
                 with gr.Row():
                     base_model = gr.Dropdown(label='SDXL Base Model', choices=modules.path.model_filenames, value=modules.path.default_base_model_name, show_label=True)

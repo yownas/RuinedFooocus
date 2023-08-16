@@ -1,4 +1,6 @@
 # https://github.com/twri/sdxl_prompt_styler/blob/main/sdxl_styles.json
+import os
+from csv import DictReader
 
 styles = [
     {
@@ -527,6 +529,32 @@ styles = [
         "negative_prompt": "blurry, noisy, deformed, flat, low contrast, unrealistic, oversaturated, underexposed"
     }
 ]
+
+# Check if styles.csv file exists
+if os.path.isfile('styles.csv'):
+    # Open styles.csv file for reading
+    with open('styles.csv','r') as file:
+        # Create DictReader object to read CSV as dictionaries
+        reader = DictReader(file)  
+        # Create default styles list
+        default_styles = [
+            {
+                "name": "cinematic-default",
+                "prompt": "cinematic still {prompt} . emotional, harmonious, vignette, highly detailed, high budget, bokeh, cinemascope, moody, epic, gorgeous, film grain, grainy", 
+                "negative_prompt": "anime, cartoon, graphic, text, painting, crayon, graphite, abstract, glitch, deformed, mutated, ugly, disfigured"
+            },            
+            {
+                "name": "None",
+                "prompt": "{prompt}",
+                "negative_prompt": "" 
+            },
+
+        ]
+        # Read in styles from CSV into styles list
+        styles = list(reader)
+        # Insert default styles at start of styles list
+        for item in default_styles:
+            styles.insert(0,item)
 
 styles = {k['name']: (k['prompt'], k['negative_prompt']) for k in styles}
 default_style = styles['None']
