@@ -9,6 +9,7 @@ def worker():
     global buffer, outputs
 
     import json
+    import os
     import time
     import shared
     import random
@@ -16,9 +17,10 @@ def worker():
     import modules.path
     import modules.patch
 
+    from PIL import Image
     from PIL.PngImagePlugin import PngInfo
     from modules.sdxl_styles import apply_style, aspect_ratios
-    from modules.private_logger import log
+    from modules.util import generate_temp_filename
 
     try:
         async_gradio_app = shared.gradio_root
@@ -88,21 +90,6 @@ def worker():
                     metadata.add_text("parameters", json.dumps(prompt))
                 Image.fromarray(x).save(local_temp_filename, pnginfo=metadata)
                 results.append(local_temp_filename)
-                d = [
-                    ('Prompt', prompt),
-                    ('Negative Prompt', negative_prompt),
-                    ('Style', style_selction),
-                    ('Performance', performance_selction),
-                    ('Resolution', str((width, height))),
-                    ('Sharpness', sharpness),
-                    ('Base Model', base_model_name),
-                    ('Refiner Model', refiner_model_name),
-                    ('Seed', seed)
-                ]
-                for n, w in loras:
-                    if n != 'None':
-                        d.append((f'LoRA [{n}] weight', w))
-                log(x, d)
 
             seed += 1
 
