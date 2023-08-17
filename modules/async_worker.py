@@ -1,9 +1,9 @@
 import threading
-
+import gc
+import torch
 
 buffer = []
 outputs = []
-
 
 def worker():
     global buffer, outputs
@@ -101,6 +101,10 @@ def worker():
         if len(buffer) > 0:
             task = buffer.pop(0)
             handler(task)
+            gc.collect()
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+                torch.cuda.ipc_collect()
     pass
 
 
