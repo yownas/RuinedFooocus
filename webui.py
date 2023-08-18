@@ -64,16 +64,18 @@ with shared.gradio_root:
                 seed_random = gr.Checkbox(label='Random', value=True)
                 image_seed = gr.Number(label='Seed', value=0, precision=0, visible=False)
 
-                def apply_style(inputs):
+                def apply_style(prompt_test, inputs):
                     pr = ""
                     ne = ""
                     for item in inputs:
                         p, n = styles.get(item)
                         pr += p + ', '
                         ne += n + ', '
-                    return pr, ne, "None"
+                    if prompt_test:
+                        pr = pr.replace("{prompt}", prompt_test)
+                    return pr, ne, []
 
-                style_button.click(apply_style, inputs=[style_selction], outputs=[prompt, negative_prompt, style_selction])
+                style_button.click(apply_style, inputs=[prompt, style_selction], outputs=[prompt, negative_prompt, style_selction])
 
                 def random_checked(r):
                     return gr.update(visible=not r)
