@@ -8,7 +8,7 @@ import fooocus_version
 import modules.html
 import modules.async_worker as worker
 
-from modules.sdxl_styles import style_keys, aspect_ratios
+from modules.sdxl_styles import style_keys, aspect_ratios, styles
 
 
 def generate_clicked(*args):
@@ -58,11 +58,22 @@ with shared.gradio_root:
                 performance_selction = gr.Radio(label='Performance', choices=['Speed', 'Quality'], value='Speed')
                 aspect_ratios_selction = gr.Dropdown(label='Aspect Ratios (width × height)', choices=list(aspect_ratios.keys()), value='1152×896 (4:3)')
                 style_selction = gr.Dropdown(label="Style Selection", multiselect=True, container=True, choices=style_keys, value='cinematic-default')
-
+                style_button = gr.Button(value="⬅️ Send", size='sm')
                 image_number = gr.Slider(label='Image Number', minimum=1, maximum=50, step=1, value=1)
                 negative_prompt = gr.Textbox(label='Negative Prompt', show_label=True, placeholder="Type prompt here.")
                 seed_random = gr.Checkbox(label='Random', value=True)
                 image_seed = gr.Number(label='Seed', value=0, precision=0, visible=False)
+
+                def apply_style(inputs):
+                    pr = ""
+                    ne = ""
+                    for item in inputs:
+                        p, n = styles.get(item)
+                        pr += p + ', '
+                        ne += n + ', '
+                    return pr, ne, "None"
+
+                style_button.click(apply_style, inputs=[style_selction], outputs=[prompt, negative_prompt, style_selction])
 
                 def random_checked(r):
                     return gr.update(visible=not r)
