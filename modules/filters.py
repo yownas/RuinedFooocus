@@ -6,9 +6,9 @@ import numpy as np
 
 def gaussian_kernel(kernel_size, sigma):
     kernel = np.fromfunction(
-        lambda x, y: (1 / (2 * np.pi * sigma ** 2)) *
-                     np.exp(-((x - (kernel_size - 1) / 2) ** 2 + (y - (kernel_size - 1) / 2) ** 2) / (2 * sigma ** 2)),
-        (kernel_size, kernel_size)
+        lambda x, y: (1 / (2 * np.pi * sigma**2))
+        * np.exp(-((x - (kernel_size - 1) / 2) ** 2 + (y - (kernel_size - 1) / 2) ** 2) / (2 * sigma**2)),
+        (kernel_size, kernel_size),
     )
     return kernel / np.sum(kernel)
 
@@ -20,7 +20,7 @@ class GaussianBlur(nn.Module):
         self.kernel_size = kernel_size
         self.sigma = sigma
         self.padding = kernel_size // 2  # Ensure output size matches input size
-        self.register_buffer('kernel', torch.tensor(gaussian_kernel(kernel_size, sigma), dtype=torch.float32))
+        self.register_buffer("kernel", torch.tensor(gaussian_kernel(kernel_size, sigma), dtype=torch.float32))
         self.kernel = self.kernel.view(1, 1, kernel_size, kernel_size)
         self.kernel = self.kernel.expand(self.channels, -1, -1, -1)  # Repeat the kernel for each input channel
 

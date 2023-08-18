@@ -5,6 +5,7 @@ import torch
 buffer = []
 outputs = []
 
+
 def worker():
     global buffer, outputs
 
@@ -24,17 +25,37 @@ def worker():
 
     try:
         async_gradio_app = shared.gradio_root
-        flag = f'''App started successful. Use the app with {str(async_gradio_app.local_url)} or {str(async_gradio_app.server_name)}:{str(async_gradio_app.server_port)}'''
+        flag = f"""App started successful. Use the app with {str(async_gradio_app.local_url)} or {str(async_gradio_app.server_name)}:{str(async_gradio_app.server_port)}"""
         if async_gradio_app.share:
-            flag += f''' or {async_gradio_app.share_url}'''
+            flag += f""" or {async_gradio_app.share_url}"""
         print(flag)
     except Exception as e:
         print(e)
 
     def handler(task):
-        prompt, negative_prompt, style_selction, performance_selction, \
-        aspect_ratios_selction, image_number, image_seed, sharpness, save_metadata, base_model_name, refiner_model_name, \
-        l1, w1, l2, w2, l3, w3, l4, w4, l5, w5 = task
+        (
+            prompt,
+            negative_prompt,
+            style_selction,
+            performance_selction,
+            aspect_ratios_selction,
+            image_number,
+            image_seed,
+            sharpness,
+            save_metadata,
+            base_model_name,
+            refiner_model_name,
+            l1,
+            w1,
+            l2,
+            w2,
+            l3,
+            w3,
+            l4,
+            w4,
+            l5,
+            w5,
+        ) = task
 
         loras = [(l1, w1), (l2, w2), (l3, w3), (l4, w4), (l5, w5)]
 
@@ -47,7 +68,7 @@ def worker():
 
         p_txt, n_txt = apply_style(style_selction, prompt, negative_prompt)
 
-        if performance_selction == 'Speed':
+        if performance_selction == "Speed":
             steps = 30
             switch = 20
         else:
@@ -60,39 +81,62 @@ def worker():
         seed = image_seed
         if not isinstance(seed, int) or seed < 0 or seed > 2**31 - 1:
             seed = random.randint(0, 2**31 - 1)
-        max_seed = int(1024*1024*1024)
+        max_seed = int(1024 * 1024 * 1024)
 
         if not isinstance(seed, int):
             seed = random.randint(1, max_seed)
         if seed < 0:
-            seed = - seed
+            seed = -seed
         seed = seed % max_seed
 
         all_steps = steps * image_number
 
         def callback(step, x0, x, total_steps, y):
             done_steps = i * steps + step
-            outputs.append(['preview', (
-                int(100.0 * float(done_steps) / float(all_steps)),
-                f'Step {step}/{total_steps} in the {i}-th Sampling',
-                y)])
+            outputs.append(
+                [
+                    "preview",
+                    (
+                        int(100.0 * float(done_steps) / float(all_steps)),
+                        f"Step {step}/{total_steps} in the {i}-th Sampling",
+                        y,
+                    ),
+                ]
+            )
 
         for i in range(image_number):
             imgs = pipeline.process(p_txt, n_txt, steps, switch, width, height, seed, callback=callback)
 
             for x in imgs:
-                local_temp_filename = generate_temp_filename(folder=modules.path.temp_outputs_path, extension='png')
+                local_temp_filename = generate_temp_filename(folder=modules.path.temp_outputs_path, extension="png")
                 os.makedirs(os.path.dirname(local_temp_filename), exist_ok=True)
                 metadata = None
                 if save_metadata:
                     prompt = {
-                        'Prompt': p_txt, 'Negative': n_txt, 'steps': steps, 'switch': switch, 'cfg': '7.0',
-                        'width': width, 'height': height, 'seed': seed, 'sampler_name': 'dpmpp_2m_sde_gpu',
-                        'base_model_name': base_model_name, 'refiner_model_name': refiner_model_name,
-                        'l1': l1, 'w1': w1, 'l2': l2, 'w2': w2, 'l3': l3, 'w3': w3,
-                        'l4': l4, 'w4': w4, 'l5': l5, 'w5': w5,
-                        'sharpness': sharpness, 'software': 'RuinedFooocus'
-                    }                
+                        "Prompt": p_txt,
+                        "Negative": n_txt,
+                        "steps": steps,
+                        "switch": switch,
+                        "cfg": "7.0",
+                        "width": width,
+                        "height": height,
+                        "seed": seed,
+                        "sampler_name": "dpmpp_2m_sde_gpu",
+                        "base_model_name": base_model_name,
+                        "refiner_model_name": refiner_model_name,
+                        "l1": l1,
+                        "w1": w1,
+                        "l2": l2,
+                        "w2": w2,
+                        "l3": l3,
+                        "w3": w3,
+                        "l4": l4,
+                        "w4": w4,
+                        "l5": l5,
+                        "w5": w5,
+                        "sharpness": sharpness,
+                        "software": "RuinedFooocus",
+                    }
                     metadata = PngInfo()
                     metadata.add_text("parameters", json.dumps(prompt))
                 Image.fromarray(x).save(local_temp_filename, pnginfo=metadata)
@@ -100,7 +144,7 @@ def worker():
 
             seed += 1
 
-        outputs.append(['results', results])
+        outputs.append(["results", results])
         return
 
     while True:

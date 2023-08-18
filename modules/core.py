@@ -29,11 +29,11 @@ class StableDiffusionModel:
 
     def to_meta(self):
         if self.unet is not None:
-            self.unet.model.to('meta')
+            self.unet.model.to("meta")
         if self.clip is not None:
-            self.clip.cond_stage_model.to('meta')
+            self.clip.cond_stage_model.to("meta")
         if self.vae is not None:
-            self.vae.first_stage_model.to('meta')
+            self.vae.first_stage_model.to("meta")
 
 
 @torch.no_grad()
@@ -69,8 +69,10 @@ def decode_vae(vae, latent_image):
 
 def get_previewer(device, latent_format):
     from latent_preview import TAESD, TAESDPreviewerImpl
-    taesd_decoder_path = os.path.abspath(os.path.realpath(os.path.join("models", "vae_approx",
-                                                                       latent_format.taesd_decoder_name)))
+
+    taesd_decoder_path = os.path.abspath(
+        os.path.realpath(os.path.join("models", "vae_approx", latent_format.taesd_decoder_name))
+    )
 
     if not os.path.exists(taesd_decoder_path):
         print(f"Warning: TAESD previews enabled, but could not find {taesd_decoder_path}")
@@ -82,7 +84,7 @@ def get_previewer(device, latent_format):
         global cv2_is_top
         with torch.no_grad():
             x_sample = taesd.decoder(torch.nn.functional.avg_pool2d(x0, kernel_size=(2, 2))).detach() * 255.0
-            x_sample = einops.rearrange(x_sample, 'b c h w -> b h w c')
+            x_sample = einops.rearrange(x_sample, "b c h w -> b h w c")
             x_sample = x_sample.cpu().numpy().clip(0, 255).astype(np.uint8)
             return x_sample[0]
 
@@ -92,15 +94,29 @@ def get_previewer(device, latent_format):
 
 
 @torch.no_grad()
-def ksampler(model, positive, negative, latent, seed=None, steps=30, cfg=7.0, sampler_name='dpmpp_2m_sde_gpu',
-             scheduler='karras', denoise=1.0, disable_noise=False, start_step=None, last_step=None,
-             force_full_denoise=False, callback_function=None):
+def ksampler(
+    model,
+    positive,
+    negative,
+    latent,
+    seed=None,
+    steps=30,
+    cfg=7.0,
+    sampler_name="dpmpp_2m_sde_gpu",
+    scheduler="karras",
+    denoise=1.0,
+    disable_noise=False,
+    start_step=None,
+    last_step=None,
+    force_full_denoise=False,
+    callback_function=None,
+):
     # SCHEDULERS = ["normal", "karras", "exponential", "simple", "ddim_uniform"]
     # SAMPLERS = ["euler", "euler_ancestral", "heun", "dpm_2", "dpm_2_ancestral",
     #             "lms", "dpm_fast", "dpm_adaptive", "dpmpp_2s_ancestral", "dpmpp_sde", "dpmpp_sde_gpu",
     #             "dpmpp_2m", "dpmpp_2m_sde", "dpmpp_2m_sde_gpu", "ddim", "uni_pc", "uni_pc_bh2"]
 
-    seed = seed if isinstance(seed, int) else random.randint(1, 2 ** 64)
+    seed = seed if isinstance(seed, int) else random.randint(1, 2**64)
 
     device = comfy.model_management.get_torch_device()
     latent_image = latent["samples"]
@@ -144,13 +160,31 @@ def ksampler(model, positive, negative, latent, seed=None, steps=30, cfg=7.0, sa
 
     models = load_additional_models(positive, negative, model.model_dtype())
 
-    sampler = KSampler(real_model, steps=steps, device=device, sampler=sampler_name, scheduler=scheduler,
-                       denoise=denoise, model_options=model.model_options)
+    sampler = KSampler(
+        real_model,
+        steps=steps,
+        device=device,
+        sampler=sampler_name,
+        scheduler=scheduler,
+        denoise=denoise,
+        model_options=model.model_options,
+    )
 
-    samples = sampler.sample(noise, positive_copy, negative_copy, cfg=cfg, latent_image=latent_image,
-                             start_step=start_step, last_step=last_step, force_full_denoise=force_full_denoise,
-                             denoise_mask=noise_mask, sigmas=sigmas, callback=callback, disable_pbar=disable_pbar,
-                             seed=seed)
+    samples = sampler.sample(
+        noise,
+        positive_copy,
+        negative_copy,
+        cfg=cfg,
+        latent_image=latent_image,
+        start_step=start_step,
+        last_step=last_step,
+        force_full_denoise=force_full_denoise,
+        denoise_mask=noise_mask,
+        sigmas=sigmas,
+        callback=callback,
+        disable_pbar=disable_pbar,
+        seed=seed,
+    )
 
     samples = samples.cpu()
 
@@ -163,16 +197,33 @@ def ksampler(model, positive, negative, latent, seed=None, steps=30, cfg=7.0, sa
 
 
 @torch.no_grad()
-def ksampler_with_refiner(model, positive, negative, refiner, refiner_positive, refiner_negative, latent,
-                          seed=None, steps=30, refiner_switch_step=20, cfg=7.0, sampler_name='dpmpp_2m_sde_gpu',
-                          scheduler='karras', denoise=1.0, disable_noise=False, start_step=None, last_step=None,
-                          force_full_denoise=False, callback_function=None):
+def ksampler_with_refiner(
+    model,
+    positive,
+    negative,
+    refiner,
+    refiner_positive,
+    refiner_negative,
+    latent,
+    seed=None,
+    steps=30,
+    refiner_switch_step=20,
+    cfg=7.0,
+    sampler_name="dpmpp_2m_sde_gpu",
+    scheduler="karras",
+    denoise=1.0,
+    disable_noise=False,
+    start_step=None,
+    last_step=None,
+    force_full_denoise=False,
+    callback_function=None,
+):
     # SCHEDULERS = ["normal", "karras", "exponential", "simple", "ddim_uniform"]
     # SAMPLERS = ["euler", "euler_ancestral", "heun", "dpm_2", "dpm_2_ancestral",
     #             "lms", "dpm_fast", "dpm_adaptive", "dpmpp_2s_ancestral", "dpmpp_sde", "dpmpp_sde_gpu",
     #             "dpmpp_2m", "dpmpp_2m_sde", "dpmpp_2m_sde_gpu", "ddim", "uni_pc", "uni_pc_bh2"]
 
-    seed = seed if isinstance(seed, int) else random.randint(1, 2 ** 64)
+    seed = seed if isinstance(seed, int) else random.randint(1, 2**64)
 
     device = comfy.model_management.get_torch_device()
     latent_image = latent["samples"]
@@ -218,16 +269,35 @@ def ksampler_with_refiner(model, positive, negative, refiner, refiner_positive, 
 
     models = load_additional_models(positive, negative, model.model_dtype())
 
-    sampler = KSamplerWithRefiner(model=model, refiner_model=refiner, steps=steps, device=device,
-                                  sampler=sampler_name, scheduler=scheduler,
-                                  denoise=denoise, model_options=model.model_options)
+    sampler = KSamplerWithRefiner(
+        model=model,
+        refiner_model=refiner,
+        steps=steps,
+        device=device,
+        sampler=sampler_name,
+        scheduler=scheduler,
+        denoise=denoise,
+        model_options=model.model_options,
+    )
 
-    samples = sampler.sample(noise, positive_copy, negative_copy, refiner_positive=refiner_positive_copy,
-                             refiner_negative=refiner_negative_copy, refiner_switch_step=refiner_switch_step,
-                             cfg=cfg, latent_image=latent_image,
-                             start_step=start_step, last_step=last_step, force_full_denoise=force_full_denoise,
-                             denoise_mask=noise_mask, sigmas=sigmas, callback_function=callback, disable_pbar=disable_pbar,
-                             seed=seed)
+    samples = sampler.sample(
+        noise,
+        positive_copy,
+        negative_copy,
+        refiner_positive=refiner_positive_copy,
+        refiner_negative=refiner_negative_copy,
+        refiner_switch_step=refiner_switch_step,
+        cfg=cfg,
+        latent_image=latent_image,
+        start_step=start_step,
+        last_step=last_step,
+        force_full_denoise=force_full_denoise,
+        denoise_mask=noise_mask,
+        sigmas=sigmas,
+        callback_function=callback,
+        disable_pbar=disable_pbar,
+        seed=seed,
+    )
 
     samples = samples.cpu()
 
@@ -241,4 +311,4 @@ def ksampler_with_refiner(model, positive, negative, refiner, refiner_positive, 
 
 @torch.no_grad()
 def image_to_numpy(x):
-    return [np.clip(255. * y.cpu().numpy(), 0, 255).astype(np.uint8) for y in x]
+    return [np.clip(255.0 * y.cpu().numpy(), 0, 255).astype(np.uint8) for y in x]

@@ -10,78 +10,79 @@ from modules.filters import gaussian_filter_2d
 sharpness = 2.0
 
 
-def sampling_function_patched(model_function, x, timestep, uncond, cond, cond_scale, cond_concat=None, model_options={},
-                      seed=None):
+def sampling_function_patched(
+    model_function, x, timestep, uncond, cond, cond_scale, cond_concat=None, model_options={}, seed=None
+):
     def get_area_and_mult(cond, x_in, cond_concat_in, timestep_in):
         area = (x_in.shape[2], x_in.shape[3], 0, 0)
         strength = 1.0
-        if 'timestep_start' in cond[1]:
-            timestep_start = cond[1]['timestep_start']
+        if "timestep_start" in cond[1]:
+            timestep_start = cond[1]["timestep_start"]
             if timestep_in[0] > timestep_start:
                 return None
-        if 'timestep_end' in cond[1]:
-            timestep_end = cond[1]['timestep_end']
+        if "timestep_end" in cond[1]:
+            timestep_end = cond[1]["timestep_end"]
             if timestep_in[0] < timestep_end:
                 return None
-        if 'area' in cond[1]:
-            area = cond[1]['area']
-        if 'strength' in cond[1]:
-            strength = cond[1]['strength']
+        if "area" in cond[1]:
+            area = cond[1]["area"]
+        if "strength" in cond[1]:
+            strength = cond[1]["strength"]
 
         adm_cond = None
-        if 'adm_encoded' in cond[1]:
-            adm_cond = cond[1]['adm_encoded']
+        if "adm_encoded" in cond[1]:
+            adm_cond = cond[1]["adm_encoded"]
 
-        input_x = x_in[:, :, area[2]:area[0] + area[2], area[3]:area[1] + area[3]]
-        if 'mask' in cond[1]:
+        input_x = x_in[:, :, area[2] : area[0] + area[2], area[3] : area[1] + area[3]]
+        if "mask" in cond[1]:
             # Scale the mask to the size of the input
             # The mask should have been resized as we began the sampling process
             mask_strength = 1.0
             if "mask_strength" in cond[1]:
                 mask_strength = cond[1]["mask_strength"]
-            mask = cond[1]['mask']
-            assert (mask.shape[1] == x_in.shape[2])
-            assert (mask.shape[2] == x_in.shape[3])
-            mask = mask[:, area[2]:area[0] + area[2], area[3]:area[1] + area[3]] * mask_strength
+            mask = cond[1]["mask"]
+            assert mask.shape[1] == x_in.shape[2]
+            assert mask.shape[2] == x_in.shape[3]
+            mask = mask[:, area[2] : area[0] + area[2], area[3] : area[1] + area[3]] * mask_strength
             mask = mask.unsqueeze(1).repeat(input_x.shape[0] // mask.shape[0], input_x.shape[1], 1, 1)
         else:
             mask = torch.ones_like(input_x)
         mult = mask * strength
 
-        if 'mask' not in cond[1]:
+        if "mask" not in cond[1]:
             rr = 8
             if area[2] != 0:
                 for t in range(rr):
-                    mult[:, :, t:1 + t, :] *= ((1.0 / rr) * (t + 1))
+                    mult[:, :, t : 1 + t, :] *= (1.0 / rr) * (t + 1)
             if (area[0] + area[2]) < x_in.shape[2]:
                 for t in range(rr):
-                    mult[:, :, area[0] - 1 - t:area[0] - t, :] *= ((1.0 / rr) * (t + 1))
+                    mult[:, :, area[0] - 1 - t : area[0] - t, :] *= (1.0 / rr) * (t + 1)
             if area[3] != 0:
                 for t in range(rr):
-                    mult[:, :, :, t:1 + t] *= ((1.0 / rr) * (t + 1))
+                    mult[:, :, :, t : 1 + t] *= (1.0 / rr) * (t + 1)
             if (area[1] + area[3]) < x_in.shape[3]:
                 for t in range(rr):
-                    mult[:, :, :, area[1] - 1 - t:area[1] - t] *= ((1.0 / rr) * (t + 1))
+                    mult[:, :, :, area[1] - 1 - t : area[1] - t] *= (1.0 / rr) * (t + 1)
 
         conditionning = {}
-        conditionning['c_crossattn'] = cond[0]
+        conditionning["c_crossattn"] = cond[0]
         if cond_concat_in is not None and len(cond_concat_in) > 0:
             cropped = []
             for x in cond_concat_in:
-                cr = x[:, :, area[2]:area[0] + area[2], area[3]:area[1] + area[3]]
+                cr = x[:, :, area[2] : area[0] + area[2], area[3] : area[1] + area[3]]
                 cropped.append(cr)
-            conditionning['c_concat'] = torch.cat(cropped, dim=1)
+            conditionning["c_concat"] = torch.cat(cropped, dim=1)
 
         if adm_cond is not None:
-            conditionning['c_adm'] = adm_cond
+            conditionning["c_adm"] = adm_cond
 
         control = None
-        if 'control' in cond[1]:
-            control = cond[1]['control']
+        if "control" in cond[1]:
+            control = cond[1]["control"]
 
         patches = None
-        if 'gligen' in cond[1]:
-            gligen = cond[1]['gligen']
+        if "gligen" in cond[1]:
+            gligen = cond[1]["gligen"]
             patches = {}
             gligen_type = gligen[0]
             gligen_model = gligen[1]
@@ -90,7 +91,7 @@ def sampling_function_patched(model_function, x, timestep, uncond, cond, cond_sc
             else:
                 gligen_patch = gligen_model.set_empty(input_x.shape, input_x.device)
 
-            patches['middle_patch'] = [gligen_patch]
+            patches["middle_patch"] = [gligen_patch]
 
         return (input_x, mult, conditionning, area, control, patches)
 
@@ -99,22 +100,24 @@ def sampling_function_patched(model_function, x, timestep, uncond, cond, cond_sc
             return True
         if c1.keys() != c2.keys():
             return False
-        if 'c_crossattn' in c1:
-            s1 = c1['c_crossattn'].shape
-            s2 = c2['c_crossattn'].shape
+        if "c_crossattn" in c1:
+            s1 = c1["c_crossattn"].shape
+            s2 = c2["c_crossattn"].shape
             if s1 != s2:
                 if s1[0] != s2[0] or s1[2] != s2[2]:  # these 2 cases should not happen
                     return False
 
                 mult_min = lcm(s1[1], s2[1])
                 diff = mult_min // min(s1[1], s2[1])
-                if diff > 4:  # arbitrary limit on the padding because it's probably going to impact performance negatively if it's too much
+                if (
+                    diff > 4
+                ):  # arbitrary limit on the padding because it's probably going to impact performance negatively if it's too much
                     return False
-        if 'c_concat' in c1:
-            if c1['c_concat'].shape != c2['c_concat'].shape:
+        if "c_concat" in c1:
+            if c1["c_concat"].shape != c2["c_concat"].shape:
                 return False
-        if 'c_adm' in c1:
-            if c1['c_adm'].shape != c2['c_adm'].shape:
+        if "c_adm" in c1:
+            if c1["c_adm"].shape != c2["c_adm"].shape:
                 return False
         return True
 
@@ -132,7 +135,7 @@ def sampling_function_patched(model_function, x, timestep, uncond, cond, cond_sc
         # patches
         if (c1[5] is None) != (c2[5] is None):
             return False
-        if (c1[5] is not None):
+        if c1[5] is not None:
             if c1[5] is not c2[5]:
                 return False
 
@@ -144,17 +147,17 @@ def sampling_function_patched(model_function, x, timestep, uncond, cond, cond_sc
         c_adm = []
         crossattn_max_len = 0
         for x in c_list:
-            if 'c_crossattn' in x:
-                c = x['c_crossattn']
+            if "c_crossattn" in x:
+                c = x["c_crossattn"]
                 if crossattn_max_len == 0:
                     crossattn_max_len = c.shape[1]
                 else:
                     crossattn_max_len = lcm(crossattn_max_len, c.shape[1])
                 c_crossattn.append(c)
-            if 'c_concat' in x:
-                c_concat.append(x['c_concat'])
-            if 'c_adm' in x:
-                c_adm.append(x['c_adm'])
+            if "c_concat" in x:
+                c_concat.append(x["c_concat"])
+            if "c_adm" in x:
+                c_adm.append(x["c_adm"])
         out = {}
         c_crossattn_out = []
         for c in c_crossattn:
@@ -163,15 +166,16 @@ def sampling_function_patched(model_function, x, timestep, uncond, cond, cond_sc
             c_crossattn_out.append(c)
 
         if len(c_crossattn_out) > 0:
-            out['c_crossattn'] = [torch.cat(c_crossattn_out)]
+            out["c_crossattn"] = [torch.cat(c_crossattn_out)]
         if len(c_concat) > 0:
-            out['c_concat'] = [torch.cat(c_concat)]
+            out["c_concat"] = [torch.cat(c_concat)]
         if len(c_adm) > 0:
-            out['c_adm'] = torch.cat(c_adm)
+            out["c_adm"] = torch.cat(c_adm)
         return out
 
-    def calc_cond_uncond_batch(model_function, cond, uncond, x_in, timestep, max_total_area, cond_concat_in,
-                               model_options):
+    def calc_cond_uncond_batch(
+        model_function, cond, uncond, x_in, timestep, max_total_area, cond_concat_in, model_options
+    ):
         out_cond = torch.zeros_like(x_in)
         out_count = torch.ones_like(x_in) / 100000.0
 
@@ -208,8 +212,8 @@ def sampling_function_patched(model_function, x, timestep, uncond, cond, cond_sc
             to_batch = to_batch_temp[:1]
 
             for i in range(1, len(to_batch_temp) + 1):
-                batch_amount = to_batch_temp[:len(to_batch_temp) // i]
-                if (len(batch_amount) * first_shape[0] * first_shape[2] * first_shape[3] < max_total_area):
+                batch_amount = to_batch_temp[: len(to_batch_temp) // i]
+                if len(batch_amount) * first_shape[0] * first_shape[2] * first_shape[3] < max_total_area:
                     to_batch = batch_amount
                     break
 
@@ -237,11 +241,11 @@ def sampling_function_patched(model_function, x, timestep, uncond, cond, cond_sc
             timestep_ = torch.cat([timestep] * batch_chunks)
 
             if control is not None:
-                c['control'] = control.get_control(input_x, timestep_, c, len(cond_or_uncond))
+                c["control"] = control.get_control(input_x, timestep_, c, len(cond_or_uncond))
 
             transformer_options = {}
-            if 'transformer_options' in model_options:
-                transformer_options = model_options['transformer_options'].copy()
+            if "transformer_options" in model_options:
+                transformer_options = model_options["transformer_options"].copy()
 
             if patches is not None:
                 if "patches" in transformer_options:
@@ -254,14 +258,14 @@ def sampling_function_patched(model_function, x, timestep, uncond, cond, cond_sc
                 else:
                     transformer_options["patches"] = patches
 
-            c['transformer_options'] = transformer_options
+            c["transformer_options"] = transformer_options
 
-            transformer_options['uc_mask'] = torch.Tensor(cond_or_uncond).to(input_x).float()[:, None, None, None]
+            transformer_options["uc_mask"] = torch.Tensor(cond_or_uncond).to(input_x).float()[:, None, None, None]
 
-            if 'model_function_wrapper' in model_options:
-                output = model_options['model_function_wrapper'](model_function,
-                                                                 {"input": input_x, "timestep": timestep_, "c": c,
-                                                                  "cond_or_uncond": cond_or_uncond}).chunk(batch_chunks)
+            if "model_function_wrapper" in model_options:
+                output = model_options["model_function_wrapper"](
+                    model_function, {"input": input_x, "timestep": timestep_, "c": c, "cond_or_uncond": cond_or_uncond}
+                ).chunk(batch_chunks)
             else:
                 output = model_function(input_x, timestep_, **c).chunk(batch_chunks)
             del input_x
@@ -270,16 +274,19 @@ def sampling_function_patched(model_function, x, timestep, uncond, cond, cond_sc
 
             for o in range(batch_chunks):
                 if cond_or_uncond[o] == COND:
-                    out_cond[:, :, area[o][2]:area[o][0] + area[o][2], area[o][3]:area[o][1] + area[o][3]] += output[
-                                                                                                                  o] * \
-                                                                                                              mult[o]
-                    out_count[:, :, area[o][2]:area[o][0] + area[o][2], area[o][3]:area[o][1] + area[o][3]] += mult[o]
+                    out_cond[:, :, area[o][2] : area[o][0] + area[o][2], area[o][3] : area[o][1] + area[o][3]] += (
+                        output[o] * mult[o]
+                    )
+                    out_count[:, :, area[o][2] : area[o][0] + area[o][2], area[o][3] : area[o][1] + area[o][3]] += mult[
+                        o
+                    ]
                 else:
-                    out_uncond[:, :, area[o][2]:area[o][0] + area[o][2], area[o][3]:area[o][1] + area[o][3]] += output[
-                                                                                                                    o] * \
-                                                                                                                mult[o]
-                    out_uncond_count[:, :, area[o][2]:area[o][0] + area[o][2], area[o][3]:area[o][1] + area[o][3]] += \
-                    mult[o]
+                    out_uncond[:, :, area[o][2] : area[o][0] + area[o][2], area[o][3] : area[o][1] + area[o][3]] += (
+                        output[o] * mult[o]
+                    )
+                    out_uncond_count[
+                        :, :, area[o][2] : area[o][0] + area[o][2], area[o][3] : area[o][1] + area[o][3]
+                    ] += mult[o]
             del mult
 
         out_cond /= out_count
@@ -293,8 +300,9 @@ def sampling_function_patched(model_function, x, timestep, uncond, cond, cond_sc
     if math.isclose(cond_scale, 1.0):
         uncond = None
 
-    cond, uncond = calc_cond_uncond_batch(model_function, cond, uncond, x, timestep, max_total_area, cond_concat,
-                                          model_options)
+    cond, uncond = calc_cond_uncond_batch(
+        model_function, cond, uncond, x, timestep, max_total_area, cond_concat, model_options
+    )
     if "sampler_cfg_function" in model_options:
         args = {"cond": cond, "uncond": uncond, "cond_scale": cond_scale, "timestep": timestep}
         return model_options["sampler_cfg_function"](args)
@@ -303,7 +311,7 @@ def sampling_function_patched(model_function, x, timestep, uncond, cond, cond_sc
 
 
 def unet_forward_patched(self, x, timesteps=None, context=None, y=None, control=None, transformer_options={}, **kwargs):
-    uc_mask = transformer_options['uc_mask']
+    uc_mask = transformer_options["uc_mask"]
     transformer_options["original_shape"] = list(x.shape)
     transformer_options["current_index"] = 0
 
@@ -319,21 +327,21 @@ def unet_forward_patched(self, x, timesteps=None, context=None, y=None, control=
     for id, module in enumerate(self.input_blocks):
         transformer_options["block"] = ("input", id)
         h = forward_timestep_embed(module, h, emb, context, transformer_options)
-        if control is not None and 'input' in control and len(control['input']) > 0:
-            ctrl = control['input'].pop()
+        if control is not None and "input" in control and len(control["input"]) > 0:
+            ctrl = control["input"].pop()
             if ctrl is not None:
                 h += ctrl
         hs.append(h)
     transformer_options["block"] = ("middle", 0)
     h = forward_timestep_embed(self.middle_block, h, emb, context, transformer_options)
-    if control is not None and 'middle' in control and len(control['middle']) > 0:
-        h += control['middle'].pop()
+    if control is not None and "middle" in control and len(control["middle"]) > 0:
+        h += control["middle"].pop()
 
     for id, module in enumerate(self.output_blocks):
         transformer_options["block"] = ("output", id)
         hsp = hs.pop()
-        if control is not None and 'output' in control and len(control['output']) > 0:
-            ctrl = control['output'].pop()
+        if control is not None and "output" in control and len(control["output"]) > 0:
+            ctrl = control["output"].pop()
             if ctrl is not None:
                 hsp += ctrl
 
@@ -379,7 +387,7 @@ def sdxl_encode_adm_patched(self, **kwargs):
     out.append(self.embedder(torch.Tensor([crop_w])))
     out.append(self.embedder(torch.Tensor([target_height])))
     out.append(self.embedder(torch.Tensor([target_width])))
-    flat = torch.flatten(torch.cat(out))[None, ]
+    flat = torch.flatten(torch.cat(out))[None,]
     return torch.cat((clip_pooled.to(flat.device), flat), dim=1)
 
 
