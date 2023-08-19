@@ -10,6 +10,8 @@ import modules.async_worker as worker
 
 from modules.sdxl_styles import style_keys, aspect_ratios, styles
 
+from random_prompt.build_dynamic_prompt import build_dynamic_prompt
+
 
 def generate_clicked(*args):
     yield gr.update(interactive=False), gr.update(
@@ -80,6 +82,12 @@ with shared.gradio_root:
                 negative_prompt = gr.Textbox(label="Negative Prompt", show_label=True, placeholder="Type prompt here.")
                 seed_random = gr.Checkbox(label="Random", value=True)
                 image_seed = gr.Number(label="Seed", value=0, precision=0, visible=False)
+                random_button = gr.Button(value="Create Random Prompt", size="sm")
+
+                def random_clicked():
+                    return build_dynamic_prompt()
+
+                random_button.click(random_clicked, outputs=[prompt])
 
                 def apply_style(prompt_test, inputs):
                     pr = ""
