@@ -188,4 +188,7 @@ parser.add_argument(
     "--listen", type=str, default=None, metavar="IP", nargs="?", const="0.0.0.0", help="Set the listen interface."
 )
 args = parser.parse_args()
-shared.gradio_root.launch(inbrowser=True, server_name=args.listen, server_port=args.port, share=args.share)
+favicon_path = "logo.ico"
+shared.gradio_root.launch(
+    inbrowser=True, server_name=args.listen, server_port=args.port, share=args.share, favicon_path=favicon_path
+)
