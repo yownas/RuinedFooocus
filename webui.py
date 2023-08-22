@@ -97,7 +97,9 @@ with shared.gradio_root:
                     value=settings["negative_prompt"],
                 )
                 seed_random = gr.Checkbox(label="Random", value=settings["seed_random"])
-                image_seed = gr.Number(label="Seed", value=settings["seed"], precision=0, visible=False)
+                image_seed = gr.Number(
+                    label="Seed", value=settings["seed"], precision=0, visible=not settings["seed_random"]
+                )
                 random_button = gr.Button(value="Create Random Prompt", size="sm")
 
                 def random_clicked():

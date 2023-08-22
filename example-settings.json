@@ -1,7 +1,7 @@
 {
     "advanced_mode": true,
     "image_number": 1,
-    "seed_random": false,
+    "seed_random": true,
     "seed": 0,
     "style": "Style: sai-cinematic",
     "prompt": "",
