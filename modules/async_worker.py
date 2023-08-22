@@ -1,6 +1,9 @@
 import threading
 import gc
 import torch
+import os
+
+import modules.core as core
 
 buffer = []
 outputs = []
@@ -55,6 +58,10 @@ def worker():
             w4,
             l5,
             w5,
+            img2img_mode,
+            img2img_start_step,
+            img2img_denoise,
+            gallery,
         ) = task
 
         loras = [(l1, w1), (l2, w2), (l3, w3), (l4, w4), (l5, w5)]
@@ -105,7 +112,28 @@ def worker():
             )
 
         for i in range(image_number):
-            imgs = pipeline.process(p_txt, n_txt, steps, switch, width, height, seed, callback=callback)
+            if img2img_mode and len(gallery) > 0:
+                start_step = round(steps * img2img_start_step)
+                denoise = img2img_denoise
+                gallery_entry = gallery[0]
+                input_image_path = gallery_entry["name"]
+            else:
+                start_step = 0
+                denoise = None
+                input_image_path = None
+            imgs = pipeline.process(
+                p_txt,
+                n_txt,
+                steps,
+                switch,
+                width,
+                height,
+                seed,
+                input_image_path,
+                start_step,
+                denoise,
+                callback=callback,
+            )
 
             for x in imgs:
                 local_temp_filename = generate_temp_filename(folder=modules.path.temp_outputs_path, extension="png")
@@ -135,6 +163,10 @@ def worker():
                         "l5": l5,
                         "w5": w5,
                         "sharpness": sharpness,
+                        "img2img": img2img_mode,
+                        "start_step": start_step,
+                        "denoise": denoise,
+                        "input_image": None if input_image_path == None else os.path.basename(input_image_path),
                         "software": "RuinedFooocus",
                     }
                     metadata = PngInfo()

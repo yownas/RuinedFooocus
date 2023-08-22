@@ -17,6 +17,12 @@ from modules.settings import load_settings
 import onebutton_ui
 
 
+def load_image_handler(files):
+    if len(files) > 0:
+        path = files[0].name
+    return [path]
+
+
 def generate_clicked(*args):
     yield gr.update(interactive=False), gr.update(
         visible=True, value=modules.html.make_progress_html(1, "Processing text encoding ...")
@@ -103,6 +109,14 @@ with shared.gradio_root:
                     label="Seed", value=settings["seed"], precision=0, visible=not settings["seed_random"]
                 )
 
+                with gr.Row():
+                    img2img_mode = gr.Checkbox(
+                        scale=0.2, label="img2img", value=settings["img2img_mode"], elem_classes="type_small_row"
+                    )
+                    load_image_button = gr.UploadButton(
+                        label="Load Image", file_count=1, file_types=["image"], elem_classes="type_small_row"
+                    )
+
                 def apply_style(prompt_test, inputs):
                     pr = ""
                     ne = ""
@@ -166,6 +180,16 @@ with shared.gradio_root:
                     )
                 with gr.Accordion(label="Advanced", open=False):
                     save_metadata = gr.Checkbox(label="Save Metadata", value=settings["save_metadata"])
+                    img2img_start_step = gr.Slider(
+                        label="Img2img Start Step",
+                        minimum=0.0,
+                        maximum=0.5,
+                        step=0.01,
+                        value=settings["img2img_start_step"],
+                    )
+                    img2img_denoise = gr.Slider(
+                        label="Img2img Denoise", minimum=0.5, maximum=1.0, step=0.01, value=settings["img2img_denoise"]
+                    )
                     sharpness = gr.Slider(
                         label="Sampling Sharpness", minimum=0.0, maximum=40.0, step=0.01, value=settings["sharpness"]
                     )
@@ -198,9 +222,12 @@ with shared.gradio_root:
             sharpness,
             save_metadata,
         ]
-        ctrls += [base_model, refiner_model] + lora_ctrls
+
+        img2imgcontrols = [img2img_mode, img2img_start_step, img2img_denoise]
+        load_image_button.upload(fn=load_image_handler, inputs=[load_image_button], outputs=gallery)
+        ctrls += [base_model, refiner_model] + lora_ctrls + img2imgcontrols
         run_button.click(fn=refresh_seed, inputs=[seed_random, image_seed], outputs=image_seed).then(
-            fn=generate_clicked, inputs=ctrls, outputs=[run_button, progress_html, progress_window, gallery]
+            fn=generate_clicked, inputs=ctrls + [gallery], outputs=[run_button, progress_html, progress_window, gallery]
         )
 
 

@@ -15,6 +15,9 @@ def load_settings():
     settings["performance"] = "Speed"
     settings["resolution"] = "1152x896 (4:3)"
     settings["sharpness"] = 2.0
+    settings["img2img_mode"] = False
+    settings["img2img_start_step"] = 0.06
+    settings["img2img_denoise"] = 0.94
     settings["base_model"] = modules.path.default_base_model_name
     settings["refiner_model"] = modules.path.default_refiner_model_name
     settings["lora_1_model"] = modules.path.default_lora_name
