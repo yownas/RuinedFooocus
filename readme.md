@@ -116,7 +116,7 @@ Below things are already inside the software, and **users do not need to do anyt
 3. Apply multiple styles to one prompt and a send style to prompt button.
 4. Ability to save full metadata for generated images embedded in PNG.
 5. Ability to change default values of UI settings (loaded from settings.json file - use settings-example.json as a template).
-6. Generate a completely random prompt (taken from onebuttonprompt)
+6. Generate a completely random prompt (taken from onebuttonprompt) with its own "special" tab
 7. Made Resolutions mode readable
 
 ## Thanks
