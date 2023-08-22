@@ -14,6 +14,8 @@ from random_prompt.build_dynamic_prompt import build_dynamic_prompt
 
 from modules.settings import load_settings
 
+import onebutton_ui
+
 
 def generate_clicked(*args):
     yield gr.update(interactive=False), gr.update(
@@ -100,12 +102,6 @@ with shared.gradio_root:
                 image_seed = gr.Number(
                     label="Seed", value=settings["seed"], precision=0, visible=not settings["seed_random"]
                 )
-                random_button = gr.Button(value="Create Random Prompt", size="sm")
-
-                def random_clicked():
-                    return build_dynamic_prompt()
-
-                random_button.click(random_clicked, outputs=[prompt])
 
                 def apply_style(prompt_test, inputs):
                     pr = ""
@@ -187,6 +183,8 @@ with shared.gradio_root:
                     return results
 
                 model_refresh.click(model_refresh_clicked, [], [base_model, refiner_model] + lora_ctrls)
+
+            onebutton_ui.ui_onebutton(prompt)
 
         advanced_checkbox.change(lambda x: gr.update(visible=x), advanced_checkbox, right_col)
         ctrls = [
