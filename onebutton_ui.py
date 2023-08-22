@@ -301,6 +301,7 @@ def ui_onebutton(prompt):
                 subject = gr.Dropdown(subjects, label="Subject Types", value="all")
             with gr.Column(scale=1, variant="compact"):
                 artist = gr.Dropdown(artists, label="Artists", value="all")
+
         with gr.Row():
             chosensubjectsubtypeobject = gr.Dropdown(
                 subjectsubtypesobject, label="Type of object", value="all", visible=False
@@ -357,6 +358,42 @@ def ui_onebutton(prompt):
                 antistring = gr.Textbox(
                     label="Filter out following properties (comma seperated). Example " "film grain, purple, cat" " "
                 )
+
+        # turn things on and off for gender
+        def subjectsvalue(subject):
+            enable = subject == "humanoid"
+            return {
+                chosengender: gr.update(visible=enable),
+            }
+
+        subject.change(subjectsvalue, [subject], [chosengender])
+
+        # turn things on and off for subject subtype object
+        def subjectsvalueforsubtypeobject(subject):
+            enable = subject == "object"
+            return {
+                chosensubjectsubtypeobject: gr.update(visible=enable),
+            }
+
+        subject.change(subjectsvalueforsubtypeobject, [subject], [chosensubjectsubtypeobject])
+
+        # turn things on and off for subject subtype humanoid
+        def subjectsvalueforsubtypeobject(subject):
+            enable = subject == "humanoid"
+            return {
+                chosensubjectsubtypehumanoid: gr.update(visible=enable),
+            }
+
+        subject.change(subjectsvalueforsubtypeobject, [subject], [chosensubjectsubtypehumanoid])
+
+        # turn things on and off for subject subtype concept
+        def subjectsvalueforsubtypeconcept(subject):
+            enable = subject == "concept"
+            return {
+                chosensubjectsubtypeconcept: gr.update(visible=enable),
+            }
+
+        subject.change(subjectsvalueforsubtypeconcept, [subject], [chosensubjectsubtypeconcept])
 
         random_button.click(
             gen_prompt,
