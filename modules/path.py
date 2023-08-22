@@ -14,6 +14,8 @@ default_lora_weight = 0.5
 model_filenames = []
 lora_filenames = []
 
+extensions = [".pth", ".ckpt", ".bin", ".safetensors"]
+
 
 def get_model_filenames(folder_path):
     if not os.path.isdir(folder_path):

@@ -12,6 +12,8 @@ from modules.sdxl_styles import style_keys, aspect_ratios, styles
 
 from random_prompt.build_dynamic_prompt import build_dynamic_prompt
 
+from settings import load_settings
+
 
 def generate_clicked(*args):
     yield gr.update(interactive=False), gr.update(
@@ -38,6 +40,8 @@ def generate_clicked(*args):
     return
 
 
+settings = load_settings()
+
 shared.gradio_root = gr.Blocks(title="RuinedFooocus " + fooocus_version.version, css=modules.html.css).queue()
 with shared.gradio_root:
     with gr.Row():
@@ -59,29 +63,41 @@ with shared.gradio_root:
                         autofocus=True,
                         elem_classes="type_row",
                         lines=1024,
+                        value=settings["prompt"],
                     )
                 with gr.Column(scale=0.15, min_width=0):
                     run_button = gr.Button(label="Generate", value="Generate", elem_classes="type_row")
             with gr.Row():
-                advanced_checkbox = gr.Checkbox(label="Advanced", value=False, container=False)
-        with gr.Column(scale=0.5, visible=False) as right_col:
+                advanced_checkbox = gr.Checkbox(label="Advanced", value=settings["advanced_mode"], container=False)
+        with gr.Column(scale=0.5, visible=settings["advanced_mode"]) as right_col:
             with gr.Tab(label="Setting"):
-                performance_selction = gr.Radio(label="Performance", choices=["Speed", "Quality"], value="Speed")
+                performance_selction = gr.Radio(
+                    label="Performance", choices=["Speed", "Quality"], value=settings["performance"]
+                )
                 aspect_ratios_selction = gr.Dropdown(
-                    label="Aspect Ratios (width × height)", choices=list(aspect_ratios.keys()), value="1152×896 (4:3)"
+                    label="Aspect Ratios (width x height)",
+                    choices=list(aspect_ratios.keys()),
+                    value=settings["resolution"],
                 )
                 style_selction = gr.Dropdown(
                     label="Style Selection",
                     multiselect=True,
                     container=True,
                     choices=style_keys,
-                    value="cinematic-default",
+                    value=settings["style"],
                 )
                 style_button = gr.Button(value="⬅️ Send", size="sm")
-                image_number = gr.Slider(label="Image Number", minimum=1, maximum=50, step=1, value=1)
-                negative_prompt = gr.Textbox(label="Negative Prompt", show_label=True, placeholder="Type prompt here.")
-                seed_random = gr.Checkbox(label="Random", value=True)
-                image_seed = gr.Number(label="Seed", value=0, precision=0, visible=False)
+                image_number = gr.Slider(
+                    label="Image Number", minimum=1, maximum=50, step=1, value=settings["image_number"]
+                )
+                negative_prompt = gr.Textbox(
+                    label="Negative Prompt",
+                    show_label=True,
+                    placeholder="Type prompt here.",
+                    value=settings["negative_prompt"],
+                )
+                seed_random = gr.Checkbox(label="Random", value=settings["seed_random"])
+                image_seed = gr.Number(label="Seed", value=settings["seed"], precision=0, visible=False)
                 random_button = gr.Button(value="Create Random Prompt", size="sm")
 
                 def random_clicked():
@@ -120,13 +136,13 @@ with shared.gradio_root:
                     base_model = gr.Dropdown(
                         label="SDXL Base Model",
                         choices=modules.path.model_filenames,
-                        value=modules.path.default_base_model_name,
+                        value=settings["base_model"],
                         show_label=True,
                     )
                     refiner_model = gr.Dropdown(
                         label="SDXL Refiner",
                         choices=["None"] + modules.path.model_filenames,
-                        value=modules.path.default_refiner_model_name,
+                        value=settings["refiner_model"],
                         show_label=True,
                     )
                 with gr.Accordion(label="LoRAs", open=True):
@@ -136,14 +152,11 @@ with shared.gradio_root:
                             lora_model = gr.Dropdown(
                                 label=f"SDXL LoRA {i+1}",
                                 choices=["None"] + modules.path.lora_filenames,
-                                value=modules.path.default_lora_name if i == 0 else "None",
+                                value=settings[f"lora_{i+1}_model"],
                             )
+
                             lora_weight = gr.Slider(
-                                label="Strength",
-                                minimum=-2,
-                                maximum=2,
-                                step=0.01,
-                                value=modules.path.default_lora_weight,
+                                label="Strength", minimum=-2, maximum=2, step=0.01, value=settings[f"lora_{i+1}_weight"]
                             )
                             lora_ctrls += [lora_model, lora_weight]
                 with gr.Row():
@@ -154,8 +167,10 @@ with shared.gradio_root:
                         elem_classes="refresh_button",
                     )
                 with gr.Accordion(label="Advanced", open=False):
-                    save_metadata = gr.Checkbox(label="Save Metadata", value=True)
-                    sharpness = gr.Slider(label="Sampling Sharpness", minimum=0.0, maximum=40.0, step=0.01, value=2.0)
+                    save_metadata = gr.Checkbox(label="Save Metadata", value=settings["save_metadata"])
+                    sharpness = gr.Slider(
+                        label="Sampling Sharpness", minimum=0.0, maximum=40.0, step=0.01, value=settings["sharpness"]
+                    )
                     gr.HTML('<a href="https://github.com/lllyasviel/Fooocus/discussions/117">\U0001F4D4 Document</a>')
 
                 def model_refresh_clicked():
