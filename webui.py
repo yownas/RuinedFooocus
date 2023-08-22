@@ -12,7 +12,7 @@ from modules.sdxl_styles import style_keys, aspect_ratios, styles
 
 from random_prompt.build_dynamic_prompt import build_dynamic_prompt
 
-from settings import load_settings
+from modules.settings import load_settings
 
 
 def generate_clicked(*args):
