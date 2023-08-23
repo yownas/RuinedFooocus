@@ -43,129 +43,6 @@ def generate_clicked(*args):
     return
 
 
-<<<<<<< HEAD
-=======
-def metadata_to_ctrls(metadata, ctrls):
-    if not isinstance(metadata, Mapping):
-        return ctrls
-
-    if 'prompt' in metadata:
-        ctrls[0] = metadata['prompt']
-    if 'negative_prompt' in metadata:
-        ctrls[1] = metadata['negative_prompt']
-    if 'style' in metadata:
-        ctrls[2] = metadata['style']
-    if 'performance' in metadata:
-        ctrls[3] = metadata['performance']
-    if 'width' in metadata and 'height' in metadata:
-        ctrls[4] = get_resolution_string(metadata['width'], metadata['height'])
-    elif 'resolution' in metadata:
-        ctrls[4] = metadata['resolution']
-    # image_number
-    if 'seed' in metadata:
-        ctrls[6] = metadata['seed']
-        ctrls[32] = False
-    if 'sharpness' in metadata:
-        ctrls[7] = metadata['sharpness']
-    if 'sampler_name' in metadata:
-        ctrls[8] = metadata['sampler_name']
-    elif 'sampler' in metadata:
-        ctrls[8] = metadata['sampler']
-    if 'scheduler' in metadata:
-        ctrls[9] = metadata['scheduler']
-    if 'steps' in metadata:
-        ctrls[10] = metadata['steps']
-        if ctrls[10] == constants.STEPS_SPEED:
-            ctrls[3] = 'Speed'
-        elif ctrls[10] == constants.STEPS_QUALITY:
-            ctrls[3] = 'Quality'
-        else:
-            ctrls[3] = 'Custom'
-    if 'switch' in metadata:
-        ctrls[11] = round(metadata['switch'] / ctrls[10], 2)
-        if ctrls[11] != round(constants.SWITCH_SPEED / constants.STEPS_SPEED, 2):
-            ctrls[3] = 'Custom'
-    if 'cfg' in metadata:
-        ctrls[12] = metadata['cfg']
-    if 'base_model' in metadata:
-        ctrls[13] = metadata['base_model']
-    elif 'base_model_name' in metadata:
-        ctrls[13] = metadata['base_model_name']
-    if 'refiner_model' in metadata:
-        ctrls[14] = metadata['refiner_model']
-    elif 'refiner_model_name' in metadata:
-        ctrls[14] = metadata['refiner_model_name']
-    if 'base_clip_skip' in metadata:
-        ctrls[15] = metadata['base_clip_skip']
-    if 'refiner_clip_skip' in metadata:
-        ctrls[16] = metadata['refiner_clip_skip']
-    if 'l1' in metadata:
-        ctrls[17] = metadata['l1']
-    if 'w1' in metadata:
-        ctrls[18] = metadata['w1']
-    if 'l2' in metadata:
-        ctrls[19] = metadata['l2']
-    if 'w2' in metadata:
-        ctrls[20] = metadata['w2']
-    if 'l3' in metadata:
-        ctrls[21] = metadata['l3']
-    if 'w3' in metadata:
-        ctrls[22] = metadata['w3']
-    if 'l4' in metadata:
-        ctrls[23] = metadata['l4']
-    if 'w4' in metadata:
-        ctrls[24] = metadata['w4']
-    if 'l5' in metadata:
-        ctrls[25] = metadata['l5']
-    if 'w5' in metadata:
-        ctrls[26] = metadata['w5']
-    # save_metadata_json
-    # save_metadata_png
-    if 'img2img' in metadata:
-        ctrls[29] = metadata['img2img']
-        if 'start_step' in metadata:
-            if ctrls[3] == 'Speed':
-                ctrls[30] = round(metadata['start_step'] / constants.STEPS_SPEED, 2)
-            elif ctrls[3] == 'Quality':
-                ctrls[30] = round(metadata['start_step'] / constants.STEPS_QUALITY, 2)
-            else:
-                ctrls[30] = round(metadata['start_step'] / ctrls[10], 2)
-        if 'denoise' in metadata:
-            ctrls[31] = metadata['denoise']
-    # seed_random
-    return ctrls    
-
-
-def load_prompt_handler(_file, *args):
-    ctrls=list(args)
-    path = _file.name
-    if path.endswith('.json'):
-        with open(path, encoding='utf-8') as json_file:
-            try:
-                json_obj = json.load(json_file)
-                metadata_to_ctrls(json_obj, ctrls)
-            except Exception as e:
-                print(e)
-            finally:
-                json_file.close()
-    elif path.endswith('.png'):
-        with open(path, 'rb') as png_file:
-            image = Image.open(png_file)
-            png_file.close()
-            if 'Comment' in image.info:
-                try:
-                    metadata = json.loads(image.info['Comment'])
-                    metadata_to_ctrls(metadata, ctrls)
-                except Exception as e:
-                    print(e)
-    return ctrls
-
-
-def load_images_handler(files):
-    return list(map(lambda x: x.name, files))
-
-
->>>>>>> 3e14506 (Fixed loading denoise value, re-ordered buttons)
 settings = load_settings()
 
 if settings["theme"] == "None":
@@ -199,19 +76,7 @@ with shared.gradio_root:
                         value=settings["prompt"],
                     )
                 with gr.Column(scale=0.15, min_width=0):
-<<<<<<< HEAD
                     run_button = gr.Button(label="Generate", value="Generate", elem_classes="type_row")
-=======
-                    with gr.Row():
-                        load_images_button = gr.UploadButton(label='Load Image(s)', file_count='multiple', file_types=["image"], elem_classes='type_small_row')
-                    with gr.Row():
-                        load_prompt_button = gr.UploadButton(label='Load Prompt', file_count='single', file_types=['.json', '.png'], elem_classes='type_small_row')
-                with gr.Column(scale=0.15, min_width=0):
-                    with gr.Row():
-                        img2img_mode = gr.Checkbox(label='Image-2-Image', value=settings['img2img_mode'], elem_classes='type_small_row')
-                    with gr.Row():
-                        run_button = gr.Button(label='Generate', value='Generate', elem_classes='type_small_row')
->>>>>>> 3e14506 (Fixed loading denoise value, re-ordered buttons)
             with gr.Row():
                 advanced_checkbox = gr.Checkbox(label="Advanced", value=settings["advanced_mode"], container=False)
         with gr.Column(scale=0.5, visible=settings["advanced_mode"]) as right_col:
