@@ -124,7 +124,7 @@ name,prompt,negative_prompt,
 "Style: photo-silhouette","silhouette style {prompt}, high contrast, minimalistic, black and white, stark, dramatic","ugly, deformed, noisy, blurry, low contrast, color, realism, photorealistic",
 "Style: photo-tilt-shift","tilt-shift photo of {prompt}, Selective focus, miniature effect, blurred background, highly detailed, vibrant, perspective control","blurry, noisy, deformed, flat, low contrast, unrealistic, oversaturated, underexposed",
 "Style: photo-red-camera","cinematic scene from {prompt}, American Shot, captured by Red Camera with 85mm lens, film directed by Wes Anderson, melancholic, environmental lighting","",
-"Style: photo-duotone","duotone photo, {prompt}, high contrast, two color tones only, highly detailed","full color, complex palette"
+"Style: photo-duotone","duotone photo, {prompt}, high contrast, two color tones only, highly detailed","full color, complex palette",
 ">>>>>> LIGHTING","","",
 "Lighting: All Lights","cinematic lighting, dramatic lighting, high contrast, low key lighting, high key lighting, chiaroscuro lighting, Rembrandt lighting, split lighting, rim lighting, back lighting, side lighting, top lighting, bottom lighting, natural light, artificial light","",
 "Lighting: Artificial","artificial light","",
