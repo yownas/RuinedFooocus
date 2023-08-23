@@ -92,7 +92,7 @@ with shared.gradio_root:
                     choices=style_keys,
                     value=settings["style"],
                 )
-                style_button = gr.Button(value="⬅️ Send", size="sm")
+                style_button = gr.Button(value="⬅️ Send Style to prompt", size="sm")
                 image_number = gr.Slider(
                     label="Image Number", minimum=1, maximum=50, step=1, value=settings["image_number"]
                 )
@@ -109,7 +109,7 @@ with shared.gradio_root:
 
                 with gr.Row():
                     img2img_mode = gr.Checkbox(
-                        scale=0.2, label="img2img", value=settings["img2img_mode"], elem_classes="type_small_row"
+                        scale=0.2, label="Image 2 Image", value=settings["img2img_mode"], elem_classes="type_small_row"
                     )
                     load_images_button = gr.UploadButton(
                         label="Load Image(s)",
@@ -182,14 +182,18 @@ with shared.gradio_root:
             with gr.Tab(label="Advanced", open=False):
                 save_metadata = gr.Checkbox(label="Save Metadata", value=settings["save_metadata"])
                 img2img_start_step = gr.Slider(
-                    label="Img2img Start Step",
+                    label="Image 2 Image Start Step",
                     minimum=0.0,
                     maximum=0.5,
                     step=0.01,
                     value=settings["img2img_start_step"],
                 )
                 img2img_denoise = gr.Slider(
-                    label="Img2img Denoise", minimum=0.5, maximum=1.0, step=0.01, value=settings["img2img_denoise"]
+                    label="Image 2 Image Denoise",
+                    minimum=0.5,
+                    maximum=1.0,
+                    step=0.01,
+                    value=settings["img2img_denoise"],
                 )
                 sharpness = gr.Slider(
                     label="Sampling Sharpness", minimum=0.0, maximum=40.0, step=0.01, value=settings["sharpness"]
