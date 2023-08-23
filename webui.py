@@ -144,7 +144,7 @@ with shared.gradio_root:
 
                 seed_random.change(random_checked, inputs=[seed_random], outputs=[image_seed])
 
-            with gr.Tab(label="Advanced"):
+            with gr.Tab(label="Models"):
                 with gr.Row():
                     base_model = gr.Dropdown(
                         label="SDXL Base Model",
@@ -179,35 +179,35 @@ with shared.gradio_root:
                         variant="secondary",
                         elem_classes="refresh_button",
                     )
-                with gr.Accordion(label="Advanced", open=False):
-                    save_metadata = gr.Checkbox(label="Save Metadata", value=settings["save_metadata"])
-                    img2img_start_step = gr.Slider(
-                        label="Img2img Start Step",
-                        minimum=0.0,
-                        maximum=0.5,
-                        step=0.01,
-                        value=settings["img2img_start_step"],
-                    )
-                    img2img_denoise = gr.Slider(
-                        label="Img2img Denoise", minimum=0.5, maximum=1.0, step=0.01, value=settings["img2img_denoise"]
-                    )
-                    sharpness = gr.Slider(
-                        label="Sampling Sharpness", minimum=0.0, maximum=40.0, step=0.01, value=settings["sharpness"]
-                    )
-                    gr.HTML('<a href="https://github.com/lllyasviel/Fooocus/discussions/117">\U0001F4D4 Document</a>')
+            with gr.Tab(label="Advanced", open=False):
+                save_metadata = gr.Checkbox(label="Save Metadata", value=settings["save_metadata"])
+                img2img_start_step = gr.Slider(
+                    label="Img2img Start Step",
+                    minimum=0.0,
+                    maximum=0.5,
+                    step=0.01,
+                    value=settings["img2img_start_step"],
+                )
+                img2img_denoise = gr.Slider(
+                    label="Img2img Denoise", minimum=0.5, maximum=1.0, step=0.01, value=settings["img2img_denoise"]
+                )
+                sharpness = gr.Slider(
+                    label="Sampling Sharpness", minimum=0.0, maximum=40.0, step=0.01, value=settings["sharpness"]
+                )
+                gr.HTML('<a href="https://github.com/lllyasviel/Fooocus/discussions/117">\U0001F4D4 Document</a>')
 
-                def model_refresh_clicked():
-                    modules.path.update_all_model_names()
-                    results = []
-                    results += [
-                        gr.update(choices=modules.path.model_filenames),
-                        gr.update(choices=["None"] + modules.path.model_filenames),
-                    ]
-                    for i in range(5):
-                        results += [gr.update(choices=["None"] + modules.path.lora_filenames), gr.update()]
-                    return results
+            def model_refresh_clicked():
+                modules.path.update_all_model_names()
+                results = []
+                results += [
+                    gr.update(choices=modules.path.model_filenames),
+                    gr.update(choices=["None"] + modules.path.model_filenames),
+                ]
+                for i in range(5):
+                    results += [gr.update(choices=["None"] + modules.path.lora_filenames), gr.update()]
+                return results
 
-                model_refresh.click(model_refresh_clicked, [], [base_model, refiner_model] + lora_ctrls)
+            model_refresh.click(model_refresh_clicked, [], [base_model, refiner_model] + lora_ctrls)
 
             onebutton_ui.ui_onebutton(prompt)
 
