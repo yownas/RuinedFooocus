@@ -31,6 +31,7 @@ def load_settings():
     settings["lora_5_model"] = "None"
     settings["lora_5_weight"] = modules.path.default_lora_weight
     settings["save_metadata"] = True
+    settings["theme"] = "None"
 
     if exists("settings.json"):
         with open("settings.json") as settings_file:

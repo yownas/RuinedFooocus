@@ -9,12 +9,9 @@ import modules.html
 import modules.async_worker as worker
 
 from modules.sdxl_styles import style_keys, aspect_ratios, styles
-
-from random_prompt.build_dynamic_prompt import build_dynamic_prompt
-
 from modules.settings import load_settings
 
-import onebutton_ui
+import ui_onebutton
 
 
 def load_images_handler(files):
@@ -48,7 +45,14 @@ def generate_clicked(*args):
 
 settings = load_settings()
 
-shared.gradio_root = gr.Blocks(title="RuinedFooocus " + fooocus_version.version, css=modules.html.css).queue()
+if settings["theme"] == "None":
+    theme = gr.themes.Default()
+else:
+    theme = settings["theme"]
+
+shared.gradio_root = gr.Blocks(
+    theme=theme, title="RuinedFooocus " + fooocus_version.version, css=modules.html.css
+).queue()
 with shared.gradio_root:
     with gr.Row():
         with gr.Column():
@@ -213,7 +217,7 @@ with shared.gradio_root:
 
             model_refresh.click(model_refresh_clicked, [], [base_model, refiner_model] + lora_ctrls)
 
-            onebutton_ui.ui_onebutton(prompt)
+            ui_onebutton.ui_onebutton(prompt)
 
         advanced_checkbox.change(lambda x: gr.update(visible=x), advanced_checkbox, right_col)
         ctrls = [
@@ -245,5 +249,9 @@ parser.add_argument(
 args = parser.parse_args()
 favicon_path = "logo.ico"
 shared.gradio_root.launch(
-    inbrowser=True, server_name=args.listen, server_port=args.port, share=args.share, favicon_path=favicon_path
+    inbrowser=True,
+    server_name=args.listen,
+    server_port=args.port,
+    share=args.share,
+    favicon_path=favicon_path,
 )
