@@ -106,7 +106,7 @@ with shared.gradio_root:
                     placeholder="Type prompt here.",
                     value=settings["negative_prompt"],
                 )
-                seed_random = gr.Checkbox(label="Random", value=settings["seed_random"])
+                seed_random = gr.Checkbox(label="Random Seed", value=settings["seed_random"])
                 image_seed = gr.Number(
                     label="Seed", value=settings["seed"], precision=0, visible=not settings["seed_random"]
                 )
