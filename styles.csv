@@ -71,7 +71,7 @@ name,prompt,negative_prompt,
 "Style: game-rpg fantasy game","role-playing game (RPG) style fantasy {prompt}, detailed, vibrant, immersive, reminiscent of high fantasy RPG games","sci-fi, modern, urban, futuristic, low detailed",
 "Style: game-strategy game","strategy game style {prompt}, overhead view, detailed map, units, reminiscent of real-time strategy video games","first-person view, modern, photorealistic",
 "Style: game-streetfighter","Street Fighter style {prompt}, vibrant, dynamic, arcade, 2D fighting game, highly detailed, reminiscent of Street Fighter series","3D, realistic, modern, photorealistic, turn-based strategy",
-"Style: game-world of warcraft"," World of Warcraft style , screenshot, {prompt}, vibrant, dynamic, pc ingame graphics , screenshot, highly detailed, reminiscent of World of Warcraft",""
+"Style: game-world of warcraft"," World of Warcraft style , screenshot, {prompt}, vibrant, dynamic, pc ingame graphics , screenshot, highly detailed, reminiscent of World of Warcraft","",
 "Style: game-zelda","Legend of Zelda style {prompt}, vibrant, fantasy, detailed, epic, heroic, reminiscent of The Legend of Zelda series","sci-fi, modern, realistic, horror",
 ">>>>>> MISC","","",
 "Style: misc-3D-Caricature","disney 3d cartoon style, caricature, {prompt}, highly detailed, vfx","black and white",
