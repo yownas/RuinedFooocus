@@ -119,6 +119,7 @@ Below things are already inside the software, and **users do not need to do anyt
 6. Generate a completely random prompt (taken from onebuttonprompt) with its own "special" tab
 7. Made Resolutions mode readable
 8. Image to Image!! talentlessly stolen by me from the genius [MoonRide](https://github.com/MoonRide303/Fooocus-MRE) and his amazing fork
+9. Added theme support in `settings.json` you can see available themes [HERE](https://huggingface.co/spaces/gradio/theme-gallery)
 
 ## Thanks
 
