@@ -17,10 +17,8 @@ from modules.settings import load_settings
 import onebutton_ui
 
 
-def load_image_handler(files):
-    if len(files) > 0:
-        path = files[0].name
-    return [path]
+def load_images_handler(files):
+    return list(map(lambda x: x.name, files))
 
 
 def generate_clicked(*args):
@@ -113,8 +111,11 @@ with shared.gradio_root:
                     img2img_mode = gr.Checkbox(
                         scale=0.2, label="img2img", value=settings["img2img_mode"], elem_classes="type_small_row"
                     )
-                    load_image_button = gr.UploadButton(
-                        label="Load Image", file_count=1, file_types=["image"], elem_classes="type_small_row"
+                    load_images_button = gr.UploadButton(
+                        label="Load Image(s)",
+                        file_count="multiple",
+                        file_types=["image"],
+                        elem_classes="type_small_row",
                     )
 
                 def apply_style(prompt_test, inputs):
@@ -224,7 +225,7 @@ with shared.gradio_root:
         ]
 
         img2imgcontrols = [img2img_mode, img2img_start_step, img2img_denoise]
-        load_image_button.upload(fn=load_image_handler, inputs=[load_image_button], outputs=gallery)
+        load_images_button.upload(fn=load_images_handler, inputs=[load_images_button], outputs=gallery)
         ctrls += [base_model, refiner_model] + lora_ctrls + img2imgcontrols
         run_button.click(fn=refresh_seed, inputs=[seed_random, image_seed], outputs=image_seed).then(
             fn=generate_clicked, inputs=ctrls + [gallery], outputs=[run_button, progress_html, progress_window, gallery]
