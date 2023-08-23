@@ -1,20 +1,20 @@
-# Fooocus
+# RuinedFooocus
 
 <img src="https://github.com/lllyasviel/Fooocus/assets/19834515/f79c5981-cf80-4ee3-b06b-3fef3f8bfbc7" width=100%>
 
-Fooocus is an image generating software.
+RuinedFooocus is an image generating software.
 
-Fooocus is a rethinking of Stable Diffusion and Midjourney’s designs:
+RuinedFooocus is a rethinking of Stable Diffusion and Midjourney’s designs:
 
 * Learned from Stable Diffusion, the software is offline, open source, and free.
 
 * Learned from Midjourney, the manual tweaking is not needed, and users only need to focus on the prompts and images.
 
-Fooocus has included and automated [lots of inner optimizations and quality improvements](#tech_list). Users can forget all those difficult technical parameters, and just enjoy the interaction between human and computer to "explore new mediums of thought and expanding the imaginative powers of the human species" `[1]`.
+RuinedFooocus has included and automated [lots of inner optimizations and quality improvements](#tech_list). Users can forget all those difficult technical parameters, and just enjoy the interaction between human and computer to "explore new mediums of thought and expanding the imaginative powers of the human species" `[1]`.
 
-Fooocus has simplified the installation. Between pressing "download" and generating the first image, the number of needed mouse clicks is strictly limited to less than 3. Minimal GPU memory requirement is 4GB (Nvidia).
+RuinedFooocus has simplified the installation. Between pressing "download" and generating the first image, the number of needed mouse clicks is strictly limited to less than 3. Minimal GPU memory requirement is 4GB (Nvidia).
 
-Fooocus also developed many "fooocus-only" features for advanced users to get perfect results. [Click here to browse the advanced features.](https://github.com/lllyasviel/Fooocus/discussions/117)
+RuinedFooocus also developed many "fooocus-only" features for advanced users to get perfect results. [Click here to browse the advanced features.](https://github.com/lllyasviel/Fooocus/discussions/117)
 
 `[1]` David Holz, 2019.
 
@@ -24,7 +24,7 @@ Fooocus also developed many "fooocus-only" features for advanced users to get pe
 
 You can directly download Fooocus with:
 
-**[>>> Click here to download <<<](https://github.com/lllyasviel/Fooocus/releases/download/1.0.35/Fooocus_win64_1-1-1035.7z)**
+**[>>> Click here to download <<<](https://github.com/runew0lf/RuinedFooocus/releases/download/Release/RuinedFooocus_win641-0-0.7z)**
 
 After you download the file, please uncompress it, and then run the "run.bat".
 
@@ -123,6 +123,8 @@ Below things are already inside the software, and **users do not need to do anyt
 
 ## Thanks
 
+This codebase is a fork from the original amazing work by [lllyasviel](https://github.com/lllyasviel/Fooocus/discussions/117)
+The wonderful [MoonRide](https://github.com/MoonRide303/Fooocus-MRE) who also maintains an amazing fork!
 The codebase starts from an odd mixture of [Automatic1111](https://github.com/AUTOMATIC1111/stable-diffusion-webui) and [ComfyUI](https://github.com/comfyanonymous/ComfyUI). (And they both use GPL license.)
 
 ## Update Log
