@@ -109,7 +109,7 @@ with shared.gradio_root:
 
                 with gr.Row():
                     img2img_mode = gr.Checkbox(
-                        scale=0.2, label="Image 2 Image", value=settings["img2img_mode"], elem_classes="type_small_row"
+                        label="Image 2 Image", value=settings["img2img_mode"], elem_classes="type_small_row"
                     )
                     load_images_button = gr.UploadButton(
                         label="Load Image(s)",
@@ -179,7 +179,7 @@ with shared.gradio_root:
                         variant="secondary",
                         elem_classes="refresh_button",
                     )
-            with gr.Tab(label="Advanced", open=False):
+            with gr.Tab(label="Advanced"):
                 save_metadata = gr.Checkbox(label="Save Metadata", value=settings["save_metadata"])
                 img2img_start_step = gr.Slider(
                     label="Image 2 Image Start Step",
