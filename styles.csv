@@ -98,7 +98,7 @@ name,prompt,negative_prompt,
 "Style: misc-monochrome","monochrome {prompt}, black and white, contrast, tone, texture, detailed","colorful, vibrant, noisy, blurry, deformed",
 "Style: misc-nautical","nautical-themed {prompt}, sea, ocean, ships, maritime, beach, marine life, highly detailed","landlocked, desert, mountains, urban, rustic",
 "Style: misc-scientific","scientific illustration, {prompt}, detailed, annotated, educational, informational","simplistic, cartoon, abstract",
-"Style: misc-silhouette","silhouette style concept art {prompt} digital artwork, illustrative, painterly, matte painting, highly detailed, high contrast, stark, dramatic"," photo, photorealistic,realism"
+"Style: misc-silhouette","silhouette style concept art {prompt} digital artwork, illustrative, painterly, matte painting, highly detailed, high contrast, stark, dramatic"," photo, photorealistic,realism",
 "Style: misc-space","space-themed {prompt}, cosmic, celestial, stars, galaxies, nebulas, planets, science fiction, highly detailed","earthly, mundane, ground-based, realism",
 "Style: misc-stained glass","stained glass style {prompt}, vibrant, beautiful, translucent, intricate, detailed","ugly, deformed, noisy, blurry, low contrast, realism, photorealistic",
 "Style: misc-techwear fashion","techwear fashion {prompt}, futuristic, cyberpunk, urban, tactical, sleek, dark, highly detailed","vintage, rural, colorful, low contrast, realism, sketch, watercolor",
