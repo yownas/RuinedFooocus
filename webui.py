@@ -194,7 +194,7 @@ with shared.gradio_root:
                 )
                 img2img_denoise = gr.Slider(
                     label="Image 2 Image Denoise",
-                    minimum=0.5,
+                    minimum=0.2,
                     maximum=1.0,
                     step=0.01,
                     value=settings["img2img_denoise"],
