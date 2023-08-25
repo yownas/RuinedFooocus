@@ -111,17 +111,6 @@ with shared.gradio_root:
                     label="Seed", value=settings["seed"], precision=0, visible=not settings["seed_random"]
                 )
 
-                with gr.Row():
-                    img2img_mode = gr.Checkbox(
-                        label="Image 2 Image", value=settings["img2img_mode"], elem_classes="type_small_row"
-                    )
-                    load_images_button = gr.UploadButton(
-                        label="Load Image(s)",
-                        file_count="multiple",
-                        file_types=["image"],
-                        elem_classes="type_small_row",
-                    )
-
                 def apply_style(prompt_test, inputs):
                     pr = ""
                     ne = ""
@@ -185,20 +174,32 @@ with shared.gradio_root:
                     )
             with gr.Tab(label="Advanced"):
                 save_metadata = gr.Checkbox(label="Save Metadata", value=settings["save_metadata"])
-                img2img_start_step = gr.Slider(
-                    label="Image 2 Image Start Step",
-                    minimum=0.0,
-                    maximum=0.5,
-                    step=0.01,
-                    value=settings["img2img_start_step"],
-                )
-                img2img_denoise = gr.Slider(
-                    label="Image 2 Image Denoise",
-                    minimum=0.2,
-                    maximum=1.0,
-                    step=0.01,
-                    value=settings["img2img_denoise"],
-                )
+                with gr.Row():
+                    img2img_mode = gr.Checkbox(
+                        label="Image 2 Image", value=settings["img2img_mode"], elem_classes="type_small_row"
+                    )
+                    load_images_button = gr.UploadButton(
+                        label="Load Image(s)",
+                        file_count="multiple",
+                        file_types=["image"],
+                        elem_classes="type_small_row",
+                    )
+
+                    img2img_start_step = gr.Slider(
+                        label="Image 2 Image Start Step",
+                        minimum=0.0,
+                        maximum=0.5,
+                        step=0.01,
+                        value=settings["img2img_start_step"],
+                    )
+                    img2img_denoise = gr.Slider(
+                        label="Image 2 Image Denoise",
+                        minimum=0.2,
+                        maximum=1.0,
+                        step=0.01,
+                        value=settings["img2img_denoise"],
+                    )
+
                 sharpness = gr.Slider(
                     label="Sampling Sharpness", minimum=0.0, maximum=40.0, step=0.01, value=settings["sharpness"]
                 )
@@ -220,6 +221,7 @@ with shared.gradio_root:
             ui_onebutton.ui_onebutton(prompt)
 
         advanced_checkbox.change(lambda x: gr.update(visible=x), advanced_checkbox, right_col)
+
         ctrls = [
             prompt,
             negative_prompt,
