@@ -122,6 +122,7 @@ Below things are already inside the software, and **users do not need to do anyt
 7. Made Resolutions mode readable
 8. Image to Image!! talentlessly stolen by me from the genius [MoonRide](https://github.com/MoonRide303/Fooocus-MRE) and his amazing fork
 9. Added theme support in `settings.json` you can see available themes [HERE](https://huggingface.co/spaces/gradio/theme-gallery)
+10. Added `resolutions.csv` to allow users to add their own custom resolutions
 
 ## Thanks
 
