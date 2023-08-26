@@ -1,6 +1,6 @@
 # https://github.com/twri/sdxl_prompt_styler/blob/main/sdxl_styles.json
 import os
-from csv import DictReader
+from csv import DictReader, reader
 
 styles = []
 
@@ -9,13 +9,13 @@ if os.path.isfile("styles.csv"):
     # Open styles.csv file for reading
     with open("styles.csv", "r") as file:
         # Create DictReader object to read CSV as dictionaries
-        reader = DictReader(file)
+        treader = DictReader(file)
         # Create default styles list
         default_styles = [
             {"name": "None", "prompt": "{prompt}", "negative_prompt": ""},
         ]
         # Read in styles from CSV into styles list
-        styles = list(reader)
+        styles = list(treader)
         # Insert default styles at start of styles list
         for item in default_styles:
             styles.insert(0, item)
@@ -24,18 +24,14 @@ styles = {k["name"]: (k["prompt"], k["negative_prompt"]) for k in styles}
 default_style = styles["None"]
 style_keys = list(styles.keys())
 
-
-SD_XL_BASE_RATIOS = {
-    "1:1": (1024, 1024),
-    "4:3": (1152, 896),
-    "3:2": (1216, 832),
-    "16:9": (1344, 768),
-    "21:9": (1536, 640),
-    "3:4": (896, 1152),
-    "2:3": (832, 1216),
-    "9:16": (768, 1344),
-    "9:21": (640, 1536),
-}
+SD_XL_BASE_RATIOS = {}
+# Check if resolutions.csv file exists
+if os.path.isfile("resolutions.csv"):
+    # Open resolutions.csv file for reading
+    with open("resolutions.csv", "r") as file:
+        reader = DictReader(file)
+        for row in reader:
+            SD_XL_BASE_RATIOS[row["ratio"]] = (int(row["width"]), int(row["height"]))
 
 
 aspect_ratios = {f"{v[0]}x{v[1]} ({k})": v for k, v in SD_XL_BASE_RATIOS.items()}
