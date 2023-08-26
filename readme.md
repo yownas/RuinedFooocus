@@ -113,11 +113,11 @@ Below things are already inside the software, and **users do not need to do anyt
 
 ## Ruined Edition Features
 
-1. Supports custom styles in styles.csv
+1. Supports custom styles in `styles.csv`
 2. Changed Resolutions and Styles to be in a dropdown instead of radio buttons
 3. Apply multiple styles to one prompt and a send style to prompt button.
 4. Ability to save full metadata for generated images embedded in PNG.
-5. Ability to change default values of UI settings (loaded from settings.json file - use settings-example.json as a template).
+5. Ability to change default values of UI settings (loaded from `settings.json` file - use `settings-example.json` as a template).
 6. Generate a completely random prompt (taken from onebuttonprompt) with its own "special" tab
 7. Made Resolutions mode readable
 8. Image to Image!! talentlessly stolen by me from the genius [MoonRide](https://github.com/MoonRide303/Fooocus-MRE) and his amazing fork
