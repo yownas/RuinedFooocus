@@ -47,3 +47,6 @@ def load_settings():
                 settings_file.close()
 
     return settings
+
+
+default_settings = load_settings()

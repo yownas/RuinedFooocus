@@ -4,6 +4,7 @@ import gc
 import torch
 import numpy as np
 import modules.path
+from modules.settings import default_settings
 
 from comfy.model_base import SDXL, SDXLRefiner
 from comfy.model_management import soft_empty_cache
@@ -101,9 +102,7 @@ def refresh_loras(loras):
     return
 
 
-refresh_base_model(modules.path.default_base_model_name)
-refresh_refiner_model(modules.path.default_refiner_model_name)
-refresh_loras([(modules.path.default_lora_name, 0.5), ("None", 0.5), ("None", 0.5), ("None", 0.5), ("None", 0.5)])
+refresh_base_model(default_settings["base_model"])
 
 positive_conditions_cache = None
 negative_conditions_cache = None

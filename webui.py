@@ -9,7 +9,7 @@ import modules.html
 import modules.async_worker as worker
 
 from modules.sdxl_styles import style_keys, aspect_ratios, styles
-from modules.settings import load_settings
+from modules.settings import default_settings
 
 import ui_onebutton
 
@@ -43,7 +43,7 @@ def generate_clicked(*args):
     return
 
 
-settings = load_settings()
+settings = default_settings
 
 if settings["theme"] == "None":
     theme = gr.themes.Default()
