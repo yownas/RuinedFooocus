@@ -120,8 +120,8 @@ def worker():
             for placeholder in placeholders:
                 try:
                     with open(os.path.join(directory, f"{placeholder}.txt")) as f:
-                        words = f.read().split()
-                    wildcard_text = re.sub(rf"__{placeholder}__", random.choice(words), p_txt)
+                        words = f.read().splitlines()
+                    wildcard_text = re.sub(rf"__{placeholder}__", random.choice(words), wildcard_text)
                 except IOError:
                     print(
                         f"Error: Could not open file {placeholder}.txt. Please ensure the file exists and is readable."
