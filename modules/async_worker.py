@@ -2,7 +2,8 @@ import threading
 import gc
 import torch
 import os
-
+import re
+import random
 import modules.core as core
 
 buffer = []
@@ -113,6 +114,19 @@ def worker():
 
         gallery_size = len(gallery)
         for i in range(image_number):
+            directory = "wildcards"
+            placeholders = re.findall(r"__(\w+)__", p_txt)
+            wildcard_text = p_txt
+            for placeholder in placeholders:
+                try:
+                    with open(os.path.join(directory, f"{placeholder}.txt")) as f:
+                        words = f.read().split()
+                    wildcard_text = re.sub(rf"__{placeholder}__", random.choice(words), p_txt)
+                except IOError:
+                    print(
+                        f"Error: Could not open file {placeholder}.txt. Please ensure the file exists and is readable."
+                    )
+                    raise
             if img2img_mode and gallery_size > 0:
                 start_step = round(steps * img2img_start_step)
                 denoise = img2img_denoise
@@ -123,7 +137,7 @@ def worker():
                 denoise = None
                 input_image_path = None
             imgs = pipeline.process(
-                p_txt,
+                wildcard_text,
                 n_txt,
                 steps,
                 switch,
@@ -142,7 +156,7 @@ def worker():
                 metadata = None
                 if save_metadata:
                     prompt = {
-                        "Prompt": p_txt,
+                        "Prompt": wildcard_text,
                         "Negative": n_txt,
                         "steps": steps,
                         "switch": switch,
