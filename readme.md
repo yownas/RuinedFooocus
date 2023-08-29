@@ -124,6 +124,7 @@ Below things are already inside the software, and **users do not need to do anyt
 9. Added theme support in `settings.json` you can see available themes [HERE](https://huggingface.co/spaces/gradio/theme-gallery)
 10. Added `resolutions.csv` to allow users to add their own custom resolutions
 11. Wildcards are now supported place see `wildcards\colors.txt` for an example. In your prompt make sure you type `__<filename>__` to activate ie `shiny new __colors__ Chevrolet pickup truck with big wheels`
+12. If the option `--nobrowser` is passed the web browser won't automatically launch
 
 ## Thanks
 
