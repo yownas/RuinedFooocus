@@ -123,6 +123,7 @@ Below things are already inside the software, and **users do not need to do anyt
 8. Image to Image!! talentlessly stolen by me from the genius [MoonRide](https://github.com/MoonRide303/Fooocus-MRE) and his amazing fork
 9. Added theme support in `settings.json` you can see available themes [HERE](https://huggingface.co/spaces/gradio/theme-gallery)
 10. Added `resolutions.csv` to allow users to add their own custom resolutions
+11. Wildcards are now supported place see `wildcards\colors.txt` for an example. In your prompt make sure you type `__<filename>__` to activate ie `shiny new __colors__ Chevrolet pickup truck with big wheels`
 
 ## Thanks
 
