@@ -2,6 +2,8 @@ from comfy.samplers import *
 
 import comfy.model_management
 
+from modules.util import suppress_stdout
+
 
 class KSamplerWithRefiner:
     SCHEDULERS = ["normal", "karras", "exponential", "simple", "ddim_uniform"]
@@ -206,7 +208,8 @@ class KSamplerWithRefiner:
             )
 
         def refiner_switch():
-            comfy.model_management.load_model_gpu(self.refiner_model_patcher)
+            with suppress_stdout():
+                comfy.model_management.load_model_gpu(self.refiner_model_patcher)
             self.model_denoise.inner_model = self.refiner_model_denoise.inner_model
             for i in range(len(positive)):
                 positive[i] = refiner_positive[i]

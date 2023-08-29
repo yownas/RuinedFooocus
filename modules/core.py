@@ -13,6 +13,7 @@ from comfy.sample import prepare_mask, broadcast_cond, get_additional_models, cl
 from comfy_extras.nodes_post_processing import ImageScaleToTotalPixels
 from modules.samplers_advanced import KSampler, KSamplerWithRefiner
 from modules.patch import patch_all
+from modules.util import suppress_stdout
 
 comfy.model_management.DISABLE_SMART_MEMORY = True
 
@@ -165,9 +166,10 @@ def ksampler(
 
     real_model = None
     models = get_additional_models(positive, negative)
-    comfy.model_management.load_models_gpu(
-        [model] + models, comfy.model_management.batch_area_memory(noise.shape[0] * noise.shape[2] * noise.shape[3])
-    )
+    with suppress_stdout():
+        comfy.model_management.load_models_gpu(
+            [model] + models, comfy.model_management.batch_area_memory(noise.shape[0] * noise.shape[2] * noise.shape[3])
+        )
     real_model = model.model
 
     noise = noise.to(device)
@@ -275,9 +277,10 @@ def ksampler_with_refiner(
         noise_mask = prepare_mask(noise_mask, noise.shape, device)
 
     models = get_additional_models(positive, negative)
-    comfy.model_management.load_models_gpu(
-        [model] + models, comfy.model_management.batch_area_memory(noise.shape[0] * noise.shape[2] * noise.shape[3])
-    )
+    with suppress_stdout():
+        comfy.model_management.load_models_gpu(
+            [model] + models, comfy.model_management.batch_area_memory(noise.shape[0] * noise.shape[2] * noise.shape[3])
+        )
 
     noise = noise.to(device)
     latent_image = latent_image.to(device)

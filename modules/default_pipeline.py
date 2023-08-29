@@ -9,6 +9,12 @@ from modules.settings import default_settings
 from comfy.model_base import SDXL, SDXLRefiner
 from comfy.model_management import soft_empty_cache
 from PIL import Image, ImageOps
+from modules.util import suppress_stdout
+
+import warnings
+
+warnings.filterwarnings("ignore", category=UserWarning)
+
 
 xl_base: core.StableDiffusionModel = None
 xl_base_hash = ""
@@ -30,8 +36,8 @@ def refresh_base_model(name):
     if xl_base is not None:
         xl_base.to_meta()
         xl_base = None
-
-    xl_base = core.load_model(filename)
+    with suppress_stdout():
+        xl_base = core.load_model(filename)
     if not isinstance(xl_base.unet.model, SDXL):
         print("Model not supported. Fooocus only support SDXL model as the base model.")
         xl_base = None
@@ -67,7 +73,8 @@ def refresh_refiner_model(name):
         xl_refiner.to_meta()
         xl_refiner = None
 
-    xl_refiner = core.load_model(filename)
+    with suppress_stdout():
+        xl_refiner = core.load_model(filename)
     if not isinstance(xl_refiner.unet.model, SDXLRefiner):
         print("Model not supported. Fooocus only support SDXL refiner as the refiner.")
         xl_refiner = None
@@ -94,7 +101,8 @@ def refresh_loras(loras):
             continue
 
         filename = os.path.join(modules.path.lorafile_path, name)
-        model = core.load_lora(model, filename, strength_model=weight, strength_clip=weight)
+        with suppress_stdout():
+            model = core.load_lora(model, filename, strength_model=weight, strength_clip=weight)
     xl_base_patched = model
     xl_base_patched_hash = str(loras)
     print(f"LoRAs loaded: {xl_base_patched_hash}")

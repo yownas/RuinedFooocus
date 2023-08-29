@@ -1,6 +1,8 @@
 import datetime
 import random
 import os
+from contextlib import contextmanager
+import sys
 
 
 def generate_temp_filename(folder="./outputs/", extension="png"):
@@ -11,3 +13,14 @@ def generate_temp_filename(folder="./outputs/", extension="png"):
     filename = f"{time_string}_{random_number}.{extension}"
     result = os.path.join(folder, date_string, filename)
     return os.path.abspath(os.path.realpath(result))
+
+
+@contextmanager
+def suppress_stdout():
+    with open(os.devnull, "w") as devnull:
+        old_stdout = sys.stdout
+        sys.stdout = devnull
+        try:
+            yield
+        finally:
+            sys.stdout = old_stdout
