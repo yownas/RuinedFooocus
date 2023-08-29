@@ -115,8 +115,8 @@ def worker():
         gallery_size = len(gallery)
         for i in range(image_number):
             directory = "wildcards"
-            placeholders = re.findall(r"__(\w+)__", p_txt)
             wildcard_text = p_txt
+            placeholders = re.findall(r"__(\w+)__", wildcard_text)
             for placeholder in placeholders:
                 try:
                     with open(os.path.join(directory, f"{placeholder}.txt")) as f:
