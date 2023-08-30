@@ -1,50 +1,48 @@
-from os.path import exists
 import json
-import modules
+from os.path import exists
+
+import modules.path
+
+DEFAULT_SETTINGS = {
+    "advanced_mode": False,
+    "image_number": 1,
+    "seed_random": True,
+    "seed": 0,
+    "style": "Style: sai-cinematic",
+    "prompt": "",
+    "negative_prompt": "",
+    "performance": "Speed",
+    "resolution": "1152x896 (4:3)",
+    "sharpness": 2.0,
+    "img2img_mode": False,
+    "img2img_start_step": 0.06,
+    "img2img_denoise": 0.94,
+    "base_model": modules.path.default_base_model_name,
+    "refiner_model": modules.path.default_refiner_model_name,
+    "lora_1_model": modules.path.default_lora_name,
+    "lora_1_weight": modules.path.default_lora_weight,
+    "lora_2_model": "None",
+    "lora_2_weight": modules.path.default_lora_weight,
+    "lora_3_model": "None",
+    "lora_3_weight": modules.path.default_lora_weight,
+    "lora_4_model": "None",
+    "lora_4_weight": modules.path.default_lora_weight,
+    "lora_5_model": "None",
+    "lora_5_weight": modules.path.default_lora_weight,
+    "save_metadata": True,
+    "theme": "None",
+}
 
 
 def load_settings():
-    settings = {}
-    settings["advanced_mode"] = False
-    settings["image_number"] = 1
-    settings["seed_random"] = True
-    settings["seed"] = 0
-    settings["style"] = "Style: sai-cinematic"
-    settings["prompt"] = ""
-    settings["negative_prompt"] = ""
-    settings["performance"] = "Speed"
-    settings["resolution"] = "1152x896 (4:3)"
-    settings["sharpness"] = 2.0
-    settings["img2img_mode"] = False
-    settings["img2img_start_step"] = 0.06
-    settings["img2img_denoise"] = 0.94
-    settings["base_model"] = modules.path.default_base_model_name
-    settings["refiner_model"] = modules.path.default_refiner_model_name
-    settings["lora_1_model"] = modules.path.default_lora_name
-    settings["lora_1_weight"] = modules.path.default_lora_weight
-    settings["lora_2_model"] = "None"
-    settings["lora_2_weight"] = modules.path.default_lora_weight
-    settings["lora_3_model"] = "None"
-    settings["lora_3_weight"] = modules.path.default_lora_weight
-    settings["lora_4_model"] = "None"
-    settings["lora_4_weight"] = modules.path.default_lora_weight
-    settings["lora_5_model"] = "None"
-    settings["lora_5_weight"] = modules.path.default_lora_weight
-    settings["save_metadata"] = True
-    settings["theme"] = "None"
-
     if exists("settings.json"):
-        with open("settings.json") as settings_file:
-            try:
-                settings_obj = json.load(settings_file)
-                for k in settings.keys():
-                    if k in settings_obj:
-                        settings[k] = settings_obj[k]
-            except Exception as e:
-                print(e)
-                pass
-            finally:
-                settings_file.close()
+        with open("settings.json") as f:
+            settings = json.load(f)
+    else:
+        # If settings file doesn't exist, create it
+        with open("settings.json", "w") as f:
+            json.dump(DEFAULT_SETTINGS, f, indent=2)
+            settings = DEFAULT_SETTINGS
 
     return settings
 
