@@ -35,3 +35,5 @@ notification.mp3
 /.coverage*
 models/vae/config.json
 settings.json
+styles.csv
+resolutions.csv
