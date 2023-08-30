@@ -37,3 +37,4 @@ models/vae/config.json
 settings.json
 styles.csv
 resolutions.csv
+paths.json

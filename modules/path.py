@@ -1,8 +1,44 @@
 import os
 
-modelfile_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../models/checkpoints/"))
-lorafile_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../models/loras/"))
-temp_outputs_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../outputs/"))
+import json
+
+from os.path import exists
+
+
+DEFAULT_PATHS = {
+    "path_checkpoints": "../models/checkpoints/",
+    "path_loras": "../models/loras/",
+    "path_outputs": "../outputs/",
+}
+
+
+def load_paths():
+    if exists("paths.json"):
+        with open("paths.json") as f:
+            paths = json.load(f)
+    else:
+        paths = DEFAULT_PATHS
+        with open("paths.json", "w") as f:
+            json.dump(DEFAULT_PATHS, f, indent=2)
+
+    return (paths["path_checkpoints"], paths["path_loras"], paths["path_outputs"])
+
+
+path_checkpoints, path_loras, path_outputs = load_paths()
+
+modelfile_path = (
+    path_checkpoints
+    if os.path.isabs(path_checkpoints)
+    else os.path.abspath(os.path.join(os.path.dirname(__file__), path_checkpoints))
+)
+lorafile_path = (
+    path_loras if os.path.isabs(path_loras) else os.path.abspath(os.path.join(os.path.dirname(__file__), path_loras))
+)
+temp_outputs_path = (
+    path_outputs
+    if os.path.isabs(path_outputs)
+    else os.path.abspath(os.path.join(os.path.dirname(__file__), path_outputs))
+)
 
 os.makedirs(temp_outputs_path, exist_ok=True)
 
