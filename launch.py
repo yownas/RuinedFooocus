@@ -21,16 +21,23 @@ REINSTALL_ALL = False
 
 
 def prepare_environment():
-    torch_index_url = os.environ.get("TORCH_INDEX_URL", "https://download.pytorch.org/whl/cu118")
+    torch_index_url = os.environ.get(
+        "TORCH_INDEX_URL", "https://download.pytorch.org/whl/cu118"
+    )
     torch_command = os.environ.get(
-        "TORCH_COMMAND", f"pip install torch==2.0.1 torchvision==0.15.2 --extra-index-url {torch_index_url}"
+        "TORCH_COMMAND",
+        f"pip install torch==2.0.1 torchvision==0.15.2 --extra-index-url {torch_index_url}",
     )
     requirements_file = os.environ.get("REQS_FILE", "requirements_versions.txt")
 
     xformers_package = os.environ.get("XFORMERS_PACKAGE", "xformers==0.0.21")
 
-    comfy_repo = os.environ.get("COMFY_REPO", "https://github.com/comfyanonymous/ComfyUI")
-    comfy_commit_hash = os.environ.get("COMFY_COMMIT_HASH", "f081017c1a20a5d9cfae9005fd0898502e3356be")
+    comfy_repo = os.environ.get(
+        "COMFY_REPO", "https://github.com/comfyanonymous/ComfyUI"
+    )
+    comfy_commit_hash = os.environ.get(
+        "COMFY_COMMIT_HASH", "f081017c1a20a5d9cfae9005fd0898502e3356be"
+    )
 
     print(f"Python {sys.version}")
     print(f"Fooocus version: {fooocus_version.version}")
@@ -40,14 +47,23 @@ def prepare_environment():
     sys.path.append(os.path.join(script_path, dir_repos, comfyui_name))
 
     if REINSTALL_ALL or not is_installed("torch") or not is_installed("torchvision"):
-        run(f'"{python}" -m {torch_command}', "Installing torch and torchvision", "Couldn't install torch", live=True)
+        run(
+            f'"{python}" -m {torch_command}',
+            "Installing torch and torchvision",
+            "Couldn't install torch",
+            live=True,
+        )
 
     if REINSTALL_ALL or not is_installed("xformers"):
         if platform.system() == "Windows":
             if platform.python_version().startswith("3.10"):
-                run_pip(f"install -U -I --no-deps {xformers_package}", "xformers", live=True)
+                run_pip(
+                    f"install -U -I --no-deps {xformers_package}", "xformers", live=True
+                )
             else:
-                print("Installation of xformers is not supported in this version of Python.")
+                print(
+                    "Installation of xformers is not supported in this version of Python."
+                )
                 print(
                     "You can also check this and build manually: https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Xformers#building-xformers-on-windows-by-duckness"
                 )
@@ -89,16 +105,21 @@ def download_models():
     return
 
 
-def cuda_malloc():
+def clear_comfy_args():
     argv = sys.argv
     sys.argv = [sys.argv[0]]
-    import cuda_malloc
+    import comfy.cli_args
 
     sys.argv = argv
 
 
+def cuda_malloc():
+    import cuda_malloc
+
+
 prepare_environment()
 
+clear_comfy_args()
 # cuda_malloc()
 
 download_models()
