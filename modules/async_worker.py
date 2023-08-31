@@ -47,6 +47,13 @@ def worker():
             image_seed,
             sharpness,
             save_metadata,
+            cfg,
+            base_clip_skip,
+            refiner_clip_skip,
+            sampler_name,
+            scheduler,
+            custom_steps,
+            custom_switch,
             base_model_name,
             refiner_model_name,
             l1,
@@ -79,9 +86,12 @@ def worker():
         if performance_selction == "Speed":
             steps = 30
             switch = 20
-        else:
+        elif performance_selction == "Quality":
             steps = 60
             switch = 40
+        else:  # Custom
+            steps = custom_steps
+            switch = custom_switch
 
         width, height = aspect_ratios[aspect_ratios_selction]
 
@@ -147,6 +157,11 @@ def worker():
                 input_image_path,
                 start_step,
                 denoise,
+                cfg,
+                base_clip_skip,
+                refiner_clip_skip,
+                sampler_name,
+                scheduler,
                 callback=callback,
             )
 

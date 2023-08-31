@@ -139,6 +139,11 @@ def process(
     input_image_path,
     start_step,
     denoise,
+    cfg,
+    base_clip_skip,
+    refiner_clip_skip,
+    sampler_name,
+    scheduler,
     callback,
 ):
     global positive_conditions_cache, negative_conditions_cache, positive_conditions_refiner_cache, negative_conditions_refiner_cache
@@ -153,6 +158,8 @@ def process(
         if negative_conditions_cache is None
         else negative_conditions_cache
     )
+    xl_base_patched.clip.clip_layer(base_clip_skip)
+    xl_refiner.clip.clip_layer(refiner_clip_skip)
 
     positive_conditions_cache = positive_conditions
     negative_conditions_cache = negative_conditions
@@ -204,6 +211,9 @@ def process(
             force_full_denoise=force_full_denoise,
             denoise=denoise,
             seed=image_seed,
+            sampler_name=sampler_name,
+            scheduler=scheduler,
+            cfg=cfg,
             callback_function=callback,
         )
 
@@ -220,6 +230,9 @@ def process(
             force_full_denoise=force_full_denoise,
             denoise=denoise,
             seed=image_seed,
+            sampler_name=sampler_name,
+            scheduler=scheduler,
+            cfg=cfg,
             callback_function=callback,
         )
 

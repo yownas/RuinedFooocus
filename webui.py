@@ -82,7 +82,7 @@ with shared.gradio_root:
         with gr.Column(scale=0.5, visible=settings["advanced_mode"]) as right_col:
             with gr.Tab(label="Setting"):
                 performance_selction = gr.Radio(
-                    label="Performance", choices=["Speed", "Quality"], value=settings["performance"]
+                    label="Performance", choices=["Speed", "Quality", "Custom"], value=settings["performance"]
                 )
                 aspect_ratios_selction = gr.Dropdown(
                     label="Aspect Ratios (width x height)",
@@ -203,7 +203,65 @@ with shared.gradio_root:
                 sharpness = gr.Slider(
                     label="Sampling Sharpness", minimum=0.0, maximum=40.0, step=0.01, value=settings["sharpness"]
                 )
+                custom_steps = gr.Slider(label="Custom Steps", minimum=10, maximum=200, step=1, value=30, visible=False)
+                custom_switch = gr.Slider(
+                    label="Custom Switch", minimum=10, maximum=200, step=1, value=20, visible=False
+                )
+
+                cfg = gr.Slider(label="CFG", minimum=1.0, maximum=20.0, step=0.1, value=8, visible=False)
+                base_clip_skip = gr.Slider(
+                    label="Base CLIP Skip", minimum=-10, maximum=-1, step=1, value=-2, visible=False
+                )
+                refiner_clip_skip = gr.Slider(
+                    label="Refiner CLIP Skip", minimum=-10, maximum=-1, step=1, value=-2, visible=False
+                )
+                sampler_name = gr.Dropdown(
+                    label="Sampler",
+                    choices=[
+                        "dpmpp_2m_sde_gpu",
+                        "dpmpp_2m_sde",
+                        "dpmpp_3m_sde_gpu",
+                        "dpmpp_3m_sde",
+                        "dpmpp_sde_gpu",
+                        "dpmpp_sde",
+                        "dpmpp_2m",
+                        "dpmpp_2s_ancestral",
+                        "euler",
+                        "euler_ancestral",
+                        "heun",
+                        "dpm_2",
+                        "dpm_2_ancestral",
+                    ],
+                    value="dpmpp_2m_sde_gpu",
+                    visible=False,
+                )
+                scheduler = gr.Dropdown(
+                    label="Scheduler",
+                    choices=["karras", "exponential", "simple", "ddim_uniform"],
+                    value="karras",
+                    visible=False,
+                )
                 gr.HTML('<a href="https://github.com/lllyasviel/Fooocus/discussions/117">\U0001F4D4 Document</a>')
+
+                def performance_changed(selection):
+                    if selection != "Custom":
+                        return [gr.update(visible=False)] * 7
+                    else:
+                        return [gr.update(visible=True)] * 7
+
+                performance_selction.change(
+                    performance_changed,
+                    inputs=[performance_selction],
+                    outputs=[
+                        cfg,
+                        base_clip_skip,
+                        refiner_clip_skip,
+                        sampler_name,
+                        scheduler,
+                        custom_steps,
+                        custom_switch,
+                    ],
+                )
 
             def model_refresh_clicked():
                 modules.path.update_all_model_names()
@@ -232,6 +290,13 @@ with shared.gradio_root:
             image_seed,
             sharpness,
             save_metadata,
+            cfg,
+            base_clip_skip,
+            refiner_clip_skip,
+            sampler_name,
+            scheduler,
+            custom_steps,
+            custom_switch,
         ]
 
         img2imgcontrols = [img2img_mode, img2img_start_step, img2img_denoise]
