@@ -1,6 +1,6 @@
 # RuinedFooocus
 
-<img src="https://raw.githubusercontent.com/runew0lf/pmmconfigs/main/RuinedFooocus.png" width=100%>
+<img src="https://raw.githubusercontent.com/runew0lf/pmmconfigs/main/RuinedFooocus_ss.png" width=100%>
 
 RuinedFooocus is an image generating software.
 
