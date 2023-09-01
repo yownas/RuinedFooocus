@@ -5,6 +5,7 @@ import os
 import re
 import random
 import modules.core as core
+import time
 
 buffer = []
 outputs = []
@@ -146,6 +147,7 @@ def worker():
                 start_step = 0
                 denoise = None
                 input_image_path = None
+            start_time = time.time()
             imgs = pipeline.process(
                 wildcard_text,
                 n_txt,
@@ -164,6 +166,9 @@ def worker():
                 scheduler,
                 callback=callback,
             )
+            end_time = time.time()
+            elapsed_time = end_time - start_time
+            print(f"\033[91mTime taken: {elapsed_time:0.2f} seconds\033[0m")
 
             for x in imgs:
                 local_temp_filename = generate_temp_filename(folder=modules.path.temp_outputs_path, extension="png")

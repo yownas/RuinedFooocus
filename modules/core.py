@@ -165,11 +165,11 @@ def ksampler(
         noise_mask = prepare_mask(noise_mask, noise.shape, device)
 
     real_model = None
-    models = get_additional_models(positive, negative)
-    with suppress_stdout():
-        comfy.model_management.load_models_gpu(
-            [model] + models, comfy.model_management.batch_area_memory(noise.shape[0] * noise.shape[2] * noise.shape[3])
-        )
+    models, inference_memory = get_additional_models(positive, negative, model.model_dtype())
+    comfy.model_management.load_models_gpu(
+        [model] + models,
+        comfy.model_management.batch_area_memory(noise.shape[0] * noise.shape[2] * noise.shape[3]) + inference_memory,
+    )
     real_model = model.model
 
     noise = noise.to(device)
@@ -178,7 +178,7 @@ def ksampler(
     positive_copy = broadcast_cond(positive, noise.shape[0], device)
     negative_copy = broadcast_cond(negative, noise.shape[0], device)
 
-    models = get_additional_models(positive, negative)
+    models = get_additional_models(positive, negative, model.model_dtype())
 
     sampler = KSampler(
         real_model,
@@ -276,10 +276,12 @@ def ksampler_with_refiner(
     if noise_mask is not None:
         noise_mask = prepare_mask(noise_mask, noise.shape, device)
 
-    models = get_additional_models(positive, negative)
+    models, inference_memory = get_additional_models(positive, negative, model.model_dtype())
     with suppress_stdout():
         comfy.model_management.load_models_gpu(
-            [model] + models, comfy.model_management.batch_area_memory(noise.shape[0] * noise.shape[2] * noise.shape[3])
+            [model] + models,
+            comfy.model_management.batch_area_memory(noise.shape[0] * noise.shape[2] * noise.shape[3])
+            + inference_memory,
         )
 
     noise = noise.to(device)
