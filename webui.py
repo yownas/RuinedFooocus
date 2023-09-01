@@ -237,7 +237,7 @@ with shared.gradio_root:
                 )
                 scheduler = gr.Dropdown(
                     label="Scheduler",
-                    choices=["karras", "exponential", "simple", "ddim_uniform"],
+                    choices=["normal", "karras", "exponential", "simple", "ddim_uniform"],
                     value="karras",
                     visible=False,
                 )
