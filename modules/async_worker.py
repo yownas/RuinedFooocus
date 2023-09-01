@@ -6,6 +6,7 @@ import re
 import random
 import modules.core as core
 import time
+from playsound import playsound
 
 buffer = []
 outputs = []
@@ -224,6 +225,10 @@ def worker():
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
                 torch.cuda.ipc_collect()
+            try:
+                playsound("notification.mp3")
+            except FileNotFoundError:
+                pass
     pass
 
 
