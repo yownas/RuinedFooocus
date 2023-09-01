@@ -130,6 +130,7 @@ Below things are already inside the software, and **users do not need to do anyt
 13. Added Custom paths in `paths.json` to point to chekcpoints / loras and outputs director (**Note:** for windows paths either use `/` or `\\` instead of `\`)
 14. Added support for custom Performance - enables samplers/scheduler, steps, refiner steps, cfg & clip skip (Check advanced tab)
 15. Displays time taken for each render in the console. If `notification.mp3` exists in the root directory, this will play when the generations are complete.
+16. Added **Cancel** button stop stop large batch generations. The current generation will be finished. Thanks to [Yownas](https://github.com/yownas)
 
 ## Thanks
 

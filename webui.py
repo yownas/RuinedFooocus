@@ -7,6 +7,7 @@ import modules.path
 import fooocus_version
 import modules.html
 import modules.async_worker as worker
+import modules.state as state
 
 from modules.sdxl_styles import style_keys, aspect_ratios, styles
 from modules.settings import default_settings
@@ -18,7 +19,13 @@ def load_images_handler(files):
     return list(map(lambda x: x.name, files))
 
 
+def stop_clicked():
+    state.state = "stop"
+    return
+
+
 def generate_clicked(*args):
+    state.state = "working"
     yield gr.update(interactive=False), gr.update(
         visible=True, value=modules.html.make_progress_html(1, "Processing text encoding ...")
     ), gr.update(visible=True, value=None), gr.update(visible=False)
@@ -40,6 +47,7 @@ def generate_clicked(*args):
                     visible=True, value=product
                 )
                 finished = True
+    state.state = "idle"
     return
 
 
@@ -65,7 +73,7 @@ with shared.gradio_root:
             )
             gallery = gr.Gallery(label="Gallery", show_label=False, object_fit="contain", height=720, visible=True)
             with gr.Row(elem_classes="type_row"):
-                with gr.Column(scale=0.85):
+                with gr.Column(scale=0.70):
                     prompt = gr.Textbox(
                         show_label=False,
                         placeholder="Type prompt here.",
@@ -77,6 +85,8 @@ with shared.gradio_root:
                     )
                 with gr.Column(scale=0.15, min_width=0):
                     run_button = gr.Button(label="Generate", value="Generate", elem_classes="type_row")
+                with gr.Column(scale=0.15, min_width=0):
+                    stop_button = gr.Button(label="Stop", value="Stop", elem_classes="type_row")
             with gr.Row():
                 advanced_checkbox = gr.Checkbox(label="Advanced", value=settings["advanced_mode"], container=False)
         with gr.Column(scale=0.5, visible=settings["advanced_mode"]) as right_col:
@@ -305,6 +315,7 @@ with shared.gradio_root:
         run_button.click(fn=refresh_seed, inputs=[seed_random, image_seed], outputs=image_seed).then(
             fn=generate_clicked, inputs=ctrls + [gallery], outputs=[run_button, progress_html, progress_window, gallery]
         )
+        stop_button.click(fn=stop_clicked)
 
 
 parser = argparse.ArgumentParser()
@@ -317,6 +328,7 @@ parser.add_argument("--nobrowser", action="store_true", help="Do not launch in b
 args = parser.parse_args()
 inbrowser = not args.nobrowser
 favicon_path = "logo.ico"
+shared.gradio_root.queue(concurrency_count=4)
 shared.gradio_root.launch(
     inbrowser=inbrowser,
     server_name=args.listen,

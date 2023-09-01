@@ -7,6 +7,7 @@ import random
 import modules.core as core
 from playsound import playsound
 from os.path import exists
+import modules.state as state
 
 buffer = []
 outputs = []
@@ -113,19 +114,33 @@ def worker():
 
         def callback(step, x0, x, total_steps, y):
             done_steps = i * steps + step
-            outputs.append(
-                [
-                    "preview",
-                    (
-                        int(100.0 * float(done_steps) / float(all_steps)),
-                        f"Step {step}/{total_steps} in the {i}-th Sampling",
-                        y,
-                    ),
-                ]
-            )
+            if state.state == "stop":
+                outputs.append(
+                    [
+                        "preview",
+                        (
+                            int(100.0 * float(done_steps) / float(all_steps)),
+                            f"Step {step}/{total_steps} in the {i}-th Sampling - Stopping after current generation",
+                            y,
+                        ),
+                    ]
+                )
+            else:
+                outputs.append(
+                    [
+                        "preview",
+                        (
+                            int(100.0 * float(done_steps) / float(all_steps)),
+                            f"Step {step}/{total_steps} in the {i}-th Sampling",
+                            y,
+                        ),
+                    ]
+                )
 
         gallery_size = len(gallery)
         for i in range(image_number):
+            if state.state == "stop":
+                break
             directory = "wildcards"
             wildcard_text = p_txt
             placeholders = re.findall(r"__(\w+)__", wildcard_text)
