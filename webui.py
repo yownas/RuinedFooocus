@@ -76,10 +76,8 @@ with shared.gradio_root:
                         value=settings["prompt"],
                     )
                 with gr.Column(scale=0.15, min_width=0):
-                    run_button = gr.Button(label="Generate", value="Generate", elem_classes="type_small_row")
-                    stop_button = gr.Button(
-                        label="Stop", value="Stop", elem_classes="type_small_row", interactive=False, visible=False
-                    )
+                    run_button = gr.Button(label="Generate", value="Generate")
+                    stop_button = gr.Button(label="Stop", value="Stop", interactive=False, visible=False)
             with gr.Row():
                 advanced_checkbox = gr.Checkbox(label="Advanced", value=settings["advanced_mode"], container=False)
         with gr.Column(scale=0.5, visible=settings["advanced_mode"]) as right_col:
