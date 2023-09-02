@@ -1,31 +1,14 @@
 from comfy.samplers import *
 
 import comfy.model_management
+from comfy.samplers import KSampler
 
 from modules.util import suppress_stdout
 
 
 class KSamplerWithRefiner:
-    SCHEDULERS = ["normal", "karras", "exponential", "simple", "ddim_uniform"]
-    SAMPLERS = [
-        "euler",
-        "euler_ancestral",
-        "heun",
-        "dpm_2",
-        "dpm_2_ancestral",
-        "lms",
-        "dpm_fast",
-        "dpm_adaptive",
-        "dpmpp_2s_ancestral",
-        "dpmpp_sde",
-        "dpmpp_sde_gpu",
-        "dpmpp_2m",
-        "dpmpp_2m_sde",
-        "dpmpp_2m_sde_gpu",
-        "ddim",
-        "uni_pc",
-        "uni_pc_bh2",
-    ]
+    SCHEDULERS = KSampler.SCHEDULERS
+    SAMPLERS = KSampler.SAMPLERS
 
     def __init__(
         self, model, refiner_model, steps, device, sampler=None, scheduler=None, denoise=None, model_options={}
@@ -85,6 +68,8 @@ class KSamplerWithRefiner:
             sigmas = simple_scheduler(self.model_wrap, steps)
         elif self.scheduler == "ddim_uniform":
             sigmas = ddim_scheduler(self.model_wrap, steps)
+        elif self.scheduler == "sgm_uniform":
+            sigmas = sgm_scheduler(self.model_wrap, steps)
         else:
             print("error invalid scheduler", self.scheduler)
 

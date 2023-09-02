@@ -8,11 +8,15 @@ import fooocus_version
 import modules.html
 import modules.async_worker as worker
 from comfy.model_management import interrupt_current_processing
-
 from modules.sdxl_styles import style_keys, aspect_ratios, styles
 from modules.settings import default_settings
 
 import ui_onebutton
+
+from comfy.samplers import KSampler
+
+SAMPLERS = KSampler.SAMPLERS
+SCHEDULERS = KSampler.SCHEDULERS
 
 
 def load_images_handler(files):
@@ -218,27 +222,13 @@ with shared.gradio_root:
                 )
                 sampler_name = gr.Dropdown(
                     label="Sampler",
-                    choices=[
-                        "dpmpp_2m_sde_gpu",
-                        "dpmpp_2m_sde",
-                        "dpmpp_3m_sde_gpu",
-                        "dpmpp_3m_sde",
-                        "dpmpp_sde_gpu",
-                        "dpmpp_sde",
-                        "dpmpp_2m",
-                        "dpmpp_2s_ancestral",
-                        "euler",
-                        "euler_ancestral",
-                        "heun",
-                        "dpm_2",
-                        "dpm_2_ancestral",
-                    ],
+                    choices=SAMPLERS,
                     value="dpmpp_2m_sde_gpu",
                     visible=False,
                 )
                 scheduler = gr.Dropdown(
                     label="Scheduler",
-                    choices=["normal", "karras", "exponential", "simple", "ddim_uniform"],
+                    choices=SCHEDULERS,
                     value="karras",
                     visible=False,
                 )
