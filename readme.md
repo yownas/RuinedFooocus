@@ -122,7 +122,7 @@ Below things are already inside the software, and **users do not need to do anyt
 5. Ability to change default values of UI settings (loaded from `settings.json`).
 6. Generate a completely random prompt (taken from onebuttonprompt) with its own "special" tab
 7. Made Resolutions mode readable
-8. Image to Image!! talentlessly stolen by me from the genius [MoonRide](https://github.com/MoonRide303/Fooocus-MRE) and his amazing fork
+8. Image to Image!! talentlessly stolen by me from the genius [MoonRide](https://github.com/MoonRide303) and his amazing fork
 9. Added theme support in `settings.json` you can see available themes [HERE](https://huggingface.co/spaces/gradio/theme-gallery)
 10. Added `resolutions.csv` to allow users to add their own custom resolutions
 11. Wildcards are now supported place see `wildcards\colors.txt` for an example. In your prompt make sure you type `__<filename>__` to activate ie `shiny new __colors__ Chevrolet pickup truck with big wheels`
@@ -130,12 +130,12 @@ Below things are already inside the software, and **users do not need to do anyt
 13. Added Custom paths in `paths.json` to point to chekcpoints / loras and outputs director (**Note:** for windows paths either use `/` or `\\` instead of `\`)
 14. Added support for custom Performance - enables samplers/scheduler, steps, refiner steps, cfg & clip skip (Check advanced tab)
 15. Displays time taken for each render in the console. If `notification.mp3` exists in the root directory, this will play when the generations are complete.
-16. Added **Cancel** button to stop large batch generations. The current generation will be finished. Thanks to [Yownas](https://github.com/yownas)
+16. Added **Cancel** button to stop generation. Thanks to [Yownas](https://github.com/yownas) and [MoonRide](https://github.com/MoonRide303/)
 
 ## Thanks
 
 This codebase is a fork from the original amazing work by [lllyasviel](https://github.com/lllyasviel/Fooocus/discussions/117)
-The wonderful [MoonRide](https://github.com/MoonRide303/Fooocus-MRE) who also maintains an amazing fork!
+The wonderful [MoonRide](https://github.com/MoonRide303/) who also maintains an amazing fork!
 The codebase starts from an odd mixture of [Automatic1111](https://github.com/AUTOMATIC1111/stable-diffusion-webui) and [ComfyUI](https://github.com/comfyanonymous/ComfyUI). (And they both use GPL license.)
 
 ## Update Log
