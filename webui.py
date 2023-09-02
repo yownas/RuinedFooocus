@@ -11,7 +11,6 @@ import modules.html
 import modules.path
 import ui_onebutton
 
-
 from comfy.model_management import interrupt_current_processing
 from comfy.samplers import KSampler
 from modules.sdxl_styles import style_keys, aspect_ratios, styles
@@ -20,6 +19,35 @@ from modules.settings import default_settings
 
 def load_images_handler(files):
     return list(map(lambda x: x.name, files))
+
+
+def get_parser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--port", type=int, default=None, help="Set the listen port.")
+    parser.add_argument("--share", action="store_true", help="Set whether to share on Gradio.")
+    parser.add_argument(
+        "--listen", type=str, default=None, metavar="IP", nargs="?", const="0.0.0.0", help="Set the listen interface."
+    )
+    parser.add_argument("--nobrowser", action="store_true", help="Do not launch in browser.")
+    return parser
+
+
+def parse_args():
+    parser = get_parser()
+    return parser.parse_args()
+
+
+def launch_app(args):
+    inbrowser = not args.nobrowser
+    favicon_path = "logo.ico"
+    shared.gradio_root.queue(concurrency_count=4)
+    shared.gradio_root.launch(
+        inbrowser=inbrowser,
+        server_name=args.listen,
+        server_port=args.port,
+        share=args.share,
+        favicon_path=favicon_path,
+    )
 
 
 def generate_clicked(*args):
@@ -304,21 +332,5 @@ with shared.gradio_root:
         stop_button.click(fn=stop_clicked, queue=False)
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument("--port", type=int, default=None, help="Set the listen port.")
-parser.add_argument("--share", action="store_true", help="Set whether to share on Gradio.")
-parser.add_argument(
-    "--listen", type=str, default=None, metavar="IP", nargs="?", const="0.0.0.0", help="Set the listen interface."
-)
-parser.add_argument("--nobrowser", action="store_true", help="Do not launch in browser.")
-args = parser.parse_args()
-inbrowser = not args.nobrowser
-favicon_path = "logo.ico"
-shared.gradio_root.queue(concurrency_count=4)
-shared.gradio_root.launch(
-    inbrowser=inbrowser,
-    server_name=args.listen,
-    server_port=args.port,
-    share=args.share,
-    favicon_path=favicon_path,
-)
+args = parse_args()
+launch_app(args)
