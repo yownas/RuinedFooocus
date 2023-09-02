@@ -7,7 +7,7 @@ import modules.path
 import fooocus_version
 import modules.html
 import modules.async_worker as worker
-import modules.state as state
+from comfy.model_management import interrupt_current_processing
 
 from modules.sdxl_styles import style_keys, aspect_ratios, styles
 from modules.settings import default_settings
@@ -19,17 +19,10 @@ def load_images_handler(files):
     return list(map(lambda x: x.name, files))
 
 
-def stop_clicked():
-    state.state = "stop"
-    return
-
-
 def generate_clicked(*args):
-    state.state = "working"
-    yield gr.update(interactive=False), gr.update(
+    yield gr.update(interactive=False, visible=False), gr.update(interactive=True, visible=True), gr.update(
         visible=True, value=modules.html.make_progress_html(1, "Processing text encoding ...")
     ), gr.update(visible=True, value=None), gr.update(visible=False)
-
     worker.buffer.append(list(args))
     finished = False
 
@@ -39,15 +32,14 @@ def generate_clicked(*args):
             flag, product = worker.outputs.pop(0)
             if flag == "preview":
                 percentage, title, image = product
-                yield gr.update(interactive=False), gr.update(
+                yield gr.update(interactive=False, visible=False), gr.update(interactive=True, visible=True), gr.update(
                     visible=True, value=modules.html.make_progress_html(percentage, title)
                 ), gr.update(visible=True, value=image) if image is not None else gr.update(), gr.update(visible=False)
             if flag == "results":
-                yield gr.update(interactive=True), gr.update(visible=False), gr.update(visible=False), gr.update(
-                    visible=True, value=product
-                )
+                yield gr.update(interactive=True, visible=True), gr.update(interactive=False, visible=False), gr.update(
+                    visible=False
+                ), gr.update(visible=False), gr.update(visible=True, value=product)
                 finished = True
-    state.state = "idle"
     return
 
 
@@ -73,7 +65,7 @@ with shared.gradio_root:
             )
             gallery = gr.Gallery(label="Gallery", show_label=False, object_fit="contain", height=720, visible=True)
             with gr.Row(elem_classes="type_row"):
-                with gr.Column(scale=0.70):
+                with gr.Column(scale=0.85):
                     prompt = gr.Textbox(
                         show_label=False,
                         placeholder="Type prompt here.",
@@ -84,9 +76,10 @@ with shared.gradio_root:
                         value=settings["prompt"],
                     )
                 with gr.Column(scale=0.15, min_width=0):
-                    run_button = gr.Button(label="Generate", value="Generate", elem_classes="type_row")
-                with gr.Column(scale=0.15, min_width=0):
-                    stop_button = gr.Button(label="Stop", value="Stop", elem_classes="type_row")
+                    run_button = gr.Button(label="Generate", value="Generate", elem_classes="type_small_row")
+                    stop_button = gr.Button(
+                        label="Stop", value="Stop", elem_classes="type_small_row", interactive=False, visible=False
+                    )
             with gr.Row():
                 advanced_checkbox = gr.Checkbox(label="Advanced", value=settings["advanced_mode"], container=False)
         with gr.Column(scale=0.5, visible=settings["advanced_mode"]) as right_col:
@@ -313,9 +306,15 @@ with shared.gradio_root:
         load_images_button.upload(fn=load_images_handler, inputs=[load_images_button], outputs=gallery)
         ctrls += [base_model, refiner_model] + lora_ctrls + img2imgcontrols
         run_button.click(fn=refresh_seed, inputs=[seed_random, image_seed], outputs=image_seed).then(
-            fn=generate_clicked, inputs=ctrls + [gallery], outputs=[run_button, progress_html, progress_window, gallery]
+            fn=generate_clicked,
+            inputs=ctrls + [gallery],
+            outputs=[run_button, stop_button, progress_html, progress_window, gallery],
         )
-        stop_button.click(fn=stop_clicked)
+
+        def stop_clicked():
+            interrupt_current_processing()
+
+        stop_button.click(fn=stop_clicked, queue=False)
 
 
 parser = argparse.ArgumentParser()

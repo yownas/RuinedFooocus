@@ -7,7 +7,7 @@ import random
 import modules.core as core
 from playsound import playsound
 from os.path import exists
-import modules.state as state
+from comfy.model_management import InterruptProcessingException
 
 buffer = []
 outputs = []
@@ -114,33 +114,21 @@ def worker():
 
         def callback(step, x0, x, total_steps, y):
             done_steps = i * steps + step
-            if state.state == "stop":
-                outputs.append(
-                    [
-                        "preview",
-                        (
-                            int(100.0 * float(done_steps) / float(all_steps)),
-                            f"Step {step}/{total_steps} in the {i}-th Sampling - Stopping after current generation",
-                            y,
-                        ),
-                    ]
-                )
-            else:
-                outputs.append(
-                    [
-                        "preview",
-                        (
-                            int(100.0 * float(done_steps) / float(all_steps)),
-                            f"Step {step}/{total_steps} in the {i}-th Sampling",
-                            y,
-                        ),
-                    ]
-                )
+            outputs.append(
+                [
+                    "preview",
+                    (
+                        int(100.0 * float(done_steps) / float(all_steps)),
+                        f"Step {step}/{total_steps} in the {i}-th Sampling",
+                        y,
+                    ),
+                ]
+            )
 
         gallery_size = len(gallery)
+
+        stop_batch = False
         for i in range(image_number):
-            if state.state == "stop":
-                break
             directory = "wildcards"
             wildcard_text = p_txt
             placeholders = re.findall(r"__(\w+)__", wildcard_text)
@@ -164,24 +152,29 @@ def worker():
                 denoise = None
                 input_image_path = None
             start_time = time.time()
-            imgs = pipeline.process(
-                wildcard_text,
-                n_txt,
-                steps,
-                switch,
-                width,
-                height,
-                seed,
-                input_image_path,
-                start_step,
-                denoise,
-                cfg,
-                base_clip_skip,
-                refiner_clip_skip,
-                sampler_name,
-                scheduler,
-                callback=callback,
-            )
+            pipeline.clean_prompt_cond_caches()
+            try:
+                imgs = pipeline.process(
+                    wildcard_text,
+                    n_txt,
+                    steps,
+                    switch,
+                    width,
+                    height,
+                    seed,
+                    input_image_path,
+                    start_step,
+                    denoise,
+                    cfg,
+                    base_clip_skip,
+                    refiner_clip_skip,
+                    sampler_name,
+                    scheduler,
+                    callback=callback,
+                )
+            except InterruptProcessingException as iex:
+                stop_batch = True
+                imgs = []
             end_time = time.time()
             elapsed_time = end_time - start_time
             print(f"\033[91mTime taken: {elapsed_time:0.2f} seconds\033[0m")
@@ -227,6 +220,8 @@ def worker():
                 results.append(local_temp_filename)
 
             seed += 1
+            if stop_batch:
+                break
 
         outputs.append(["results", results])
         return

@@ -242,7 +242,6 @@ def process(
 
     images = core.image_to_numpy(decoded_latent)
 
-    clean_prompt_cond_caches()
     gc.collect()
     soft_empty_cache()
 
