@@ -96,7 +96,23 @@ progress_html = """
   <span>*text*</span>
 </div>
 """
-
+scripts = """
+function generate_shortcut(){
+  document.addEventListener('keydown', (e) => {
+    let handled = false;
+    if (e.key !== undefined) {
+      if ((e.key === 'Enter' && (e.metaKey || e.ctrlKey || e.altKey))) handled = true;
+    } else if (e.keyCode !== undefined) {
+      if ((e.keyCode === 13 && (e.metaKey || e.ctrlKey || e.altKey))) handled = true;
+    }
+    if (handled) {
+      const button = document.getElementById('generate');
+      if (button) button.click();
+      e.preventDefault();
+    }
+  });
+}
+"""
 
 def make_progress_html(number, text):
     return progress_html.replace("*number*", str(number)).replace("*text*", text)
