@@ -92,7 +92,8 @@ else:
 shared.gradio_root = gr.Blocks(
     theme=theme, title="RuinedFooocus " + fooocus_version.version, css=modules.html.css
 ).queue()
-with shared.gradio_root:
+with shared.gradio_root as block:
+    block.load(_js = modules.html.scripts)
     with gr.Row():
         with gr.Column():
             progress_window = gr.Image(label="Preview", show_label=True, height=640, visible=False)
@@ -121,7 +122,7 @@ with shared.gradio_root:
                         value=settings["prompt"],
                     )
                 with gr.Column(scale=0.15, min_width=0):
-                    run_button = gr.Button(label="Generate", value="Generate")
+                    run_button = gr.Button(label="Generate", value="Generate", elem_id="generate")
                     stop_button = gr.Button(label="Stop", value="Stop", interactive=False, visible=False)
             with gr.Row():
                 advanced_checkbox = gr.Checkbox(label="Advanced", value=settings["advanced_mode"], container=False)
@@ -396,7 +397,6 @@ with shared.gradio_root:
             interrupt_current_processing()
 
         stop_button.click(fn=stop_clicked, queue=False)
-
 
 args = parse_args()
 launch_app(args)
