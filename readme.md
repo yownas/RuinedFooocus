@@ -131,6 +131,7 @@ Below things are already inside the software, and **users do not need to do anyt
 14. Added support for custom Performance - enables samplers/scheduler, steps, refiner steps, cfg & clip skip (Check advanced tab)
 15. Displays time taken for each render in the console. If `notification.mp3` exists in the root directory, this will play when the generations are complete.
 16. Added **Cancel** button to stop generation. Thanks to [Yownas](https://github.com/yownas) and [MoonRide](https://github.com/MoonRide303/)
+17. Pressing `Ctrl-Enter` is the same as pressing the generate button!
 
 ## Thanks
 

@@ -1,7 +1,7 @@
-import random
-import time
-import shared
 import argparse
+import random
+import shared
+import time
 
 import gradio as gr
 
@@ -93,9 +93,9 @@ shared.gradio_root = gr.Blocks(
     theme=theme, title="RuinedFooocus " + fooocus_version.version, css=modules.html.css
 ).queue()
 with shared.gradio_root as block:
-    block.load(_js = modules.html.scripts)
+    block.load(_js=modules.html.scripts)
     with gr.Row():
-        with gr.Column():
+        with gr.Column(scale=5):
             progress_window = gr.Image(label="Preview", show_label=True, height=640, visible=False)
             progress_html = gr.HTML(
                 value=modules.html.make_progress_html(32, "Progress 32%"),
@@ -111,7 +111,7 @@ with shared.gradio_root as block:
                 visible=True,
             )
             with gr.Row(elem_classes="type_row"):
-                with gr.Column(scale=0.85):
+                with gr.Column(scale=5):
                     prompt = gr.Textbox(
                         show_label=False,
                         placeholder="Type prompt here.",
@@ -121,12 +121,12 @@ with shared.gradio_root as block:
                         lines=1024,
                         value=settings["prompt"],
                     )
-                with gr.Column(scale=0.15, min_width=0):
+                with gr.Column(scale=1, min_width=0):
                     run_button = gr.Button(label="Generate", value="Generate", elem_id="generate")
                     stop_button = gr.Button(label="Stop", value="Stop", interactive=False, visible=False)
             with gr.Row():
                 advanced_checkbox = gr.Checkbox(label="Advanced", value=settings["advanced_mode"], container=False)
-        with gr.Column(scale=0.5, visible=settings["advanced_mode"]) as right_col:
+        with gr.Column(scale=2, visible=settings["advanced_mode"]) as right_col:
             with gr.Tab(label="Setting"):
                 performance_selction = gr.Radio(
                     label="Performance",

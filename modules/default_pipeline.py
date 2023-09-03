@@ -1,21 +1,21 @@
-import modules.core as core
-import os
 import gc
-import torch
 import numpy as np
+import os
+import torch
+import warnings
+
+import modules.core as core
 import modules.path
-from modules.settings import default_settings
+
+from PIL import Image, ImageOps
 
 from comfy.model_base import SDXL, SDXLRefiner
 from modules.patch import cfg_patched
-
-from PIL import Image, ImageOps
+from modules.settings import default_settings
 from modules.util import suppress_stdout
 
-import warnings
 
 warnings.filterwarnings("ignore", category=UserWarning)
-from modules.patch import cfg_patched
 
 
 xl_base: core.StableDiffusionModel = None

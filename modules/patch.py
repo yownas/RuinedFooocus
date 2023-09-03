@@ -1,8 +1,9 @@
 import torch
-import comfy.model_base
-import comfy.ldm.modules.diffusionmodules.openaimodel
-import comfy.samplers
+
 import comfy.k_diffusion.external
+import comfy.ldm.modules.diffusionmodules.openaimodel
+import comfy.model_base
+import comfy.samplers
 import modules.anisotropic as anisotropic
 
 from comfy.k_diffusion import utils
@@ -25,9 +26,7 @@ def cfg_patched(args):
     alpha = 1.0 - (t / 999.0)[:, None, None, None].clone()
     alpha *= 0.001 * sharpness
 
-    eps_degraded = anisotropic.adaptive_anisotropic_filter(
-        x=positive_eps, g=positive_x0
-    )
+    eps_degraded = anisotropic.adaptive_anisotropic_filter(x=positive_eps, g=positive_x0)
     eps_degraded_weighted = eps_degraded * alpha + positive_eps * (1.0 - alpha)
 
     cond = eps_degraded_weighted * cfg_s + cfg_x0
@@ -71,7 +70,5 @@ def sdxl_encode_adm_patched(self, **kwargs):
 
 
 def patch_all():
-    comfy.k_diffusion.external.DiscreteEpsDDPMDenoiser.forward = (
-        patched_discrete_eps_ddpm_denoiser_forward
-    )
+    comfy.k_diffusion.external.DiscreteEpsDDPMDenoiser.forward = patched_discrete_eps_ddpm_denoiser_forward
     comfy.model_base.SDXL.encode_adm = sdxl_encode_adm_patched

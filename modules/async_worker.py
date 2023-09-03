@@ -1,10 +1,7 @@
 import threading
 import gc
 import torch
-import os
 import re
-import random
-import modules.core as core
 from playsound import playsound
 from os.path import exists
 from comfy.model_management import InterruptProcessingException
@@ -101,7 +98,7 @@ def worker():
         results = []
         seed = image_seed
 
-        max_seed = 0xffffffffffffffff
+        max_seed = 0xFFFFFFFFFFFFFFFF
         if not isinstance(seed, int) or seed < 0:
             seed = random.randint(0, max_seed)
         if seed > max_seed:
