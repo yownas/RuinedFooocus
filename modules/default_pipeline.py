@@ -104,9 +104,7 @@ def refresh_loras(loras):
 
         filename = os.path.join(modules.path.lorafile_path, name)
         with suppress_stdout():
-            model = core.load_lora(
-                model, filename, strength_model=weight, strength_clip=weight
-            )
+            model = core.load_lora(model, filename, strength_model=weight, strength_clip=weight)
     xl_base_patched = model
     xl_base_patched_hash = str(loras)
     print(f"LoRAs loaded: {xl_base_patched_hash}")
@@ -194,16 +192,12 @@ def process(
     if xl_refiner is not None:
         with suppress_stdout():
             positive_conditions_refiner = (
-                core.encode_prompt_condition(
-                    clip=xl_refiner.clip, prompt=positive_prompt
-                )
+                core.encode_prompt_condition(clip=xl_refiner.clip, prompt=positive_prompt)
                 if positive_conditions_refiner_cache is None
                 else positive_conditions_refiner_cache
             )
             negative_conditions_refiner = (
-                core.encode_prompt_condition(
-                    clip=xl_refiner.clip, prompt=negative_prompt
-                )
+                core.encode_prompt_condition(clip=xl_refiner.clip, prompt=negative_prompt)
                 if negative_conditions_refiner_cache is None
                 else negative_conditions_refiner_cache
             )
@@ -252,13 +246,10 @@ def process(
             callback_function=callback,
         )
 
-    decoded_latent = core.decode_vae(
-        vae=xl_base_patched.vae, latent_image=sampled_latent
-    )
+    decoded_latent = core.decode_vae(vae=xl_base_patched.vae, latent_image=sampled_latent)
 
     images = core.image_to_numpy(decoded_latent)
 
     gc.collect()
-    soft_empty_cache()
 
     return images
