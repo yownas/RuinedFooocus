@@ -7,13 +7,15 @@ import modules.path
 from modules.settings import default_settings
 
 from comfy.model_base import SDXL, SDXLRefiner
-from comfy.model_management import soft_empty_cache
+from modules.patch import cfg_patched
+
 from PIL import Image, ImageOps
 from modules.util import suppress_stdout
 
 import warnings
 
 warnings.filterwarnings("ignore", category=UserWarning)
+from modules.patch import cfg_patched
 
 
 xl_base: core.StableDiffusionModel = None
@@ -102,7 +104,9 @@ def refresh_loras(loras):
 
         filename = os.path.join(modules.path.lorafile_path, name)
         with suppress_stdout():
-            model = core.load_lora(model, filename, strength_model=weight, strength_clip=weight)
+            model = core.load_lora(
+                model, filename, strength_model=weight, strength_clip=weight
+            )
     xl_base_patched = model
     xl_base_patched_hash = str(loras)
     print(f"LoRAs loaded: {xl_base_patched_hash}")
@@ -148,19 +152,25 @@ def process(
 ):
     global positive_conditions_cache, negative_conditions_cache, positive_conditions_refiner_cache, negative_conditions_refiner_cache
 
-    with suppress_stdout():
-        positive_conditions = (
-            core.encode_prompt_condition(clip=xl_base_patched.clip, prompt=positive_prompt)
-            if positive_conditions_cache is None
-            else positive_conditions_cache
-        )
-        negative_conditions = (
-            core.encode_prompt_condition(clip=xl_base_patched.clip, prompt=negative_prompt)
-            if negative_conditions_cache is None
-            else negative_conditions_cache
-        )
-    xl_base_patched.clip.clip_layer(base_clip_skip)
-    xl_refiner.clip.clip_layer(refiner_clip_skip)
+    if xl_base is not None:
+        xl_base.unet.model_options["sampler_cfg_function"] = cfg_patched
+
+    if xl_base_patched is not None:
+        xl_base_patched.unet.model_options["sampler_cfg_function"] = cfg_patched
+
+    if xl_refiner is not None:
+        xl_refiner.unet.model_options["sampler_cfg_function"] = cfg_patched
+
+    positive_conditions = (
+        core.encode_prompt_condition(clip=xl_base_patched.clip, prompt=positive_prompt)
+        if positive_conditions_cache is None
+        else positive_conditions_cache
+    )
+    negative_conditions = (
+        core.encode_prompt_condition(clip=xl_base_patched.clip, prompt=negative_prompt)
+        if negative_conditions_cache is None
+        else negative_conditions_cache
+    )
 
     positive_conditions_cache = positive_conditions
     negative_conditions_cache = negative_conditions
@@ -184,12 +194,16 @@ def process(
     if xl_refiner is not None:
         with suppress_stdout():
             positive_conditions_refiner = (
-                core.encode_prompt_condition(clip=xl_refiner.clip, prompt=positive_prompt)
+                core.encode_prompt_condition(
+                    clip=xl_refiner.clip, prompt=positive_prompt
+                )
                 if positive_conditions_refiner_cache is None
                 else positive_conditions_refiner_cache
             )
             negative_conditions_refiner = (
-                core.encode_prompt_condition(clip=xl_refiner.clip, prompt=negative_prompt)
+                core.encode_prompt_condition(
+                    clip=xl_refiner.clip, prompt=negative_prompt
+                )
                 if negative_conditions_refiner_cache is None
                 else negative_conditions_refiner_cache
             )
@@ -238,7 +252,9 @@ def process(
             callback_function=callback,
         )
 
-    decoded_latent = core.decode_vae(vae=xl_base_patched.vae, latent_image=sampled_latent)
+    decoded_latent = core.decode_vae(
+        vae=xl_base_patched.vae, latent_image=sampled_latent
+    )
 
     images = core.image_to_numpy(decoded_latent)
 
