@@ -105,6 +105,9 @@ def worker():
             seed = seed % max_seed
 
         all_steps = steps * image_number
+        with open("render.txt") as f:
+            lines = f.readlines()
+        status = random.choice(lines)
 
         def callback(step, x0, x, total_steps, y):
             done_steps = i * steps + step
@@ -113,7 +116,7 @@ def worker():
                     "preview",
                     (
                         int(100.0 * float(done_steps) / float(all_steps)),
-                        f"Step {step}/{total_steps} in the {i}-th Sampling",
+                        f"{status} - {step}/{total_steps}",
                         y,
                     ),
                 ]
