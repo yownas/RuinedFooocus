@@ -20,6 +20,9 @@ import math
 from PIL import Image
 
 
+preview_image = None
+
+
 def load_images_handler(files):
     return list(map(lambda x: x.name, files))
 
@@ -59,7 +62,21 @@ def launch_app(args):
     )
 
 
-preview_image = None
+def generate_preview(image_nr, image_cnt, width, height, image):
+    global preview_image
+    grid_xsize = math.ceil(math.sqrt(image_cnt))
+    grid_ysize = math.ceil(image_cnt / grid_xsize)
+    grid_max = max(grid_xsize, grid_ysize)
+    pwidth = int(width * grid_xsize / grid_max)
+    pheight = int(height * grid_ysize / grid_max)
+    if preview_image is None:
+        preview_image = Image.new("RGBA", (pwidth, pheight))
+    if image is not None:
+        image = Image.fromarray(image)
+        grid_xpos = int((image_nr % grid_xsize) * (pwidth / grid_xsize))
+        grid_ypos = int(math.floor(image_nr / grid_xsize) * (pheight / grid_ysize))
+        image = image.resize((int(width / grid_max), int(height / grid_max)))
+        preview_image.paste(image, (grid_xpos, grid_ypos))
 
 
 def generate_clicked(*args):
@@ -77,20 +94,9 @@ def generate_clicked(*args):
             flag, product = worker.outputs.pop(0)
             if flag == "preview":
                 percentage, image_nr, image_cnt, title, width, height, image = product
-                # Update preview
-                grid_xsize = math.ceil(math.sqrt(image_cnt))
-                grid_ysize = math.ceil(image_cnt / grid_xsize)
-                grid_max = max(grid_xsize, grid_ysize)
-                pwidth = int(width * grid_xsize / grid_max)
-                pheight = int(height * grid_ysize / grid_max)
-                if preview_image is None:
-                    preview_image = Image.new("RGBA", (pwidth, pheight))
-                if image is not None:
-                    image = Image.fromarray(image)
-                    grid_xpos = int((image_nr % grid_xsize) * (pwidth / grid_xsize))
-                    grid_ypos = int(math.floor(image_nr / grid_xsize) * (pheight / grid_ysize))
-                    image = image.resize((int(width / grid_max), int(height / grid_max)))
-                    preview_image.paste(image, (grid_xpos, grid_ypos))
+                # Update preview in grid
+                generate_preview(image_nr, image_cnt, width, height, image)
+
                 yield gr.update(interactive=False, visible=False), gr.update(interactive=True, visible=True), gr.update(
                     visible=True,
                     value=modules.html.make_progress_html(percentage, title),
