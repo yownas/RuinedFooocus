@@ -14,6 +14,8 @@ from modules.patch import cfg_patched
 from modules.settings import default_settings
 from modules.util import suppress_stdout
 
+import warnings
+import time
 
 warnings.filterwarnings("ignore", category=UserWarning)
 
@@ -250,6 +252,10 @@ def process(
     decoded_latent = core.decode_vae(vae=xl_base_patched.vae, latent_image=sampled_latent)
 
     images = core.image_to_numpy(decoded_latent)
+
+    if callback is not None:
+        callback(steps, 0, 0, steps, images[0])
+        time.sleep(0.1)
 
     gc.collect()
 
