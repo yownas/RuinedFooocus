@@ -166,10 +166,12 @@ def ksampler(
 
     real_model = None
     models, inference_memory = get_additional_models(positive, negative, model.model_dtype())
-    comfy.model_management.load_models_gpu(
-        [model] + models,
-        comfy.model_management.batch_area_memory(noise.shape[0] * noise.shape[2] * noise.shape[3]) + inference_memory,
-    )
+    with suppress_stdout():
+        comfy.model_management.load_models_gpu(
+            [model] + models,
+            comfy.model_management.batch_area_memory(noise.shape[0] * noise.shape[2] * noise.shape[3])
+            + inference_memory,
+        )
     real_model = model.model
 
     noise = noise.to(device)
