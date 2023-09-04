@@ -119,7 +119,11 @@ def worker():
                     "preview",
                     (
                         int(100.0 * float(done_steps) / float(all_steps)),
+                        i,
+                        image_number,
                         f"{status} - {step}/{total_steps}",
+                        width,
+                        height,
                         y,
                     ),
                 ]

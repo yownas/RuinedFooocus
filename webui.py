@@ -16,6 +16,8 @@ from comfy.samplers import KSampler
 from modules.sdxl_styles import style_keys, aspect_ratios, styles
 from modules.settings import default_settings
 
+import math
+from PIL import Image
 
 def load_images_handler(files):
     return list(map(lambda x: x.name, files))
@@ -55,30 +57,45 @@ def launch_app(args):
         favicon_path=favicon_path,
     )
 
+preview_image = None
 
 def generate_clicked(*args):
+    global preview_image
+    preview_image = None
     yield gr.update(interactive=False, visible=False), gr.update(interactive=True, visible=True), gr.update(
         visible=True,
         value=modules.html.make_progress_html(1, "Processing text encoding ..."),
     ), gr.update(visible=True, value=None), gr.update(visible=False)
     worker.buffer.append(list(args))
     finished = False
-
     while not finished:
         time.sleep(0.01)
         if len(worker.outputs) > 0:
             flag, product = worker.outputs.pop(0)
             if flag == "preview":
-                percentage, title, image = product
+                percentage, image_nr, image_cnt, title, width, height, image = product
+                # Update preview
+                grid_xsize = math.ceil(math.sqrt(image_cnt))
+                grid_ysize = math.ceil(image_cnt / grid_xsize)
+                grid_max = max(grid_xsize, grid_ysize)
+                if preview_image is None:
+                    preview_image = Image.new('RGB', (int(width*grid_xsize/grid_max), int(height*grid_ysize/grid_max)))
+                if image is not None:
+                    image = Image.fromarray(image)
+                    grid_xpos = int((image_nr % grid_xsize) * (width / grid_xsize))
+                    grid_ypos = int(math.floor(image_nr / grid_xsize) * (height / grid_ysize))
+                    image = image.resize((int(width / grid_max), int(height / grid_max)))
+                    preview_image.paste(image, (grid_xpos, grid_ypos))
                 yield gr.update(interactive=False, visible=False), gr.update(interactive=True, visible=True), gr.update(
                     visible=True,
                     value=modules.html.make_progress_html(percentage, title),
-                ), gr.update(visible=True, value=image) if image is not None else gr.update(), gr.update(visible=False)
+                ), gr.update(visible=True, value=preview_image) if preview_image is not None else gr.update(), gr.update(visible=False)
             if flag == "results":
                 yield gr.update(interactive=True, visible=True), gr.update(interactive=False, visible=False), gr.update(
                     visible=False
                 ), gr.update(visible=False), gr.update(visible=True, value=product)
                 finished = True
+    preview_image = None
     return
 
 
