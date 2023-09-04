@@ -110,7 +110,10 @@ def worker():
         status = random.choice(lines)
 
         def callback(step, x0, x, total_steps, y):
+            global status
             done_steps = i * steps + step
+            if step % 10 == 0:
+                status = random.choice(lines)
             outputs.append(
                 [
                     "preview",
