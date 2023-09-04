@@ -125,7 +125,9 @@ with shared.gradio_root as block:
                     run_button = gr.Button(label="Generate", value="Generate", elem_id="generate")
                     stop_button = gr.Button(label="Stop", value="Stop", interactive=False, visible=False)
             with gr.Row():
-                advanced_checkbox = gr.Checkbox(label="Advanced", value=settings["advanced_mode"], container=False)
+                advanced_checkbox = gr.Checkbox(
+                    label="Hurt me plenty", value=settings["advanced_mode"], container=False
+                )
         with gr.Column(scale=2, visible=settings["advanced_mode"]) as right_col:
             with gr.Tab(label="Setting"):
                 performance_selction = gr.Radio(
