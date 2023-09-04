@@ -19,6 +19,7 @@ from modules.settings import default_settings
 import math
 from PIL import Image
 
+
 def load_images_handler(files):
     return list(map(lambda x: x.name, files))
 
@@ -57,7 +58,9 @@ def launch_app(args):
         favicon_path=favicon_path,
     )
 
+
 preview_image = None
+
 
 def generate_clicked(*args):
     global preview_image
@@ -78,10 +81,10 @@ def generate_clicked(*args):
                 grid_xsize = math.ceil(math.sqrt(image_cnt))
                 grid_ysize = math.ceil(image_cnt / grid_xsize)
                 grid_max = max(grid_xsize, grid_ysize)
-                pwidth = int(width*grid_xsize/grid_max)
-                pheight = int(height*grid_ysize/grid_max)
+                pwidth = int(width * grid_xsize / grid_max)
+                pheight = int(height * grid_ysize / grid_max)
                 if preview_image is None:
-                    preview_image = Image.new('RGB', (pwidth, pheight))
+                    preview_image = Image.new("RGBA", (pwidth, pheight))
                 if image is not None:
                     image = Image.fromarray(image)
                     grid_xpos = int((image_nr % grid_xsize) * (pwidth / grid_xsize))
@@ -91,7 +94,11 @@ def generate_clicked(*args):
                 yield gr.update(interactive=False, visible=False), gr.update(interactive=True, visible=True), gr.update(
                     visible=True,
                     value=modules.html.make_progress_html(percentage, title),
-                ), gr.update(visible=True, value=preview_image) if preview_image is not None else gr.update(), gr.update(visible=False)
+                ), gr.update(
+                    visible=True, value=preview_image
+                ) if preview_image is not None else gr.update(), gr.update(
+                    visible=False
+                )
             if flag == "results":
                 yield gr.update(interactive=True, visible=True), gr.update(interactive=False, visible=False), gr.update(
                     visible=False
