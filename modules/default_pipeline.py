@@ -159,16 +159,17 @@ def process(
     if xl_refiner is not None:
         xl_refiner.unet.model_options["sampler_cfg_function"] = cfg_patched
 
-    positive_conditions = (
-        core.encode_prompt_condition(clip=xl_base_patched.clip, prompt=positive_prompt)
-        if positive_conditions_cache is None
-        else positive_conditions_cache
-    )
-    negative_conditions = (
-        core.encode_prompt_condition(clip=xl_base_patched.clip, prompt=negative_prompt)
-        if negative_conditions_cache is None
-        else negative_conditions_cache
-    )
+    with suppress_stdout():
+        positive_conditions = (
+            core.encode_prompt_condition(clip=xl_base_patched.clip, prompt=positive_prompt)
+            if positive_conditions_cache is None
+            else positive_conditions_cache
+        )
+        negative_conditions = (
+            core.encode_prompt_condition(clip=xl_base_patched.clip, prompt=negative_prompt)
+            if negative_conditions_cache is None
+            else negative_conditions_cache
+        )
 
     positive_conditions_cache = positive_conditions
     negative_conditions_cache = negative_conditions
