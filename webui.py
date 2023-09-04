@@ -78,12 +78,14 @@ def generate_clicked(*args):
                 grid_xsize = math.ceil(math.sqrt(image_cnt))
                 grid_ysize = math.ceil(image_cnt / grid_xsize)
                 grid_max = max(grid_xsize, grid_ysize)
+                pwidth = int(width*grid_xsize/grid_max)
+                pheight = int(height*grid_ysize/grid_max)
                 if preview_image is None:
-                    preview_image = Image.new('RGB', (int(width*grid_xsize/grid_max), int(height*grid_ysize/grid_max)))
+                    preview_image = Image.new('RGB', (pwidth, pheight))
                 if image is not None:
                     image = Image.fromarray(image)
-                    grid_xpos = int((image_nr % grid_xsize) * (width / grid_xsize))
-                    grid_ypos = int(math.floor(image_nr / grid_xsize) * (height / grid_ysize))
+                    grid_xpos = int((image_nr % grid_xsize) * (pwidth / grid_xsize))
+                    grid_ypos = int(math.floor(image_nr / grid_xsize) * (pheight / grid_ysize))
                     image = image.resize((int(width / grid_max), int(height / grid_max)))
                     preview_image.paste(image, (grid_xpos, grid_ypos))
                 yield gr.update(interactive=False, visible=False), gr.update(interactive=True, visible=True), gr.update(
