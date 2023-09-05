@@ -82,10 +82,17 @@ def generate_preview(image_nr, image_cnt, width, height, image):
 def generate_clicked(*args):
     global preview_image
     preview_image = None
-    yield gr.update(interactive=False, visible=False), gr.update(interactive=True, visible=True), gr.update(
-        visible=True,
-        value=modules.html.make_progress_html(1, "Processing text encoding ..."),
-    ), gr.update(visible=True, value=None), gr.update(), gr.update(visible=False)
+    yield (
+        gr.update(interactive=False, visible=False),
+        gr.update(interactive=True, visible=True),
+        gr.update(
+            visible=True,
+            value=modules.html.make_progress_html(1, "Processing text encoding ..."),
+        ),
+        gr.update(visible=True, value=None),
+        gr.update(),
+        gr.update(visible=False),
+    )
     worker.buffer.append(list(args))
     finished = False
     while not finished:
@@ -97,20 +104,28 @@ def generate_clicked(*args):
                 # Update preview in grid
                 generate_preview(image_nr, image_cnt, width, height, image)
 
-                yield gr.update(interactive=False, visible=False), gr.update(interactive=True, visible=True), gr.update(
-                    visible=True,
-                    value=modules.html.make_progress_html(percentage, title),
-                ), gr.update(
-                    visible=True, value=preview_image
-                ), gr.update() if preview_image is not None else gr.update(), gr.update(
-                    visible=False
+                yield (
+                    gr.update(interactive=False, visible=False),
+                    gr.update(interactive=True, visible=True),
+                    gr.update(
+                        visible=True,
+                        value=modules.html.make_progress_html(percentage, title),
+                    ),
+                    gr.update(visible=True, value=preview_image),
+                    gr.update() if preview_image is not None else gr.update(),
+                    gr.update(visible=False),
                 )
             if flag == "results":
-                yield gr.update(interactive=True, visible=True), gr.update(interactive=False, visible=False), gr.update(
-                    visible=False
-                ), gr.update(visible=False), gr.update(), gr.update(visible=True, value=product)
+                yield (
+                    gr.update(interactive=True, visible=True),
+                    gr.update(interactive=False, visible=False),
+                    gr.update(visible=False),
+                    gr.update(visible=False),
+                    gr.update(),
+                    gr.update(visible=True, value=product),
+                )
             if flag == "metadata":
-                yield gr.update(), gr.update(), gr.update(), gr.update(), gr.update(value=product), gr.update()
+                yield (gr.update(), gr.update(), gr.update(), gr.update(), gr.update(value=product), gr.update())
                 finished = True
     preview_image = None
     return
