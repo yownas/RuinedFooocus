@@ -39,10 +39,18 @@ def load_settings():
         with open("settings.json") as f:
             settings = json.load(f)
     else:
-        # If settings file doesn't exist, create it
+        settings = {}
+
+    # Add any missing default settings
+    changed = False
+    for key, value in DEFAULT_SETTINGS.items():
+        if key not in settings:
+            settings[key] = value
+            changed = True
+
+    if changed:
         with open("settings.json", "w") as f:
-            json.dump(DEFAULT_SETTINGS, f, indent=2)
-            settings = DEFAULT_SETTINGS
+            json.dump(settings, f, indent=2)
 
     return settings
 
