@@ -205,7 +205,6 @@ def worker():
                         "sharpness": sharpness,
                         "start_step": start_step,
                         "denoise": denoise,
-                        "input_image": None if input_image_path == None else os.path.basename(input_image_path),
                         "software": "RuinedFooocus",
                     }
                     metadata = PngInfo()
