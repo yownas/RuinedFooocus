@@ -85,7 +85,7 @@ def generate_clicked(*args):
     yield gr.update(interactive=False, visible=False), gr.update(interactive=True, visible=True), gr.update(
         visible=True,
         value=modules.html.make_progress_html(1, "Processing text encoding ..."),
-    ), gr.update(visible=True, value=None), gr.update(visible=False)
+    ), gr.update(visible=True, value=None), gr.update(), gr.update(visible=False)
     worker.buffer.append(list(args))
     finished = False
     while not finished:
@@ -102,13 +102,15 @@ def generate_clicked(*args):
                     value=modules.html.make_progress_html(percentage, title),
                 ), gr.update(
                     visible=True, value=preview_image
-                ) if preview_image is not None else gr.update(), gr.update(
+                ), gr.update() if preview_image is not None else gr.update(), gr.update(
                     visible=False
                 )
             if flag == "results":
                 yield gr.update(interactive=True, visible=True), gr.update(interactive=False, visible=False), gr.update(
                     visible=False
-                ), gr.update(visible=False), gr.update(visible=True, value=product)
+                ), gr.update(visible=False), gr.update(), gr.update(visible=True, value=product)
+            if flag == "metadata":
+                yield gr.update(), gr.update(), gr.update(), gr.update(), gr.update(value=product), gr.update()
                 finished = True
     preview_image = None
     return
@@ -270,6 +272,7 @@ with shared.gradio_root as block:
                     )
             with gr.Tab(label="Advanced"):
                 save_metadata = gr.Checkbox(label="Save Metadata", value=settings["save_metadata"])
+                metadata_viewer = gr.JSON(label="Metadata", elem_classes="json-container")
                 custom_steps = gr.Slider(
                     label="Custom Steps",
                     minimum=10,
@@ -330,8 +333,6 @@ with shared.gradio_root as block:
                     step=0.01,
                     value=settings["sharpness"],
                 )
-
-                gr.HTML('<a href="https://github.com/lllyasviel/Fooocus/discussions/117">\U0001F4D4 Document</a>')
 
                 def performance_changed(selection):
                     if selection != "Custom":
@@ -396,7 +397,7 @@ with shared.gradio_root as block:
         run_button.click(fn=refresh_seed, inputs=[seed_random, image_seed], outputs=image_seed).then(
             fn=generate_clicked,
             inputs=ctrls + [gallery],
-            outputs=[run_button, stop_button, progress_html, progress_window, gallery],
+            outputs=[run_button, stop_button, progress_html, progress_window, metadata_viewer, gallery],
         )
 
         def stop_clicked():

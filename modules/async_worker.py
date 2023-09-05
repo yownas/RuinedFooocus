@@ -93,6 +93,7 @@ def worker():
         width, height = aspect_ratios[aspect_ratios_selction]
 
         results = []
+        metadatastrings = []
         seed = image_seed
 
         max_seed = 0xFFFFFFFFFFFFFFFF
@@ -211,12 +212,14 @@ def worker():
                     metadata.add_text("parameters", json.dumps(prompt))
                 Image.fromarray(x).save(local_temp_filename, pnginfo=metadata)
                 results.append(local_temp_filename)
+                metadatastrings.append(prompt)
 
             seed += 1
             if stop_batch:
                 break
 
         outputs.append(["results", results])
+        outputs.append(["metadata", metadatastrings])
         return
 
     while True:

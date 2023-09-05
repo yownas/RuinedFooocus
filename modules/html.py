@@ -68,6 +68,11 @@ progress::after {
   height: 30px !important;
 }
 
+.json-container{
+  height: 150px; 
+  overflow: auto !important;
+  }
+
 .type_row{
   height: 96px !important;
 }
@@ -113,6 +118,7 @@ function generate_shortcut(){
   });
 }
 """
+
 
 def make_progress_html(number, text):
     return progress_html.replace("*number*", str(number)).replace("*text*", text)
