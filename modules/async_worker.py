@@ -66,9 +66,6 @@ def worker():
             w4,
             l5,
             w5,
-            img2img_mode,
-            img2img_start_step,
-            img2img_denoise,
             gallery,
         ) = task
 
@@ -146,15 +143,9 @@ def worker():
                         f"Error: Could not open file {placeholder}.txt. Please ensure the file exists and is readable."
                     )
                     raise
-            if img2img_mode and gallery_size > 0:
-                start_step = round(steps * img2img_start_step)
-                denoise = img2img_denoise
-                gallery_entry = gallery[i % gallery_size]
-                input_image_path = gallery_entry["name"]
-            else:
-                start_step = 0
-                denoise = None
-                input_image_path = None
+            start_step = 0
+            denoise = None
+            input_image_path = None
             start_time = time.time()
             pipeline.clean_prompt_cond_caches()
             try:
@@ -212,7 +203,6 @@ def worker():
                         "l5": l5,
                         "w5": w5,
                         "sharpness": sharpness,
-                        "img2img": img2img_mode,
                         "start_step": start_step,
                         "denoise": denoise,
                         "input_image": None if input_image_path == None else os.path.basename(input_image_path),

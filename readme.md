@@ -70,16 +70,15 @@ Coming soon ...
 5. Ability to change default values of UI settings (loaded from `settings.json`).
 6. Generate a completely random prompt (taken from onebuttonprompt) with its own "special" tab
 7. Made Resolutions mode readable
-8. Image to Image!! talentlessly stolen by me from the genius [MoonRide](https://github.com/MoonRide303) and his amazing fork
-9. Added theme support in `settings.json` you can see available themes [HERE](https://huggingface.co/spaces/gradio/theme-gallery)
-10. Added `resolutions.csv` to allow users to add their own custom resolutions
-11. Wildcards are now supported place see `wildcards\colors.txt` for an example. In your prompt make sure you type `__<filename>__` to activate ie `shiny new __colors__ Chevrolet pickup truck with big wheels`
-12. If the option `--nobrowser` is passed the web browser won't automatically launch
-13. Added Custom paths in `paths.json` to point to chekcpoints / loras and outputs director (**Note:** for windows paths either use `/` or `\\` instead of `\`)
-14. Added support for custom Performance - enables samplers/scheduler, steps, refiner steps, cfg & clip skip (Check advanced tab)
-15. Displays time taken for each render in the console. If `notification.mp3` exists in the root directory, this will play when the generations are complete.
-16. Added **Cancel** button to stop generation. Thanks to [Yownas](https://github.com/yownas) and [MoonRide](https://github.com/MoonRide303/)
-17. Pressing `Ctrl-Enter` is the same as pressing the generate button!
+8. Added theme support in `settings.json` you can see available themes [HERE](https://huggingface.co/spaces/gradio/theme-gallery)
+9. Added `resolutions.csv` to allow users to add their own custom resolutions
+10. Wildcards are now supported place see `wildcards\colors.txt` for an example. In your prompt make sure you type `__<filename>__` to activate ie `shiny new __colors__ Chevrolet pickup truck with big wheels`
+11. If the option `--nobrowser` is passed the web browser won't automatically launch
+12. Added Custom paths in `paths.json` to point to chekcpoints / loras and outputs director (**Note:** for windows paths either use `/` or `\\` instead of `\`)
+13. Added support for custom Performance - enables samplers/scheduler, steps, refiner steps, cfg & clip skip (Check advanced tab)
+14. Displays time taken for each render in the console. If `notification.mp3` exists in the root directory, this will play when the generations are complete.
+15. Added **Cancel** button to stop generation. Thanks to [Yownas](https://github.com/yownas) and [MoonRide](https://github.com/MoonRide303/)
+16. Pressing `Ctrl-Enter` is the same as pressing the generate button!
 
 ## Thanks
 

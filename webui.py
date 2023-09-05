@@ -270,32 +270,6 @@ with shared.gradio_root as block:
                     )
             with gr.Tab(label="Advanced"):
                 save_metadata = gr.Checkbox(label="Save Metadata", value=settings["save_metadata"])
-                with gr.Row():
-                    img2img_mode = gr.Checkbox(
-                        label="Image 2 Image",
-                        value=settings["img2img_mode"],
-                        elem_classes="type_small_row",
-                    )
-                    load_images_button = gr.UploadButton(
-                        label="Load Image(s)",
-                        file_count="multiple",
-                        file_types=["image"],
-                        elem_classes="type_small_row",
-                    )
-                    img2img_start_step = gr.Slider(
-                        label="Image 2 Image Start Step",
-                        minimum=0.0,
-                        maximum=0.5,
-                        step=0.01,
-                        value=settings["img2img_start_step"],
-                    )
-                    img2img_denoise = gr.Slider(
-                        label="Image 2 Image Denoise",
-                        minimum=0.2,
-                        maximum=1.0,
-                        step=0.01,
-                        value=settings["img2img_denoise"],
-                    )
                 custom_steps = gr.Slider(
                     label="Custom Steps",
                     minimum=10,
@@ -418,9 +392,7 @@ with shared.gradio_root as block:
             custom_switch,
         ]
 
-        img2imgcontrols = [img2img_mode, img2img_start_step, img2img_denoise]
-        load_images_button.upload(fn=load_images_handler, inputs=[load_images_button], outputs=gallery)
-        ctrls += [base_model, refiner_model] + lora_ctrls + img2imgcontrols
+        ctrls += [base_model, refiner_model] + lora_ctrls
         run_button.click(fn=refresh_seed, inputs=[seed_random, image_seed], outputs=image_seed).then(
             fn=generate_clicked,
             inputs=ctrls + [gallery],
