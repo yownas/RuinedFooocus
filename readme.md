@@ -61,6 +61,16 @@ Or if you want to open a remote port, use
 
 Coming soon ...
 
+### Colab
+
+(Last tested - 2023 Sep 07)
+
+| Colab | Info
+| --- | --- |
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/runew0lf/RuinedFooocus/blob/main/colab.ipynb) | RuinedFooocus Colab
+
+Note that sometimes this Colab will say like "you must restart the runtime in order to use newly installed XX". This can be safely ignored.
+
 ## Ruined Edition Features
 
 1. Supports custom styles in `styles.csv`
