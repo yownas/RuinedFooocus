@@ -87,7 +87,7 @@ def generate_clicked(*args):
         gr.update(interactive=True, visible=True),
         gr.update(
             visible=True,
-            value=modules.html.make_progress_html(1, "Processing text encoding ..."),
+            value=modules.html.make_progress_html(0, "Processing text encoding ..."),
         ),
         gr.update(visible=True, value=None),
         gr.update(),
