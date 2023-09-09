@@ -70,7 +70,7 @@ def generate_preview(image_nr, image_cnt, width, height, image):
     pwidth = int(width * grid_xsize / grid_max)
     pheight = int(height * grid_ysize / grid_max)
     if preview_image is None:
-        preview_image = Image.new("RGBA", (pwidth, pheight))
+        preview_image = Image.new("RGB", (pwidth, pheight))
     if image is not None:
         image = Image.fromarray(image)
         grid_xpos = int((image_nr % grid_xsize) * (pwidth / grid_xsize))
@@ -101,9 +101,9 @@ def generate_clicked(*args):
             flag, product = worker.outputs.pop(0)
             if flag == "preview":
                 percentage, image_nr, image_cnt, title, width, height, image = product
-                # Update preview in grid
                 generate_preview(image_nr, image_cnt, width, height, image)
-
+                preview_image_path = "outputs/preview.jpg"
+                preview_image.save(preview_image_path, optimize=True, quality=35)
                 yield (
                     gr.update(interactive=False, visible=False),
                     gr.update(interactive=True, visible=True),
@@ -111,8 +111,8 @@ def generate_clicked(*args):
                         visible=True,
                         value=modules.html.make_progress_html(percentage, title),
                     ),
-                    gr.update(visible=True, value=preview_image),
-                    gr.update() if preview_image is not None else gr.update(),
+                    gr.update(visible=True, value=preview_image_path) if preview_image_path is not None else gr.update(),
+                    gr.update(),
                     gr.update(visible=False),
                 )
             if flag == "results":
