@@ -152,7 +152,7 @@ def ksampler(
 
     def callback(step, x0, x, total_steps):
         y = None
-        if previewer and step % 3 == 0:
+        if previewer:
             y = previewer.preview(x0, step, total_steps)
         if callback_function is not None:
             callback_function(step, x0, x, total_steps, y)
@@ -266,7 +266,7 @@ def ksampler_with_refiner(
 
     def callback(step, x0, x, total_steps):
         y = None
-        if previewer and step % 3 == 0:
+        if previewer:
             y = previewer.preview(x0, step, total_steps)
         if callback_function is not None:
             callback_function(step, x0, x, total_steps, y)
