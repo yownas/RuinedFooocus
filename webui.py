@@ -96,7 +96,7 @@ def generate_clicked(*args):
     worker.buffer.append(list(args))
     finished = False
     while not finished:
-        time.sleep(0.01)
+        time.sleep(0.1)
         if len(worker.outputs) > 0:
             flag, product = worker.outputs.pop(0)
             if flag == "preview":
