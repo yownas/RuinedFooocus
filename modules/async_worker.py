@@ -9,6 +9,8 @@ from comfy.model_management import InterruptProcessingException
 buffer = []
 outputs = []
 
+interrupt_ruined_processing = False
+
 
 def worker():
     global buffer, outputs
@@ -107,8 +109,16 @@ def worker():
             lines = f.readlines()
         status = random.choice(lines)
 
+        class InterruptProcessingException(Exception):
+            pass
+
         def callback(step, x0, x, total_steps, y):
-            global status
+            global status, interrupt_ruined_processing
+
+            if interrupt_ruined_processing:
+                interrupt_ruined_processing = False
+                raise InterruptProcessingException()
+
             done_steps = i * steps + step
             if step % 10 == 0:
                 status = random.choice(lines)

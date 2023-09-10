@@ -11,7 +11,6 @@ import modules.html
 import modules.path
 import ui_onebutton
 
-from comfy.model_management import interrupt_current_processing
 from comfy.samplers import KSampler
 from modules.sdxl_styles import style_keys, aspect_ratios, styles
 from modules.settings import default_settings
@@ -111,7 +110,9 @@ def generate_clicked(*args):
                         visible=True,
                         value=modules.html.make_progress_html(percentage, title),
                     ),
-                    gr.update(visible=True, value=preview_image_path) if preview_image_path is not None else gr.update(),
+                    gr.update(visible=True, value=preview_image_path)
+                    if preview_image_path is not None
+                    else gr.update(),
                     gr.update(),
                     gr.update(visible=False),
                 )
@@ -416,7 +417,7 @@ with shared.gradio_root as block:
         )
 
         def stop_clicked():
-            interrupt_current_processing()
+            worker.interrupt_ruined_processing = True
 
         stop_button.click(fn=stop_clicked, queue=False)
 
