@@ -10,7 +10,6 @@ import modules.path
 from PIL import Image, ImageOps
 
 from comfy.model_base import SDXL, SDXLRefiner
-from modules.patch import cfg_patched
 from modules.settings import default_settings
 from modules.util import suppress_stdout
 
@@ -151,15 +150,6 @@ def process(
     callback,
 ):
     global positive_conditions_cache, negative_conditions_cache, positive_conditions_refiner_cache, negative_conditions_refiner_cache
-
-    if xl_base is not None:
-        xl_base.unet.model_options["sampler_cfg_function"] = cfg_patched
-
-    if xl_base_patched is not None:
-        xl_base_patched.unet.model_options["sampler_cfg_function"] = cfg_patched
-
-    if xl_refiner is not None:
-        xl_refiner.unet.model_options["sampler_cfg_function"] = cfg_patched
 
     with suppress_stdout():
         positive_conditions = (

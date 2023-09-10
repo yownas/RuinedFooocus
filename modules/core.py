@@ -12,12 +12,10 @@ from nodes import VAEDecode, EmptyLatentImage, CLIPTextEncode, VAEEncode
 from comfy.sample import prepare_mask, broadcast_cond, get_additional_models, cleanup_additional_models
 from comfy_extras.nodes_post_processing import ImageScaleToTotalPixels
 from modules.samplers_advanced import KSampler, KSamplerWithRefiner
-from modules.patch import patch_all
 from modules.util import suppress_stdout
 
 comfy.model_management.DISABLE_SMART_MEMORY = True
 
-patch_all()
 opCLIPTextEncode = CLIPTextEncode()
 opEmptyLatentImage = EmptyLatentImage()
 opVAEDecode = VAEDecode()

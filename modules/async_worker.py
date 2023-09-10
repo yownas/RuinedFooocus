@@ -4,7 +4,6 @@ import torch
 import re
 from playsound import playsound
 from os.path import exists
-from comfy.model_management import InterruptProcessingException
 
 buffer = []
 outputs = []
@@ -22,7 +21,6 @@ def worker():
     import random
     import modules.default_pipeline as pipeline
     import modules.path
-    import modules.patch
 
     from PIL import Image
     from PIL.PngImagePlugin import PngInfo
@@ -72,8 +70,6 @@ def worker():
         ) = task
 
         loras = [(l1, w1), (l2, w2), (l3, w3), (l4, w4), (l5, w5)]
-
-        modules.patch.sharpness = sharpness
 
         pipeline.refresh_base_model(base_model_name)
         pipeline.refresh_refiner_model(refiner_model_name)
