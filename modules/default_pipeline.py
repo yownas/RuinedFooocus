@@ -39,6 +39,7 @@ def refresh_base_model(name):
     if xl_base is not None:
         xl_base.to_meta()
         xl_base = None
+    print(f"Loading base model: {name}")
     with suppress_stdout():
         xl_base = core.load_model(filename)
     if not isinstance(xl_base.unet.model, SDXL):
@@ -76,6 +77,7 @@ def refresh_refiner_model(name):
         xl_refiner.to_meta()
         xl_refiner = None
 
+    print(f"Loading refiner model: {name}")
     with suppress_stdout():
         xl_refiner = core.load_model(filename)
     if not isinstance(xl_refiner.unet.model, SDXLRefiner):
@@ -104,6 +106,7 @@ def refresh_loras(loras):
             continue
 
         filename = os.path.join(modules.path.lorafile_path, name)
+        print(f"Loading LoRAs: {name}")
         with suppress_stdout():
             model = core.load_lora(model, filename, strength_model=weight, strength_clip=weight)
     xl_base_patched = model
