@@ -96,6 +96,8 @@ This codebase is a fork from the original amazing work by [lllyasviel](https://g
 The wonderful [MoonRide](https://github.com/MoonRide303/) who also maintains an amazing fork!
 The codebase starts from an odd mixture of [Automatic1111](https://github.com/AUTOMATIC1111/stable-diffusion-webui) and [ComfyUI](https://github.com/comfyanonymous/ComfyUI). (And they both use GPL license.)
 
-## Update Log
+## Discord Support Server
+You can join our discord support server [Here](https://discord.gg/CvpAFya9Rr)
 
+## Update Log
 The log is [here](update_log.md).

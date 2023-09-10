@@ -14,7 +14,7 @@ from modules.launch_util import (
     script_path,
     dir_repos,
 )
-from modules.model_loader import load_file_from_url
+from modules.util import load_file_from_url
 from modules.path import modelfile_path, lorafile_path
 
 REINSTALL_ALL = False
