@@ -36,62 +36,47 @@ def worker():
     except Exception as e:
         print(e)
 
-    def handler(task):
-        (
-            prompt,
-            negative_prompt,
-            style_selction,
-            performance_selction,
-            aspect_ratios_selction,
-            image_number,
-            image_seed,
-            save_metadata,
-            cfg,
-            base_clip_skip,
-            refiner_clip_skip,
-            sampler_name,
-            scheduler,
-            custom_steps,
-            custom_switch,
-            base_model_name,
-            refiner_model_name,
-            l1,
-            w1,
-            l2,
-            w2,
-            l3,
-            w3,
-            l4,
-            w4,
-            l5,
-            w5,
-            gallery,
-        ) = task
+    def handler(gen_data):
+        loras = [
+            (gen_data["l1"], gen_data["w1"]),
+            (gen_data["l2"], gen_data["w2"]),
+            (gen_data["l3"], gen_data["w3"]),
+            (gen_data["l4"], gen_data["w4"]),
+            (gen_data["l5"], gen_data["w5"]),
+        ]
 
-        loras = [(l1, w1), (l2, w2), (l3, w3), (l4, w4), (l5, w5)]
+        try:
+            meta = json.loads(gen_data["prompt"])
+            meta = dict((k.lower(), v) for k, v in meta.items())
+            gen_data.update(meta)
+            if "prompt" in meta:
+                gen_data["style_selection"] = None
+        except ValueError as e:
+            pass
 
-        pipeline.refresh_base_model(base_model_name)
-        pipeline.refresh_refiner_model(refiner_model_name)
+
+        pipeline.refresh_base_model(gen_data["base_model_name"])
+        pipeline.refresh_refiner_model(gen_data["refiner_model_name"])
         pipeline.refresh_loras(loras)
         pipeline.clean_prompt_cond_caches()
 
-        p_txt, n_txt = apply_style(style_selction, prompt, negative_prompt)
+        p_txt, n_txt = apply_style(gen_data["style_selection"], gen_data["prompt"], gen_data["negative"])
 
-        if performance_selction == "Speed":
+        if gen_data["performance_selection"] == "Speed":
             steps = 30
             switch = 20
-        elif performance_selction == "Quality":
+        elif gen_data["performance_selection"] == "Quality":
             steps = 60
             switch = 40
         else:  # Custom
-            steps = custom_steps
-            switch = custom_switch
+            steps = gen_data["custom_steps"]
+            switch = gen_data["custom_switch"]
 
-        width, height = aspect_ratios[aspect_ratios_selction]
+        width, height = aspect_ratios[gen_data["aspect_ratios_selection"]]
 
         results = []
         metadatastrings = []
-        seed = image_seed
+        seed = gen_data["seed"]
 
         max_seed = 0xFFFFFFFFFFFFFFFF
         if not isinstance(seed, int) or seed < 0:
@@ -99,7 +84,7 @@ def worker():
         if seed > max_seed:
             seed = seed % max_seed
 
-        all_steps = steps * image_number
+        all_steps = steps * gen_data["image_number"]
         with open("render.txt") as f:
             lines = f.readlines()
         status = random.choice(lines)
@@ -123,7 +108,7 @@ def worker():
                     (
                         int(100.0 * float(done_steps) / float(all_steps)),
                         i,
-                        image_number,
+                        gen_data["image_number"],
                         f"{status} - {step}/{total_steps}",
                         width,
                         height,
@@ -132,10 +117,8 @@ def worker():
                 ]
             )
 
-        gallery_size = len(gallery)
-
         stop_batch = False
-        for i in range(image_number):
+        for i in range(gen_data["image_number"]):
             directory = "wildcards"
             wildcard_text = p_txt
             placeholders = re.findall(r"__(\w+)__", wildcard_text)
@@ -164,11 +147,11 @@ def worker():
                     seed,
                     start_step,
                     denoise,
-                    cfg,
-                    base_clip_skip,
-                    refiner_clip_skip,
-                    sampler_name,
-                    scheduler,
+                    gen_data["cfg"],
+                    gen_data["base_clip_skip"],
+                    gen_data["refiner_clip_skip"],
+                    gen_data["sampler_name"],
+                    gen_data["scheduler"],
                     callback=callback,
                 )
             except InterruptProcessingException as iex:
@@ -182,20 +165,20 @@ def worker():
                 local_temp_filename = generate_temp_filename(folder=modules.path.temp_outputs_path, extension="png")
                 os.makedirs(os.path.dirname(local_temp_filename), exist_ok=True)
                 metadata = None
-                if save_metadata:
+                if gen_data["save_metadata"]:
                     prompt = {
                         "Prompt": wildcard_text,
                         "Negative": n_txt,
                         "steps": steps,
                         "switch": switch,
-                        "cfg": cfg,
+                        "cfg": gen_data["cfg"],
                         "width": width,
                         "height": height,
                         "seed": seed,
-                        "sampler_name": sampler_name,
-                        "scheduler": scheduler,
-                        "base_model_name": base_model_name,
-                        "refiner_model_name": refiner_model_name,
+                        "sampler_name": gen_data["sampler_name"],
+                        "scheduler": gen_data["scheduler"],
+                        "base_model_name": gen_data["base_model_name"],
+                        "refiner_model_name": gen_data["refiner_model_name"],
                         "loras": "Loras:" + ",".join([f"<{lora[0]}:{lora[1]}>" for lora in loras]),
                         "start_step": start_step,
                         "denoise": denoise,
