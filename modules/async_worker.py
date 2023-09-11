@@ -36,62 +36,31 @@ def worker():
     except Exception as e:
         print(e)
 
-    def handler(task):
-        (
-            prompt,
-            negative_prompt,
-            style_selction,
-            performance_selction,
-            aspect_ratios_selction,
-            image_number,
-            image_seed,
-            save_metadata,
-            cfg,
-            base_clip_skip,
-            refiner_clip_skip,
-            sampler_name,
-            scheduler,
-            custom_steps,
-            custom_switch,
-            base_model_name,
-            refiner_model_name,
-            l1,
-            w1,
-            l2,
-            w2,
-            l3,
-            w3,
-            l4,
-            w4,
-            l5,
-            w5,
-            gallery,
-        ) = task
+    def handler(t):
+        loras = [(t["l1"], t["w1"]), (t["l2"], t["w2"]), (t["l3"], t["w3"]), (t["l4"], t["w4"]), (t["l5"], t["w5"])]
 
-        loras = [(l1, w1), (l2, w2), (l3, w3), (l4, w4), (l5, w5)]
-
-        pipeline.refresh_base_model(base_model_name)
-        pipeline.refresh_refiner_model(refiner_model_name)
+        pipeline.refresh_base_model(t["base_model_name"])
+        pipeline.refresh_refiner_model(t["refiner_model_name"])
         pipeline.refresh_loras(loras)
         pipeline.clean_prompt_cond_caches()
 
-        p_txt, n_txt = apply_style(style_selction, prompt, negative_prompt)
+        p_txt, n_txt = apply_style(t["style_selction"], t["prompt"], t["negative_prompt"])
 
-        if performance_selction == "Speed":
+        if t["performance_selction"] == "Speed":
             steps = 30
             switch = 20
-        elif performance_selction == "Quality":
+        elif t["performance_selction"] == "Quality":
             steps = 60
             switch = 40
         else:  # Custom
-            steps = custom_steps
-            switch = custom_switch
+            steps = t["custom_steps"]
+            switch = t["custom_switch"]
 
-        width, height = aspect_ratios[aspect_ratios_selction]
+        width, height = aspect_ratios[t["aspect_ratios_selction"]]
 
         results = []
         metadatastrings = []
-        seed = image_seed
+        seed = t["image_seed"]
 
         max_seed = 0xFFFFFFFFFFFFFFFF
         if not isinstance(seed, int) or seed < 0:
@@ -99,7 +68,7 @@ def worker():
         if seed > max_seed:
             seed = seed % max_seed
 
-        all_steps = steps * image_number
+        all_steps = steps * t["image_number"]
         with open("render.txt") as f:
             lines = f.readlines()
         status = random.choice(lines)
@@ -123,7 +92,7 @@ def worker():
                     (
                         int(100.0 * float(done_steps) / float(all_steps)),
                         i,
-                        image_number,
+                        t["image_number"],
                         f"{status} - {step}/{total_steps}",
                         width,
                         height,
@@ -132,10 +101,8 @@ def worker():
                 ]
             )
 
-        gallery_size = len(gallery)
-
         stop_batch = False
-        for i in range(image_number):
+        for i in range(t["image_number"]):
             directory = "wildcards"
             wildcard_text = p_txt
             placeholders = re.findall(r"__(\w+)__", wildcard_text)
@@ -164,11 +131,11 @@ def worker():
                     seed,
                     start_step,
                     denoise,
-                    cfg,
-                    base_clip_skip,
-                    refiner_clip_skip,
-                    sampler_name,
-                    scheduler,
+                    t["cfg"],
+                    t["base_clip_skip"],
+                    t["refiner_clip_skip"],
+                    t["sampler_name"],
+                    t["scheduler"],
                     callback=callback,
                 )
             except InterruptProcessingException as iex:
@@ -182,20 +149,20 @@ def worker():
                 local_temp_filename = generate_temp_filename(folder=modules.path.temp_outputs_path, extension="png")
                 os.makedirs(os.path.dirname(local_temp_filename), exist_ok=True)
                 metadata = None
-                if save_metadata:
+                if t["save_metadata"]:
                     prompt = {
                         "Prompt": wildcard_text,
                         "Negative": n_txt,
                         "steps": steps,
                         "switch": switch,
-                        "cfg": cfg,
+                        "cfg": t["cfg"],
                         "width": width,
                         "height": height,
                         "seed": seed,
-                        "sampler_name": sampler_name,
-                        "scheduler": scheduler,
-                        "base_model_name": base_model_name,
-                        "refiner_model_name": refiner_model_name,
+                        "sampler_name": t["sampler_name"],
+                        "scheduler": t["scheduler"],
+                        "base_model_name": t["base_model_name"],
+                        "refiner_model_name": t["refiner_model_name"],
                         "loras": "Loras:" + ",".join([f"<{lora[0]}:{lora[1]}>" for lora in loras]),
                         "start_step": start_step,
                         "denoise": denoise,

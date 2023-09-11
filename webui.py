@@ -92,7 +92,12 @@ def generate_clicked(*args):
         gr.update(),
         gr.update(visible=False),
     )
-    worker.buffer.append(list(args))
+    t = {}
+    (t["prompt"], t["negative_prompt"], t["style_selction"], t["performance_selction"], t["aspect_ratios_selction"], 
+      t["image_number"], t["image_seed"], t["save_metadata"], t["cfg"], t["base_clip_skip"], t["refiner_clip_skip"],
+      t["sampler_name"], t["scheduler"], t["custom_steps"], t["custom_switch"], t["base_model_name"], t["refiner_model_name"],
+      t["l1"], t["w1"], t["l2"], t["w2"], t["l3"], t["w3"], t["l4"], t["w4"], t["l5"], t["w5"]) = list(args)
+    worker.buffer.append(t)
     finished = False
     while not finished:
         time.sleep(0.1)
@@ -404,7 +409,7 @@ with shared.gradio_root as block:
         ctrls += [base_model, refiner_model] + lora_ctrls
         run_button.click(fn=refresh_seed, inputs=[seed_random, image_seed], outputs=image_seed).then(
             fn=generate_clicked,
-            inputs=ctrls + [gallery],
+            inputs=ctrls,
             outputs=[run_button, stop_button, progress_html, progress_window, metadata_viewer, gallery],
         )
 
