@@ -92,12 +92,37 @@ def generate_clicked(*args):
         gr.update(),
         gr.update(visible=False),
     )
-    t = {}
-    (t["prompt"], t["negative_prompt"], t["style_selction"], t["performance_selction"], t["aspect_ratios_selction"], 
-      t["image_number"], t["image_seed"], t["save_metadata"], t["cfg"], t["base_clip_skip"], t["refiner_clip_skip"],
-      t["sampler_name"], t["scheduler"], t["custom_steps"], t["custom_switch"], t["base_model_name"], t["refiner_model_name"],
-      t["l1"], t["w1"], t["l2"], t["w2"], t["l3"], t["w3"], t["l4"], t["w4"], t["l5"], t["w5"]) = list(args)
-    worker.buffer.append(t)
+    gen_data = {}
+    (
+        gen_data["prompt"],
+        gen_data["negative"],
+        gen_data["style_selection"],
+        gen_data["performance_selection"],
+        gen_data["aspect_ratios_selection"],
+        gen_data["image_number"],
+        gen_data["image"],
+        gen_data["save_metadata"],
+        gen_data["cfg"],
+        gen_data["base_clip_skip"],
+        gen_data["refiner_clip_skip"],
+        gen_data["sampler_name"],
+        gen_data["scheduler"],
+        gen_data["custom_steps"],
+        gen_data["custom_switch"],
+        gen_data["base_model_name"],
+        gen_data["refiner_model_name"],
+        gen_data["l1"],
+        gen_data["w1"],
+        gen_data["l2"],
+        gen_data["w2"],
+        gen_data["l3"],
+        gen_data["w3"],
+        gen_data["l4"],
+        gen_data["w4"],
+        gen_data["l5"],
+        gen_data["w5"]
+    ) = list(args)
+    worker.buffer.append(gen_data)
     finished = False
     while not finished:
         time.sleep(0.1)
@@ -185,17 +210,17 @@ with shared.gradio_root as block:
                 )
         with gr.Column(scale=2, visible=settings["advanced_mode"]) as right_col:
             with gr.Tab(label="Setting"):
-                performance_selction = gr.Radio(
+                performance_selection = gr.Radio(
                     label="Performance",
                     choices=["Speed", "Quality", "Custom"],
                     value=settings["performance"],
                 )
-                aspect_ratios_selction = gr.Dropdown(
+                aspect_ratios_selection = gr.Dropdown(
                     label="Aspect Ratios (width x height)",
                     choices=list(aspect_ratios.keys()),
                     value=settings["resolution"],
                 )
-                style_selction = gr.Dropdown(
+                style_selection = gr.Dropdown(
                     label="Style Selection",
                     multiselect=True,
                     container=True,
@@ -237,8 +262,8 @@ with shared.gradio_root as block:
 
                 style_button.click(
                     apply_style,
-                    inputs=[prompt, style_selction],
-                    outputs=[prompt, negative_prompt, style_selction],
+                    inputs=[prompt, style_selection],
+                    outputs=[prompt, negative_prompt, style_selection],
                 )
 
                 def random_checked(r):
@@ -354,9 +379,9 @@ with shared.gradio_root as block:
                     else:
                         return [gr.update(visible=True)] * 7
 
-                performance_selction.change(
+                performance_selection.change(
                     performance_changed,
-                    inputs=[performance_selction],
+                    inputs=[performance_selection],
                     outputs=[
                         cfg,
                         base_clip_skip,
@@ -391,9 +416,9 @@ with shared.gradio_root as block:
         ctrls = [
             prompt,
             negative_prompt,
-            style_selction,
-            performance_selction,
-            aspect_ratios_selction,
+            style_selection,
+            performance_selection,
+            aspect_ratios_selection,
             image_number,
             image_seed,
             save_metadata,
