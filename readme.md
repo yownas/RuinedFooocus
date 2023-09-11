@@ -44,7 +44,7 @@ Note that if you see **"MetadataIncompleteBuffer"**, then your model files are c
 The command lines are
 
     git clone https://github.com/runew0lf/RuinedFooocus.git
-    cd Fooocus
+    cd RuinedFooocus
     conda env create -f environment.yaml
     conda activate fooocus
     pip install -r requirements_versions.txt
