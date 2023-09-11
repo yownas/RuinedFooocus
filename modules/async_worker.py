@@ -54,10 +54,9 @@ def worker():
         except ValueError as e:
             pass
 
-
-        pipeline.refresh_base_model(gen_data["base_model_name"])
-        pipeline.refresh_refiner_model(gen_data["refiner_model_name"])
-        pipeline.refresh_loras(loras)
+        pipeline.load_base_model(gen_data["base_model_name"])
+        pipeline.load_refiner_model(gen_data["refiner_model_name"])
+        pipeline.load_loras(loras)
         pipeline.clean_prompt_cond_caches()
 
         p_txt, n_txt = apply_style(gen_data["style_selection"], gen_data["prompt"], gen_data["negative"])

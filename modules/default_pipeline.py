@@ -29,7 +29,7 @@ xl_base_patched: core.StableDiffusionModel = None
 xl_base_patched_hash = ""
 
 
-def refresh_base_model(name):
+def load_base_model(name):
     global xl_base, xl_base_hash, xl_base_patched, xl_base_patched_hash
     if xl_base_hash == str(name):
         return
@@ -46,7 +46,7 @@ def refresh_base_model(name):
         print("Model not supported. Fooocus only support SDXL model as the base model.")
         xl_base = None
         xl_base_hash = ""
-        refresh_base_model(modules.path.default_base_model_name)
+        load_base_model(modules.path.default_base_model_name)
         xl_base_hash = name
         xl_base_patched = xl_base
         xl_base_patched_hash = ""
@@ -60,7 +60,7 @@ def refresh_base_model(name):
     return
 
 
-def refresh_refiner_model(name):
+def load_refiner_model(name):
     global xl_refiner, xl_refiner_hash
     if xl_refiner_hash == str(name):
         return
@@ -94,7 +94,7 @@ def refresh_refiner_model(name):
     return
 
 
-def refresh_loras(loras):
+def load_loras(loras):
     global xl_base, xl_base_patched, xl_base_patched_hash
     if xl_base_patched_hash == str(loras):
         return
@@ -115,7 +115,7 @@ def refresh_loras(loras):
     return
 
 
-refresh_base_model(default_settings["base_model"])
+load_base_model(default_settings["base_model"])
 
 positive_conditions_cache = None
 negative_conditions_cache = None
