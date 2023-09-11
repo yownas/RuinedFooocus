@@ -69,7 +69,7 @@ progress::after {
 }
 
 .json-container{
-  height: 150px; 
+  height: 600px; 
   overflow: auto !important;
   }
 
