@@ -68,7 +68,6 @@ def refresh_refiner_model(name):
     if name == "None":
         xl_refiner = None
         xl_refiner_hash = ""
-        print(f"Refiner unloaded.")
         return
 
     filename = os.path.join(modules.path.modelfile_path, name)
@@ -142,7 +141,6 @@ def process(
     width,
     height,
     image_seed,
-    input_image_path,
     start_step,
     denoise,
     cfg,
@@ -169,21 +167,9 @@ def process(
     positive_conditions_cache = positive_conditions
     negative_conditions_cache = negative_conditions
 
-    if input_image_path == None:
-        latent = core.generate_empty_latent(width=width, height=height, batch_size=1)
-        force_full_denoise = True
-        denoise = None
-    else:
-        with open(input_image_path, "rb") as image_file:
-            pil_image = Image.open(image_file)
-            image = ImageOps.exif_transpose(pil_image)
-            image_file.close()
-            image = image.convert("RGB")
-            image = np.array(image).astype(np.float32) / 255.0
-            image = torch.from_numpy(image)[None,]
-            input_image = core.upscale(image)
-            latent = core.encode_vae(vae=xl_base_patched.vae, pixels=input_image)
-            force_full_denoise = False
+    latent = core.generate_empty_latent(width=width, height=height, batch_size=1)
+    force_full_denoise = True
+    denoise = None
 
     if xl_refiner is not None:
         with suppress_stdout():

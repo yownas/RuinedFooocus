@@ -152,7 +152,6 @@ def worker():
                     raise
             start_step = 0
             denoise = None
-            input_image_path = None
             start_time = time.time()
             pipeline.clean_prompt_cond_caches()
             try:
@@ -164,7 +163,6 @@ def worker():
                     width,
                     height,
                     seed,
-                    input_image_path,
                     start_step,
                     denoise,
                     cfg,
