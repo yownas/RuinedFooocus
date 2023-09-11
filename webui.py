@@ -78,10 +78,9 @@ def generate_preview(image_nr, image_cnt, width, height, image):
         preview_image.paste(image, (grid_xpos, grid_ypos))
 
 
-def generate_clicked(*args):
-    global preview_image
-    preview_image = None
-    yield (
+def update_clicked():
+    # run_button, stop_button, progress_html, progress_window, metadata_viewer, gallery
+    return (
         gr.update(interactive=False, visible=False),
         gr.update(interactive=True, visible=True),
         gr.update(
@@ -92,6 +91,44 @@ def generate_clicked(*args):
         gr.update(),
         gr.update(visible=False),
     )
+
+
+def update_preview(percentage, title, preview_image_path):
+    # run_button, stop_button, progress_html, progress_window, metadata_viewer, gallery
+    return (
+        gr.update(interactive=False, visible=False),
+        gr.update(interactive=True, visible=True),
+        gr.update(
+            visible=True,
+            value=modules.html.make_progress_html(percentage, title),
+        ),
+        gr.update(visible=True, value=preview_image_path) if preview_image_path is not None else gr.update(),
+        gr.update(),
+        gr.update(visible=False),
+    )
+
+
+def update_results(product):
+    # run_button, stop_button, progress_html, progress_window, metadata_viewer, gallery
+    return (
+        gr.update(interactive=True, visible=True),
+        gr.update(interactive=False, visible=False),
+        gr.update(visible=False),
+        gr.update(visible=False),
+        gr.update(),
+        gr.update(visible=True, value=product),
+    )
+
+
+def update_metadata(product):
+    # run_button, stop_button, progress_html, progress_window, metadata_viewer, gallery
+    return (gr.update(), gr.update(), gr.update(), gr.update(), gr.update(value=product), gr.update())
+
+
+def generate_clicked(*args):
+    global preview_image
+    preview_image = None
+    yield update_clicked()
     gen_data = {}
     (
         gen_data["prompt"],
@@ -120,46 +157,34 @@ def generate_clicked(*args):
         gen_data["l4"],
         gen_data["w4"],
         gen_data["l5"],
-        gen_data["w5"]
+        gen_data["w5"],
     ) = list(args)
     worker.buffer.append(gen_data)
+
     finished = False
     while not finished:
         time.sleep(0.1)
-        if len(worker.outputs) > 0:
-            flag, product = worker.outputs.pop(0)
-            if flag == "preview":
-                percentage, image_nr, image_cnt, title, width, height, image = product
-                generate_preview(image_nr, image_cnt, width, height, image)
-                preview_image_path = "outputs/preview.jpg"
-                preview_image.save(preview_image_path, optimize=True, quality=35)
-                yield (
-                    gr.update(interactive=False, visible=False),
-                    gr.update(interactive=True, visible=True),
-                    gr.update(
-                        visible=True,
-                        value=modules.html.make_progress_html(percentage, title),
-                    ),
-                    gr.update(visible=True, value=preview_image_path)
-                    if preview_image_path is not None
-                    else gr.update(),
-                    gr.update(),
-                    gr.update(visible=False),
-                )
-            if flag == "results":
-                yield (
-                    gr.update(interactive=True, visible=True),
-                    gr.update(interactive=False, visible=False),
-                    gr.update(visible=False),
-                    gr.update(visible=False),
-                    gr.update(),
-                    gr.update(visible=True, value=product),
-                )
-            if flag == "metadata":
-                yield (gr.update(), gr.update(), gr.update(), gr.update(), gr.update(value=product), gr.update())
-                finished = True
+
+        if not worker.outputs:
+            continue
+
+        flag, product = worker.outputs.pop(0)
+
+        if flag == "preview":
+            percentage, image_nr, image_cnt, title, width, height, image = product
+            generate_preview(image_nr, image_cnt, width, height, image)
+            preview_image_path = "outputs/preview.jpg"
+            preview_image.save(preview_image_path, optimize=True, quality=35)
+            yield update_preview(percentage, title, preview_image_path)
+
+        elif flag == "results":
+            yield update_results(product)
+
+        elif flag == "metadata":
+            yield update_metadata(product)
+            finished = True
+
     preview_image = None
-    return
 
 
 settings = default_settings
