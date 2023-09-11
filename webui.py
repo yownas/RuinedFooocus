@@ -275,7 +275,7 @@ with shared.gradio_root as block:
                                 label="Strength",
                                 minimum=-2,
                                 maximum=2,
-                                step=0.01,
+                                step=0.05,
                                 value=settings[f"lora_{i+1}_weight"],
                             )
                             lora_ctrls += [lora_model, lora_weight]
