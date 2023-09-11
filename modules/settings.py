@@ -13,7 +13,6 @@ DEFAULT_SETTINGS = {
     "negative_prompt": "",
     "performance": "Speed",
     "resolution": "1152x896 (4:3)",
-    "sharpness": 2.0,
     "base_model": modules.path.default_base_model_name,
     "refiner_model": modules.path.default_refiner_model_name,
     "lora_1_model": modules.path.default_lora_name,

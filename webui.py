@@ -342,13 +342,6 @@ with shared.gradio_root as block:
                     value="karras",
                     visible=False,
                 )
-                sharpness = gr.Slider(
-                    label="Sampling Sharpness",
-                    minimum=0.0,
-                    maximum=40.0,
-                    step=0.01,
-                    value=settings["sharpness"],
-                )
 
                 def performance_changed(selection):
                     if selection != "Custom":
@@ -398,7 +391,6 @@ with shared.gradio_root as block:
             aspect_ratios_selction,
             image_number,
             image_seed,
-            sharpness,
             save_metadata,
             cfg,
             base_clip_skip,
