@@ -100,7 +100,7 @@ def generate_clicked(*args):
         gen_data["performance_selection"],
         gen_data["aspect_ratios_selection"],
         gen_data["image_number"],
-        gen_data["image"],
+        gen_data["seed"],
         gen_data["save_metadata"],
         gen_data["cfg"],
         gen_data["base_clip_skip"],
