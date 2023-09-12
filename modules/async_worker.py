@@ -20,7 +20,7 @@ def worker():
     import random
     import modules.default_pipeline as pipeline
     import modules.path
-    from modules.prompt_processing import process_prompt, parse_loras
+    from modules.prompt_processing import process_metadata, process_prompt, parse_loras
 
     from PIL import Image
     from PIL.PngImagePlugin import PngInfo
@@ -37,6 +37,8 @@ def worker():
         print(e)
 
     def handler(gen_data):
+        gen_data = process_metadata(gen_data)
+
         loras = [
             (gen_data["l1"], gen_data["w1"]),
             (gen_data["l2"], gen_data["w2"]),
@@ -46,15 +48,6 @@ def worker():
         ]
         parsed_loras, pos_stripped, neg_stripped = parse_loras(gen_data["prompt"], gen_data["negative"])
         loras.extend(parsed_loras)
-
-        try:
-            meta = json.loads(gen_data["prompt"])
-            meta = dict((k.lower(), v) for k, v in meta.items())
-            gen_data.update(meta)
-            if "prompt" in meta:
-                gen_data["style_selection"] = None
-        except ValueError as e:
-            pass
 
         pipeline.load_base_model(gen_data["base_model_name"])
         pipeline.load_refiner_model(gen_data["refiner_model_name"])
