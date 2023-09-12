@@ -1,10 +1,11 @@
 import os
 import re
 import random
+import json
 
 from modules.sdxl_styles import apply_style
 
-def process_metadata(gen_data)
+def process_metadata(gen_data):
     try:
         meta = json.loads(gen_data["prompt"])
         meta = dict((k.lower(), v) for k, v in meta.items())
