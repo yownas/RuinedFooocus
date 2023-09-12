@@ -1,7 +1,6 @@
 import threading
 import gc
 import torch
-import re
 from playsound import playsound
 from os.path import exists
 
@@ -21,10 +20,11 @@ def worker():
     import random
     import modules.default_pipeline as pipeline
     import modules.path
+    from modules.prompt_processing import process_prompt
 
     from PIL import Image
     from PIL.PngImagePlugin import PngInfo
-    from modules.sdxl_styles import apply_style, aspect_ratios
+    from modules.sdxl_styles import aspect_ratios
     from modules.util import generate_temp_filename
 
     try:
@@ -58,8 +58,6 @@ def worker():
         pipeline.load_refiner_model(gen_data["refiner_model_name"])
         pipeline.load_loras(loras)
         pipeline.clean_prompt_cond_caches()
-
-        p_txt, n_txt = apply_style(gen_data["style_selection"], gen_data["prompt"], gen_data["negative"])
 
         if gen_data["performance_selection"] == "Speed":
             steps = 30
@@ -118,26 +116,14 @@ def worker():
 
         stop_batch = False
         for i in range(gen_data["image_number"]):
-            directory = "wildcards"
-            wildcard_text = p_txt
-            placeholders = re.findall(r"__(\w+)__", wildcard_text)
-            for placeholder in placeholders:
-                try:
-                    with open(os.path.join(directory, f"{placeholder}.txt")) as f:
-                        words = f.read().splitlines()
-                    wildcard_text = re.sub(rf"__{placeholder}__", random.choice(words), wildcard_text)
-                except IOError:
-                    print(
-                        f"Error: Could not open file {placeholder}.txt. Please ensure the file exists and is readable."
-                    )
-                    raise
+            p_txt, n_txt = process_prompt(gen_data["style_selection"], gen_data["prompt"], gen_data["negative"])
             start_step = 0
             denoise = None
             start_time = time.time()
             pipeline.clean_prompt_cond_caches()
             try:
                 imgs = pipeline.process(
-                    wildcard_text,
+                    p_txt,
                     n_txt,
                     steps,
                     switch,
@@ -165,7 +151,7 @@ def worker():
                 os.makedirs(os.path.dirname(local_temp_filename), exist_ok=True)
                 metadata = None
                 prompt = {
-                    "Prompt": wildcard_text,
+                    "Prompt": p_txt,
                     "Negative": n_txt,
                     "steps": steps,
                     "switch": switch,
