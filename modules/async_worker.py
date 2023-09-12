@@ -21,7 +21,7 @@ def worker():
     import random
     import modules.default_pipeline as pipeline
     import modules.path
-    from modules.prompt_processing import process_prompt
+    from modules.prompt_processing import process_prompt, parse_loras
 
     from PIL import Image
     from PIL.PngImagePlugin import PngInfo
@@ -61,6 +61,8 @@ def worker():
             (gen_data["l4"], gen_data["w4"]),
             (gen_data["l5"], gen_data["w5"]),
         ]
+        parsed_loras, pos_stripped, neg_stripped = parse_loras(gen_data["prompt"], gen_data["negative"])
+        loras.extend(parsed_loras)
 
         pipeline.load_base_model(gen_data["base_model_name"])
         pipeline.load_refiner_model(gen_data["refiner_model_name"])
@@ -124,7 +126,7 @@ def worker():
 
         stop_batch = False
         for i in range(gen_data["image_number"]):
-            p_txt, n_txt = process_prompt(gen_data["style_selection"], gen_data["prompt"], gen_data["negative"])
+            p_txt, n_txt = process_prompt(gen_data["style_selection"], pos_stripped, neg_stripped)
             start_step = 0
             denoise = None
             start_time = time.time()

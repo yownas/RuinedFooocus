@@ -22,3 +22,13 @@ def process_prompt(style, prompt, negative):
     p_txt, n_txt = apply_style(style, prompt, negative)
     p_txt = process_wildcards(p_txt)
     return p_txt, n_txt
+
+
+def parse_loras(prompt, negative):
+    pattern = re.compile(r"<lora:([^>]+):(\d+)>")
+    loras = []
+    for match in re.finditer(pattern, prompt):
+        loras.append((f"{match.group(1)}.safetensors", float(match.group(2))))
+    for match in re.finditer(pattern, negative):
+        loras.append((f"{match.group(1)}.safetensors", float(match.group(2))))
+    return loras, re.sub(pattern, "", prompt), re.sub(pattern, "", negative)
