@@ -153,19 +153,16 @@ def process(
     global positive_conditions_cache, negative_conditions_cache, positive_conditions_refiner_cache, negative_conditions_refiner_cache
 
     with suppress_stdout():
-        positive_conditions = (
+        positive_conditions_cache = (
             core.encode_prompt_condition(clip=xl_base_patched.clip, prompt=positive_prompt)
             if positive_conditions_cache is None
             else positive_conditions_cache
         )
-        negative_conditions = (
+        negative_conditions_cache = (
             core.encode_prompt_condition(clip=xl_base_patched.clip, prompt=negative_prompt)
             if negative_conditions_cache is None
             else negative_conditions_cache
         )
-
-    positive_conditions_cache = positive_conditions
-    negative_conditions_cache = negative_conditions
 
     latent = core.generate_empty_latent(width=width, height=height, batch_size=1)
     force_full_denoise = True
@@ -173,60 +170,38 @@ def process(
 
     if xl_refiner is not None:
         with suppress_stdout():
-            positive_conditions_refiner = (
+            positive_conditions_refiner_cache = (
                 core.encode_prompt_condition(clip=xl_refiner.clip, prompt=positive_prompt)
                 if positive_conditions_refiner_cache is None
                 else positive_conditions_refiner_cache
             )
-            negative_conditions_refiner = (
+            negative_conditions_refiner_cache = (
                 core.encode_prompt_condition(clip=xl_refiner.clip, prompt=negative_prompt)
                 if negative_conditions_refiner_cache is None
                 else negative_conditions_refiner_cache
             )
 
-        positive_conditions_refiner_cache = positive_conditions_refiner
-        negative_conditions_refiner_cache = negative_conditions_refiner
-
-        sampled_latent = core.ksampler_with_refiner(
-            model=xl_base_patched.unet,
-            positive=positive_conditions,
-            negative=negative_conditions,
-            refiner=xl_refiner.unet,
-            refiner_positive=positive_conditions_refiner,
-            refiner_negative=negative_conditions_refiner,
-            refiner_switch_step=switch,
-            latent=latent,
-            steps=steps,
-            start_step=start_step,
-            last_step=steps,
-            disable_noise=False,
-            force_full_denoise=force_full_denoise,
-            denoise=denoise,
-            seed=image_seed,
-            sampler_name=sampler_name,
-            scheduler=scheduler,
-            cfg=cfg,
-            callback_function=callback,
-        )
-
-    else:
-        sampled_latent = core.ksampler(
-            model=xl_base_patched.unet,
-            positive=positive_conditions,
-            negative=negative_conditions,
-            latent=latent,
-            steps=steps,
-            start_step=0,
-            last_step=steps,
-            disable_noise=False,
-            force_full_denoise=force_full_denoise,
-            denoise=denoise,
-            seed=image_seed,
-            sampler_name=sampler_name,
-            scheduler=scheduler,
-            cfg=cfg,
-            callback_function=callback,
-        )
+    sampled_latent = core.ksampler_with_refiner(
+        model=xl_base_patched.unet,
+        positive=positive_conditions_cache,
+        negative=negative_conditions_cache,
+        refiner=xl_refiner.unet if xl_refiner is not None else None,
+        refiner_positive=positive_conditions_refiner_cache,
+        refiner_negative=negative_conditions_refiner_cache,
+        refiner_switch_step=switch,
+        latent=latent,
+        steps=steps,
+        start_step=start_step,
+        last_step=steps,
+        disable_noise=False,
+        force_full_denoise=force_full_denoise,
+        denoise=denoise,
+        seed=image_seed,
+        sampler_name=sampler_name,
+        scheduler=scheduler,
+        cfg=cfg,
+        callback_function=callback,
+    )
 
     decoded_latent = core.decode_vae(vae=xl_base_patched.vae, latent_image=sampled_latent)
 
