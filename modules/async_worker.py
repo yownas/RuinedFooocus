@@ -39,13 +39,18 @@ def worker():
     def handler(gen_data):
         gen_data = process_metadata(gen_data)
 
-        loras = [
-            (gen_data["l1"], gen_data["w1"]),
-            (gen_data["l2"], gen_data["w2"]),
-            (gen_data["l3"], gen_data["w3"]),
-            (gen_data["l4"], gen_data["w4"]),
-            (gen_data["l5"], gen_data["w5"]),
-        ]
+        loras = []
+        i = 1
+
+        while True:
+            l_key = f"l{i}"
+            w_key = f"w{i}"
+            try:
+                loras.append((gen_data[l_key], gen_data[w_key]))
+                i += 1
+            except KeyError:
+                break
+
         parsed_loras, pos_stripped, neg_stripped = parse_loras(gen_data["prompt"], gen_data["negative"])
         loras.extend(parsed_loras)
 
@@ -169,7 +174,7 @@ def worker():
 
                 Image.fromarray(x).save(local_temp_filename, pnginfo=metadata)
                 results.append(local_temp_filename)
-                metadatastrings.append(prompt)
+                metadatastrings.append(json.dumps(prompt))
 
             seed += 1
             if stop_batch:
