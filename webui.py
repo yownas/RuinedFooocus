@@ -343,7 +343,6 @@ with shared.gradio_root as block:
                     )
             with gr.Tab(label="Advanced"):
                 save_metadata = gr.Checkbox(label="Save Metadata", value=settings["save_metadata"])
-                metadata_viewer = gr.JSON(label="Metadata", elem_classes="json-container")
                 custom_steps = gr.Slider(
                     label="Custom Steps",
                     minimum=10,
@@ -398,25 +397,29 @@ with shared.gradio_root as block:
                     visible=False,
                 )
 
+                performance_outputs = [
+                    cfg,
+                    base_clip_skip,
+                    refiner_clip_skip,
+                    sampler_name,
+                    scheduler,
+                    custom_steps,
+                    custom_switch,
+                ]
+
                 def performance_changed(selection):
                     if selection != "Custom":
-                        return [gr.update(visible=False)] * 7
+                        return [gr.update(visible=False)] * len(performance_outputs)
                     else:
-                        return [gr.update(visible=True)] * 7
+                        return [gr.update(visible=True)] * len(performance_outputs)
 
                 performance_selection.change(
                     performance_changed,
                     inputs=[performance_selection],
-                    outputs=[
-                        cfg,
-                        base_clip_skip,
-                        refiner_clip_skip,
-                        sampler_name,
-                        scheduler,
-                        custom_steps,
-                        custom_switch,
-                    ],
+                    outputs=performance_outputs,
                 )
+
+                metadata_viewer = gr.JSON(label="Metadata", elem_classes="json-container")
 
             def model_refresh_clicked():
                 modules.path.update_all_model_names()
