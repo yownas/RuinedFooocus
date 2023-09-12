@@ -3,6 +3,7 @@ import gc
 import torch
 from playsound import playsound
 from os.path import exists
+import re
 
 buffer = []
 outputs = []
@@ -37,6 +38,22 @@ def worker():
         print(e)
 
     def handler(gen_data):
+        try:
+            meta = json.loads(gen_data["prompt"])
+            meta = dict((k.lower(), v) for k, v in meta.items())
+            gen_data.update(meta)
+            if "prompt" in meta:
+                gen_data["style_selection"] = None
+            if "loras" in meta:
+                idx = 1
+                for lora in re.findall(r"<(.*?):(.*?)>", meta["loras"]):
+                    l, w = lora
+                    gen_data[f"l{idx}"] = l
+                    gen_data[f"w{idx}"] = float(w)
+                    idx += 1
+        except ValueError as e:
+            pass
+
         loras = [
             (gen_data["l1"], gen_data["w1"]),
             (gen_data["l2"], gen_data["w2"]),
@@ -44,15 +61,6 @@ def worker():
             (gen_data["l4"], gen_data["w4"]),
             (gen_data["l5"], gen_data["w5"]),
         ]
-
-        try:
-            meta = json.loads(gen_data["prompt"])
-            meta = dict((k.lower(), v) for k, v in meta.items())
-            gen_data.update(meta)
-            if "prompt" in meta:
-                gen_data["style_selection"] = None
-        except ValueError as e:
-            pass
 
         pipeline.load_base_model(gen_data["base_model_name"])
         pipeline.load_refiner_model(gen_data["refiner_model_name"])
