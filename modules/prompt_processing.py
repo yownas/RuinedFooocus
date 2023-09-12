@@ -4,6 +4,24 @@ import random
 
 from modules.sdxl_styles import apply_style
 
+def process_metadata(gen_data)
+    try:
+        meta = json.loads(gen_data["prompt"])
+        meta = dict((k.lower(), v) for k, v in meta.items())
+        gen_data.update(meta)
+        if "prompt" in meta:
+            gen_data["style_selection"] = None
+        if "loras" in meta:
+            idx = 1
+            for lora in re.findall(r"<(.*?):(.*?)>", meta["loras"]):
+                l, w = lora
+                gen_data[f"l{idx}"] = l
+                gen_data[f"w{idx}"] = float(w)
+                idx += 1
+    except ValueError as e:
+        pass
+    return(gen_data)
+
 
 def process_wildcards(wildcard_text, directory="wildcards"):
     placeholders = re.findall(r"__(\w+)__", wildcard_text)

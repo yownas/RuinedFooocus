@@ -3,7 +3,6 @@ import gc
 import torch
 from playsound import playsound
 from os.path import exists
-import re
 
 buffer = []
 outputs = []
@@ -21,7 +20,7 @@ def worker():
     import random
     import modules.default_pipeline as pipeline
     import modules.path
-    from modules.prompt_processing import process_prompt, parse_loras
+    from modules.prompt_processing import process_metadata, process_prompt, parse_loras
 
     from PIL import Image
     from PIL.PngImagePlugin import PngInfo
@@ -38,21 +37,7 @@ def worker():
         print(e)
 
     def handler(gen_data):
-        try:
-            meta = json.loads(gen_data["prompt"])
-            meta = dict((k.lower(), v) for k, v in meta.items())
-            gen_data.update(meta)
-            if "prompt" in meta:
-                gen_data["style_selection"] = None
-            if "loras" in meta:
-                idx = 1
-                for lora in re.findall(r"<(.*?):(.*?)>", meta["loras"]):
-                    l, w = lora
-                    gen_data[f"l{idx}"] = l
-                    gen_data[f"w{idx}"] = float(w)
-                    idx += 1
-        except ValueError as e:
-            pass
+        gen_data = process_metadata(gen_data)
 
         loras = [
             (gen_data["l1"], gen_data["w1"]),
