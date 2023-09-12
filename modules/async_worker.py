@@ -164,27 +164,28 @@ def worker():
                 local_temp_filename = generate_temp_filename(folder=modules.path.temp_outputs_path, extension="png")
                 os.makedirs(os.path.dirname(local_temp_filename), exist_ok=True)
                 metadata = None
+                prompt = {
+                    "Prompt": wildcard_text,
+                    "Negative": n_txt,
+                    "steps": steps,
+                    "switch": switch,
+                    "cfg": gen_data["cfg"],
+                    "width": width,
+                    "height": height,
+                    "seed": seed,
+                    "sampler_name": gen_data["sampler_name"],
+                    "scheduler": gen_data["scheduler"],
+                    "base_model_name": gen_data["base_model_name"],
+                    "refiner_model_name": gen_data["refiner_model_name"],
+                    "loras": "Loras:" + ",".join([f"<{lora[0]}:{lora[1]}>" for lora in loras]),
+                    "start_step": start_step,
+                    "denoise": denoise,
+                    "software": "RuinedFooocus",
+                }
                 if gen_data["save_metadata"]:
-                    prompt = {
-                        "Prompt": wildcard_text,
-                        "Negative": n_txt,
-                        "steps": steps,
-                        "switch": switch,
-                        "cfg": gen_data["cfg"],
-                        "width": width,
-                        "height": height,
-                        "seed": seed,
-                        "sampler_name": gen_data["sampler_name"],
-                        "scheduler": gen_data["scheduler"],
-                        "base_model_name": gen_data["base_model_name"],
-                        "refiner_model_name": gen_data["refiner_model_name"],
-                        "loras": "Loras:" + ",".join([f"<{lora[0]}:{lora[1]}>" for lora in loras]),
-                        "start_step": start_step,
-                        "denoise": denoise,
-                        "software": "RuinedFooocus",
-                    }
                     metadata = PngInfo()
                     metadata.add_text("parameters", json.dumps(prompt))
+
                 Image.fromarray(x).save(local_temp_filename, pnginfo=metadata)
                 results.append(local_temp_filename)
                 metadatastrings.append(prompt)
