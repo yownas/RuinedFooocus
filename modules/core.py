@@ -188,7 +188,6 @@ def ksampler_with_refiner(
         "force_full_denoise": force_full_denoise,
         "denoise_mask": noise_mask,
         "sigmas": sigmas,
-        "callback": callback,
         "disable_pbar": disable_pbar,
         "seed": seed,
     }
@@ -210,8 +209,8 @@ def ksampler_with_refiner(
             "refiner_positive": refiner_positive_copy,
             "refiner_negative": refiner_negative_copy,
             "refiner_switch_step": refiner_switch_step,
+            "callback_function": callback,
         }
-        kwargs.update(extra_kwargs)
     else:
         sampler = KSampler(
             real_model,
@@ -222,6 +221,10 @@ def ksampler_with_refiner(
             denoise=denoise,
             model_options=model.model_options,
         )
+        extra_kwargs = {
+            "callback": callback,
+        }
+    kwargs.update(extra_kwargs)
 
     samples = sampler.sample(
         noise,
