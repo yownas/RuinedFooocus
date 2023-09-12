@@ -79,6 +79,7 @@ Coming soon ...
 14. Displays time taken for each render in the console. If `notification.mp3` exists in the root directory, this will play when the generations are complete.
 15. Added **Cancel** button to stop generation. Thanks to [Yownas](https://github.com/yownas) and [MoonRide](https://github.com/MoonRide303/)
 16. Pressing `Ctrl-Enter` is the same as pressing the generate button!
+17. Adds the ability to add loras to just prompt ala auto111 style eg `<lora:MyAwesomeLora-SL:0.90>`
 
 ## Thanks
 
