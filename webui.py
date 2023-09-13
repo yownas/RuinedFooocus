@@ -234,7 +234,7 @@ with shared.gradio_root as block:
 
                     def load_images_handler(file):
                         info = file.info
-                        params = info["parameters"]
+                        params = info.get("parameters", "")
                         return params
 
                     image_upload.upload(load_images_handler, inputs=[image_upload], outputs=[prompt])
