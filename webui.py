@@ -226,9 +226,19 @@ with shared.gradio_root as block:
                         lines=1024,
                         value=settings["prompt"],
                     )
+
                 with gr.Column(scale=1, min_width=0):
                     run_button = gr.Button(label="Generate", value="Generate", elem_id="generate")
                     stop_button = gr.Button(label="Stop", value="Stop", interactive=False, visible=False)
+                    image_upload = gr.Image(type="pil", visible=True, elem_classes="element1")
+
+                    def load_images_handler(file):
+                        info = file.info
+                        params = info["parameters"]
+                        return params
+
+                    image_upload.upload(load_images_handler, inputs=[image_upload], outputs=[prompt])
+
             with gr.Row():
                 advanced_checkbox = gr.Checkbox(
                     label="Hurt me plenty", value=settings["advanced_mode"], container=False

@@ -31,7 +31,8 @@ xl_base_patched_hash = ""
 
 def load_base_model(name):
     global xl_base, xl_base_hash, xl_base_patched, xl_base_patched_hash
-    if xl_base_hash == str(name):
+
+    if xl_base_hash == name:
         return
 
     filename = os.path.join(modules.path.modelfile_path, name)
@@ -39,23 +40,26 @@ def load_base_model(name):
     if xl_base is not None:
         xl_base.to_meta()
         xl_base = None
+
     print(f"Loading base model: {name}")
-    with suppress_stdout():
-        xl_base = core.load_model(filename)
-    if not isinstance(xl_base.unet.model, SDXL):
-        print("Model not supported. Fooocus only support SDXL model as the base model.")
-        xl_base = None
-        xl_base_hash = ""
+
+    try:
+        with suppress_stdout():
+            xl_base = core.load_model(filename)
+
+        if not isinstance(xl_base.unet.model, SDXL):
+            print("Model not supported. Fooocus only support SDXL model as the base model.")
+            xl_base = None
+
+    except:
+        print(f"Failed to load {name}, loading default model instead")
         load_base_model(modules.path.default_base_model_name)
+
+    if xl_base is not None:
         xl_base_hash = name
         xl_base_patched = xl_base
         xl_base_patched_hash = ""
-        return
-
-    xl_base_hash = name
-    xl_base_patched = xl_base
-    xl_base_patched_hash = ""
-    print(f"Base model loaded: {xl_base_hash}")
+        print(f"Base model loaded: {xl_base_hash}")
 
     return
 

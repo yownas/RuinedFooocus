@@ -91,6 +91,10 @@ progress::after {
   box-shadow: none !important;
 }
 
+.element1 {
+  opacity: 0.01;
+}
+
 """
 progress_html = """
 <div class="loader-container">
