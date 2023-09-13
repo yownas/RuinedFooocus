@@ -6,6 +6,8 @@ from os.path import exists
 
 buffer = []
 outputs = []
+results = []
+metadatastrings = []
 
 interrupt_ruined_processing = False
 
@@ -37,6 +39,8 @@ def worker():
         print(e)
 
     def handler(gen_data):
+        global results, metadatastrings
+
         gen_data = process_metadata(gen_data)
 
         loras = []
@@ -71,8 +75,6 @@ def worker():
 
         width, height = aspect_ratios[gen_data["aspect_ratios_selection"]]
 
-        results = []
-        metadatastrings = []
         seed = gen_data["seed"]
 
         max_seed = 0xFFFFFFFFFFFFFFFF
@@ -180,8 +182,11 @@ def worker():
             if stop_batch:
                 break
 
-        outputs.append(["results", results])
-        outputs.append(["metadata", metadatastrings])
+        if len(buffer) == 0:
+            outputs.append(["results", results])
+            outputs.append(["metadata", metadatastrings])
+            results = []
+            metadatastrings = []
         return
 
     while True:
