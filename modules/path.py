@@ -71,6 +71,8 @@ def update_all_model_names():
     global model_filenames, lora_filenames
     model_filenames = get_model_filenames(modelfile_path)
     lora_filenames = get_model_filenames(lorafile_path)
+    model_filenames.sort(key=str.casefold)
+    lora_filenames.sort(key=str.casefold)
     return
 
 
