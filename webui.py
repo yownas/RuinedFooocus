@@ -160,11 +160,11 @@ def generate_clicked(*args):
         gen_data["w5"],
     ) = list(args)
     prompts = gen_data["prompt"].split("---")
-    idx=0
+    idx = 0
     for prompt in prompts:
         gen_data["prompt"] = prompt
         gen_data["index"] = (idx, len(prompts))
-        idx+=1
+        idx += 1
         worker.buffer.append(gen_data.copy())
 
     finished = False
@@ -241,9 +241,9 @@ with shared.gradio_root as block:
                     def load_images_handler(file):
                         info = file.info
                         params = info.get("parameters", "")
-                        return params
+                        return params, [file]
 
-                    image_upload.upload(load_images_handler, inputs=[image_upload], outputs=[prompt])
+                    image_upload.upload(load_images_handler, inputs=[image_upload], outputs=[prompt, gallery])
 
             with gr.Row():
                 advanced_checkbox = gr.Checkbox(
