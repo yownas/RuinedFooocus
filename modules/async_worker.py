@@ -74,8 +74,10 @@ def worker():
             switch = gen_data["custom_switch"]
 
         width, height = aspect_ratios[gen_data["aspect_ratios_selection"]]
-        if "width" in gen_data: width = gen_data["width"]
-        if "height" in gen_data: height = gen_data["height"]
+        if "width" in gen_data:
+            width = gen_data["width"]
+        if "height" in gen_data:
+            height = gen_data["height"]
 
         seed = gen_data["seed"]
 
@@ -107,7 +109,7 @@ def worker():
                 [
                     "preview",
                     (
-                        int(100*(gen_data["index"][0]+done_steps/all_steps)/gen_data["index"][1]),
+                        int(100 * (gen_data["index"][0] + done_steps / all_steps) / gen_data["index"][1]),
                         i,
                         gen_data["image_number"],
                         f"{status} - {step}/{total_steps}",
