@@ -5,6 +5,7 @@ import json
 
 from modules.sdxl_styles import apply_style
 
+
 def process_metadata(gen_data):
     try:
         meta = json.loads(gen_data["prompt"])
@@ -12,6 +13,9 @@ def process_metadata(gen_data):
         gen_data.update(meta)
         if "prompt" in meta:
             gen_data["style_selection"] = None
+        if meta.get("seed") == -1:
+            gen_data["seed"] = random.randint(0, 2**32 - 1)
+
         if "loras" in meta:
             idx = 1
             for lora in re.findall(r"<(.*?):(.*?)>", meta["loras"]):
@@ -21,7 +25,7 @@ def process_metadata(gen_data):
                 idx += 1
     except ValueError as e:
         pass
-    return(gen_data)
+    return gen_data
 
 
 def process_wildcards(wildcard_text, directory="wildcards"):

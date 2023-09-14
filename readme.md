@@ -81,7 +81,7 @@ Coming soon ...
 16. Pressing `Ctrl-Enter` is the same as pressing the generate button!
 17. Adds the ability to add loras to just prompt ala auto111 style eg `<lora:MyAwesomeLora-SL:0.90>`
 18. Drag and drop previous **Ruined** images to just a hidden area (just below the generate button), it will autofill the prompt with the generation metadata.
-19. The ability to post json metadata into the prompt window so you dont have to go into ANY settings tabs when you click generate.
+19. The ability to post json metadata into the prompt window so you dont have to go into ANY settings tabs when you click generate. (**Note:** setting a seed of `-1` will generate a random seed)
 20. Render different subjects so you can process a whole list of prompts. Seperate each prompt by placing `---` on a new line
 
 ## Thanks

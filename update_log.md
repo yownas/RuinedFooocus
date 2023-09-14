@@ -1,7 +1,12 @@
-### 1.0.0
+### 1.1.1
 
-* New Beginnings. The official start of the updates!
+*  In the json prompt, setting a seed of `-1` allows you to generate a random seed
+
 
 ### 1.1.0
 
 *  Render different subjects so you can process a whole list of prompts. Seperate each prompt by placing `---` on a new line
+
+### 1.0.0
+
+* New Beginnings. The official start of the updates!
