@@ -160,8 +160,11 @@ def generate_clicked(*args):
         gen_data["w5"],
     ) = list(args)
     prompts = gen_data["prompt"].split("---")
+    idx=0
     for prompt in prompts:
         gen_data["prompt"] = prompt
+        gen_data["index"] = (idx, len(prompts))
+        idx+=1
         worker.buffer.append(gen_data.copy())
 
     finished = False

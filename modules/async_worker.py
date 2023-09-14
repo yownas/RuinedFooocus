@@ -105,7 +105,7 @@ def worker():
                 [
                     "preview",
                     (
-                        int(100.0 * float(done_steps) / float(all_steps)),
+                        int(100*(gen_data["index"][0]+done_steps/all_steps)/gen_data["index"][1]),
                         i,
                         gen_data["image_number"],
                         f"{status} - {step}/{total_steps}",
