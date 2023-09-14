@@ -14,6 +14,7 @@ import ui_onebutton
 from comfy.samplers import KSampler
 from modules.sdxl_styles import style_keys, aspect_ratios, styles
 from modules.settings import default_settings
+from modules.prompt_processing import get_promptlist
 
 import math
 from PIL import Image

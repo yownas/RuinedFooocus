@@ -28,6 +28,10 @@ def process_metadata(gen_data):
     return gen_data
 
 
+def get_promptlist(gen_data):
+    return gen_data["prompt"].split("\n---\n")
+
+
 def process_wildcards(wildcard_text, directory="wildcards"):
     placeholders = re.findall(r"__(\w+)__", wildcard_text)
     for placeholder in placeholders:
