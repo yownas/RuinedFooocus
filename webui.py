@@ -159,7 +159,10 @@ def generate_clicked(*args):
         gen_data["l5"],
         gen_data["w5"],
     ) = list(args)
-    worker.buffer.append(gen_data)
+    prompts = gen_data["prompt"].split("---")
+    for prompt in prompts:
+        gen_data["prompt"] = prompt
+        worker.buffer.append(gen_data.copy())
 
     finished = False
     while not finished:
@@ -477,6 +480,7 @@ with shared.gradio_root as block:
         )
 
         def stop_clicked():
+            worker.buffer = []
             worker.interrupt_ruined_processing = True
 
         stop_button.click(fn=stop_clicked, queue=False)
