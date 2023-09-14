@@ -14,6 +14,7 @@ import ui_onebutton
 from comfy.samplers import KSampler
 from modules.sdxl_styles import style_keys, aspect_ratios, styles
 from modules.settings import default_settings
+from modules.prompt_processing import get_promptlist
 
 import math
 from PIL import Image
@@ -159,7 +160,7 @@ def generate_clicked(*args):
         gen_data["l5"],
         gen_data["w5"],
     ) = list(args)
-    prompts = gen_data["prompt"].split("---")
+    prompts = get_promptlist(gen_data)
     idx=0
     for prompt in prompts:
         gen_data["prompt"] = prompt
