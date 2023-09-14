@@ -58,11 +58,16 @@ def get_model_filenames(folder_path):
         raise ValueError("Folder path is not a valid directory.")
 
     filenames = []
-    for filename in os.listdir(folder_path):
-        if os.path.isfile(os.path.join(folder_path, filename)):
-            _, file_extension = os.path.splitext(filename)
-            if file_extension.lower() in [".pth", ".ckpt", ".bin", ".safetensors"]:
-                filenames.append(filename)
+
+    for root, dirs, files in os.walk(folder_path):
+        relative_path = os.path.relpath(root, folder_path)
+        if relative_path == ".":
+            relative_path = ""
+        for filename in files:
+            _, ext = os.path.splitext(filename)
+            if ext.lower() in [".pth", ".ckpt", ".bin", ".safetensors"]:
+                path = os.path.join(relative_path, filename)
+                filenames.append(path)
 
     return filenames
 

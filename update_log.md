@@ -1,5 +1,8 @@
+### 1.1.3
+* Added support for subdirectories with models/loras so you can get all organised!
+
 ### 1.1.2
-*  showed imported image in gallery 
+* showed imported image in gallery 
 * moved `---` split into prompt generation
 * correctly updates progressbar
 * fixed importing of width / height
