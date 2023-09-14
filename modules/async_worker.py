@@ -74,6 +74,8 @@ def worker():
             switch = gen_data["custom_switch"]
 
         width, height = aspect_ratios[gen_data["aspect_ratios_selection"]]
+        if "width" in gen_data: width = gen_data["width"]
+        if "height" in gen_data: height = gen_data["height"]
 
         seed = gen_data["seed"]
 
