@@ -21,9 +21,7 @@ import math
 from PIL import Image
 
 
-preview_image = None
-ctrls_name = []
-ctrls_obj = []
+state = {"preview_image": None, "ctrls_name": [], "ctrls_obj": []}
 
 
 def load_images_handler(files):
@@ -66,20 +64,19 @@ def launch_app(args):
 
 
 def generate_preview(image_nr, image_cnt, width, height, image):
-    global preview_image
     grid_xsize = math.ceil(math.sqrt(image_cnt))
     grid_ysize = math.ceil(image_cnt / grid_xsize)
     grid_max = max(grid_xsize, grid_ysize)
     pwidth = int(width * grid_xsize / grid_max)
     pheight = int(height * grid_ysize / grid_max)
-    if preview_image is None:
-        preview_image = Image.new("RGB", (pwidth, pheight))
+    if state["preview_image"] is None:
+        state["preview_image"] = Image.new("RGB", (pwidth, pheight))
     if image is not None:
         image = Image.fromarray(image)
         grid_xpos = int((image_nr % grid_xsize) * (pwidth / grid_xsize))
         grid_ypos = int(math.floor(image_nr / grid_xsize) * (pheight / grid_ysize))
         image = image.resize((int(width / grid_max), int(height / grid_max)))
-        preview_image.paste(image, (grid_xpos, grid_ypos))
+        state["preview_image"].paste(image, (grid_xpos, grid_ypos))
 
 
 def update_clicked():
@@ -130,16 +127,15 @@ def update_metadata(product):
 
 
 def add_ctrl(name, obj):
-    global ctrls_name, ctrls_obj, ctrls
-    ctrls_name += [name]
-    ctrls_obj += [obj]
+    state["ctrls_name"] += [name]
+    state["ctrls_obj"] += [obj]
+
 
 def generate_clicked(*args):
-    global preview_image, ctrls_name
-    preview_image = None
+    state["preview_image"] = None
     yield update_clicked()
     gen_data = {}
-    for key, val in zip(ctrls_name, args):
+    for key, val in zip(state["ctrls_name"], args):
         gen_data[key] = val
 
     prompts = get_promptlist(gen_data)
@@ -163,7 +159,7 @@ def generate_clicked(*args):
             percentage, image_nr, image_cnt, title, width, height, image = product
             generate_preview(image_nr, image_cnt, width, height, image)
             preview_image_path = "outputs/preview.jpg"
-            preview_image.save(preview_image_path, optimize=True, quality=35)
+            state["preview_image"].save(preview_image_path, optimize=True, quality=35)
             yield update_preview(percentage, title, preview_image_path)
 
         elif flag == "results":
@@ -173,7 +169,7 @@ def generate_clicked(*args):
             yield update_metadata(product)
             finished = True
 
-    preview_image = None
+    state["preview_image"] = None
 
 
 settings = default_settings
@@ -469,7 +465,7 @@ with shared.gradio_root as block:
 
         run_button.click(fn=refresh_seed, inputs=[seed_random, image_seed], outputs=image_seed).then(
             fn=generate_clicked,
-            inputs=ctrls_obj,
+            inputs=state["ctrls_obj"],
             outputs=[run_button, stop_button, progress_html, progress_window, metadata_viewer, gallery],
         )
 
