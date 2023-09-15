@@ -1,3 +1,6 @@
+### 1.1.5
+* Fixed sorting on subfolders, so directories are displayed first
+
 ### 1.1.4
 * Allowed main image window to recieve drag and drop
 * Added a gallery preview underneath that will activate image window.
