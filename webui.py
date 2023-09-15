@@ -22,6 +22,8 @@ from PIL import Image
 
 
 preview_image = None
+ctrls_name = []
+ctrls_obj = []
 
 
 def load_images_handler(files):
@@ -127,40 +129,19 @@ def update_metadata(product):
     return (gr.update(), gr.update(), gr.update(), gr.update(), gr.update(value=product), gr.update())
 
 
+def add_ctrl(name, obj):
+    global ctrls_name, ctrls_obj, ctrls
+    ctrls_name += [name]
+    ctrls_obj += [obj]
+
 def generate_clicked(*args):
-    global preview_image
+    global preview_image, ctrls_name
     preview_image = None
     yield update_clicked()
     gen_data = {}
-    (
-        gen_data["prompt"],
-        gen_data["negative"],
-        gen_data["style_selection"],
-        gen_data["performance_selection"],
-        gen_data["aspect_ratios_selection"],
-        gen_data["image_number"],
-        gen_data["seed"],
-        gen_data["save_metadata"],
-        gen_data["cfg"],
-        gen_data["base_clip_skip"],
-        gen_data["refiner_clip_skip"],
-        gen_data["sampler_name"],
-        gen_data["scheduler"],
-        gen_data["custom_steps"],
-        gen_data["custom_switch"],
-        gen_data["base_model_name"],
-        gen_data["refiner_model_name"],
-        gen_data["l1"],
-        gen_data["w1"],
-        gen_data["l2"],
-        gen_data["w2"],
-        gen_data["l3"],
-        gen_data["w3"],
-        gen_data["l4"],
-        gen_data["w4"],
-        gen_data["l5"],
-        gen_data["w5"],
-    ) = list(args)
+    for key, val in zip(ctrls_name, args):
+        gen_data[key] = val
+
     prompts = get_promptlist(gen_data)
     idx = 0
     for prompt in prompts:
@@ -243,6 +224,7 @@ with shared.gradio_root as block:
                         lines=1024,
                         value=settings["prompt"],
                     )
+                    add_ctrl("prompt", prompt)
 
                 with gr.Column(scale=1, min_width=0):
                     run_button = gr.Button(label="Generate", value="Generate", elem_id="generate")
@@ -266,11 +248,13 @@ with shared.gradio_root as block:
                     choices=["Speed", "Quality", "Custom"],
                     value=settings["performance"],
                 )
+                add_ctrl("performance_selection", performance_selection)
                 aspect_ratios_selection = gr.Dropdown(
                     label="Aspect Ratios (width x height)",
                     choices=list(aspect_ratios.keys()),
                     value=settings["resolution"],
                 )
+                add_ctrl("aspect_ratios_selection", aspect_ratios_selection)
                 style_selection = gr.Dropdown(
                     label="Style Selection",
                     multiselect=True,
@@ -278,6 +262,7 @@ with shared.gradio_root as block:
                     choices=style_keys,
                     value=settings["style"],
                 )
+                add_ctrl("style_selection", style_selection)
                 style_button = gr.Button(value="⬅️ Send Style to prompt", size="sm")
                 image_number = gr.Slider(
                     label="Image Number",
@@ -286,12 +271,14 @@ with shared.gradio_root as block:
                     step=1,
                     value=settings["image_number"],
                 )
+                add_ctrl("image_number", image_number)
                 negative_prompt = gr.Textbox(
                     label="Negative Prompt",
                     show_label=True,
                     placeholder="Type prompt here.",
                     value=settings["negative_prompt"],
                 )
+                add_ctrl("negative", negative_prompt)
                 seed_random = gr.Checkbox(label="Random Seed", value=settings["seed_random"])
                 image_seed = gr.Number(
                     label="Seed",
@@ -299,6 +286,7 @@ with shared.gradio_root as block:
                     precision=0,
                     visible=not settings["seed_random"],
                 )
+                add_ctrl("seed", image_seed)
 
                 def apply_style(prompt_test, inputs):
                     pr = ""
@@ -336,12 +324,14 @@ with shared.gradio_root as block:
                         value=settings["base_model"],
                         show_label=True,
                     )
+                    add_ctrl("base_model_name", base_model)
                     refiner_model = gr.Dropdown(
                         label="SDXL Refiner",
                         choices=["None"] + modules.path.model_filenames,
                         value=settings["refiner_model"],
                         show_label=True,
                     )
+                    add_ctrl("refiner_model_name", refiner_model)
                 with gr.Accordion(label="LoRAs", open=True):
                     lora_ctrls = []
                     for i in range(5):
@@ -351,6 +341,7 @@ with shared.gradio_root as block:
                                 choices=["None"] + modules.path.lora_filenames,
                                 value=settings[f"lora_{i+1}_model"],
                             )
+                            add_ctrl(f"l{i+1}", lora_model)
 
                             lora_weight = gr.Slider(
                                 label="Strength",
@@ -359,6 +350,7 @@ with shared.gradio_root as block:
                                 step=0.05,
                                 value=settings[f"lora_{i+1}_weight"],
                             )
+                            add_ctrl(f"w{i+1}", lora_weight)
                             lora_ctrls += [lora_model, lora_weight]
                 with gr.Row():
                     model_refresh = gr.Button(
@@ -369,6 +361,7 @@ with shared.gradio_root as block:
                     )
             with gr.Tab(label="Advanced"):
                 save_metadata = gr.Checkbox(label="Save Metadata", value=settings["save_metadata"])
+                add_ctrl("save_metadata", save_metadata)
                 custom_steps = gr.Slider(
                     label="Custom Steps",
                     minimum=10,
@@ -377,6 +370,7 @@ with shared.gradio_root as block:
                     value=30,
                     visible=False,
                 )
+                add_ctrl("custom_steps", custom_steps)
                 custom_switch = gr.Slider(
                     label="Custom Switch",
                     minimum=10,
@@ -385,6 +379,7 @@ with shared.gradio_root as block:
                     value=20,
                     visible=False,
                 )
+                add_ctrl("custom_switch", custom_switch)
 
                 cfg = gr.Slider(
                     label="CFG",
@@ -394,6 +389,7 @@ with shared.gradio_root as block:
                     value=8,
                     visible=False,
                 )
+                add_ctrl("cfg", cfg)
                 base_clip_skip = gr.Slider(
                     label="Base CLIP Skip",
                     minimum=-10,
@@ -402,6 +398,7 @@ with shared.gradio_root as block:
                     value=-2,
                     visible=False,
                 )
+                add_ctrl("base_clip_skip", base_clip_skip)
                 refiner_clip_skip = gr.Slider(
                     label="Refiner CLIP Skip",
                     minimum=-10,
@@ -410,18 +407,21 @@ with shared.gradio_root as block:
                     value=-2,
                     visible=False,
                 )
+                add_ctrl("refiner_clip_skip", refiner_clip_skip)
                 sampler_name = gr.Dropdown(
                     label="Sampler",
                     choices=KSampler.SAMPLERS,
                     value="dpmpp_2m_sde_gpu",
                     visible=False,
                 )
+                add_ctrl("sampler_name", sampler_name)
                 scheduler = gr.Dropdown(
                     label="Scheduler",
                     choices=KSampler.SCHEDULERS,
                     value="karras",
                     visible=False,
                 )
+                add_ctrl("scheduler", scheduler)
 
                 performance_outputs = [
                     cfg,
@@ -467,28 +467,9 @@ with shared.gradio_root as block:
 
         advanced_checkbox.change(lambda x: gr.update(visible=x), advanced_checkbox, right_col)
 
-        ctrls = [
-            prompt,
-            negative_prompt,
-            style_selection,
-            performance_selection,
-            aspect_ratios_selection,
-            image_number,
-            image_seed,
-            save_metadata,
-            cfg,
-            base_clip_skip,
-            refiner_clip_skip,
-            sampler_name,
-            scheduler,
-            custom_steps,
-            custom_switch,
-        ]
-
-        ctrls += [base_model, refiner_model] + lora_ctrls
         run_button.click(fn=refresh_seed, inputs=[seed_random, image_seed], outputs=image_seed).then(
             fn=generate_clicked,
-            inputs=ctrls,
+            inputs=ctrls_obj,
             outputs=[run_button, stop_button, progress_html, progress_window, metadata_viewer, gallery],
         )
 
