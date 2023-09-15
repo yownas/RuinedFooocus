@@ -1,3 +1,7 @@
+### 1.1.4
+* Allowed main image window to recieve drag and drop
+* Added a gallery preview underneath that will activate image window.
+
 ### 1.1.3
 * Added support for subdirectories with models/loras so you can get all organised!
 

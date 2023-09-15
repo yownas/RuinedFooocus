@@ -116,7 +116,7 @@ def update_results(product):
         gr.update(interactive=True, visible=True),
         gr.update(interactive=False, visible=False),
         gr.update(visible=False),
-        gr.update(visible=False),
+        gr.update(),
         gr.update(),
         gr.update(visible=True, value=product),
     )
@@ -209,20 +209,29 @@ with shared.gradio_root as block:
     block.load(_js=modules.html.scripts)
     with gr.Row():
         with gr.Column(scale=5):
-            progress_window = gr.Image(label="Preview", show_label=True, height=640, visible=False)
+            progress_window = gr.Image(height=680, type="pil", visible=True, show_label=False)
             progress_html = gr.HTML(
                 value=modules.html.make_progress_html(32, "Progress 32%"),
                 visible=False,
                 elem_id="progress-bar",
                 elem_classes="progress-bar",
             )
+
             gallery = gr.Gallery(
                 label="Gallery",
                 show_label=False,
-                object_fit="contain",
-                height=720,
+                object_fit="scale-down",
+                height=60,
+                allow_preview=True,
+                preview=True,
                 visible=True,
             )
+
+            def gallery_change(files, sd: gr.SelectData):
+                return files[sd.index]["name"]
+
+            gallery.select(gallery_change, [gallery], outputs=[progress_window], show_progress="hidden")
+
             with gr.Row(elem_classes="type_row"):
                 with gr.Column(scale=5):
                     prompt = gr.Textbox(
@@ -238,14 +247,13 @@ with shared.gradio_root as block:
                 with gr.Column(scale=1, min_width=0):
                     run_button = gr.Button(label="Generate", value="Generate", elem_id="generate")
                     stop_button = gr.Button(label="Stop", value="Stop", interactive=False, visible=False)
-                    image_upload = gr.Image(type="pil", visible=True, elem_classes="element1")
 
                     def load_images_handler(file):
                         info = file.info
                         params = info.get("parameters", "")
                         return params, [file]
 
-                    image_upload.upload(load_images_handler, inputs=[image_upload], outputs=[prompt, gallery])
+                    progress_window.upload(load_images_handler, inputs=[progress_window], outputs=[prompt, gallery])
 
             with gr.Row():
                 advanced_checkbox = gr.Checkbox(
