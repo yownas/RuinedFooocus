@@ -80,50 +80,52 @@ def generate_preview(image_nr, image_cnt, width, height, image):
 
 
 def update_clicked():
-    # run_button, stop_button, progress_html, progress_window, metadata_viewer, gallery
-    return (
-        gr.update(interactive=False, visible=False),
-        gr.update(interactive=True, visible=True),
-        gr.update(
+    return {
+        run_button: gr.update(interactive=False, visible=False),
+        stop_button: gr.update(interactive=True, visible=True),
+        progress_html: gr.update(
             visible=True,
             value=modules.html.make_progress_html(0, "Processing text encoding ..."),
         ),
-        gr.update(visible=True, value=None),
-        gr.update(),
-        gr.update(visible=False),
-    )
+        progress_window: gr.update(visible=True, value=None),
+        metadata_viewer: gr.update(),
+        gallery: gr.update(visible=False),
+    }
 
 
 def update_preview(percentage, title, preview_image_path):
-    # run_button, stop_button, progress_html, progress_window, metadata_viewer, gallery
-    return (
-        gr.update(interactive=False, visible=False),
-        gr.update(interactive=True, visible=True),
-        gr.update(
-            visible=True,
-            value=modules.html.make_progress_html(percentage, title),
-        ),
-        gr.update(visible=True, value=preview_image_path) if preview_image_path is not None else gr.update(),
-        gr.update(),
-        gr.update(visible=False),
-    )
+    return {
+        run_button: gr.update(interactive=False, visible=False),
+        stop_button: gr.update(interactive=True, visible=True),
+        progress_html: gr.update(visible=True, value=modules.html.make_progress_html(percentage, title)),
+        progress_window: gr.update(visible=True, value=preview_image_path)
+        if preview_image_path is not None
+        else gr.update(),
+        metadata_viewer: gr.update(visible=False),
+        gallery: gr.update(visible=False),
+    }
 
 
 def update_results(product):
-    # run_button, stop_button, progress_html, progress_window, metadata_viewer, gallery
-    return (
-        gr.update(interactive=True, visible=True),
-        gr.update(interactive=False, visible=False),
-        gr.update(visible=False),
-        gr.update(),
-        gr.update(),
-        gr.update(visible=True, value=product),
-    )
+    return {
+        run_button: gr.update(interactive=True, visible=True),
+        stop_button: gr.update(interactive=False, visible=False),
+        progress_html: gr.update(visible=False),
+        progress_window: gr.update(),
+        metadata_viewer: gr.update(),
+        gallery: gr.update(visible=True, value=product),
+    }
 
 
 def update_metadata(product):
-    # run_button, stop_button, progress_html, progress_window, metadata_viewer, gallery
-    return (gr.update(), gr.update(), gr.update(), gr.update(), gr.update(value=product), gr.update())
+    return {
+        run_button: gr.update(),
+        stop_button: gr.update(),
+        progress_html: gr.update(),
+        progress_window: gr.update(),
+        metadata_viewer: gr.update(value=product),
+        gallery: gr.update(),
+    }
 
 
 def add_ctrl(name, obj):
