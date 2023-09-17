@@ -40,8 +40,8 @@ def process_wildcards(wildcard_text, directory="wildcards"):
                 words = f.read().splitlines()
             wildcard_text = re.sub(rf"__{placeholder}__", random.choice(words), wildcard_text)
         except IOError:
+            wildcard_text = re.sub(rf"__{placeholder}__", placeholder, wildcard_text)
             print(f"Error: Could not open file {placeholder}.txt. Please ensure the file exists and is readable.")
-            raise
     return wildcard_text
 
 

@@ -1,3 +1,6 @@
+### 1.1.6
+* Fixed issue with wildcards if file not found.
+
 ### 1.1.5
 * Fixed sorting on subfolders, so directories are displayed first
 
