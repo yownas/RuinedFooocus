@@ -84,6 +84,7 @@ Coming soon ...
 19. The ability to post json metadata into the prompt window so you dont have to go into ANY settings tabs when you click generate. (**Note:** setting a seed of `-1` will generate a random seed)
 20. Render different subjects so you can process a whole list of prompts. Seperate each prompt by placing `---` on a new line
 21. Supports subdirectories for models/loras so you can get all organised!
+22. Add <style:stylename> to prompt to set the required style
 
 ## Thanks
 

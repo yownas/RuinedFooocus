@@ -1,5 +1,10 @@
+### 1.2.0
+* Prompt now splits correctly using `---`
+* added the ability to change styles in the prompt by using <style:stylename>
+
 ### 1.1.7
 * Added init image
+
 ### 1.1.6
 * Fixed issue with wildcards if file not found.
 
