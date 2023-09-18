@@ -29,7 +29,7 @@ def process_metadata(gen_data):
 
 
 def get_promptlist(gen_data):
-    return gen_data["prompt"].split("\n---\n")
+    return gen_data["prompt"].split("---")
 
 
 def process_wildcards(wildcard_text, directory="wildcards"):
