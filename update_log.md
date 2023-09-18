@@ -1,3 +1,5 @@
+### 1.1.7
+* Added init image
 ### 1.1.6
 * Fixed issue with wildcards if file not found.
 

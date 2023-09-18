@@ -188,7 +188,9 @@ with shared.gradio_root as block:
     block.load(_js=modules.html.scripts)
     with gr.Row():
         with gr.Column(scale=5):
-            progress_window = gr.Image(height=680, type="pil", visible=True, show_label=False)
+            progress_window = gr.Image(
+                value="init_image.png", height=680, type="pil", visible=True, show_label=False, image_mode="RGBA"
+            )
             progress_html = gr.HTML(
                 value=modules.html.make_progress_html(32, "Progress 32%"),
                 visible=False,
