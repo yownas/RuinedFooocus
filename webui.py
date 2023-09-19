@@ -87,7 +87,7 @@ def update_clicked():
             visible=True,
             value=modules.html.make_progress_html(0, "Processing text encoding ..."),
         ),
-        progress_window: gr.update(visible=True, value=None),
+        progress_window: gr.update(visible=True, value="init_image.png"),
         metadata_viewer: gr.update(),
         gallery: gr.update(visible=False),
     }
