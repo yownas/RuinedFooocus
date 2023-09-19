@@ -47,10 +47,11 @@ def process_wildcards(wildcard_text, directory="wildcards"):
 
 def process_prompt(style, prompt, negative):
     pattern = re.compile(r"<style:([^>]+)>")
+    styles = style.copy()
     for match in re.finditer(pattern, prompt):
-        style += [f"Style: {match.group(1)}"]
+        styles += [f"Style: {match.group(1)}"]
     prompt = re.sub(pattern, "", prompt)
-    p_txt, n_txt = apply_style(style, prompt, negative)
+    p_txt, n_txt = apply_style(styles, prompt, negative)
     p_txt = process_wildcards(p_txt)
     return p_txt, n_txt
 
