@@ -1,6 +1,7 @@
 import argparse
 import random
 import shared
+from shared import state
 import time
 
 import gradio as gr
@@ -63,22 +64,6 @@ def launch_app(args):
     )
 
 
-def generate_preview(image_nr, image_cnt, width, height, image):
-    grid_xsize = math.ceil(math.sqrt(image_cnt))
-    grid_ysize = math.ceil(image_cnt / grid_xsize)
-    grid_max = max(grid_xsize, grid_ysize)
-    pwidth = int(width * grid_xsize / grid_max)
-    pheight = int(height * grid_ysize / grid_max)
-    if state["preview_image"] is None:
-        state["preview_image"] = Image.new("RGB", (pwidth, pheight))
-    if image is not None:
-        image = Image.fromarray(image)
-        grid_xpos = int((image_nr % grid_xsize) * (pwidth / grid_xsize))
-        grid_ypos = int(math.floor(image_nr / grid_xsize) * (pheight / grid_ysize))
-        image = image.resize((int(width / grid_max), int(height / grid_max)))
-        state["preview_image"].paste(image, (grid_xpos, grid_ypos))
-
-
 def update_clicked():
     return {
         run_button: gr.update(interactive=False, visible=False),
@@ -93,13 +78,14 @@ def update_clicked():
     }
 
 
-def update_preview(percentage, title, preview_image_path):
+def update_preview(product):
+    percentage, title, image = product
     return {
         run_button: gr.update(interactive=False, visible=False),
         stop_button: gr.update(interactive=True, visible=True),
         progress_html: gr.update(visible=True, value=modules.html.make_progress_html(percentage, title)),
-        progress_window: gr.update(visible=True, value=preview_image_path)
-        if preview_image_path is not None
+        progress_window: gr.update(visible=True, value=image)
+        if image is not None
         else gr.update(),
         metadata_viewer: gr.update(visible=False),
         gallery: gr.update(visible=False),
@@ -134,7 +120,6 @@ def add_ctrl(name, obj):
 
 
 def generate_clicked(*args):
-    state["preview_image"] = None
     yield update_clicked()
     gen_data = {}
     for key, val in zip(state["ctrls_name"], args):
@@ -142,7 +127,11 @@ def generate_clicked(*args):
 
     prompts = get_promptlist(gen_data)
     idx = 0
+
+    worker.buffer.append({"task_type": "start", "image_count": len(prompts)*gen_data["image_number"]})
+
     for prompt in prompts:
+        gen_data["task_type"] = "process"
         gen_data["prompt"] = prompt
         gen_data["index"] = (idx, len(prompts))
         idx += 1
@@ -158,11 +147,7 @@ def generate_clicked(*args):
         flag, product = worker.outputs.pop(0)
 
         if flag == "preview":
-            percentage, image_nr, image_cnt, title, width, height, image = product
-            generate_preview(image_nr, image_cnt, width, height, image)
-            preview_image_path = "outputs/preview.jpg"
-            state["preview_image"].save(preview_image_path, optimize=True, quality=35)
-            yield update_preview(percentage, title, preview_image_path)
+            yield update_preview(product)
 
         elif flag == "results":
             yield update_results(product)
@@ -171,7 +156,7 @@ def generate_clicked(*args):
             yield update_metadata(product)
             finished = True
 
-    state["preview_image"] = None
+    worker.buffer.append({"task_type": "stop"})
 
 
 settings = default_settings
