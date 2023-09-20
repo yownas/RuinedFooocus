@@ -1,6 +1,7 @@
 import threading
 import gc
 import torch
+import math
 from playsound import playsound
 from os.path import exists
 
@@ -38,8 +39,33 @@ def worker():
     except Exception as e:
         print(e)
 
+
     def handler(gen_data):
+        match gen_data["task_type"]:
+            case "start":
+                job_start(gen_data)
+            case "stop":
+                job_stop()
+            case "process":
+                process(gen_data)
+            case _:
+                print(f"WARN: Unknown task_type: {gen_data['task_type']}")
+
+    def job_start(gen_data):
+        from shared import state
+        state["preview_image"] = None
+        state["preview_count"] = gen_data["image_count"]
+        state["preview_current"] = 0
+
+    def job_stop():
+        from shared import state
+        state["preview_image"] = None
+        state["preview_count"] = 0
+        state["preview_current"] = 0
+
+    def process(gen_data):
         global results, metadatastrings
+        from shared import state
 
         gen_data = process_metadata(gen_data)
 
@@ -84,8 +110,7 @@ def worker():
         max_seed = 0xFFFFFFFFFFFFFFFF
         if not isinstance(seed, int) or seed < 0:
             seed = random.randint(0, max_seed)
-        if seed > max_seed:
-            seed = seed % max_seed
+        seed = seed % max_seed
 
         all_steps = steps * gen_data["image_number"]
         with open("render.txt") as f:
@@ -97,6 +122,7 @@ def worker():
 
         def callback(step, x0, x, total_steps, y):
             global status, interrupt_ruined_processing
+            from shared import state
 
             if interrupt_ruined_processing:
                 interrupt_ruined_processing = False
@@ -105,17 +131,31 @@ def worker():
             done_steps = i * steps + step
             if step % 10 == 0:
                 status = random.choice(lines)
+
+            grid_xsize = math.ceil(math.sqrt(state["preview_count"]))
+            grid_ysize = math.ceil(state["preview_count"] / grid_xsize)
+            grid_max = max(grid_xsize, grid_ysize)
+            pwidth = int(width * grid_xsize / grid_max)
+            pheight = int(height * grid_ysize / grid_max)
+            if state["preview_image"] is None:
+                state["preview_image"] = Image.new("RGB", (pwidth, pheight))
+            if y is not None:
+                image = Image.fromarray(y)
+                grid_xpos = int((state["preview_current"] % grid_xsize) * (pwidth / grid_xsize))
+                grid_ypos = int(math.floor(state["preview_current"] / grid_xsize) * (pheight / grid_ysize))
+                image = image.resize((int(width / grid_max), int(height / grid_max)))
+                state["preview_image"].paste(image, (grid_xpos, grid_ypos))
+
+            preview_image_path = "outputs/preview.jpg" # FIXME move somewhere else
+            state["preview_image"].save(preview_image_path, optimize=True, quality=35)
+
             outputs.append(
                 [
                     "preview",
                     (
                         int(100 * (gen_data["index"][0] + done_steps / all_steps) / gen_data["index"][1]),
-                        i,
-                        gen_data["image_number"],
                         f"{status} - {step}/{total_steps}",
-                        width,
-                        height,
-                        y,
+                        preview_image_path,
                     ),
                 ]
             )
@@ -178,6 +218,7 @@ def worker():
                     metadata = PngInfo()
                     metadata.add_text("parameters", json.dumps(prompt))
 
+                state["preview_current"] += 1
                 Image.fromarray(x).save(local_temp_filename, pnginfo=metadata)
                 results.append(local_temp_filename)
                 metadatastrings.append(json.dumps(prompt))
@@ -187,6 +228,7 @@ def worker():
                 break
 
         if len(buffer) == 0:
+            results = [state["preview_image"]] + results if state["preview_image"] is not None else results
             outputs.append(["results", results])
             outputs.append(["metadata", metadatastrings])
             results = []
