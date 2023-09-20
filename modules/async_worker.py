@@ -228,7 +228,8 @@ def worker():
                 break
 
         if len(buffer) == 0:
-            results = [state["preview_image"]] + results if state["preview_image"] is not None else results
+            if state["preview_image"] is not None and state["preview_count"] > 1:
+                results = [state["preview_image"]] + results
             outputs.append(["results", results])
             outputs.append(["metadata", metadatastrings])
             results = []
