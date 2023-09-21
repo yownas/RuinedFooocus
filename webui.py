@@ -84,9 +84,7 @@ def update_preview(product):
         run_button: gr.update(interactive=False, visible=False),
         stop_button: gr.update(interactive=True, visible=True),
         progress_html: gr.update(visible=True, value=modules.html.make_progress_html(percentage, title)),
-        progress_window: gr.update(visible=True, value=image)
-        if image is not None
-        else gr.update(),
+        progress_window: gr.update(visible=True, value=image) if image is not None else gr.update(),
         metadata_viewer: gr.update(visible=False),
         gallery: gr.update(visible=False),
     }
@@ -128,7 +126,7 @@ def generate_clicked(*args):
     prompts = get_promptlist(gen_data)
     idx = 0
 
-    worker.buffer.append({"task_type": "start", "image_count": len(prompts)*gen_data["image_number"]})
+    worker.buffer.append({"task_type": "start", "image_count": len(prompts) * gen_data["image_number"]})
 
     for prompt in prompts:
         gen_data["task_type"] = "process"
@@ -169,6 +167,7 @@ else:
 shared.gradio_root = gr.Blocks(
     theme=theme, title="RuinedFooocus " + fooocus_version.version, css=modules.html.css
 ).queue()
+
 with shared.gradio_root as block:
     block.load(_js=modules.html.scripts)
     with gr.Row():
@@ -193,10 +192,9 @@ with shared.gradio_root as block:
                 visible=True,
             )
 
+            @gallery.select(inputs=[gallery], outputs=[progress_window], show_progress="hidden")
             def gallery_change(files, sd: gr.SelectData):
                 return files[sd.index]["name"]
-
-            gallery.select(gallery_change, [gallery], outputs=[progress_window], show_progress="hidden")
 
             with gr.Row(elem_classes="type_row"):
                 with gr.Column(scale=5):
@@ -215,12 +213,11 @@ with shared.gradio_root as block:
                     run_button = gr.Button(label="Generate", value="Generate", elem_id="generate")
                     stop_button = gr.Button(label="Stop", value="Stop", interactive=False, visible=False)
 
+                    @progress_window.upload(inputs=[progress_window], outputs=[prompt, gallery])
                     def load_images_handler(file):
                         info = file.info
                         params = info.get("parameters", "")
                         return params, [file]
-
-                    progress_window.upload(load_images_handler, inputs=[progress_window], outputs=[prompt, gallery])
 
             with gr.Row():
                 advanced_checkbox = gr.Checkbox(
@@ -273,6 +270,9 @@ with shared.gradio_root as block:
                 )
                 add_ctrl("seed", image_seed)
 
+                @style_button.click(
+                    inputs=[prompt, style_selection], outputs=[prompt, negative_prompt, style_selection]
+                )
                 def apply_style(prompt_test, inputs):
                     pr = ""
                     ne = ""
@@ -284,12 +284,7 @@ with shared.gradio_root as block:
                         pr = pr.replace("{prompt}", prompt_test)
                     return pr, ne, []
 
-                style_button.click(
-                    apply_style,
-                    inputs=[prompt, style_selection],
-                    outputs=[prompt, negative_prompt, style_selection],
-                )
-
+                @seed_random.change(inputs=[seed_random], outputs=[image_seed])
                 def random_checked(r):
                     return gr.update(visible=not r)
 
@@ -298,8 +293,6 @@ with shared.gradio_root as block:
                         return random.randint(1, 1024 * 1024 * 1024)
                     else:
                         return s
-
-                seed_random.change(random_checked, inputs=[seed_random], outputs=[image_seed])
 
             with gr.Tab(label="Models"):
                 with gr.Row():
@@ -418,20 +411,19 @@ with shared.gradio_root as block:
                     custom_switch,
                 ]
 
+                @performance_selection.change(
+                    inputs=[performance_selection],
+                    outputs=performance_outputs,
+                )
                 def performance_changed(selection):
                     if selection != "Custom":
                         return [gr.update(visible=False)] * len(performance_outputs)
                     else:
                         return [gr.update(visible=True)] * len(performance_outputs)
 
-                performance_selection.change(
-                    performance_changed,
-                    inputs=[performance_selection],
-                    outputs=performance_outputs,
-                )
-
                 metadata_viewer = gr.JSON(label="Metadata", elem_classes="json-container")
 
+            @model_refresh.click(inputs=[], outputs=[base_model, refiner_model] + lora_ctrls)
             def model_refresh_clicked():
                 modules.path.update_all_model_names()
                 results = []
@@ -445,8 +437,6 @@ with shared.gradio_root as block:
                         gr.update(),
                     ]
                 return results
-
-            model_refresh.click(model_refresh_clicked, [], [base_model, refiner_model] + lora_ctrls)
 
             ui_onebutton.ui_onebutton(prompt)
 
