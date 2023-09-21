@@ -1,11 +1,12 @@
 import os
 import shutil
+import json
 from csv import DictReader, reader
 
 DEFAULT_STYLES_FILE = "styles.default"
 STYLES_FILE = "styles.csv"
 DEFAULT_RESOLUTIONS_FILE = "resolutions.default"
-RESOLUTIONS_FILE = "resolutions.csv"
+RESOLUTIONS_FILE = "resolutions.json"
 
 
 def load_styles():
@@ -30,10 +31,10 @@ def load_resolutions():
     if not os.path.isfile(RESOLUTIONS_FILE):
         shutil.copy(DEFAULT_RESOLUTIONS_FILE, RESOLUTIONS_FILE)
 
-    with open(RESOLUTIONS_FILE, "r") as f:
-        reader = DictReader(f)
-        for row in reader:
-            ratios[row["ratio"]] = (int(row["width"]), int(row["height"]))
+    with open(RESOLUTIONS_FILE) as f:
+        data = json.load(f)
+        for ratio, res in data.items():
+            ratios[ratio] = (res["width"], res["height"])
 
     return ratios
 

@@ -71,7 +71,7 @@ Coming soon ...
 6. Generate a completely random prompt (taken from onebuttonprompt) with its own "special" tab
 7. Made Resolutions mode readable
 8. Added theme support in `settings.json` you can see available themes [HERE](https://huggingface.co/spaces/gradio/theme-gallery)
-9. Added `resolutions.csv` to allow users to add their own custom resolutions
+9. Added `resolutions.json` to allow users to add their own custom resolutions
 10. Wildcards are now supported place see `wildcards\colors.txt` for an example. In your prompt make sure you type `__<filename>__` to activate ie `shiny new __colors__ Chevrolet pickup truck with big wheels`
 11. If the option `--nobrowser` is passed the web browser won't automatically launch
 12. Added Custom paths in `paths.json` to point to chekcpoints / loras and outputs director (**Note:** for windows paths either use `/` or `\\` instead of `\`)

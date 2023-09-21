@@ -1,3 +1,8 @@
+### 1.2.1
+* Bug fixes and backend updates
+* changed `resolutions.csv` to `resolutions.json`
+* updated readme
+
 ### 1.2.0
 * Prompt now splits correctly using `---`
 * added the ability to change styles in the prompt by using <style:stylename>
