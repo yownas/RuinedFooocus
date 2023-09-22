@@ -119,8 +119,6 @@ def load_loras(loras):
     return
 
 
-load_base_model(default_settings["base_model"])
-
 positive_conditions_cache = None
 negative_conditions_cache = None
 positive_conditions_refiner_cache = None
@@ -155,6 +153,9 @@ def process(
     callback,
 ):
     global positive_conditions_cache, negative_conditions_cache, positive_conditions_refiner_cache, negative_conditions_refiner_cache
+
+    load_base_model(default_settings["base_model"])
+
 
     with suppress_stdout():
         positive_conditions_cache = (

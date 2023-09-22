@@ -21,7 +21,8 @@ def worker():
     import time
     import shared
     import random
-    import modules.default_pipeline as pipeline
+    #import modules.default_pipeline as pipeline
+    import modules.wuerstchen_pipeline as pipeline
     import modules.path
     from modules.prompt_processing import process_metadata, process_prompt, parse_loras
 
@@ -219,7 +220,9 @@ def worker():
                     metadata.add_text("parameters", json.dumps(prompt))
 
                 state["preview_current"] += 1
-                Image.fromarray(x).save(local_temp_filename, pnginfo=metadata)
+                if not isinstance(x, Image.Image):
+                    x = Image.fromarray(x)
+                x.save(local_temp_filename, pnginfo=metadata)
                 results.append(local_temp_filename)
                 metadatastrings.append(json.dumps(prompt))
 
