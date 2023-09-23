@@ -296,6 +296,13 @@ with shared.gradio_root as block:
 
             with gr.Tab(label="Models"):
                 with gr.Row():
+                    pipeline = gr.Dropdown(
+                        label="Pipeline",
+                        choices=["Default", "Würstchen"],
+                        show_label=True,
+                    )
+                    add_ctrl("pipeline", pipeline)
+                with gr.Row():
                     base_model = gr.Dropdown(
                         label="SDXL Base Model",
                         choices=modules.path.model_filenames,

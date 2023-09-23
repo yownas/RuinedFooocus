@@ -1,8 +1,6 @@
 import gc
 import numpy as np
 import os
-os.environ['HF_HOME'] = 'models/wuerstchen'
-
 import torch
 import warnings
 
@@ -17,12 +15,8 @@ from modules.util import suppress_stdout
 import warnings
 import time
 
-
-#from diffusers import AutoPipelineForText2Image
 from diffusers import WuerstchenDecoderPipeline, WuerstchenPriorPipeline
 from diffusers.pipelines.wuerstchen import DEFAULT_STAGE_C_TIMESTEPS
-
-
 
 #warnings.filterwarnings("ignore", category=UserWarning)
 
@@ -40,14 +34,15 @@ def load_base_model(model):
     if wuerst_prior_pipeline is None:
         wuerst_prior_pipeline = WuerstchenPriorPipeline.from_pretrained(
             "warp-ai/wuerstchen-prior", torch_dtype=dtype).to(device)
+        wuerst_prior_pipeline.enable_attention_slicing()
+        wuerst_prior_pipeline.enable_model_cpu_offload()
         #wuerst_prior_pipeline.prior = torch.compile(wuerst_prior_pipeline.prior, mode="reduce-overhead", fullgraph=True)
     if wuerst_decoder_pipeline is None:
         wuerst_decoder_pipeline = WuerstchenDecoderPipeline.from_pretrained(
             "warp-ai/wuerstchen", torch_dtype=dtype).to(device)
+        wuerst_decoder_pipeline.enable_attention_slicing()
+        wuerst_decoder_pipeline.enable_model_cpu_offload()
         #wuerst_decoder_pipeline.decoder = torch.compile(wuerst_decoder_pipeline.decoder, mode="reduce-overhead", fullgraph=True)
-
-#        wuerst_pipeline = AutoPipelineForText2Image.from_pretrained(
-#            "warp-diffusion/wuerstchen", torch_dtype=dtype).to(device)
 
 def load_refiner_model(model):
     return
@@ -102,10 +97,5 @@ def process(
     if callback is not None:
         callback(steps, 0, 0, steps, np.array(images[0]))
         time.sleep(0.1)
-
-    gc.collect()
-    if torch.cuda.is_available():
-        torch.cuda.empty_cache()
-        torch.cuda.ipc_collect()
 
     return images

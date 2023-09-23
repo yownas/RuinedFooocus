@@ -21,8 +21,8 @@ def worker():
     import time
     import shared
     import random
-    #import modules.default_pipeline as pipeline
-    import modules.wuerstchen_pipeline as pipeline
+    import modules.default_pipeline as default_pipeline
+    import modules.wuerstchen_pipeline as wuerstchen_pipeline
     import modules.path
     from modules.prompt_processing import process_metadata, process_prompt, parse_loras
 
@@ -81,6 +81,12 @@ def worker():
                 i += 1
             except KeyError:
                 break
+
+        match gen_data["pipeline"]:
+            case "Würstchen":
+                pipeline = wuerstchen_pipeline
+            case _: # Default
+                pipeline = default_pipeline
 
         parsed_loras, pos_stripped, neg_stripped = parse_loras(gen_data["prompt"], gen_data["negative"])
         loras.extend(parsed_loras)
