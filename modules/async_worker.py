@@ -127,7 +127,7 @@ def worker():
         class InterruptProcessingException(Exception):
             pass
 
-        def callback(step, x0, x, total_steps, y):
+        def callback(step, x0, x, total_steps, image):
             global status, interrupt_ruined_processing
             from shared import state
 
@@ -146,8 +146,9 @@ def worker():
             pheight = int(height * grid_ysize / grid_max)
             if state["preview_image"] is None:
                 state["preview_image"] = Image.new("RGB", (pwidth, pheight))
-            if y is not None:
-                image = Image.fromarray(y)
+            if image is not None:
+                if not isinstance(image, Image.Image):
+                    image = Image.fromarray(image)
                 grid_xpos = int((state["preview_current"] % grid_xsize) * (pwidth / grid_xsize))
                 grid_ypos = int(math.floor(state["preview_current"] / grid_xsize) * (pheight / grid_ysize))
                 image = image.resize((int(width / grid_max), int(height / grid_max)))
