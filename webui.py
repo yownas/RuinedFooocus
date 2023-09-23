@@ -299,6 +299,7 @@ with shared.gradio_root as block:
                     pipeline = gr.Dropdown(
                         label="Pipeline",
                         choices=["Default", "Würstchen"],
+                        value="Default",
                         show_label=True,
                     )
                     add_ctrl("pipeline", pipeline)
@@ -317,7 +318,7 @@ with shared.gradio_root as block:
                         show_label=True,
                     )
                     add_ctrl("refiner_model_name", refiner_model)
-                with gr.Accordion(label="LoRAs", open=True):
+                with gr.Accordion(label="LoRAs", open=True) as lora_accordion:
                     lora_ctrls = []
                     for i in range(5):
                         with gr.Row():
@@ -429,6 +430,22 @@ with shared.gradio_root as block:
                         return [gr.update(visible=True)] * len(performance_outputs)
 
                 metadata_viewer = gr.JSON(label="Metadata", elem_classes="json-container")
+
+            pipeline_outputs = [
+                base_model,
+                refiner_model,
+                model_refresh,
+                lora_accordion,
+            ] + lora_ctrls
+            @pipeline.change(
+                inputs=[pipeline],
+                outputs=pipeline_outputs,
+            )
+            def pipeline_changed(selection):
+                if selection != "Default":
+                    return [gr.update(visible=False)] * len(pipeline_outputs)
+                else:
+                    return [gr.update(visible=True)] * len(pipeline_outputs)
 
             @model_refresh.click(inputs=[], outputs=[base_model, refiner_model] + lora_ctrls)
             def model_refresh_clicked():
