@@ -16,7 +16,6 @@ import warnings
 import time
 
 from diffusers import WuerstchenDecoderPipeline, WuerstchenPriorPipeline
-from diffusers.pipelines.wuerstchen import DEFAULT_STAGE_C_TIMESTEPS
 from diffusers.utils import numpy_to_pil
 from torch import nn
 
@@ -136,7 +135,6 @@ def process(
         negative_prompt=negative_prompt,
         height=round(height/128)*128,
         width=round(width/128)*128,
-        timesteps=DEFAULT_STAGE_C_TIMESTEPS,
         guidance_scale=cfg,
         num_inference_steps=steps,
         generator=seed_gen,
@@ -144,6 +142,7 @@ def process(
     )
     images = wuerst_decoder_pipeline(
         image_embeddings=prior.image_embeddings,
+        num_inference_steps=switch,
         prompt=positive_prompt,
         negative_prompt=negative_prompt,
         guidance_scale=0.0,
