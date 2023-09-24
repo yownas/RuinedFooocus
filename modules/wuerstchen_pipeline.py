@@ -118,16 +118,17 @@ def process(
 
     seed_gen = torch.Generator().manual_seed(image_seed)
 
-    previewer = Previewer()
-    # https://huggingface.co/spaces/warp-ai/Wuerstchen/resolve/main/previewer/text2img_wurstchen_b_v1_previewer_100k.pt
-    previewer.load_state_dict(torch.load("models/wuerstchen/text2img_wurstchen_b_v1_previewer_100k.pt")["state_dict"])
-    previewer.eval().requires_grad_(False).to(device).to(dtype)
+#    previewer = Previewer()
+#    # https://huggingface.co/spaces/warp-ai/Wuerstchen/resolve/main/previewer/text2img_wurstchen_b_v1_previewer_100k.pt
+#    previewer.load_state_dict(torch.load("models/wuerstchen/text2img_wurstchen_b_v1_previewer_100k.pt")["state_dict"])
+#    previewer.eval().requires_grad_(False).to(device).to(dtype)
 
     def callback_prior(i, t, latents):
         if callback is not None:
-            output = previewer(latents)
-            output = numpy_to_pil(output.clamp(0, 1).permute(0, 2, 3, 1).cpu().numpy())
-            callback(i, 0, 0, steps, output[0])
+#            output = previewer(latents)
+#            output = numpy_to_pil(output.clamp(0, 1).permute(0, 2, 3, 1).cpu().numpy())
+#            callback(i, 0, 0, steps, output[0])
+            callback(i, 0, 0, steps, None)
         #return output
 
     prior = wuerst_prior_pipeline(
