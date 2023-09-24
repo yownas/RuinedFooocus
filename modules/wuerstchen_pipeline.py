@@ -34,16 +34,19 @@ def load_base_model(model):
     device = "cuda"
     dtype = torch.float16
     if wuerst_prior_pipeline is None:
+        # https://huggingface.co/warp-ai/wuerstchen-prior-model-interpolated/tree/main
         wuerst_prior_pipeline = WuerstchenPriorPipeline.from_pretrained(
             "warp-ai/wuerstchen-prior", torch_dtype=dtype).to(device)
         wuerst_prior_pipeline.enable_attention_slicing()
         wuerst_prior_pipeline.enable_model_cpu_offload()
+        wuerst_prior_pipeline.enable_xformers_memory_efficient_attention()
         #wuerst_prior_pipeline.prior = torch.compile(wuerst_prior_pipeline.prior, mode="reduce-overhead", fullgraph=True)
     if wuerst_decoder_pipeline is None:
         wuerst_decoder_pipeline = WuerstchenDecoderPipeline.from_pretrained(
             "warp-ai/wuerstchen", torch_dtype=dtype).to(device)
         wuerst_decoder_pipeline.enable_attention_slicing()
         wuerst_decoder_pipeline.enable_model_cpu_offload()
+        wuerst_decoder_pipeline.enable_xformers_memory_efficient_attention()
         #wuerst_decoder_pipeline.decoder = torch.compile(wuerst_decoder_pipeline.decoder, mode="reduce-overhead", fullgraph=True)
 
 def load_refiner_model(model):
@@ -122,9 +125,9 @@ def process(
     previewer.eval().requires_grad_(False).to(device).to(dtype)
 
     def callback_prior(i, t, latents):
-        output = previewer(latents)
-        output = numpy_to_pil(output.clamp(0, 1).permute(0, 2, 3, 1).cpu().numpy())
         if callback is not None:
+            output = previewer(latents)
+            output = numpy_to_pil(output.clamp(0, 1).permute(0, 2, 3, 1).cpu().numpy())
             callback(i, 0, 0, steps, output[0])
         #return output
 
