@@ -1,3 +1,5 @@
+### 1.2.2
+* Update comfy version - Lora weights are now calculated on the gpu so should apply faster
 ### 1.2.1
 * Bug fixes and backend updates
 * changed `resolutions.csv` to `resolutions.json`
