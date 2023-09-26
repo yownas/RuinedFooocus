@@ -299,14 +299,18 @@ with shared.gradio_root as block:
                     base_model = gr.Dropdown(
                         label="SDXL Base Model",
                         choices=modules.path.model_filenames,
-                        value=settings["base_model"],
+                        value=settings["base_model"]
+                            if settings["base_model"] in modules.path.model_filenames
+                            else modules.path.model_filenames[0],
                         show_label=True,
                     )
                     add_ctrl("base_model_name", base_model)
                     refiner_model = gr.Dropdown(
                         label="SDXL Refiner",
                         choices=["None"] + modules.path.model_filenames,
-                        value=settings["refiner_model"],
+                        value=settings["refiner_model"]
+                            if settings["refiner_model"] in modules.path.model_filenames
+                            else None,
                         show_label=True,
                     )
                     add_ctrl("refiner_model_name", refiner_model)
