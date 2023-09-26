@@ -51,15 +51,15 @@ def load_base_model(name):
             print("Model not supported. Fooocus only support SDXL model as the base model.")
             xl_base = None
 
+        if xl_base is not None:
+            xl_base_hash = name
+            xl_base_patched = xl_base
+            xl_base_patched_hash = ""
+            print(f"Base model loaded: {xl_base_hash}")
+
     except:
         print(f"Failed to load {name}, loading default model instead")
         load_base_model(modules.path.default_base_model_name)
-
-    if xl_base is not None:
-        xl_base_hash = name
-        xl_base_patched = xl_base
-        xl_base_patched_hash = ""
-        print(f"Base model loaded: {xl_base_hash}")
 
     return
 
