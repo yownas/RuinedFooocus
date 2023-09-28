@@ -36,7 +36,6 @@ notification.mp3
 models/vae/config.json
 settings.json
 styles.csv
-resolutions.csv
 paths.json
 notification.mp3
 resolutions.json

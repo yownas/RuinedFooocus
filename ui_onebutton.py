@@ -289,8 +289,55 @@ def ui_onebutton(prompt):
 
         return prompt
 
+    def add_prompt(
+        prompt,
+        insanitylevel,
+        subject,
+        artist,
+        imagetype,
+        antistring,
+        prefixprompt,
+        suffixprompt,
+        givensubject,
+        smartsubject,
+        giventypeofimage,
+        imagemodechance,
+        chosengender,
+        chosensubjectsubtypeobject,
+        chosensubjectsubtypehumanoid,
+        chosensubjectsubtypeconcept,
+    ):
+        prompt = (
+            prompt
+            + "---"
+            + build_dynamic_prompt(
+                insanitylevel,
+                subject,
+                artist,
+                imagetype,
+                False,
+                antistring,
+                prefixprompt,
+                suffixprompt,
+                1,
+                "comma",
+                givensubject,
+                smartsubject,
+                giventypeofimage,
+                imagemodechance,
+                chosengender,
+                chosensubjectsubtypeobject,
+                chosensubjectsubtypehumanoid,
+                chosensubjectsubtypeconcept,
+            )
+        )
+
+        return prompt
+
     with gr.Tab(label="One Button Prompt"):
-        random_button = gr.Button(value="Create Random Prompt", size="sm")
+        with gr.Row():
+            random_button = gr.Button(value="Create Random Prompt", size="sm")
+            add_random_button = gr.Button(value="Add To Prompt", size="sm")
 
         with gr.Row():
             insanitylevel = gr.Slider(
@@ -398,6 +445,28 @@ def ui_onebutton(prompt):
         random_button.click(
             gen_prompt,
             inputs=[
+                insanitylevel,
+                subject,
+                artist,
+                imagetype,
+                antistring,
+                prefixprompt,
+                suffixprompt,
+                givensubject,
+                smartsubject,
+                giventypeofimage,
+                imagemodechance,
+                chosengender,
+                chosensubjectsubtypeobject,
+                chosensubjectsubtypehumanoid,
+                chosensubjectsubtypeconcept,
+            ],
+            outputs=[prompt],
+        )
+        add_random_button.click(
+            add_prompt,
+            inputs=[
+                prompt,
                 insanitylevel,
                 subject,
                 artist,

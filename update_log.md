@@ -1,3 +1,5 @@
+### 1.3.0
+* Updated onebutton prompt so you can now add multiple random prompts by clicking the `Add To Prompt` button
 ### 1.2.2
 * Update comfy version - Lora weights are now calculated on the gpu so should apply faster
 ### 1.2.1
