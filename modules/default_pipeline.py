@@ -126,6 +126,8 @@ def refresh_controlnet(name=None):
     if xl_controlnet_hash == str(xl_controlnet):
         return
 
+    name = modules.controlnet.get_model(name)
+
     if name is not None and xl_controlnet_hash != name:
         filename = os.path.join(modules.path.controlnet_path, name)
         xl_controlnet = core.load_controlnet(filename)
@@ -192,7 +194,7 @@ def process(
         input_image = np.array(input_image).astype(np.float32) / 255.0
         input_image = torch.from_numpy(input_image)[None,]
         input_image = core.upscale(input_image) # FIXME ?
-        refresh_controlnet(name=s["model"])
+        refresh_controlnet(name=s["type"])
         if xl_controlnet:
             match s["type"]:
                 case "canny":
