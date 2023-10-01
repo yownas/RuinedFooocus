@@ -237,6 +237,11 @@ with shared.gradio_root as block:
                     value=settings["resolution"],
                 )
                 add_ctrl("aspect_ratios_selection", aspect_ratios_selection)
+                controlnet_selection = gr.Dropdown(
+                    label="Controlnet",
+                    choices=["canny/cat.png", "canny/dog.png"],
+                    value=None,
+                )
                 style_selection = gr.Dropdown(
                     label="Style Selection",
                     multiselect=True,

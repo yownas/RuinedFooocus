@@ -167,10 +167,12 @@ def worker():
             denoise = None
             start_time = time.time()
             pipeline.clean_prompt_cond_caches()
+            gen_data["controlnet"] = "canny/cat.png"
             try:
                 imgs = pipeline.process(
                     p_txt,
                     n_txt,
+                    gen_data["controlnet"],
                     steps,
                     switch,
                     width,

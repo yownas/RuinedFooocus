@@ -28,6 +28,8 @@ xl_refiner_hash = ""
 xl_base_patched: core.StableDiffusionModel = None
 xl_base_patched_hash = ""
 
+xl_controlnet: core.StableDiffusionModel = None
+xl_controlnet_hash = ""
 
 def load_base_model(name):
     global xl_base, xl_base_hash, xl_base_patched, xl_base_patched_hash
@@ -118,6 +120,21 @@ def load_loras(loras):
 
     return
 
+def refresh_controlnet_canny(name=None):
+    #global controlnet_canny, controlnet_canny_hash
+    global xl_controlnet, xl_controlnet_hash
+    if xl_controlnet_hash == str(xl_controlnet):
+        return
+
+    model_name = modules.path.default_controlnet_canny_name if name == None else name
+    filename = os.path.join(modules.path.controlnet_path, model_name)
+    xl_controlnet = core.load_controlnet(filename)
+
+    xl_controlnet_hash = model_name
+    print(f'ControlNet model loaded: {xl_controlnet_hash}')
+
+    return
+
 
 load_base_model(default_settings["base_model"])
 
@@ -140,6 +157,7 @@ def clean_prompt_cond_caches():
 def process(
     positive_prompt,
     negative_prompt,
+    controlnet,
     steps,
     switch,
     width,
@@ -155,6 +173,7 @@ def process(
     callback,
 ):
     global positive_conditions_cache, negative_conditions_cache, positive_conditions_refiner_cache, negative_conditions_refiner_cache
+    global xl_controlnet
 
     with suppress_stdout():
         positive_conditions_cache = (
@@ -167,6 +186,28 @@ def process(
             if negative_conditions_cache is None
             else negative_conditions_cache
         )
+
+    canny_edge_low = 0.0
+    canny_edge_high = 1.0
+    canny_strength = 1.0
+    canny_start = 0
+    canny_stop = 1
+
+    input_image = Image.open("controlnet/canny/cat.png")
+    input_image = input_image.convert("RGB")
+    input_image = np.array(input_image).astype(np.float32) / 255.0
+    input_image = torch.from_numpy(input_image)[None,]
+    input_image = core.upscale(input_image)
+
+    if input_image != None:
+        refresh_controlnet_canny()
+    if xl_controlnet and input_image != None:
+        edges_image = core.detect_edge(input_image, canny_edge_low, canny_edge_high)
+        positive_conditions_cache, negative_conditions_cache = core.apply_controlnet(positive_conditions_cache, negative_conditions_cache,
+            xl_controlnet, edges_image, canny_strength, canny_start, canny_stop)
+    else:
+        print(f"DEBUG: No canny? {xl_controlnet} {input_image}")
+
 
     latent = core.generate_empty_latent(width=width, height=height, batch_size=1)
     force_full_denoise = True
