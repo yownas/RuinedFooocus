@@ -171,6 +171,8 @@ def worker():
                 imgs = pipeline.process(
                     p_txt,
                     n_txt,
+                    gen_data["input_image"],
+                    gen_data["controlnet_selection"],
                     steps,
                     switch,
                     width,

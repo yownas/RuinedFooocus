@@ -8,9 +8,10 @@ import comfy.model_management
 import comfy.utils
 
 from comfy.sd import load_checkpoint_guess_config
-from nodes import VAEDecode, EmptyLatentImage, CLIPTextEncode, VAEEncode
+from nodes import VAEDecode, EmptyLatentImage, CLIPTextEncode, VAEEncode, ControlNetApplyAdvanced
 from comfy.sample import prepare_mask, broadcast_cond, get_additional_models, cleanup_additional_models
 from comfy_extras.nodes_post_processing import ImageScaleToTotalPixels
+from comfy_extras.nodes_canny import Canny
 from modules.samplers_advanced import KSampler, KSamplerWithRefiner
 from modules.util import suppress_stdout
 
@@ -20,6 +21,9 @@ opCLIPTextEncode = CLIPTextEncode()
 opEmptyLatentImage = EmptyLatentImage()
 opVAEDecode = VAEDecode()
 opVAEEncode = VAEEncode()
+opImageScaleToTotalPixels = ImageScaleToTotalPixels()
+opCanny = Canny()
+opControlNetApplyAdvanced = ControlNetApplyAdvanced()
 opImageScaleToTotalPixels = ImageScaleToTotalPixels()
 
 
@@ -53,6 +57,22 @@ def load_lora(model, lora_filename, strength_model=1.0, strength_clip=1.0):
     lora = comfy.utils.load_torch_file(lora_filename, safe_load=True)
     unet, clip = comfy.sd.load_lora_for_models(model.unet, model.clip, lora, strength_model, strength_clip)
     return StableDiffusionModel(unet=unet, clip=clip, vae=model.vae, clip_vision=model.clip_vision)
+
+@torch.no_grad()
+@torch.inference_mode()
+def load_controlnet(ckpt_filename):
+    return comfy.controlnet.load_controlnet(ckpt_filename)
+
+@torch.no_grad()
+@torch.inference_mode()
+def detect_edge(image, low_threshold, high_threshold):
+    return opCanny.detect_edge(image=image, low_threshold=low_threshold, high_threshold=high_threshold)[0]
+
+@torch.no_grad()
+@torch.inference_mode()
+def apply_controlnet(positive, negative, control_net, image, strength, start_percent, end_percent):
+    return opControlNetApplyAdvanced.apply_controlnet(positive=positive, negative=negative, control_net=control_net,
+        image=image, strength=strength, start_percent=start_percent, end_percent=end_percent)
 
 
 @torch.no_grad()

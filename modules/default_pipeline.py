@@ -6,6 +6,7 @@ import warnings
 
 import modules.core as core
 import modules.path
+import modules.controlnet
 
 from PIL import Image, ImageOps
 
@@ -28,6 +29,8 @@ xl_refiner_hash = ""
 xl_base_patched: core.StableDiffusionModel = None
 xl_base_patched_hash = ""
 
+xl_controlnet: core.StableDiffusionModel = None
+xl_controlnet_hash = ""
 
 def load_base_model(name):
     global xl_base, xl_base_hash, xl_base_patched, xl_base_patched_hash
@@ -118,6 +121,20 @@ def load_loras(loras):
 
     return
 
+def refresh_controlnet(name=None):
+    global xl_controlnet, xl_controlnet_hash
+    if xl_controlnet_hash == str(xl_controlnet):
+        return
+
+    name = modules.controlnet.get_model(name)
+
+    if name is not None and xl_controlnet_hash != name:
+        filename = os.path.join(modules.path.controlnet_path, name)
+        xl_controlnet = core.load_controlnet(filename)
+        xl_controlnet_hash = name
+        print(f'ControlNet model loaded: {xl_controlnet_hash}')
+    return
+
 
 load_base_model(default_settings["base_model"])
 
@@ -140,6 +157,8 @@ def clean_prompt_cond_caches():
 def process(
     positive_prompt,
     negative_prompt,
+    input_image,
+    controlnet,
     steps,
     switch,
     width,
@@ -155,6 +174,7 @@ def process(
     callback,
 ):
     global positive_conditions_cache, negative_conditions_cache, positive_conditions_refiner_cache, negative_conditions_refiner_cache
+    global xl_controlnet
 
     with suppress_stdout():
         positive_conditions_cache = (
@@ -167,6 +187,22 @@ def process(
             if negative_conditions_cache is None
             else negative_conditions_cache
         )
+
+    if controlnet is not None and input_image is not None:
+        s=modules.controlnet.get_settings(controlnet)
+        input_image = input_image.convert("RGB")
+        input_image = np.array(input_image).astype(np.float32) / 255.0
+        input_image = torch.from_numpy(input_image)[None,]
+        input_image = core.upscale(input_image) # FIXME ?
+        refresh_controlnet(name=s["type"])
+        if xl_controlnet:
+            match s["type"]:
+                case "canny":
+                    input_image = core.detect_edge(input_image, float(s["edge_low"]), float(s["edge_high"]))
+                # case "depth": (no preprocessing?)
+            positive_conditions_cache, negative_conditions_cache = core.apply_controlnet(
+                positive_conditions_cache, negative_conditions_cache,
+                xl_controlnet, input_image, float(s["strength"]), float(s["start"]), float(s["stop"]))
 
     latent = core.generate_empty_latent(width=width, height=height, batch_size=1)
     force_full_denoise = True
