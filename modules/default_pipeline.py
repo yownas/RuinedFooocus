@@ -196,11 +196,11 @@ def process(
         if xl_controlnet:
             match s["type"]:
                 case "canny":
-                    input_image = core.detect_edge(input_image, s["edge_low"], s["edge_high"])
+                    input_image = core.detect_edge(input_image, float(s["edge_low"]), float(s["edge_high"]))
                 # case "depth": (no preprocessing?)
             positive_conditions_cache, negative_conditions_cache = core.apply_controlnet(
                 positive_conditions_cache, negative_conditions_cache,
-                xl_controlnet, input_image, s["strength"], s["start"], s["stop"])
+                xl_controlnet, input_image, float(s["strength"]), float(s["start"]), float(s["stop"]))
 
     latent = core.generate_empty_latent(width=width, height=height, batch_size=1)
     force_full_denoise = True
