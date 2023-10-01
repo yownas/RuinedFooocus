@@ -11,6 +11,7 @@ import modules.async_worker as worker
 import modules.html
 import modules.path
 import ui_onebutton
+import modules.controlnet as controlnet
 
 from comfy.samplers import KSampler
 from modules.sdxl_styles import style_keys, aspect_ratios, styles
@@ -237,11 +238,12 @@ with shared.gradio_root as block:
                     value=settings["resolution"],
                 )
                 add_ctrl("aspect_ratios_selection", aspect_ratios_selection)
-                controlnet_selection = gr.Dropdown(
-                    label="Controlnet",
-                    choices=["canny/cat.png", "canny/dog.png"],
-                    value=None,
+                input_image = gr.Image(
+                    label="Input image",
+                    type="pil",
+                    visible=False,
                 )
+                add_ctrl("input_image", input_image)
                 style_selection = gr.Dropdown(
                     label="Style Selection",
                     multiselect=True,
@@ -339,6 +341,18 @@ with shared.gradio_root as block:
                             )
                             add_ctrl(f"w{i+1}", lora_weight)
                             lora_ctrls += [lora_model, lora_weight]
+
+                with gr.Row():
+                    controlnet_selection = gr.Dropdown(
+                        label="Controlnet",
+                        choices=[None] + list(controlnet.modes()),
+                        value=None,
+                    )
+                    add_ctrl("controlnet_selection", controlnet_selection)
+                    @controlnet_selection.change(inputs=[controlnet_selection], outputs=[input_image])
+                    def controlnet_change(r):
+                        return gr.update(visible=not r is None, label=r)
+
                 with gr.Row():
                     model_refresh = gr.Button(
                         label="Refresh",

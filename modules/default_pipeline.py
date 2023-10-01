@@ -6,6 +6,7 @@ import warnings
 
 import modules.core as core
 import modules.path
+import modules.controlnet
 
 from PIL import Image, ImageOps
 
@@ -120,19 +121,16 @@ def load_loras(loras):
 
     return
 
-def refresh_controlnet_canny(name=None):
-    #global controlnet_canny, controlnet_canny_hash
+def refresh_controlnet(name=None):
     global xl_controlnet, xl_controlnet_hash
     if xl_controlnet_hash == str(xl_controlnet):
         return
 
-    model_name = modules.path.default_controlnet_canny_name if name == None else name
-    filename = os.path.join(modules.path.controlnet_path, model_name)
-    xl_controlnet = core.load_controlnet(filename)
-
-    xl_controlnet_hash = model_name
-    print(f'ControlNet model loaded: {xl_controlnet_hash}')
-
+    if name is not None and xl_controlnet_hash != name:
+        filename = os.path.join(modules.path.controlnet_path, name)
+        xl_controlnet = core.load_controlnet(filename)
+        xl_controlnet_hash = name
+        print(f'ControlNet model loaded: {xl_controlnet_hash}')
     return
 
 
@@ -157,6 +155,7 @@ def clean_prompt_cond_caches():
 def process(
     positive_prompt,
     negative_prompt,
+    input_image,
     controlnet,
     steps,
     switch,
@@ -187,27 +186,21 @@ def process(
             else negative_conditions_cache
         )
 
-    canny_edge_low = 0.0
-    canny_edge_high = 1.0
-    canny_strength = 1.0
-    canny_start = 0
-    canny_stop = 1
-
-    input_image = Image.open("controlnet/canny/cat.png")
-    input_image = input_image.convert("RGB")
-    input_image = np.array(input_image).astype(np.float32) / 255.0
-    input_image = torch.from_numpy(input_image)[None,]
-    input_image = core.upscale(input_image)
-
-    if input_image != None:
-        refresh_controlnet_canny()
-    if xl_controlnet and input_image != None:
-        edges_image = core.detect_edge(input_image, canny_edge_low, canny_edge_high)
-        positive_conditions_cache, negative_conditions_cache = core.apply_controlnet(positive_conditions_cache, negative_conditions_cache,
-            xl_controlnet, edges_image, canny_strength, canny_start, canny_stop)
-    else:
-        print(f"DEBUG: No canny? {xl_controlnet} {input_image}")
-
+    if controlnet is not None and input_image is not None:
+        s=modules.controlnet.get_settings(controlnet)
+        input_image = input_image.convert("RGB")
+        input_image = np.array(input_image).astype(np.float32) / 255.0
+        input_image = torch.from_numpy(input_image)[None,]
+        input_image = core.upscale(input_image) # FIXME ?
+        refresh_controlnet(name=s["model"])
+        if xl_controlnet:
+            match s["type"]:
+                case "canny":
+                    input_image = core.detect_edge(input_image, s["edge_low"], s["edge_high"])
+                # case "depth": (no preprocessing?)
+            positive_conditions_cache, negative_conditions_cache = core.apply_controlnet(
+                positive_conditions_cache, negative_conditions_cache,
+                xl_controlnet, input_image, s["strength"], s["start"], s["stop"])
 
     latent = core.generate_empty_latent(width=width, height=height, batch_size=1)
     force_full_denoise = True
