@@ -345,10 +345,11 @@ with shared.gradio_root as block:
                 with gr.Row():
                     controlnet_selection = gr.Dropdown(
                         label="Controlnet",
-                        choices=[None] + list(controlnet.modes()),
-                        value=None,
+                        choices=["None"] + list(controlnet.modes()),
+                        value="None",
                     )
                     add_ctrl("controlnet_selection", controlnet_selection)
+
                     @controlnet_selection.change(inputs=[controlnet_selection], outputs=[input_image])
                     def controlnet_change(r):
                         return gr.update(visible=not r is None, label=r)

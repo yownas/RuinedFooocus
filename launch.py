@@ -15,7 +15,7 @@ from modules.launch_util import (
     dir_repos,
 )
 from modules.util import load_file_from_url
-from modules.path import modelfile_path, lorafile_path
+from modules.path import modelfile_path, lorafile_path, controlnet_path
 
 REINSTALL_ALL = False
 
@@ -86,12 +86,25 @@ lora_filenames = [
     )
 ]
 
+controlnet_filenames = [
+    (
+        "control-lora-canny-rank128.safetensors",
+        "https://huggingface.co/stabilityai/control-lora/resolve/main/control-LoRAs-rank128/control-lora-canny-rank128.safetensors",
+    ),
+    (
+        "control-lora-depth-rank128.safetensors",
+        "https://huggingface.co/stabilityai/control-lora/resolve/main/control-LoRAs-rank128/control-lora-depth-rank128.safetensors",
+    ),
+]
+
 
 def download_models():
     for file_name, url in model_filenames:
         load_file_from_url(url=url, model_dir=modelfile_path, file_name=file_name)
     for file_name, url in lora_filenames:
         load_file_from_url(url=url, model_dir=lorafile_path, file_name=file_name)
+    for file_name, url in controlnet_filenames:
+        load_file_from_url(url=url, model_dir=controlnet_path, file_name=file_name)
     return
 
 

@@ -85,6 +85,7 @@ Coming soon ...
 20. Render different subjects so you can process a whole list of prompts. Seperate each prompt by placing `---` on a new line
 21. Supports subdirectories for models/loras so you can get all organised!
 22. Add <style:stylename> to prompt to set the required style
+23. Controlnet! Check out the models tab, once selected you'll be able to upload your controlnet base image into a new special area in the settings tab
 
 ## Thanks
 
