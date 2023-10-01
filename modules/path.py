@@ -8,41 +8,31 @@ from os.path import exists
 DEFAULT_PATHS = {
     "path_checkpoints": "../models/checkpoints/",
     "path_loras": "../models/loras/",
+    "path_controlnet": "../models/controlnet/",
     "path_outputs": "../outputs/",
 }
 
 
 def load_paths():
+    paths = DEFAULT_PATHS
     if exists("paths.json"):
         with open("paths.json") as f:
-            paths = json.load(f)
+            paths.update(json.load(f))
     else:
-        paths = DEFAULT_PATHS
         with open("paths.json", "w") as f:
             json.dump(DEFAULT_PATHS, f, indent=2)
 
-    return (paths["path_checkpoints"], paths["path_loras"], paths["path_outputs"])
+    return paths
 
+paths = load_paths()
 
-path_checkpoints, path_loras, path_outputs = load_paths()
+def get_abspath(path):
+    return path if os.path.isabs(path) else os.path.abspath(os.path.join(os.path.dirname(__file__), path))
 
-modelfile_path = (
-    path_checkpoints
-    if os.path.isabs(path_checkpoints)
-    else os.path.abspath(os.path.join(os.path.dirname(__file__), path_checkpoints))
-)
-lorafile_path = (
-    path_loras if os.path.isabs(path_loras) else os.path.abspath(os.path.join(os.path.dirname(__file__), path_loras))
-)
-#FIXME
-controlnet_path = (
-    os.path.abspath(os.path.join(os.path.dirname(__file__), '../models/controlnet/'))
-)
-temp_outputs_path = (
-    path_outputs
-    if os.path.isabs(path_outputs)
-    else os.path.abspath(os.path.join(os.path.dirname(__file__), path_outputs))
-)
+modelfile_path = (get_abspath(paths["path_checkpoints"]))
+lorafile_path = (get_abspath(paths["path_loras"]))
+controlnet_path = (get_abspath(paths["path_controlnet"]))
+temp_outputs_path = (get_abspath(paths["path_outputs"]))
 
 os.makedirs(temp_outputs_path, exist_ok=True)
 
@@ -50,7 +40,6 @@ default_base_model_name = "sd_xl_base_1.0_0.9vae.safetensors"
 default_refiner_model_name = "sd_xl_refiner_1.0_0.9vae.safetensors"
 default_lora_name = "sd_xl_offset_example-lora_1.0.safetensors"
 default_lora_weight = 0.5
-default_controlnet_canny_name = 'control-lora-canny-rank128.safetensors'
 
 model_filenames = []
 lora_filenames = []
