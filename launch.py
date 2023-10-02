@@ -1,7 +1,7 @@
 import os
 import sys
 import platform
-import fooocus_version
+import version
 
 from modules.launch_util import (
     is_installed,
@@ -34,7 +34,7 @@ def prepare_environment():
     comfy_commit_hash = os.environ.get("COMFY_COMMIT_HASH", "f00471cdc8f92c930436cf288f1c12119f638a67")
 
     print(f"Python {sys.version}")
-    print(f"Fooocus version: {fooocus_version.version}")
+    print(f"RuinedFooocus version: {version.version}")
 
     comfyui_name = "ComfyUI-from-StabilityAI-Official"
     git_clone(comfy_repo, repo_dir(comfyui_name), "Inference Engine", comfy_commit_hash)

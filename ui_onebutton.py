@@ -334,7 +334,7 @@ def ui_onebutton(prompt):
 
         return prompt
 
-    with gr.Tab(label="One Button Prompt"):
+    with gr.Tab(label="One Button"):
         with gr.Row():
             random_button = gr.Button(value="Create Random Prompt", size="sm")
             add_random_button = gr.Button(value="Add To Prompt", size="sm")

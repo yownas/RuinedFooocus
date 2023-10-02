@@ -6,7 +6,7 @@ import time
 
 import gradio as gr
 
-import fooocus_version
+import version
 import modules.async_worker as worker
 import modules.html
 import modules.path
@@ -165,9 +165,7 @@ if settings["theme"] == "None":
 else:
     theme = settings["theme"]
 
-shared.gradio_root = gr.Blocks(
-    theme=theme, title="RuinedFooocus " + fooocus_version.version, css=modules.html.css
-).queue()
+shared.gradio_root = gr.Blocks(theme=theme, title="RuinedFooocus " + version.version, css=modules.html.css).queue()
 
 with shared.gradio_root as block:
     block.load(_js=modules.html.scripts)
@@ -238,12 +236,7 @@ with shared.gradio_root as block:
                     value=settings["resolution"],
                 )
                 add_ctrl("aspect_ratios_selection", aspect_ratios_selection)
-                input_image = gr.Image(
-                    label="Input image",
-                    type="pil",
-                    visible=False,
-                )
-                add_ctrl("input_image", input_image)
+
                 style_selection = gr.Dropdown(
                     label="Style Selection",
                     multiselect=True,
@@ -341,18 +334,6 @@ with shared.gradio_root as block:
                             )
                             add_ctrl(f"w{i+1}", lora_weight)
                             lora_ctrls += [lora_model, lora_weight]
-
-                with gr.Row():
-                    controlnet_selection = gr.Dropdown(
-                        label="Controlnet",
-                        choices=["None"] + list(controlnet.modes()),
-                        value="None",
-                    )
-                    add_ctrl("controlnet_selection", controlnet_selection)
-
-                    @controlnet_selection.change(inputs=[controlnet_selection], outputs=[input_image])
-                    def controlnet_change(r):
-                        return gr.update(visible=not r is None, label=r)
 
                 with gr.Row():
                     model_refresh = gr.Button(
@@ -463,6 +444,22 @@ with shared.gradio_root as block:
                 return results
 
             ui_onebutton.ui_onebutton(prompt)
+
+            with gr.Tab(label="CN"):
+                with gr.Row():
+                    controlnet_selection = gr.Dropdown(
+                        label="Controlnet",
+                        choices=["None"] + list(controlnet.modes()),
+                        value="None",
+                    )
+                    add_ctrl("controlnet_selection", controlnet_selection)
+
+                input_image = gr.Image(
+                    label="Input image",
+                    type="pil",
+                    visible=True,
+                )
+                add_ctrl("input_image", input_image)
 
         advanced_checkbox.change(lambda x: gr.update(visible=x), advanced_checkbox, right_col)
 

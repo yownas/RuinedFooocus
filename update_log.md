@@ -1,3 +1,9 @@
+### 1.4.2
+* change fooocusversion.py to version.py for easier updating
+* Moved controlnet to its own tab for easier updates
+* updated gradio version
+* minor wording changes
+
 ### 1.4.1
 * `paths.json` will now be updated if there are any missing defaults paths
 
