@@ -14,25 +14,33 @@ DEFAULT_PATHS = {
 
 
 def load_paths():
-    paths = DEFAULT_PATHS
+    paths = DEFAULT_PATHS.copy()
+
     if exists("paths.json"):
         with open("paths.json") as f:
             paths.update(json.load(f))
-    else:
-        with open("paths.json", "w") as f:
-            json.dump(DEFAULT_PATHS, f, indent=2)
+
+    for key in DEFAULT_PATHS:
+        if key not in paths:
+            paths[key] = DEFAULT_PATHS[key]
+
+    with open("paths.json", "w") as f:
+        json.dump(paths, f, indent=2)
 
     return paths
 
+
 paths = load_paths()
+
 
 def get_abspath(path):
     return path if os.path.isabs(path) else os.path.abspath(os.path.join(os.path.dirname(__file__), path))
 
-modelfile_path = (get_abspath(paths["path_checkpoints"]))
-lorafile_path = (get_abspath(paths["path_loras"]))
-controlnet_path = (get_abspath(paths["path_controlnet"]))
-temp_outputs_path = (get_abspath(paths["path_outputs"]))
+
+modelfile_path = get_abspath(paths["path_checkpoints"])
+lorafile_path = get_abspath(paths["path_loras"])
+controlnet_path = get_abspath(paths["path_controlnet"])
+temp_outputs_path = get_abspath(paths["path_outputs"])
 
 os.makedirs(temp_outputs_path, exist_ok=True)
 

@@ -1,3 +1,6 @@
+### 1.4.1
+* `paths.json` will now be updated if there are any missing defaults paths
+
 ### 1.4.0
 * Now supports controlnet
 
