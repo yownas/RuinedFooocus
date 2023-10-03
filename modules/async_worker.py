@@ -89,6 +89,7 @@ def worker():
         pipeline.load_loras(loras)
         pipeline.clean_prompt_cond_caches()
 
+        # FIXME get options from performance.json unless selection is "New..."
         if gen_data["performance_selection"] == "Speed":
             steps = 30
             switch = 20
@@ -216,9 +217,8 @@ def worker():
                     "denoise": denoise,
                     "software": "RuinedFooocus",
                 }
-                if gen_data["save_metadata"]:
-                    metadata = PngInfo()
-                    metadata.add_text("parameters", json.dumps(prompt))
+                metadata = PngInfo()
+                metadata.add_text("parameters", json.dumps(prompt))
 
                 state["preview_current"] += 1
                 Image.fromarray(x).save(local_temp_filename, pnginfo=metadata)
@@ -233,7 +233,6 @@ def worker():
             if state["preview_image"] is not None and state["preview_count"] > 1:
                 results = [state["preview_image"]] + results
             outputs.append(["results", results])
-            outputs.append(["metadata", metadatastrings])
             results = []
             metadatastrings = []
         return
