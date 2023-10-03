@@ -15,7 +15,7 @@ import modules.controlnet as controlnet
 
 from comfy.samplers import KSampler
 from modules.sdxl_styles import style_keys, aspect_ratios, styles
-from modules.performance import performance_options, load_performance, save_performance
+from modules.performance import performance_options, load_performance, save_performance, NEWPERF
 from modules.settings import default_settings
 from modules.prompt_processing import get_promptlist
 
@@ -137,6 +137,7 @@ def generate_clicked(*args):
 
         elif flag == "results":
             yield update_results(product)
+            finished = True
 
     worker.buffer.append({"task_type": "stop"})
 
@@ -209,7 +210,7 @@ with shared.gradio_root as block:
             with gr.Tab(label="Setting"):
                 performance_selection = gr.Dropdown(
                     label="Performance",
-                    choices=list(performance_options.keys()) + ["New..."],
+                    choices=list(performance_options.keys()) + [NEWPERF],
                     value=settings["performance"],
                 )
                 add_ctrl("performance_selection", performance_selection)
@@ -301,7 +302,7 @@ with shared.gradio_root as block:
                     outputs=performance_outputs,
                 )
                 def performance_changed(selection):
-                    if selection != "New...":
+                    if selection != NEWPERF:
                         return [gr.update(visible=False)] * len(performance_outputs)
                     else:
                         return [gr.update(visible=True)] * len(performance_outputs)
@@ -322,7 +323,7 @@ with shared.gradio_root as block:
                     }
                     perf_options[perf_name] = opts
                     save_performance(perf_options)
-                    choices=list(perf_options.keys()) + ["New..."]
+                    choices=list(perf_options.keys()) + [NEWPERF]
                     return(gr.update(choices=choices, value=perf_name))
 
                 with gr.Group():
