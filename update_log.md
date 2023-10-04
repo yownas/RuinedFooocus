@@ -2,7 +2,8 @@
 * removed metadata toggle, it will now always save metadata
 * save your own custom performances
 * tidied ui
-
+* fix crash when failing to load loras
+* hide all but one lora dropdown showing "None"
 
 ### 1.4.2
 * change fooocusversion.py to version.py for easier updating
