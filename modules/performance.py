@@ -1,11 +1,10 @@
 import os
 import shutil
 import json
-from csv import DictReader, reader
 
 DEFAULT_PERFORMANCE_FILE = "performance.default"
 PERFORMANCE_FILE = "performance.json"
-NEWPERF = "New..."
+NEWPERF = "Custom..."
 
 
 def load_performance():

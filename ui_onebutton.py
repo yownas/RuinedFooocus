@@ -339,7 +339,7 @@ def ui_onebutton(prompt):
             random_button = gr.Button(value="Create Random Prompt", size="sm")
             add_random_button = gr.Button(value="Add To Prompt", size="sm")
 
-        with gr.Row(), gr.Group():
+        with gr.Row():
             insanitylevel = gr.Slider(
                 1, 10, value=5, step=1, label="Higher levels increases complexity and randomness of generated prompt"
             )

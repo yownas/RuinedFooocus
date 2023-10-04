@@ -299,32 +299,35 @@ with shared.gradio_root as block:
 
                 @performance_selection.change(
                     inputs=[performance_selection],
-                    outputs=performance_outputs,
+                    outputs=[perf_name] + performance_outputs,
                 )
                 def performance_changed(selection):
                     if selection != NEWPERF:
-                        return [gr.update(visible=False)] * len(performance_outputs)
+                        return [gr.update(visible=False)] + [gr.update(visible=False)] * len(performance_outputs)
                     else:
-                        return [gr.update(visible=True)] * len(performance_outputs)
+                        return [gr.update(value="")] + [gr.update(visible=True)] * len(performance_outputs)
                 @perf_save.click(
                     inputs=performance_outputs,
                     outputs=[performance_selection],
                 )
                 def performance_save(perf_name, perf_save, cfg, base_clip_skip, refiner_clip_skip, sampler_name, scheduler, custom_steps, custom_switch):
-                    perf_options = load_performance()
-                    opts = {
-                        "custom_steps": custom_steps,
-                        "custom_switch": custom_switch,
-                        "cfg": cfg,
-                        "base_clip_skip": base_clip_skip,
-                        "refiner_clip_skip": refiner_clip_skip,
-                        "sampler_name": sampler_name,
-                        "scheduler": scheduler
-                    }
-                    perf_options[perf_name] = opts
-                    save_performance(perf_options)
-                    choices=list(perf_options.keys()) + [NEWPERF]
-                    return(gr.update(choices=choices, value=perf_name))
+                    if perf_name != "":
+                        perf_options = load_performance()
+                        opts = {
+                            "custom_steps": custom_steps,
+                            "custom_switch": custom_switch,
+                            "cfg": cfg,
+                            "base_clip_skip": base_clip_skip,
+                            "refiner_clip_skip": refiner_clip_skip,
+                            "sampler_name": sampler_name,
+                            "scheduler": scheduler
+                        }
+                        perf_options[perf_name] = opts
+                        save_performance(perf_options)
+                        choices=list(perf_options.keys()) + [NEWPERF]
+                        return(gr.update(choices=choices, value=perf_name))
+                    else:
+                        return(gr.update())
 
                 with gr.Group():
                     aspect_ratios_selection = gr.Dropdown(
