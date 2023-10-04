@@ -57,7 +57,7 @@ def process_prompt(style, prompt, negative):
 
 
 def parse_loras(prompt, negative):
-    pattern = re.compile(r"<lora:([^>]+):(\d+)>")
+    pattern = re.compile(r"<lora:([^>]+):(\d*\.*\d+)>")
     loras = []
     for match in re.finditer(pattern, prompt):
         loras.append((f"{match.group(1)}.safetensors", float(match.group(2))))
