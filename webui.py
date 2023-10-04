@@ -15,6 +15,7 @@ import modules.controlnet as controlnet
 
 from comfy.samplers import KSampler
 from modules.sdxl_styles import style_keys, aspect_ratios, styles
+from modules.performance import performance_options, load_performance, save_performance, NEWPERF
 from modules.settings import default_settings
 from modules.prompt_processing import get_promptlist
 
@@ -74,7 +75,6 @@ def update_clicked():
             value=modules.html.make_progress_html(0, "Processing text encoding ..."),
         ),
         progress_window: gr.update(visible=True, value="init_image.png"),
-        metadata_viewer: gr.update(),
         gallery: gr.update(visible=False),
     }
 
@@ -86,7 +86,6 @@ def update_preview(product):
         stop_button: gr.update(interactive=True, visible=True),
         progress_html: gr.update(visible=True, value=modules.html.make_progress_html(percentage, title)),
         progress_window: gr.update(visible=True, value=image) if image is not None else gr.update(),
-        metadata_viewer: gr.update(visible=False),
         gallery: gr.update(visible=False),
     }
 
@@ -97,19 +96,7 @@ def update_results(product):
         stop_button: gr.update(interactive=False, visible=False),
         progress_html: gr.update(visible=False),
         progress_window: gr.update(),
-        metadata_viewer: gr.update(),
         gallery: gr.update(visible=True, value=product),
-    }
-
-
-def update_metadata(product):
-    return {
-        run_button: gr.update(),
-        stop_button: gr.update(),
-        progress_html: gr.update(),
-        progress_window: gr.update(),
-        metadata_viewer: gr.update(value=product),
-        gallery: gr.update(),
     }
 
 
@@ -150,9 +137,6 @@ def generate_clicked(*args):
 
         elif flag == "results":
             yield update_results(product)
-
-        elif flag == "metadata":
-            yield update_metadata(product)
             finished = True
 
     worker.buffer.append({"task_type": "stop"})
@@ -224,27 +208,143 @@ with shared.gradio_root as block:
                 )
         with gr.Column(scale=2, visible=settings["advanced_mode"]) as right_col:
             with gr.Tab(label="Setting"):
-                performance_selection = gr.Radio(
+                performance_selection = gr.Dropdown(
                     label="Performance",
-                    choices=["Speed", "Quality", "Custom"],
+                    choices=list(performance_options.keys()) + [NEWPERF],
                     value=settings["performance"],
                 )
                 add_ctrl("performance_selection", performance_selection)
-                aspect_ratios_selection = gr.Dropdown(
-                    label="Aspect Ratios (width x height)",
-                    choices=list(aspect_ratios.keys()),
-                    value=settings["resolution"],
+                perf_name = gr.Textbox(
+                    show_label=False,
+                    placeholder="Name",
+                    interactive=True,
+                    visible=False,
                 )
-                add_ctrl("aspect_ratios_selection", aspect_ratios_selection)
+                perf_save = gr.Button(
+                    value="Save",
+                    visible=False,
+                )
+                custom_steps = gr.Slider(
+                    label="Custom Steps",
+                    minimum=10,
+                    maximum=200,
+                    step=1,
+                    value=30,
+                    visible=False,
+                )
+                add_ctrl("custom_steps", custom_steps)
+                custom_switch = gr.Slider(
+                    label="Custom Switch",
+                    minimum=10,
+                    maximum=200,
+                    step=1,
+                    value=20,
+                    visible=False,
+                )
+                add_ctrl("custom_switch", custom_switch)
 
-                style_selection = gr.Dropdown(
-                    label="Style Selection",
-                    multiselect=True,
-                    container=True,
-                    choices=style_keys,
-                    value=settings["style"],
+                cfg = gr.Slider(
+                    label="CFG",
+                    minimum=1.0,
+                    maximum=20.0,
+                    step=0.1,
+                    value=8,
+                    visible=False,
                 )
-                add_ctrl("style_selection", style_selection)
+                add_ctrl("cfg", cfg)
+                base_clip_skip = gr.Slider(
+                    label="Base CLIP Skip",
+                    minimum=-10,
+                    maximum=-1,
+                    step=1,
+                    value=-2,
+                    visible=False,
+                )
+                add_ctrl("base_clip_skip", base_clip_skip)
+                refiner_clip_skip = gr.Slider(
+                    label="Refiner CLIP Skip",
+                    minimum=-10,
+                    maximum=-1,
+                    step=1,
+                    value=-2,
+                    visible=False,
+                )
+                add_ctrl("refiner_clip_skip", refiner_clip_skip)
+                sampler_name = gr.Dropdown(
+                    label="Sampler",
+                    choices=KSampler.SAMPLERS,
+                    value="dpmpp_2m_sde_gpu",
+                    visible=False,
+                )
+                add_ctrl("sampler_name", sampler_name)
+                scheduler = gr.Dropdown(
+                    label="Scheduler",
+                    choices=KSampler.SCHEDULERS,
+                    value="karras",
+                    visible=False,
+                )
+                add_ctrl("scheduler", scheduler)
+
+                performance_outputs = [
+                    perf_name,
+                    perf_save,
+                    cfg,
+                    base_clip_skip,
+                    refiner_clip_skip,
+                    sampler_name,
+                    scheduler,
+                    custom_steps,
+                    custom_switch,
+                ]
+
+                @performance_selection.change(
+                    inputs=[performance_selection],
+                    outputs=[perf_name] + performance_outputs,
+                )
+                def performance_changed(selection):
+                    if selection != NEWPERF:
+                        return [gr.update(visible=False)] + [gr.update(visible=False)] * len(performance_outputs)
+                    else:
+                        return [gr.update(value="")] + [gr.update(visible=True)] * len(performance_outputs)
+                @perf_save.click(
+                    inputs=performance_outputs,
+                    outputs=[performance_selection],
+                )
+                def performance_save(perf_name, perf_save, cfg, base_clip_skip, refiner_clip_skip, sampler_name, scheduler, custom_steps, custom_switch):
+                    if perf_name != "":
+                        perf_options = load_performance()
+                        opts = {
+                            "custom_steps": custom_steps,
+                            "custom_switch": custom_switch,
+                            "cfg": cfg,
+                            "base_clip_skip": base_clip_skip,
+                            "refiner_clip_skip": refiner_clip_skip,
+                            "sampler_name": sampler_name,
+                            "scheduler": scheduler
+                        }
+                        perf_options[perf_name] = opts
+                        save_performance(perf_options)
+                        choices=list(perf_options.keys()) + [NEWPERF]
+                        return(gr.update(choices=choices, value=perf_name))
+                    else:
+                        return(gr.update())
+
+                with gr.Group():
+                    aspect_ratios_selection = gr.Dropdown(
+                        label="Aspect Ratios (width x height)",
+                        choices=list(aspect_ratios.keys()),
+                        value=settings["resolution"],
+                    )
+                    add_ctrl("aspect_ratios_selection", aspect_ratios_selection)
+
+                    style_selection = gr.Dropdown(
+                        label="Style Selection",
+                        multiselect=True,
+                        container=True,
+                        choices=style_keys,
+                        value=settings["style"],
+                    )
+                    add_ctrl("style_selection", style_selection)
                 style_button = gr.Button(value="⬅️ Send Style to prompt", size="sm")
                 image_number = gr.Slider(
                     label="Image Number",
@@ -314,12 +414,13 @@ with shared.gradio_root as block:
                         show_label=True,
                     )
                     add_ctrl("refiner_model_name", refiner_model)
-                with gr.Accordion(label="LoRAs", open=True):
+                with gr.Accordion(label="LoRAs", open=True), gr.Group():
                     lora_ctrls = []
                     for i in range(5):
                         with gr.Row():
                             lora_model = gr.Dropdown(
                                 label=f"SDXL LoRA {i+1}",
+                                show_label=False,
                                 choices=["None"] + modules.path.lora_filenames,
                                 value=settings[f"lora_{i+1}_model"],
                             )
@@ -327,6 +428,7 @@ with shared.gradio_root as block:
 
                             lora_weight = gr.Slider(
                                 label="Strength",
+                                show_label=False,
                                 minimum=-2,
                                 maximum=2,
                                 step=0.05,
@@ -342,91 +444,6 @@ with shared.gradio_root as block:
                         variant="secondary",
                         elem_classes="refresh_button",
                     )
-            with gr.Tab(label="Advanced"):
-                save_metadata = gr.Checkbox(label="Save Metadata", value=settings["save_metadata"])
-                add_ctrl("save_metadata", save_metadata)
-                custom_steps = gr.Slider(
-                    label="Custom Steps",
-                    minimum=10,
-                    maximum=200,
-                    step=1,
-                    value=30,
-                    visible=False,
-                )
-                add_ctrl("custom_steps", custom_steps)
-                custom_switch = gr.Slider(
-                    label="Custom Switch",
-                    minimum=10,
-                    maximum=200,
-                    step=1,
-                    value=20,
-                    visible=False,
-                )
-                add_ctrl("custom_switch", custom_switch)
-
-                cfg = gr.Slider(
-                    label="CFG",
-                    minimum=1.0,
-                    maximum=20.0,
-                    step=0.1,
-                    value=8,
-                    visible=False,
-                )
-                add_ctrl("cfg", cfg)
-                base_clip_skip = gr.Slider(
-                    label="Base CLIP Skip",
-                    minimum=-10,
-                    maximum=-1,
-                    step=1,
-                    value=-2,
-                    visible=False,
-                )
-                add_ctrl("base_clip_skip", base_clip_skip)
-                refiner_clip_skip = gr.Slider(
-                    label="Refiner CLIP Skip",
-                    minimum=-10,
-                    maximum=-1,
-                    step=1,
-                    value=-2,
-                    visible=False,
-                )
-                add_ctrl("refiner_clip_skip", refiner_clip_skip)
-                sampler_name = gr.Dropdown(
-                    label="Sampler",
-                    choices=KSampler.SAMPLERS,
-                    value="dpmpp_2m_sde_gpu",
-                    visible=False,
-                )
-                add_ctrl("sampler_name", sampler_name)
-                scheduler = gr.Dropdown(
-                    label="Scheduler",
-                    choices=KSampler.SCHEDULERS,
-                    value="karras",
-                    visible=False,
-                )
-                add_ctrl("scheduler", scheduler)
-
-                performance_outputs = [
-                    cfg,
-                    base_clip_skip,
-                    refiner_clip_skip,
-                    sampler_name,
-                    scheduler,
-                    custom_steps,
-                    custom_switch,
-                ]
-
-                @performance_selection.change(
-                    inputs=[performance_selection],
-                    outputs=performance_outputs,
-                )
-                def performance_changed(selection):
-                    if selection != "Custom":
-                        return [gr.update(visible=False)] * len(performance_outputs)
-                    else:
-                        return [gr.update(visible=True)] * len(performance_outputs)
-
-                metadata_viewer = gr.JSON(label="Metadata", elem_classes="json-container")
 
             @model_refresh.click(inputs=[], outputs=[base_model, refiner_model] + lora_ctrls)
             def model_refresh_clicked():
@@ -466,7 +483,7 @@ with shared.gradio_root as block:
         run_button.click(fn=refresh_seed, inputs=[seed_random, image_seed], outputs=image_seed).then(
             fn=generate_clicked,
             inputs=state["ctrls_obj"],
-            outputs=[run_button, stop_button, progress_html, progress_window, metadata_viewer, gallery],
+            outputs=[run_button, stop_button, progress_html, progress_window, gallery],
         )
 
         def stop_clicked():

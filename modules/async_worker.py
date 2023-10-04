@@ -4,6 +4,7 @@ import torch
 import math
 from playsound import playsound
 from os.path import exists
+from modules.performance import get_perf_options, NEWPERF
 
 buffer = []
 outputs = []
@@ -89,15 +90,15 @@ def worker():
         pipeline.load_loras(loras)
         pipeline.clean_prompt_cond_caches()
 
-        if gen_data["performance_selection"] == "Speed":
-            steps = 30
-            switch = 20
-        elif gen_data["performance_selection"] == "Quality":
-            steps = 60
-            switch = 40
-        else:  # Custom
+        if gen_data["performance_selection"] == NEWPERF:
             steps = gen_data["custom_steps"]
             switch = gen_data["custom_switch"]
+        else:
+            perf_options = get_perf_options(gen_data["performance_selection"])
+            gen_data.update(perf_options)
+
+        steps = gen_data["custom_steps"]
+        switch = gen_data["custom_switch"]
 
         width, height = aspect_ratios[gen_data["aspect_ratios_selection"]]
         if "width" in gen_data:
@@ -216,9 +217,8 @@ def worker():
                     "denoise": denoise,
                     "software": "RuinedFooocus",
                 }
-                if gen_data["save_metadata"]:
-                    metadata = PngInfo()
-                    metadata.add_text("parameters", json.dumps(prompt))
+                metadata = PngInfo()
+                metadata.add_text("parameters", json.dumps(prompt))
 
                 state["preview_current"] += 1
                 Image.fromarray(x).save(local_temp_filename, pnginfo=metadata)
@@ -233,7 +233,6 @@ def worker():
             if state["preview_image"] is not None and state["preview_count"] > 1:
                 results = [state["preview_image"]] + results
             outputs.append(["results", results])
-            outputs.append(["metadata", metadatastrings])
             results = []
             metadatastrings = []
         return
