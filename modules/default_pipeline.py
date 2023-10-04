@@ -190,8 +190,8 @@ def process(
             else negative_conditions_cache
         )
 
-    if controlnet is not None and input_image is not None:
-        s = modules.controlnet.get_settings(controlnet)
+    s = modules.controlnet.get_settings(controlnet)
+    if s is not None and input_image is not None:
         input_image = input_image.convert("RGB")
         input_image = np.array(input_image).astype(np.float32) / 255.0
         input_image = torch.from_numpy(input_image)[None,]

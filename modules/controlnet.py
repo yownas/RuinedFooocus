@@ -57,8 +57,8 @@ def modes():
     return controlnet_settings.keys()
 
 def get_model(type):
-    return controlnet_models[type]
+    return controlnet_models[type] if type in controlnet_models else None
 
 def get_settings(controlnet):
-    return controlnet_settings[controlnet]
+    return controlnet_settings[controlnet] if controlnet in controlnet_settings else None
 
