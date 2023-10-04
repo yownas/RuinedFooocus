@@ -466,13 +466,20 @@ with shared.gradio_root as block:
                     add_ctrl("refiner_model_name", refiner_model)
                 with gr.Accordion(label="LoRA / Strength", open=True), gr.Group():
                     lora_ctrls = []
+                    nones = 0
                     for i in range(5):
+                        if settings[f"lora_{i+1}_model"] == "None":
+                            nones += 1
+                            visible = False if nones > 1 else True
+                        else:
+                            visible = True
                         with gr.Row():
                             lora_model = gr.Dropdown(
                                 label=f"SDXL LoRA {i+1}",
                                 show_label=False,
                                 choices=["None"] + modules.path.lora_filenames,
                                 value=settings[f"lora_{i+1}_model"],
+                                visible=visible,
                             )
                             add_ctrl(f"l{i+1}", lora_model)
 
@@ -483,9 +490,27 @@ with shared.gradio_root as block:
                                 maximum=2,
                                 step=0.05,
                                 value=settings[f"lora_{i+1}_weight"],
+                                visible=visible,
                             )
                             add_ctrl(f"w{i+1}", lora_weight)
                             lora_ctrls += [lora_model, lora_weight]
+
+                    def update_loras(*lora_ctrls):
+                        hide = False
+                        ret = []
+                        for m,s in zip(lora_ctrls[::2], lora_ctrls[1::2]):
+                            if m == "None":
+                                if hide:
+                                    ret += [gr.update(visible=False), gr.update(visible=False)]
+                                else:
+                                    ret += [gr.update(visible=True), gr.update(visible=True)]
+                                hide = True
+                            else:
+                                ret += [gr.update(visible=True), gr.update(visible=True)]
+                        return ret
+
+                    for m,s in zip(lora_ctrls[::2], lora_ctrls[1::2]):
+                        m.change(fn=update_loras, inputs=lora_ctrls, outputs=lora_ctrls)
 
                 with gr.Row():
                     model_refresh = gr.Button(

@@ -54,9 +54,12 @@ def load_lora(model, lora_filename, strength_model=1.0, strength_clip=1.0):
     if strength_model == 0 and strength_clip == 0:
         return model
 
-    lora = comfy.utils.load_torch_file(lora_filename, safe_load=True)
-    unet, clip = comfy.sd.load_lora_for_models(model.unet, model.clip, lora, strength_model, strength_clip)
-    return StableDiffusionModel(unet=unet, clip=clip, vae=model.vae, clip_vision=model.clip_vision)
+    try:
+        lora = comfy.utils.load_torch_file(lora_filename, safe_load=True)
+        unet, clip = comfy.sd.load_lora_for_models(model.unet, model.clip, lora, strength_model, strength_clip)
+        return StableDiffusionModel(unet=unet, clip=clip, vae=model.vae, clip_vision=model.clip_vision)
+    except:
+        return model
 
 @torch.no_grad()
 @torch.inference_mode()
