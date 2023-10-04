@@ -1,3 +1,9 @@
+### 1.5.0
+* removed metadata toggle, it will now always save metadata
+* save your own custom performances
+* tidied ui
+
+
 ### 1.4.2
 * change fooocusversion.py to version.py for easier updating
 * Moved controlnet to its own tab for easier updates

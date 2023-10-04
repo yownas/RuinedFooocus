@@ -15,7 +15,12 @@ import modules.controlnet as controlnet
 
 from comfy.samplers import KSampler
 from modules.sdxl_styles import style_keys, aspect_ratios, styles
-from modules.performance import performance_options, load_performance, save_performance, NEWPERF
+from modules.performance import (
+    performance_options,
+    load_performance,
+    save_performance,
+    NEWPERF,
+)
 from modules.settings import default_settings
 from modules.prompt_processing import get_promptlist
 
@@ -34,7 +39,9 @@ def load_images_handler(files):
 def get_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument("--port", type=int, default=None, help="Set the listen port.")
-    parser.add_argument("--share", action="store_true", help="Set whether to share on Gradio.")
+    parser.add_argument(
+        "--share", action="store_true", help="Set whether to share on Gradio."
+    )
     parser.add_argument(
         "--listen",
         type=str,
@@ -44,7 +51,9 @@ def get_parser():
         const="0.0.0.0",
         help="Set the listen interface.",
     )
-    parser.add_argument("--nobrowser", action="store_true", help="Do not launch in browser.")
+    parser.add_argument(
+        "--nobrowser", action="store_true", help="Do not launch in browser."
+    )
     return parser
 
 
@@ -84,8 +93,12 @@ def update_preview(product):
     return {
         run_button: gr.update(interactive=False, visible=False),
         stop_button: gr.update(interactive=True, visible=True),
-        progress_html: gr.update(visible=True, value=modules.html.make_progress_html(percentage, title)),
-        progress_window: gr.update(visible=True, value=image) if image is not None else gr.update(),
+        progress_html: gr.update(
+            visible=True, value=modules.html.make_progress_html(percentage, title)
+        ),
+        progress_window: gr.update(visible=True, value=image)
+        if image is not None
+        else gr.update(),
         gallery: gr.update(visible=False),
     }
 
@@ -114,7 +127,9 @@ def generate_clicked(*args):
     prompts = get_promptlist(gen_data)
     idx = 0
 
-    worker.buffer.append({"task_type": "start", "image_count": len(prompts) * gen_data["image_number"]})
+    worker.buffer.append(
+        {"task_type": "start", "image_count": len(prompts) * gen_data["image_number"]}
+    )
 
     for prompt in prompts:
         gen_data["task_type"] = "process"
@@ -149,14 +164,21 @@ if settings["theme"] == "None":
 else:
     theme = settings["theme"]
 
-shared.gradio_root = gr.Blocks(theme=theme, title="RuinedFooocus " + version.version, css=modules.html.css).queue()
+shared.gradio_root = gr.Blocks(
+    theme=theme, title="RuinedFooocus " + version.version, css=modules.html.css
+).queue()
 
 with shared.gradio_root as block:
     block.load(_js=modules.html.scripts)
     with gr.Row():
         with gr.Column(scale=5):
             progress_window = gr.Image(
-                value="init_image.png", height=680, type="pil", visible=True, show_label=False, image_mode="RGBA"
+                value="init_image.png",
+                height=680,
+                type="pil",
+                visible=True,
+                show_label=False,
+                image_mode="RGBA",
             )
             progress_html = gr.HTML(
                 value=modules.html.make_progress_html(32, "Progress 32%"),
@@ -175,7 +197,9 @@ with shared.gradio_root as block:
                 visible=True,
             )
 
-            @gallery.select(inputs=[gallery], outputs=[progress_window], show_progress="hidden")
+            @gallery.select(
+                inputs=[gallery], outputs=[progress_window], show_progress="hidden"
+            )
             def gallery_change(files, sd: gr.SelectData):
                 return files[sd.index]["name"]
 
@@ -193,10 +217,16 @@ with shared.gradio_root as block:
                     add_ctrl("prompt", prompt)
 
                 with gr.Column(scale=1, min_width=0):
-                    run_button = gr.Button(label="Generate", value="Generate", elem_id="generate")
-                    stop_button = gr.Button(label="Stop", value="Stop", interactive=False, visible=False)
+                    run_button = gr.Button(
+                        label="Generate", value="Generate", elem_id="generate"
+                    )
+                    stop_button = gr.Button(
+                        label="Stop", value="Stop", interactive=False, visible=False
+                    )
 
-                    @progress_window.upload(inputs=[progress_window], outputs=[prompt, gallery])
+                    @progress_window.upload(
+                        inputs=[progress_window], outputs=[prompt, gallery]
+                    )
                     def load_images_handler(file):
                         info = file.info
                         params = info.get("parameters", "")
@@ -204,7 +234,9 @@ with shared.gradio_root as block:
 
             with gr.Row():
                 advanced_checkbox = gr.Checkbox(
-                    label="Hurt me plenty", value=settings["advanced_mode"], container=False
+                    label="Hurt me plenty",
+                    value=settings["advanced_mode"],
+                    container=False,
                 )
         with gr.Column(scale=2, visible=settings["advanced_mode"]) as right_col:
             with gr.Tab(label="Setting"):
@@ -303,14 +335,29 @@ with shared.gradio_root as block:
                 )
                 def performance_changed(selection):
                     if selection != NEWPERF:
-                        return [gr.update(visible=False)] + [gr.update(visible=False)] * len(performance_outputs)
+                        return [gr.update(visible=False)] + [
+                            gr.update(visible=False)
+                        ] * len(performance_outputs)
                     else:
-                        return [gr.update(value="")] + [gr.update(visible=True)] * len(performance_outputs)
+                        return [gr.update(value="")] + [gr.update(visible=True)] * len(
+                            performance_outputs
+                        )
+
                 @perf_save.click(
                     inputs=performance_outputs,
                     outputs=[performance_selection],
                 )
-                def performance_save(perf_name, perf_save, cfg, base_clip_skip, refiner_clip_skip, sampler_name, scheduler, custom_steps, custom_switch):
+                def performance_save(
+                    perf_name,
+                    perf_save,
+                    cfg,
+                    base_clip_skip,
+                    refiner_clip_skip,
+                    sampler_name,
+                    scheduler,
+                    custom_steps,
+                    custom_switch,
+                ):
                     if perf_name != "":
                         perf_options = load_performance()
                         opts = {
@@ -320,14 +367,14 @@ with shared.gradio_root as block:
                             "base_clip_skip": base_clip_skip,
                             "refiner_clip_skip": refiner_clip_skip,
                             "sampler_name": sampler_name,
-                            "scheduler": scheduler
+                            "scheduler": scheduler,
                         }
                         perf_options[perf_name] = opts
                         save_performance(perf_options)
-                        choices=list(perf_options.keys()) + [NEWPERF]
-                        return(gr.update(choices=choices, value=perf_name))
+                        choices = list(perf_options.keys()) + [NEWPERF]
+                        return gr.update(choices=choices, value=perf_name)
                     else:
-                        return(gr.update())
+                        return gr.update()
 
                 with gr.Group():
                     aspect_ratios_selection = gr.Dropdown(
@@ -361,7 +408,9 @@ with shared.gradio_root as block:
                     value=settings["negative_prompt"],
                 )
                 add_ctrl("negative", negative_prompt)
-                seed_random = gr.Checkbox(label="Random Seed", value=settings["seed_random"])
+                seed_random = gr.Checkbox(
+                    label="Random Seed", value=settings["seed_random"]
+                )
                 image_seed = gr.Number(
                     label="Seed",
                     value=settings["seed"],
@@ -371,7 +420,8 @@ with shared.gradio_root as block:
                 add_ctrl("seed", image_seed)
 
                 @style_button.click(
-                    inputs=[prompt, style_selection], outputs=[prompt, negative_prompt, style_selection]
+                    inputs=[prompt, style_selection],
+                    outputs=[prompt, negative_prompt, style_selection],
                 )
                 def apply_style(prompt_test, inputs):
                     pr = ""
@@ -414,7 +464,7 @@ with shared.gradio_root as block:
                         show_label=True,
                     )
                     add_ctrl("refiner_model_name", refiner_model)
-                with gr.Accordion(label="LoRAs", open=True), gr.Group():
+                with gr.Accordion(label="LoRA / Strength", open=True), gr.Group():
                     lora_ctrls = []
                     for i in range(5):
                         with gr.Row():
@@ -445,7 +495,9 @@ with shared.gradio_root as block:
                         elem_classes="refresh_button",
                     )
 
-            @model_refresh.click(inputs=[], outputs=[base_model, refiner_model] + lora_ctrls)
+            @model_refresh.click(
+                inputs=[], outputs=[base_model, refiner_model] + lora_ctrls
+            )
             def model_refresh_clicked():
                 modules.path.update_all_model_names()
                 results = []
@@ -478,9 +530,13 @@ with shared.gradio_root as block:
                 )
                 add_ctrl("input_image", input_image)
 
-        advanced_checkbox.change(lambda x: gr.update(visible=x), advanced_checkbox, right_col)
+        advanced_checkbox.change(
+            lambda x: gr.update(visible=x), advanced_checkbox, right_col
+        )
 
-        run_button.click(fn=refresh_seed, inputs=[seed_random, image_seed], outputs=image_seed).then(
+        run_button.click(
+            fn=refresh_seed, inputs=[seed_random, image_seed], outputs=image_seed
+        ).then(
             fn=generate_clicked,
             inputs=state["ctrls_obj"],
             outputs=[run_button, stop_button, progress_html, progress_window, gallery],
