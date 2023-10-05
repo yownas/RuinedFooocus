@@ -205,24 +205,58 @@ with shared.gradio_root as block:
 
             with gr.Row(elem_classes="type_row"):
                 with gr.Column(scale=5):
-                    prompt = gr.Textbox(
-                        show_label=False,
-                        placeholder="Type prompt here.",
-                        container=False,
-                        autofocus=True,
-                        elem_classes="type_row",
-                        lines=1024,
-                        value=settings["prompt"],
-                    )
-                    add_ctrl("prompt", prompt)
-
-                with gr.Column(scale=1, min_width=0):
+                    with gr.Group():
+                        prompt = gr.Textbox(
+                            show_label=False,
+                            placeholder="Type prompt here.",
+                            container=False,
+                            autofocus=True,
+                            elem_classes="type_row",
+                            lines=8,
+                            value=settings["prompt"],
+                        )
+                        add_ctrl("prompt", prompt)
+                        negative_prompt = gr.Textbox(
+                            label="Negative Prompt",
+                            show_label=False,
+                            container=False,
+                            elem_classes="type_small_row",
+                            lines=1,
+                            placeholder="(negative prompt)",
+                            value=settings["negative_prompt"],
+                            visible=False,
+                        )
+                        add_ctrl("negative", negative_prompt)
+    
+                    with gr.Row():
+                        advanced_checkbox = gr.Checkbox(
+                            label="Hurt me plenty",
+                            value=settings["advanced_mode"],
+                            container=False,
+                        )
+                with gr.Column(scale=1, min_width=0), gr.Group():
                     run_button = gr.Button(
                         label="Generate", value="Generate", elem_id="generate"
                     )
                     stop_button = gr.Button(
                         label="Stop", value="Stop", interactive=False, visible=False
                     )
+                    image_number = gr.Slider(
+                        label="Count",
+                        minimum=1,
+                        maximum=50,
+                        step=1,
+                        value=settings["image_number"],
+                        visible=False,
+                    )
+                    add_ctrl("image_number", image_number)
+                    image_seed = gr.Number(
+                        label="Seed",
+                        value=settings["seed"],
+                        precision=0,
+                        visible=not settings["seed_random"],
+                    )
+                    add_ctrl("seed", image_seed)
 
                     @progress_window.upload(
                         inputs=[progress_window], outputs=[prompt, gallery]
@@ -232,12 +266,6 @@ with shared.gradio_root as block:
                         params = info.get("parameters", "")
                         return params, [file]
 
-            with gr.Row():
-                advanced_checkbox = gr.Checkbox(
-                    label="Hurt me plenty",
-                    value=settings["advanced_mode"],
-                    container=False,
-                )
         with gr.Column(scale=2, visible=settings["advanced_mode"]) as right_col:
             with gr.Tab(label="Setting"):
                 performance_selection = gr.Dropdown(
@@ -393,31 +421,17 @@ with shared.gradio_root as block:
                     )
                     add_ctrl("style_selection", style_selection)
                 style_button = gr.Button(value="⬅️ Send Style to prompt", size="sm")
-                image_number = gr.Slider(
-                    label="Image Number",
-                    minimum=1,
-                    maximum=50,
-                    step=1,
-                    value=settings["image_number"],
+                image_number_toggle = gr.Checkbox(
+                    label="Image count slider",
+                    value=False,
                 )
-                add_ctrl("image_number", image_number)
-                negative_prompt = gr.Textbox(
-                    label="Negative Prompt",
-                    show_label=True,
-                    placeholder="Type prompt here.",
-                    value=settings["negative_prompt"],
+                negative_prompt_toggle = gr.Checkbox(
+                    label="Negative prompt",
+                    value=False,
                 )
-                add_ctrl("negative", negative_prompt)
                 seed_random = gr.Checkbox(
                     label="Random Seed", value=settings["seed_random"]
                 )
-                image_seed = gr.Number(
-                    label="Seed",
-                    value=settings["seed"],
-                    precision=0,
-                    visible=not settings["seed_random"],
-                )
-                add_ctrl("seed", image_seed)
 
                 @style_button.click(
                     inputs=[prompt, style_selection],
@@ -555,10 +569,6 @@ with shared.gradio_root as block:
                 )
                 add_ctrl("input_image", input_image)
 
-        advanced_checkbox.change(
-            lambda x: gr.update(visible=x), advanced_checkbox, right_col
-        )
-
         run_button.click(
             fn=refresh_seed, inputs=[seed_random, image_seed], outputs=image_seed
         ).then(
@@ -572,6 +582,14 @@ with shared.gradio_root as block:
             worker.interrupt_ruined_processing = True
 
         stop_button.click(fn=stop_clicked, queue=False)
+
+        def component_toggle(check):
+                return(gr.update(visible=check))
+
+        image_number_toggle.change(fn=component_toggle, inputs=image_number_toggle, outputs=image_number)
+        negative_prompt_toggle.change(fn=component_toggle, inputs=negative_prompt_toggle, outputs=negative_prompt)
+        advanced_checkbox.change(fn=component_toggle, inputs=advanced_checkbox, outputs=right_col)
+
 
 args = parse_args()
 launch_app(args)
