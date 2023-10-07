@@ -212,7 +212,7 @@ with shared.gradio_root as block:
                             container=False,
                             autofocus=True,
                             elem_classes="type_row",
-                            lines=8,
+                            lines=18,
                             value=settings["prompt"],
                         )
                         add_ctrl("prompt", prompt)
