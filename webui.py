@@ -32,10 +32,6 @@ from PIL import Image
 state = {"preview_image": None, "ctrls_name": [], "ctrls_obj": []}
 
 
-def load_images_handler(files):
-    return list(map(lambda x: x.name, files))
-
-
 def get_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument("--port", type=int, default=None, help="Set the listen port.")
@@ -109,7 +105,9 @@ def update_results(product):
         stop_button: gr.update(interactive=False, visible=False),
         progress_html: gr.update(visible=False),
         progress_window: gr.update(value=product[0]),
-        gallery: gr.update(visible=len(product) > 1, allow_preview=True, preview=True, value=product),
+        gallery: gr.update(
+            visible=len(product) > 1, allow_preview=True, preview=True, value=product
+        ),
     }
 
 
@@ -178,10 +176,11 @@ with shared.gradio_root as block:
             progress_window = gr.Image(
                 value="init_image.png",
                 height=680,
-                type="pil",
+                type="filepath",
                 visible=True,
                 show_label=False,
                 image_mode="RGBA",
+                show_share_button=True,
             )
             progress_html = gr.HTML(
                 value=modules.html.make_progress_html(32, "Progress 32%"),
@@ -232,7 +231,8 @@ with shared.gradio_root as block:
                         inputs=[progress_window], outputs=[prompt, gallery]
                     )
                     def load_images_handler(file):
-                        info = file.info
+                        image = Image.open(file)
+                        info = image.info
                         params = info.get("parameters", "")
                         return params, [file]
 
@@ -502,18 +502,27 @@ with shared.gradio_root as block:
                     def update_loras(*lora_ctrls):
                         hide = False
                         ret = []
-                        for m,s in zip(lora_ctrls[::2], lora_ctrls[1::2]):
+                        for m, s in zip(lora_ctrls[::2], lora_ctrls[1::2]):
                             if m == "None":
                                 if hide:
-                                    ret += [gr.update(visible=False), gr.update(visible=False)]
+                                    ret += [
+                                        gr.update(visible=False),
+                                        gr.update(visible=False),
+                                    ]
                                 else:
-                                    ret += [gr.update(visible=True), gr.update(visible=True)]
+                                    ret += [
+                                        gr.update(visible=True),
+                                        gr.update(visible=True),
+                                    ]
                                 hide = True
                             else:
-                                ret += [gr.update(visible=True), gr.update(visible=True)]
+                                ret += [
+                                    gr.update(visible=True),
+                                    gr.update(visible=True),
+                                ]
                         return ret
 
-                    for m,s in zip(lora_ctrls[::2], lora_ctrls[1::2]):
+                    for m, s in zip(lora_ctrls[::2], lora_ctrls[1::2]):
                         m.change(fn=update_loras, inputs=lora_ctrls, outputs=lora_ctrls)
 
                 with gr.Row():

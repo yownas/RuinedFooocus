@@ -40,7 +40,6 @@ def worker():
     except Exception as e:
         print(e)
 
-
     def handler(gen_data):
         match gen_data["task_type"]:
             case "start":
@@ -54,15 +53,17 @@ def worker():
 
     def job_start(gen_data):
         from shared import state
-        state["preview_image"] = None
-        state["preview_count"] = gen_data["image_count"]
-        state["preview_current"] = 0
+
+        state["preview_grid"] = None
+        state["preview_total"] = gen_data["image_count"]
+        state["preview_count"] = 0
 
     def job_stop():
         from shared import state
-        state["preview_image"] = None
+
+        state["preview_grid"] = None
+        state["preview_total"] = 0
         state["preview_count"] = 0
-        state["preview_current"] = 0
 
     def process(gen_data):
         global results, metadatastrings
@@ -82,7 +83,9 @@ def worker():
             except KeyError:
                 break
 
-        parsed_loras, pos_stripped, neg_stripped = parse_loras(gen_data["prompt"], gen_data["negative"])
+        parsed_loras, pos_stripped, neg_stripped = parse_loras(
+            gen_data["prompt"], gen_data["negative"]
+        )
         loras.extend(parsed_loras)
 
         pipeline.load_base_model(gen_data["base_model_name"])
@@ -133,37 +136,48 @@ def worker():
             if step % 10 == 0:
                 status = random.choice(lines)
 
-            grid_xsize = math.ceil(math.sqrt(state["preview_count"]))
-            grid_ysize = math.ceil(state["preview_count"] / grid_xsize)
+            grid_xsize = math.ceil(math.sqrt(state["preview_total"]))
+            grid_ysize = math.ceil(state["preview_total"] / grid_xsize)
             grid_max = max(grid_xsize, grid_ysize)
             pwidth = int(width * grid_xsize / grid_max)
             pheight = int(height * grid_ysize / grid_max)
-            if state["preview_image"] is None:
-                state["preview_image"] = Image.new("RGB", (pwidth, pheight))
+            if state["preview_grid"] is None:
+                state["preview_grid"] = Image.new("RGB", (pwidth, pheight))
             if y is not None:
                 image = Image.fromarray(y)
-                grid_xpos = int((state["preview_current"] % grid_xsize) * (pwidth / grid_xsize))
-                grid_ypos = int(math.floor(state["preview_current"] / grid_xsize) * (pheight / grid_ysize))
+                grid_xpos = int(
+                    (state["preview_count"] % grid_xsize) * (pwidth / grid_xsize)
+                )
+                grid_ypos = int(
+                    math.floor(state["preview_count"] / grid_xsize)
+                    * (pheight / grid_ysize)
+                )
                 image = image.resize((int(width / grid_max), int(height / grid_max)))
-                state["preview_image"].paste(image, (grid_xpos, grid_ypos))
+                state["preview_grid"].paste(image, (grid_xpos, grid_ypos))
 
-            preview_image_path = "outputs/preview.jpg" # FIXME move somewhere else
-            state["preview_image"].save(preview_image_path, optimize=True, quality=35)
+            preview_grid_path = "outputs/preview.jpg"  # FIXME move somewhere else
+            state["preview_grid"].save(preview_grid_path, optimize=True, quality=35)
 
             outputs.append(
                 [
                     "preview",
                     (
-                        int(100 * (gen_data["index"][0] + done_steps / all_steps) / gen_data["index"][1]),
+                        int(
+                            100
+                            * (gen_data["index"][0] + done_steps / all_steps)
+                            / gen_data["index"][1]
+                        ),
                         f"{status} - {step}/{total_steps}",
-                        preview_image_path,
+                        preview_grid_path,
                     ),
                 ]
             )
 
         stop_batch = False
         for i in range(gen_data["image_number"]):
-            p_txt, n_txt = process_prompt(gen_data["style_selection"], pos_stripped, neg_stripped)
+            p_txt, n_txt = process_prompt(
+                gen_data["style_selection"], pos_stripped, neg_stripped
+            )
             start_step = 0
             denoise = None
             start_time = time.time()
@@ -196,7 +210,9 @@ def worker():
             print(f"\033[91mTime taken: {elapsed_time:0.2f} seconds\033[0m")
 
             for x in imgs:
-                local_temp_filename = generate_temp_filename(folder=modules.path.temp_outputs_path, extension="png")
+                local_temp_filename = generate_temp_filename(
+                    folder=modules.path.temp_outputs_path, extension="png"
+                )
                 os.makedirs(os.path.dirname(local_temp_filename), exist_ok=True)
                 metadata = None
                 prompt = {
@@ -212,7 +228,8 @@ def worker():
                     "scheduler": gen_data["scheduler"],
                     "base_model_name": gen_data["base_model_name"],
                     "refiner_model_name": gen_data["refiner_model_name"],
-                    "loras": "Loras:" + ",".join([f"<{lora[0]}:{lora[1]}>" for lora in loras]),
+                    "loras": "Loras:"
+                    + ",".join([f"<{lora[0]}:{lora[1]}>" for lora in loras]),
                     "start_step": start_step,
                     "denoise": denoise,
                     "software": "RuinedFooocus",
@@ -220,7 +237,7 @@ def worker():
                 metadata = PngInfo()
                 metadata.add_text("parameters", json.dumps(prompt))
 
-                state["preview_current"] += 1
+                state["preview_count"] += 1
                 Image.fromarray(x).save(local_temp_filename, pnginfo=metadata)
                 results.append(local_temp_filename)
                 metadatastrings.append(json.dumps(prompt))
@@ -230,8 +247,8 @@ def worker():
                 break
 
         if len(buffer) == 0:
-            if state["preview_image"] is not None and state["preview_count"] > 1:
-                results = [state["preview_image"]] + results
+            if state["preview_grid"] is not None and state["preview_total"] > 1:
+                results = [state["preview_grid"]] + results
             outputs.append(["results", results])
             results = []
             metadatastrings = []
