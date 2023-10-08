@@ -23,7 +23,7 @@ def process_metadata(gen_data):
                 gen_data[f"l{idx}"] = l
                 gen_data[f"w{idx}"] = float(w)
                 idx += 1
-    except ValueError as e:
+    except:
         pass
     return gen_data
 
