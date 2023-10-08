@@ -108,7 +108,7 @@ def update_results(product):
         run_button: gr.update(interactive=True, visible=True),
         stop_button: gr.update(interactive=False, visible=False),
         progress_html: gr.update(visible=False),
-        progress_window: gr.update(),
+        progress_window: gr.update(value=product[0]),
         gallery: gr.update(visible=True, value=product),
     }
 
@@ -165,7 +165,10 @@ else:
     theme = settings["theme"]
 
 shared.gradio_root = gr.Blocks(
-    theme=theme, title="RuinedFooocus " + version.version, css=modules.html.css
+    title="RuinedFooocus " + version.version,
+    theme=theme,
+    css=modules.html.css,
+    analytics_enabled=False,
 ).queue()
 
 with shared.gradio_root as block:
@@ -195,6 +198,7 @@ with shared.gradio_root as block:
                 allow_preview=True,
                 preview=True,
                 visible=True,
+                show_download_button=False,
             )
 
             @gallery.select(
