@@ -104,7 +104,7 @@ def update_results(product):
         run_button: gr.update(interactive=True, visible=True),
         stop_button: gr.update(interactive=False, visible=False),
         progress_html: gr.update(visible=False),
-        progress_window: gr.update(value=product[0]),
+        progress_window: gr.update(value=product[0]) if len(product) > 0 else gr.update(), 
         gallery: gr.update(
             visible=len(product) > 1, allow_preview=True, preview=True, value=product
         ),
