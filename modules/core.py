@@ -44,12 +44,14 @@ class StableDiffusionModel:
 
 
 @torch.no_grad()
+@torch.inference_mode()
 def load_model(ckpt_filename):
     unet, clip, vae, clip_vision = load_checkpoint_guess_config(ckpt_filename)
     return StableDiffusionModel(unet=unet, clip=clip, vae=vae, clip_vision=clip_vision)
 
 
 @torch.no_grad()
+@torch.inference_mode()
 def load_lora(model, lora_filename, strength_model=1.0, strength_clip=1.0):
     if strength_model == 0 and strength_clip == 0:
         return model
@@ -79,26 +81,31 @@ def apply_controlnet(positive, negative, control_net, image, strength, start_per
 
 
 @torch.no_grad()
+@torch.inference_mode()
 def encode_prompt_condition(clip, prompt):
     return opCLIPTextEncode.encode(clip=clip, text=prompt)[0]
 
 
 @torch.no_grad()
+@torch.inference_mode()
 def generate_empty_latent(width=1024, height=1024, batch_size=1):
     return opEmptyLatentImage.generate(width=width, height=height, batch_size=batch_size)[0]
 
 
 @torch.no_grad()
+@torch.inference_mode()
 def decode_vae(vae, latent_image):
     return opVAEDecode.decode(samples=latent_image, vae=vae)[0]
 
 
 @torch.no_grad()
+@torch.inference_mode()
 def encode_vae(vae, pixels):
     return opVAEEncode.encode(pixels=pixels, vae=vae)[0]
 
 
 @torch.no_grad()
+@torch.inference_mode()
 def upscale(image):
     return opImageScaleToTotalPixels.upscale(image=image, upscale_method="bicubic", megapixels=1.0)[0]
 
@@ -129,6 +136,7 @@ def get_previewer(device, latent_format):
     return taesd
 
 @torch.no_grad()
+@torch.inference_mode()
 def ksampler_with_refiner(
     model,
     positive,
@@ -267,5 +275,6 @@ def ksampler_with_refiner(
 
 
 @torch.no_grad()
+@torch.inference_mode()
 def image_to_numpy(x):
     return [np.clip(255.0 * y.cpu().numpy(), 0, 255).astype(np.uint8) for y in x]
