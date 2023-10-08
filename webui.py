@@ -109,7 +109,7 @@ def update_results(product):
         stop_button: gr.update(interactive=False, visible=False),
         progress_html: gr.update(visible=False),
         progress_window: gr.update(value=product[0]),
-        gallery: gr.update(visible=True, value=product),
+        gallery: gr.update(visible=len(product) > 1, allow_preview=True, preview=True, value=product),
     }
 
 
@@ -197,7 +197,7 @@ with shared.gradio_root as block:
                 height=60,
                 allow_preview=True,
                 preview=True,
-                visible=True,
+                visible=False,
                 show_download_button=False,
             )
 
