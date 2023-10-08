@@ -13,8 +13,6 @@ def process_metadata(gen_data):
         gen_data.update(meta)
         if "prompt" in meta:
             gen_data["style_selection"] = None
-        if meta.get("seed") == -1:
-            gen_data["seed"] = random.randint(0, 2**32 - 1)
 
         if "loras" in meta:
             idx = 1
