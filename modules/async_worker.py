@@ -265,7 +265,6 @@ def worker():
                 torch.cuda.ipc_collect()
             if exists("notification.mp3"):
                 playsound("notification.mp3")
-    pass
 
 
 threading.Thread(target=worker, daemon=True).start()
