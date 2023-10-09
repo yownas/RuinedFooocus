@@ -1,5 +1,4 @@
 import argparse
-import random
 import shared
 from shared import state
 import time
@@ -444,7 +443,7 @@ with shared.gradio_root as block:
 
                 def refresh_seed(r, s):
                     if r:
-                        return random.randint(1, 1024 * 1024 * 1024)
+                        return -1
                     else:
                         return s
 
