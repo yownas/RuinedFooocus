@@ -63,18 +63,18 @@ Coming soon ...
 
 ## Ruined Edition Features
 
-1. Supports custom styles in `styles.csv`
+1. Supports custom styles in `settings/styles.csv`
 2. Changed Resolutions and Styles to be in a dropdown instead of radio buttons
 3. Apply multiple styles to one prompt and a send style to prompt button.
 4. Ability to save full metadata for generated images embedded in PNG.
-5. Ability to change default values of UI settings (loaded from `settings.json`).
+5. Ability to change default values of UI settings (loaded from `settings/settings.json`).
 6. Generate a completely random prompt (taken from onebuttonprompt) with its own "special" tab
 7. Made Resolutions mode readable
-8. Added theme support in `settings.json` you can see available themes [HERE](https://huggingface.co/spaces/gradio/theme-gallery)
-9. Added `resolutions.json` to allow users to add their own custom resolutions
+8. Added theme support in `settings/settings.json` you can see available themes [HERE](https://huggingface.co/spaces/gradio/theme-gallery)
+9. Added `settings/resolutions.json` to allow users to add their own custom resolutions
 10. Wildcards are now supported place see `wildcards\colors.txt` for an example. In your prompt make sure you type `__<filename>__` to activate ie `shiny new __colors__ Chevrolet pickup truck with big wheels`
 11. If the option `--nobrowser` is passed the web browser won't automatically launch
-12. Added Custom paths in `paths.json` to point to chekcpoints / loras and outputs director (**Note:** for windows paths either use `/` or `\\` instead of `\`)
+12. Added Custom paths in `settings/paths.json` to point to chekcpoints / loras and outputs director (**Note:** for windows paths either use `/` or `\\` instead of `\`)
 13. Added support for custom Performance - enables samplers/scheduler, steps, refiner steps, cfg & clip skip (Check advanced tab)
 14. Displays time taken for each render in the console. If `notification.mp3` exists in the root directory, this will play when the generations are complete.
 15. Added **Cancel** button to stop generation. Thanks to [Yownas](https://github.com/yownas) and [MoonRide](https://github.com/MoonRide303/)

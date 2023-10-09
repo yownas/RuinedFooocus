@@ -16,15 +16,15 @@ DEFAULT_PATHS = {
 def load_paths():
     paths = DEFAULT_PATHS.copy()
 
-    if exists("paths.json"):
-        with open("paths.json") as f:
+    if exists("settings/paths.json"):
+        with open("settings/paths.json") as f:
             paths.update(json.load(f))
 
     for key in DEFAULT_PATHS:
         if key not in paths:
             paths[key] = DEFAULT_PATHS[key]
 
-    with open("paths.json", "w") as f:
+    with open("settings/paths.json", "w") as f:
         json.dump(paths, f, indent=2)
 
     return paths
@@ -34,7 +34,11 @@ paths = load_paths()
 
 
 def get_abspath(path):
-    return path if os.path.isabs(path) else os.path.abspath(os.path.join(os.path.dirname(__file__), path))
+    return (
+        path
+        if os.path.isabs(path)
+        else os.path.abspath(os.path.join(os.path.dirname(__file__), path))
+    )
 
 
 modelfile_path = get_abspath(paths["path_checkpoints"])

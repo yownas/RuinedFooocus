@@ -31,8 +31,8 @@ DEFAULT_SETTINGS = {
 
 
 def load_settings():
-    if exists("settings.json"):
-        with open("settings.json") as f:
+    if exists("settings/settings.json"):
+        with open("settings/settings.json") as f:
             settings = json.load(f)
     else:
         settings = {}
@@ -45,7 +45,7 @@ def load_settings():
             changed = True
 
     if changed:
-        with open("settings.json", "w") as f:
+        with open("settings/settings.json", "w") as f:
             json.dump(settings, f, indent=2)
 
     return settings

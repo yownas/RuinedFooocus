@@ -1,3 +1,11 @@
+### 1.5.1
+* Added all the settings/customization to their own `settings` folder **NOTE:** you will need to move / copy your settings into the new directory
+* Bugfix where clicking stop mid-generation stopped working
+* code cleanup and some renaming
+* inference model speed up
+* now only shows gallery when needed
+
+
 ### 1.5.0
 * removed metadata toggle, it will now always save metadata
 * save your own custom performances

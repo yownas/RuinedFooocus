@@ -16,7 +16,7 @@ controlnet_settings = {
         "edge_high": 0.8,
         "strength": 0.5,
         "start": 0.0,
-        "stop": 0.5
+        "stop": 0.5,
     },
     "Canny (high)": {
         "type": "canny",
@@ -24,24 +24,15 @@ controlnet_settings = {
         "edge_high": 0.8,
         "strength": 1.0,
         "start": 0.0,
-        "stop": 0.99
+        "stop": 0.99,
     },
-    "Depth (low)": {
-        "type": "depth",
-        "strength": 0.5,
-        "start": 0.0,
-        "stop": 0.5
-    },
-    "Depth (high)": {
-        "type": "depth",
-        "strength": 1.0,
-        "start": 0.0,
-        "stop": 0.99
-    },
+    "Depth (low)": {"type": "depth", "strength": 0.5, "start": 0.0, "stop": 0.5},
+    "Depth (high)": {"type": "depth", "strength": 1.0, "start": 0.0, "stop": 0.99},
 }
 
+
 def load_settings():
-    jsonfile = "controlnet.json"
+    jsonfile = "settings/controlnet.json"
     settings = controlnet_settings
     if exists(jsonfile):
         with open(jsonfile) as f:
@@ -51,14 +42,19 @@ def load_settings():
             json.dump(settings, f, indent=2)
     return settings
 
+
 controlnet_settings = load_settings()
+
 
 def modes():
     return controlnet_settings.keys()
 
+
 def get_model(type):
     return controlnet_models[type] if type in controlnet_models else None
 
-def get_settings(controlnet):
-    return controlnet_settings[controlnet] if controlnet in controlnet_settings else None
 
+def get_settings(controlnet):
+    return (
+        controlnet_settings[controlnet] if controlnet in controlnet_settings else None
+    )
