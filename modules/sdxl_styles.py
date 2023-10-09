@@ -3,10 +3,10 @@ import shutil
 import json
 from csv import DictReader, reader
 
-DEFAULT_STYLES_FILE = "styles.default"
-STYLES_FILE = "styles.csv"
-DEFAULT_RESOLUTIONS_FILE = "resolutions.default"
-RESOLUTIONS_FILE = "resolutions.json"
+DEFAULT_STYLES_FILE = "settings/styles.default"
+STYLES_FILE = "settings/styles.csv"
+DEFAULT_RESOLUTIONS_FILE = "settings/resolutions.default"
+RESOLUTIONS_FILE = "settings/resolutions.json"
 
 
 def load_styles():

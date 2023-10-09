@@ -2,8 +2,8 @@ import os
 import shutil
 import json
 
-DEFAULT_PERFORMANCE_FILE = "performance.default"
-PERFORMANCE_FILE = "performance.json"
+DEFAULT_PERFORMANCE_FILE = "settings/performance.default"
+PERFORMANCE_FILE = "settings/performance.json"
 NEWPERF = "Custom..."
 
 
@@ -30,7 +30,7 @@ def save_performance(perf_options):
 
 
 def get_perf_options(name):
-    return(performance_options[name])
+    return performance_options[name]
 
 
 PERFORMANCE = load_performance()
