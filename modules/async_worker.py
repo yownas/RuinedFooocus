@@ -155,8 +155,7 @@ def worker():
                 image = image.resize((int(width / grid_max), int(height / grid_max)))
                 state["preview_grid"].paste(image, (grid_xpos, grid_ypos))
 
-            preview_grid_path = "outputs/preview.jpg"  # FIXME move somewhere else
-            state["preview_grid"].save(preview_grid_path, optimize=True, quality=35)
+            state["preview_grid"].save(modules.path.temp_preview_path, optimize=True, quality=35)
 
             outputs.append(
                 [
@@ -168,7 +167,7 @@ def worker():
                             / gen_data["index"][1]
                         ),
                         f"{status} - {step}/{total_steps}",
-                        preview_grid_path,
+                        modules.path.temp_preview_path,
                     ),
                 ]
             )
