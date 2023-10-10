@@ -79,7 +79,6 @@ def update_clicked():
             value=modules.html.make_progress_html(0, "Processing text encoding ..."),
         ),
         progress_window: gr.update(visible=True, value="init_image.png"),
-        gallery: gr.update(visible=False),
     }
 
 
@@ -94,7 +93,6 @@ def update_preview(product):
         progress_window: gr.update(visible=True, value=image)
         if image is not None
         else gr.update(),
-        gallery: gr.update(visible=False),
     }
 
 
@@ -103,10 +101,10 @@ def update_results(product):
         run_button: gr.update(interactive=True, visible=True),
         stop_button: gr.update(interactive=False, visible=False),
         progress_html: gr.update(visible=False),
-        progress_window: gr.update(value=product[0]) if len(product) > 0 else gr.update(), 
-        gallery: gr.update(
-            visible=len(product) > 1, allow_preview=True, preview=True, value=product
-        ),
+        progress_window: gr.update(value=product[0])
+        if len(product) > 0
+        else gr.update(),
+        gallery: gr.update(allow_preview=True, preview=True, value=product),
     }
 
 
@@ -125,7 +123,7 @@ def generate_clicked(*args):
     idx = 0
 
     worker.buffer.append(
-        {"task_type": "start", "image_count": len(prompts) * gen_data["image_number"]}
+        {"task_type": "start", "image_total": len(prompts) * gen_data["image_number"]}
     )
 
     for prompt in prompts:
@@ -195,7 +193,7 @@ with shared.gradio_root as block:
                 height=60,
                 allow_preview=True,
                 preview=True,
-                visible=False,
+                visible=True,
                 show_download_button=False,
             )
 

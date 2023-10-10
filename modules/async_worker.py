@@ -55,7 +55,7 @@ def worker():
         from shared import state
 
         state["preview_grid"] = None
-        state["preview_total"] = gen_data["image_count"]
+        state["preview_total"] = gen_data["image_total"]
         state["preview_count"] = 0
 
     def job_stop():
@@ -155,7 +155,9 @@ def worker():
                 image = image.resize((int(width / grid_max), int(height / grid_max)))
                 state["preview_grid"].paste(image, (grid_xpos, grid_ypos))
 
-            state["preview_grid"].save(modules.path.temp_preview_path, optimize=True, quality=35)
+            state["preview_grid"].save(
+                modules.path.temp_preview_path, optimize=True, quality=35
+            )
 
             outputs.append(
                 [

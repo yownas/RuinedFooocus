@@ -1,3 +1,8 @@
+### 1.5.2
+* Restored gallery preview on all images
+* renamed more variables to make sense
+* bugfixes
+
 ### 1.5.1
 * Added all the settings/customization to their own `settings` folder **NOTE:** you will need to move / copy your settings into the new directory
 * Bugfix where clicking stop mid-generation stopped working
