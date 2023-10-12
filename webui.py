@@ -577,8 +577,8 @@ with shared.gradio_root as block:
 
                 cn_type = gr.Dropdown(
                     label="Type",
-                    choices=["Canny", "Depth", "Recolour"],
-                    value="Canny",
+                    choices=map(lambda x:x.capitalize(), controlnet.controlnet_models.keys()),
+                    value=list(controlnet.controlnet_models.keys())[0].capitalize(),
                     visible=False,
                 )
                 add_ctrl("cn_type", cn_type)
