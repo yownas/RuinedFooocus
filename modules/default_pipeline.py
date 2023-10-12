@@ -190,26 +190,25 @@ def process(
             else negative_conditions_cache
         )
 
-    s = modules.controlnet.get_settings(controlnet)
-    if s is not None and input_image is not None:
+    if controlnet is not None and input_image is not None:
         input_image = input_image.convert("RGB")
         input_image = np.array(input_image).astype(np.float32) / 255.0
         input_image = torch.from_numpy(input_image)[None,]
         input_image = core.upscale(input_image)  # FIXME ?
-        refresh_controlnet(name=s["type"])
+        refresh_controlnet(name=controlnet["type"])
         if xl_controlnet:
-            match s["type"]:
+            match controlnet["type"].lower():
                 case "canny":
-                    input_image = core.detect_edge(input_image, float(s["edge_low"]), float(s["edge_high"]))
+                    input_image = core.detect_edge(input_image, float(controlnet["edge_low"]), float(controlnet["edge_high"]))
                 # case "depth": (no preprocessing?)
             positive_conditions_cache, negative_conditions_cache = core.apply_controlnet(
                 positive_conditions_cache,
                 negative_conditions_cache,
                 xl_controlnet,
                 input_image,
-                float(s["strength"]),
-                float(s["start"]),
-                float(s["stop"]),
+                float(controlnet["strength"]),
+                float(controlnet["start"]),
+                float(controlnet["stop"]),
             )
 
     latent = core.generate_empty_latent(width=width, height=height, batch_size=1)
