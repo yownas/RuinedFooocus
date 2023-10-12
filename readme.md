@@ -87,6 +87,7 @@ Coming soon ...
 22. Add <style:stylename> to prompt to set the required style
 23. Controlnet! Check out the CN tab, once selected you'll be able to upload your controlnet base image into a new special area in the tab
 24. Save your own custom perfomances and easily load them back in with the dropdown
+25. Create your own default ControlNet settings, or just get into the hardcore details with the custom controlnet mode
 
 ## Thanks
 

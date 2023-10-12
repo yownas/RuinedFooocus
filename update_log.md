@@ -1,3 +1,8 @@
+### 1.7.0
+* Custom Controlnet Modes
+* minor bugfixes
+* moved the controlnet tab to its own ui file.
+
 ### 1.6.1
 * Added sketch controlnet!
 
