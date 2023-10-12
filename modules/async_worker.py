@@ -5,6 +5,7 @@ import math
 from playsound import playsound
 from os.path import exists
 from modules.performance import get_perf_options, NEWPERF
+import modules.controlnet
 
 buffer = []
 outputs = []
@@ -188,7 +189,7 @@ def worker():
                     p_txt,
                     n_txt,
                     gen_data["input_image"],
-                    gen_data["controlnet_selection"],
+                    modules.controlnet.get_settings(gen_data),
                     steps,
                     switch,
                     width,
