@@ -109,6 +109,10 @@ controlnet_filenames = [
         "control-lora-recolor-rank128.safetensors",
         "https://huggingface.co/stabilityai/control-lora/resolve/main/control-LoRAs-rank128/control-lora-recolor-rank128.safetensors",
     ),
+    (
+        "control-lora-sketch-rank128-metadata.safetensors",
+        "https://huggingface.co/stabilityai/control-lora/resolve/main/control-LoRAs-rank128/control-lora-sketch-rank128-metadata.safetensors",
+    ),
 ]
 
 

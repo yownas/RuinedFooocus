@@ -1,3 +1,6 @@
+### 1.6.1
+* Added sketch controlnet!
+
 ### 1.6.0
 * Updated gradio version
 * Added recolour controlnet!
