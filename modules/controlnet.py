@@ -12,6 +12,7 @@ controlnet_models = {
     "canny": "control-lora-canny-rank128.safetensors",
     "depth": "control-lora-depth-rank128.safetensors",
     "recolour": "control-lora-recolor-rank128.safetensors",
+    "sketch": "control-lora-sketch-rank128-metadata.safetensors",
 }
 
 

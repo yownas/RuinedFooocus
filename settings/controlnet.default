@@ -5,7 +5,7 @@
        "edge_high": 0.8,
         "strength": 0.5,
         "start": 0.0,
-        "stop": 0.5,
+        "stop": 0.5
     },
     "Canny (high)": {
         "type": "canny",
@@ -13,9 +13,10 @@
         "edge_high": 0.8,
         "strength": 1.0,
         "start": 0.0,
-        "stop": 0.99,
+        "stop": 0.99
     },
     "Depth (low)": {"type": "depth", "strength": 0.5, "start": 0.0, "stop": 0.5},
     "Depth (high)": {"type": "depth", "strength": 1.0, "start": 0.0, "stop": 0.99},
     "Recolour": {"type": "recolour", "strength": 1.0, "start": 0.0, "stop": 1.0},
+    "Sketch": {"type": "sketch", "strength": 0.9, "start": 0.0, "stop": 1.0}
 }
