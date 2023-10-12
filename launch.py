@@ -21,7 +21,9 @@ REINSTALL_ALL = False
 
 
 def prepare_environment():
-    torch_index_url = os.environ.get("TORCH_INDEX_URL", "https://download.pytorch.org/whl/cu118")
+    torch_index_url = os.environ.get(
+        "TORCH_INDEX_URL", "https://download.pytorch.org/whl/cu118"
+    )
     torch_command = os.environ.get(
         "TORCH_COMMAND",
         f"pip install torch==2.0.1 torchvision==0.15.2 --extra-index-url {torch_index_url}",
@@ -30,8 +32,12 @@ def prepare_environment():
 
     xformers_package = os.environ.get("XFORMERS_PACKAGE", "xformers==0.0.21")
 
-    comfy_repo = os.environ.get("COMFY_REPO", "https://github.com/comfyanonymous/ComfyUI")
-    comfy_commit_hash = os.environ.get("COMFY_COMMIT_HASH", "f00471cdc8f92c930436cf288f1c12119f638a67")
+    comfy_repo = os.environ.get(
+        "COMFY_REPO", "https://github.com/comfyanonymous/ComfyUI"
+    )
+    comfy_commit_hash = os.environ.get(
+        "COMFY_COMMIT_HASH", "f00471cdc8f92c930436cf288f1c12119f638a67"
+    )
 
     print(f"Python {sys.version}")
     print(f"RuinedFooocus version: {version.version}")
@@ -51,9 +57,13 @@ def prepare_environment():
     if REINSTALL_ALL or not is_installed("xformers"):
         if platform.system() == "Windows":
             if platform.python_version().startswith("3.10"):
-                run_pip(f"install -U -I --no-deps {xformers_package}", "xformers", live=True)
+                run_pip(
+                    f"install -U -I --no-deps {xformers_package}", "xformers", live=True
+                )
             else:
-                print("Installation of xformers is not supported in this version of Python.")
+                print(
+                    "Installation of xformers is not supported in this version of Python."
+                )
                 print(
                     "You can also check this and build manually: https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Xformers#building-xformers-on-windows-by-duckness"
                 )
@@ -94,6 +104,10 @@ controlnet_filenames = [
     (
         "control-lora-depth-rank128.safetensors",
         "https://huggingface.co/stabilityai/control-lora/resolve/main/control-LoRAs-rank128/control-lora-depth-rank128.safetensors",
+    ),
+    (
+        "control-lora-recolor-rank128.safetensors",
+        "https://huggingface.co/stabilityai/control-lora/resolve/main/control-LoRAs-rank128/control-lora-recolor-rank128.safetensors",
     ),
 ]
 

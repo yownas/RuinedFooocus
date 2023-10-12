@@ -5,6 +5,7 @@ from os.path import exists
 controlnet_models = {
     "canny": "control-lora-canny-rank128.safetensors",
     "depth": "control-lora-depth-rank128.safetensors",
+    "recolour": "control-lora-recolor-rank128.safetensors",
 }
 
 # https://huggingface.co/stabilityai/control-lora/tree/main/control-LoRAs-rank128
@@ -28,6 +29,7 @@ controlnet_settings = {
     },
     "Depth (low)": {"type": "depth", "strength": 0.5, "start": 0.0, "stop": 0.5},
     "Depth (high)": {"type": "depth", "strength": 1.0, "start": 0.0, "stop": 0.99},
+    "Recolour": {"type": "recolour", "strength": 1.0, "start": 0.0, "stop": 1.0},
 }
 
 

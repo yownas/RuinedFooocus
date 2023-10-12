@@ -1,3 +1,7 @@
+### 1.6.0
+* Updated gradio version
+* Added recolour controlnet!
+
 ### 1.5.2
 * Restored gallery preview on all images
 * renamed more variables to make sense
