@@ -8,11 +8,23 @@ import comfy.model_management
 import comfy.utils
 
 from comfy.sd import load_checkpoint_guess_config
-from nodes import VAEDecode, EmptyLatentImage, CLIPTextEncode, VAEEncode, ControlNetApplyAdvanced
-from comfy.sample import prepare_mask, broadcast_cond, get_additional_models, cleanup_additional_models
+from nodes import (
+    VAEDecode,
+    EmptyLatentImage,
+    CLIPTextEncode,
+    VAEEncode,
+    ControlNetApplyAdvanced,
+)
+from comfy.sample import (
+    prepare_mask,
+    broadcast_cond,
+    get_additional_models,
+    cleanup_additional_models,
+)
 from comfy_extras.nodes_post_processing import ImageScaleToTotalPixels
 from comfy_extras.nodes_canny import Canny
-from modules.samplers_advanced import KSampler, KSamplerWithRefiner
+from modules.samplers_advanced import KSamplerWithRefiner
+from comfy.samplers import KSampler
 from modules.util import suppress_stdout
 
 comfy.model_management.DISABLE_SMART_MEMORY = True
@@ -58,26 +70,44 @@ def load_lora(model, lora_filename, strength_model=1.0, strength_clip=1.0):
 
     try:
         lora = comfy.utils.load_torch_file(lora_filename, safe_load=True)
-        unet, clip = comfy.sd.load_lora_for_models(model.unet, model.clip, lora, strength_model, strength_clip)
-        return StableDiffusionModel(unet=unet, clip=clip, vae=model.vae, clip_vision=model.clip_vision)
+        unet, clip = comfy.sd.load_lora_for_models(
+            model.unet, model.clip, lora, strength_model, strength_clip
+        )
+        return StableDiffusionModel(
+            unet=unet, clip=clip, vae=model.vae, clip_vision=model.clip_vision
+        )
     except:
         return model
+
 
 @torch.no_grad()
 @torch.inference_mode()
 def load_controlnet(ckpt_filename):
     return comfy.controlnet.load_controlnet(ckpt_filename)
 
-@torch.no_grad()
-@torch.inference_mode()
-def detect_edge(image, low_threshold, high_threshold):
-    return opCanny.detect_edge(image=image, low_threshold=low_threshold, high_threshold=high_threshold)[0]
 
 @torch.no_grad()
 @torch.inference_mode()
-def apply_controlnet(positive, negative, control_net, image, strength, start_percent, end_percent):
-    return opControlNetApplyAdvanced.apply_controlnet(positive=positive, negative=negative, control_net=control_net,
-        image=image, strength=strength, start_percent=start_percent, end_percent=end_percent)
+def detect_edge(image, low_threshold, high_threshold):
+    return opCanny.detect_edge(
+        image=image, low_threshold=low_threshold, high_threshold=high_threshold
+    )[0]
+
+
+@torch.no_grad()
+@torch.inference_mode()
+def apply_controlnet(
+    positive, negative, control_net, image, strength, start_percent, end_percent
+):
+    return opControlNetApplyAdvanced.apply_controlnet(
+        positive=positive,
+        negative=negative,
+        control_net=control_net,
+        image=image,
+        strength=strength,
+        start_percent=start_percent,
+        end_percent=end_percent,
+    )
 
 
 @torch.no_grad()
@@ -89,7 +119,9 @@ def encode_prompt_condition(clip, prompt):
 @torch.no_grad()
 @torch.inference_mode()
 def generate_empty_latent(width=1024, height=1024, batch_size=1):
-    return opEmptyLatentImage.generate(width=width, height=height, batch_size=batch_size)[0]
+    return opEmptyLatentImage.generate(
+        width=width, height=height, batch_size=batch_size
+    )[0]
 
 
 @torch.no_grad()
@@ -107,18 +139,24 @@ def encode_vae(vae, pixels):
 @torch.no_grad()
 @torch.inference_mode()
 def upscale(image):
-    return opImageScaleToTotalPixels.upscale(image=image, upscale_method="bicubic", megapixels=1.0)[0]
+    return opImageScaleToTotalPixels.upscale(
+        image=image, upscale_method="bicubic", megapixels=1.0
+    )[0]
 
 
 def get_previewer(device, latent_format):
     from latent_preview import TAESD, TAESDPreviewerImpl
 
     taesd_decoder_path = os.path.abspath(
-        os.path.realpath(os.path.join("models", "vae_approx", latent_format.taesd_decoder_name))
+        os.path.realpath(
+            os.path.join("models", "vae_approx", latent_format.taesd_decoder_name)
+        )
     )
 
     if not os.path.exists(taesd_decoder_path):
-        print(f"Warning: TAESD previews enabled, but could not find {taesd_decoder_path}")
+        print(
+            f"Warning: TAESD previews enabled, but could not find {taesd_decoder_path}"
+        )
         return None
 
     taesd = TAESD(None, taesd_decoder_path).to(device)
@@ -126,7 +164,12 @@ def get_previewer(device, latent_format):
     def preview_function(x0, step, total_steps):
         global cv2_is_top
         with torch.no_grad():
-            x_sample = taesd.decoder(torch.nn.functional.avg_pool2d(x0, kernel_size=(2, 2))).detach() * 255.0
+            x_sample = (
+                taesd.decoder(
+                    torch.nn.functional.avg_pool2d(x0, kernel_size=(2, 2))
+                ).detach()
+                * 255.0
+            )
             x_sample = einops.rearrange(x_sample, "b c h w -> b h w c")
             x_sample = x_sample.cpu().numpy().clip(0, 255).astype(np.uint8)
             return x_sample[0]
@@ -134,6 +177,7 @@ def get_previewer(device, latent_format):
     taesd.preview = preview_function
 
     return taesd
+
 
 @torch.no_grad()
 @torch.inference_mode()
@@ -169,7 +213,12 @@ def ksampler_with_refiner(
     latent_image = latent["samples"]
 
     if disable_noise:
-        noise = torch.zeros(latent_image.size(), dtype=latent_image.dtype, layout=latent_image.layout, device="cpu")
+        noise = torch.zeros(
+            latent_image.size(),
+            dtype=latent_image.dtype,
+            layout=latent_image.layout,
+            device="cpu",
+        )
     else:
         batch_inds = latent["batch_index"] if "batch_index" in latent else None
         noise = comfy.sample.prepare_noise(latent_image, seed, batch_inds)
@@ -196,11 +245,15 @@ def ksampler_with_refiner(
     if noise_mask is not None:
         noise_mask = prepare_mask(noise_mask, noise.shape, device)
 
-    models, inference_memory = get_additional_models(positive, negative, model.model_dtype())
+    models, inference_memory = get_additional_models(
+        positive, negative, model.model_dtype()
+    )
     with suppress_stdout():
         comfy.model_management.load_models_gpu(
             [model] + models,
-            comfy.model_management.batch_area_memory(noise.shape[0] * noise.shape[2] * noise.shape[3])
+            comfy.model_management.batch_area_memory(
+                noise.shape[0] * noise.shape[2] * noise.shape[3]
+            )
             + inference_memory,
         )
     real_model = model.model
@@ -257,12 +310,7 @@ def ksampler_with_refiner(
         }
     kwargs.update(extra_kwargs)
 
-    samples = sampler.sample(
-        noise,
-        positive_copy,
-        negative_copy,
-        **kwargs
-    )
+    samples = sampler.sample(noise, positive_copy, negative_copy, **kwargs)
 
     samples = samples.cpu()
 

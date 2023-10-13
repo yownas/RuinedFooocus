@@ -1,7 +1,6 @@
 from comfy.samplers import *
 
 import comfy.model_management
-from comfy.samplers import KSampler
 
 from modules.util import suppress_stdout
 
@@ -11,7 +10,15 @@ class KSamplerWithRefiner:
     SAMPLERS = KSampler.SAMPLERS
 
     def __init__(
-        self, model, refiner_model, steps, device, sampler=None, scheduler=None, denoise=None, model_options={}
+        self,
+        model,
+        refiner_model,
+        steps,
+        device,
+        sampler=None,
+        scheduler=None,
+        denoise=None,
+        model_options={},
     ):
         self.model_patcher = model
         self.refiner_model_patcher = refiner_model
@@ -25,12 +32,18 @@ class KSamplerWithRefiner:
         if self.model.model_type == model_base.ModelType.V_PREDICTION:
             self.model_wrap = CompVisVDenoiser(self.model_denoise, quantize=True)
         else:
-            self.model_wrap = k_diffusion_external.CompVisDenoiser(self.model_denoise, quantize=True)
+            self.model_wrap = k_diffusion_external.CompVisDenoiser(
+                self.model_denoise, quantize=True
+            )
 
         if self.refiner_model.model_type == model_base.ModelType.V_PREDICTION:
-            self.refiner_model_wrap = CompVisVDenoiser(self.refiner_model_denoise, quantize=True)
+            self.refiner_model_wrap = CompVisVDenoiser(
+                self.refiner_model_denoise, quantize=True
+            )
         else:
-            self.refiner_model_wrap = k_diffusion_external.CompVisDenoiser(self.refiner_model_denoise, quantize=True)
+            self.refiner_model_wrap = k_diffusion_external.CompVisDenoiser(
+                self.refiner_model_denoise, quantize=True
+            )
 
         self.model_k = KSamplerX0Inpaint(self.model_wrap)
         self.refiner_model_k = KSamplerX0Inpaint(self.refiner_model_wrap)
@@ -57,7 +70,9 @@ class KSamplerWithRefiner:
             discard_penultimate_sigma = True
 
         if self.scheduler == "karras":
-            sigmas = k_diffusion_sampling.get_sigmas_karras(n=steps, sigma_min=self.sigma_min, sigma_max=self.sigma_max)
+            sigmas = k_diffusion_sampling.get_sigmas_karras(
+                n=steps, sigma_min=self.sigma_min, sigma_max=self.sigma_max
+            )
         elif self.scheduler == "exponential":
             sigmas = k_diffusion_sampling.get_sigmas_exponential(
                 n=steps, sigma_min=self.sigma_min, sigma_max=self.sigma_max
@@ -127,8 +142,12 @@ class KSamplerWithRefiner:
         positive = positive[:]
         negative = negative[:]
 
-        resolve_areas_and_cond_masks(positive, noise.shape[2], noise.shape[3], self.device)
-        resolve_areas_and_cond_masks(negative, noise.shape[2], noise.shape[3], self.device)
+        resolve_areas_and_cond_masks(
+            positive, noise.shape[2], noise.shape[3], self.device
+        )
+        resolve_areas_and_cond_masks(
+            negative, noise.shape[2], noise.shape[3], self.device
+        )
 
         calculate_start_end_timesteps(self.model_wrap, negative)
         calculate_start_end_timesteps(self.model_wrap, positive)
@@ -142,26 +161,49 @@ class KSamplerWithRefiner:
         pre_run_control(self.model_wrap, negative + positive)
 
         apply_empty_x_to_equal_area(
-            list(filter(lambda c: c[1].get("control_apply_to_uncond", False) == True, positive)),
+            list(
+                filter(
+                    lambda c: c[1].get("control_apply_to_uncond", False) == True,
+                    positive,
+                )
+            ),
             negative,
             "control",
             lambda cond_cnets, x: cond_cnets[x],
         )
-        apply_empty_x_to_equal_area(positive, negative, "gligen", lambda cond_cnets, x: cond_cnets[x])
+        apply_empty_x_to_equal_area(
+            positive, negative, "gligen", lambda cond_cnets, x: cond_cnets[x]
+        )
 
         if self.model.is_adm():
             positive = encode_adm(
-                self.model, positive, noise.shape[0], noise.shape[3], noise.shape[2], self.device, "positive"
+                self.model,
+                positive,
+                noise.shape[0],
+                noise.shape[3],
+                noise.shape[2],
+                self.device,
+                "positive",
             )
             negative = encode_adm(
-                self.model, negative, noise.shape[0], noise.shape[3], noise.shape[2], self.device, "negative"
+                self.model,
+                negative,
+                noise.shape[0],
+                noise.shape[3],
+                noise.shape[2],
+                self.device,
+                "negative",
             )
 
         refiner_positive = refiner_positive[:]
         refiner_negative = refiner_negative[:]
 
-        resolve_areas_and_cond_masks(refiner_positive, noise.shape[2], noise.shape[3], self.device)
-        resolve_areas_and_cond_masks(refiner_negative, noise.shape[2], noise.shape[3], self.device)
+        resolve_areas_and_cond_masks(
+            refiner_positive, noise.shape[2], noise.shape[3], self.device
+        )
+        resolve_areas_and_cond_masks(
+            refiner_negative, noise.shape[2], noise.shape[3], self.device
+        )
 
         calculate_start_end_timesteps(self.refiner_model_wrap, refiner_positive)
         calculate_start_end_timesteps(self.refiner_model_wrap, refiner_negative)
@@ -237,7 +279,9 @@ class KSamplerWithRefiner:
                         cond_concat.append(blank_inpaint_image_like(noise))
             extra_args["cond_concat"] = cond_concat
 
-        if sigmas[0] != self.sigmas[0] or (self.denoise is not None and self.denoise < 1.0):
+        if sigmas[0] != self.sigmas[0] or (
+            self.denoise is not None and self.denoise < 1.0
+        ):
             max_denoise = False
         else:
             max_denoise = True
@@ -284,7 +328,9 @@ class KSamplerWithRefiner:
             k_callback = None
             total_steps = len(sigmas) - 1
             if callback is not None:
-                k_callback = lambda x: callback(x["i"], x["denoised"], x["x"], total_steps)
+                k_callback = lambda x: callback(
+                    x["i"], x["denoised"], x["x"], total_steps
+                )
 
             if latent_image is not None:
                 noise += latent_image
@@ -310,8 +356,15 @@ class KSamplerWithRefiner:
                     disable=disable_pbar,
                 )
             else:
-                samples = getattr(k_diffusion_sampling, "sample_{}".format(self.sampler))(
-                    self.model_k, noise, sigmas, extra_args=extra_args, callback=k_callback, disable=disable_pbar
+                samples = getattr(
+                    k_diffusion_sampling, "sample_{}".format(self.sampler)
+                )(
+                    self.model_k,
+                    noise,
+                    sigmas,
+                    extra_args=extra_args,
+                    callback=k_callback,
+                    disable=disable_pbar,
                 )
 
         return self.model.process_latent_out(samples.to(torch.float32))
