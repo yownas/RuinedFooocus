@@ -15,7 +15,7 @@ from modules.launch_util import (
     dir_repos,
 )
 from modules.util import load_file_from_url
-from modules.path import modelfile_path, lorafile_path, controlnet_path
+from modules.path import modelfile_path, lorafile_path, controlnet_path, vae_approx_path
 
 REINSTALL_ALL = False
 
@@ -36,7 +36,7 @@ def prepare_environment():
         "COMFY_REPO", "https://github.com/comfyanonymous/ComfyUI"
     )
     comfy_commit_hash = os.environ.get(
-        "COMFY_COMMIT_HASH", "f00471cdc8f92c930436cf288f1c12119f638a67"
+        "COMFY_COMMIT_HASH", "fee3b0c0700aedaafacd72ef90d49c7be8c1a003"
     )
 
     print(f"Python {sys.version}")
@@ -96,6 +96,13 @@ lora_filenames = [
     )
 ]
 
+vae_approx_filenames = [
+    (
+        "taesdxl_decoder",
+        "https://github.com/madebyollin/taesd/raw/main/taesdxl_decoder.pth",
+    )
+]
+
 controlnet_filenames = [
     (
         "control-lora-canny-rank128.safetensors",
@@ -123,6 +130,8 @@ def download_models():
         load_file_from_url(url=url, model_dir=lorafile_path, file_name=file_name)
     for file_name, url in controlnet_filenames:
         load_file_from_url(url=url, model_dir=controlnet_path, file_name=file_name)
+    for file_name, url in vae_approx_filenames:
+        load_file_from_url(url=url, model_dir=vae_approx_path, file_name=file_name)
     return
 
 

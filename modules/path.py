@@ -9,6 +9,7 @@ DEFAULT_PATHS = {
     "path_checkpoints": "../models/checkpoints/",
     "path_loras": "../models/loras/",
     "path_controlnet": "../models/controlnet/",
+    "path_vae_approx": "../models/vae_approx/",
     "path_preview": "../outputs/preview.jpg",
     "path_outputs": "../outputs/",
 }
@@ -45,6 +46,7 @@ def get_abspath(path):
 modelfile_path = get_abspath(paths["path_checkpoints"])
 lorafile_path = get_abspath(paths["path_loras"])
 controlnet_path = get_abspath(paths["path_controlnet"])
+vae_approx_path = get_abspath(paths["path_vae_approx"])
 temp_outputs_path = get_abspath(paths["path_outputs"])
 temp_preview_path = get_abspath(paths["path_preview"])
 
