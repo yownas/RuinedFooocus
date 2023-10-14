@@ -123,9 +123,8 @@ def join_queue(gen_data):
         prompts = get_promptlist(gen_data)
         idx = 0
 
-        worker.buffer[gen_data["session_id"]].append(
-            {"task_type": "start", "image_total": len(prompts) * gen_data["image_number"]}
-        )
+        worker.buffer[gen_data["session_id"]].append({"task_type": "start"})
+        gen_data["image_total"] = len(prompts) * gen_data["image_number"]
 
         for prompt in prompts:
             gen_data["task_type"] = "process"

@@ -55,14 +55,12 @@ def worker():
         from shared import state
 
         state["preview_grid"] = None
-        state["preview_total"] = gen_data["image_total"]
         state["preview_count"] = 0
 
     def job_stop():
         from shared import state
 
         state["preview_grid"] = None
-        state["preview_total"] = 0
         state["preview_count"] = 0
 
     def process(gen_data):
@@ -137,8 +135,8 @@ def worker():
             if step % 10 == 0:
                 status = random.choice(lines)
 
-            grid_xsize = math.ceil(math.sqrt(state["preview_total"]))
-            grid_ysize = math.ceil(state["preview_total"] / grid_xsize)
+            grid_xsize = math.ceil(math.sqrt(gen_data["image_total"]))
+            grid_ysize = math.ceil(gen_data["image_total"] / grid_xsize)
             grid_max = max(grid_xsize, grid_ysize)
             pwidth = int(width * grid_xsize / grid_max)
             pheight = int(height * grid_ysize / grid_max)
@@ -249,7 +247,7 @@ def worker():
                 break
 
         if len(buffer[gen_data["session_id"]]) == 0:
-            if state["preview_grid"] is not None and state["preview_total"] > 1:
+            if state["preview_grid"] is not None and gen_data["image_total"] > 1:
                 results = [state["preview_grid"]] + results
             outputs[gen_data["session_id"]].append(["results", results.copy()])
             metadatastrings = []
