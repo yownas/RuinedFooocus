@@ -9,13 +9,14 @@ import modules.controlnet
 
 buffer = {}
 outputs = {}
+results = []
 metadatastrings = []
 
 interrupt_ruined_processing = False
 
 
 def worker():
-    global buffer, outputs
+    global buffer, outputs, results
 
     import json
     import os
@@ -52,10 +53,12 @@ def worker():
                 print(f"WARN: Unknown task_type: {gen_data['task_type']}")
 
     def job_start(gen_data):
+        global results
         from shared import state
 
         state["preview_grid"] = None
         state["preview_count"] = 0
+        results = []
 
     def job_stop():
         from shared import state
@@ -64,10 +67,9 @@ def worker():
         state["preview_count"] = 0
 
     def process(gen_data):
-        global metadatastrings
+        global metadatastrings, results
         from shared import state
 
-        results = []
         gen_data = process_metadata(gen_data)
 
         loras = []
