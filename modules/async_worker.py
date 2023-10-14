@@ -7,9 +7,8 @@ from os.path import exists
 from modules.performance import get_perf_options, NEWPERF
 import modules.controlnet
 
-buffer = []
-outputs = []
-results = []
+buffer = {}
+outputs = {}
 metadatastrings = []
 
 interrupt_ruined_processing = False
@@ -67,9 +66,10 @@ def worker():
         state["preview_count"] = 0
 
     def process(gen_data):
-        global results, metadatastrings
+        global metadatastrings
         from shared import state
 
+        results = []
         gen_data = process_metadata(gen_data)
 
         loras = []
@@ -160,7 +160,7 @@ def worker():
                 modules.path.temp_preview_path, optimize=True, quality=35
             )
 
-            outputs.append(
+            outputs[gen_data["session_id"]].append(
                 [
                     "preview",
                     (
@@ -248,25 +248,28 @@ def worker():
             if stop_batch:
                 break
 
-        if len(buffer) == 0:
+        if len(buffer[gen_data["session_id"]]) == 0:
             if state["preview_grid"] is not None and state["preview_total"] > 1:
                 results = [state["preview_grid"]] + results
-            outputs.append(["results", results])
-            results = []
+            outputs[gen_data["session_id"]].append(["results", results.copy()])
             metadatastrings = []
         return
 
     while True:
         time.sleep(0.1)
-        if len(buffer) > 0:
-            task = buffer.pop(0)
-            handler(task)
-            gc.collect()
-            if torch.cuda.is_available():
-                torch.cuda.empty_cache()
-                torch.cuda.ipc_collect()
-            if exists("notification.mp3"):
-                playsound("notification.mp3")
+        for queue_name in list(buffer.keys()):
+            if len(buffer[queue_name]) > 0:
+                print(f"DEBUG: task {queue_name}")
+                if queue_name not in outputs:
+                    outputs[queue_name] = []
+                task = buffer[queue_name].pop(0)
+                handler(task)
+                gc.collect()
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+                    torch.cuda.ipc_collect()
+                if exists("notification.mp3"):
+                    playsound("notification.mp3")
 
 
 threading.Thread(target=worker, daemon=True).start()

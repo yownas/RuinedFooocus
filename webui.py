@@ -104,34 +104,52 @@ def update_results(product):
     }
 
 
-def generate_clicked(*args):
-    yield update_clicked()
-    gen_data = {}
-    for key, val in zip(state["ctrls_name"], args):
-        gen_data[key] = val
+def update_done():
+    return {
+        run_button: gr.update(interactive=True, visible=True),
+        stop_button: gr.update(interactive=False, visible=False),
+        progress_html: gr.update(visible=False),
+        progress_window: gr.update(),
+        gallery: gr.update(allow_preview=True, preview=True),
+    }
 
-    prompts = get_promptlist(gen_data)
-    idx = 0
 
-    worker.buffer.append(
-        {"task_type": "start", "image_total": len(prompts) * gen_data["image_number"]}
-    )
+def join_queue(gen_data):
+    if not gen_data["session_id"] in worker.buffer:
+        worker.buffer[gen_data["session_id"]] = []
 
-    for prompt in prompts:
-        gen_data["task_type"] = "process"
-        gen_data["prompt"] = prompt
-        gen_data["index"] = (idx, len(prompts))
-        idx += 1
-        worker.buffer.append(gen_data.copy())
+    if gen_data["image_number"] > 0:
+        yield update_clicked()
+        prompts = get_promptlist(gen_data)
+        idx = 0
 
-    finished = False
+        worker.buffer[gen_data["session_id"]].append(
+            {"task_type": "start", "image_total": len(prompts) * gen_data["image_number"]}
+        )
+
+        for prompt in prompts:
+            gen_data["task_type"] = "process"
+            gen_data["prompt"] = prompt
+            gen_data["index"] = (idx, len(prompts))
+            idx += 1
+            worker.buffer[gen_data["session_id"]].append(gen_data.copy())
+
+    if gen_data["image_number"] == 0 and (
+    not isinstance(worker.outputs, dict) or
+    not gen_data["session_id"] in worker.outputs or
+    len(worker.outputs[gen_data["session_id"]]) == 0):
+        finished = True
+    else:
+        finished = False
     while not finished:
         time.sleep(0.1)
 
-        if not worker.outputs:
+        if (not isinstance(worker.outputs, dict) or
+        not gen_data["session_id"] in worker.outputs or
+        len(worker.outputs[gen_data["session_id"]]) == 0):
             continue
 
-        flag, product = worker.outputs.pop(0)
+        flag, product = worker.outputs[gen_data["session_id"]].pop(0)
 
         if flag == "preview":
             yield update_preview(product)
@@ -140,7 +158,8 @@ def generate_clicked(*args):
             yield update_results(product)
             finished = True
 
-    worker.buffer.append({"task_type": "stop"})
+    yield update_done()
+    worker.buffer[gen_data["session_id"]].append({"task_type": "stop"})
 
 
 settings = default_settings
@@ -436,6 +455,19 @@ with shared.gradio_root as block:
                     else:
                         return s
 
+                with gr.Row():
+                    session_id = gr.Textbox(
+                        label="User/Session",
+                        show_label=True,
+                        value="none",
+                        scale=10,
+                    )
+                    add_ctrl("session_id", session_id)
+                    session_btn = gr.Button(
+                        value="🔗",
+                        scale=1,
+                    )
+
             with gr.Tab(label="Models"):
                 with gr.Row():
                     base_model = gr.Dropdown(
@@ -546,11 +578,22 @@ with shared.gradio_root as block:
             lambda x: gr.update(visible=x), advanced_checkbox, right_col
         )
 
+        gen_data = gr.State()
+        def generate_clicked(*args):
+            gen_data = {}
+            for key, val in zip(state["ctrls_name"], args):
+                gen_data[key] = val
+            return gen_data
+
         run_button.click(
             fn=refresh_seed, inputs=[seed_random, image_seed], outputs=image_seed
         ).then(
             fn=generate_clicked,
             inputs=state["ctrls_obj"],
+            outputs=gen_data
+        ).then(
+            fn=join_queue,
+            inputs=gen_data,
             outputs=[run_button, stop_button, progress_html, progress_window, gallery],
         )
 
@@ -559,6 +602,23 @@ with shared.gradio_root as block:
             worker.interrupt_ruined_processing = True
 
         stop_button.click(fn=stop_clicked, queue=False)
+
+        def connect_session(sid):
+            return [sid, {"image_number": 0, "session_id": sid}]
+        session_btn.click(
+            fn=connect_session, inputs=[session_id], outputs=[session_id, gen_data]
+        ).then(
+            fn=join_queue,
+            inputs=gen_data,
+            outputs=[run_button, stop_button, progress_html, progress_window, gallery],
+        )
+        session_id.submit(
+            fn=connect_session, inputs=[session_id], outputs=[session_id, gen_data]
+        ).then(
+            fn=join_queue,
+            inputs=gen_data,
+            outputs=[run_button, stop_button, progress_html, progress_window, gallery],
+        )
 
 args = parse_args()
 launch_app(args)
