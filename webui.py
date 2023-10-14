@@ -456,17 +456,19 @@ with shared.gradio_root as block:
                         return s
 
                 with gr.Row():
-                    session_id = gr.Textbox(
-                        label="User/Session",
-                        show_label=True,
-                        value="none",
-                        scale=10,
-                    )
-                    add_ctrl("session_id", session_id)
-                    session_btn = gr.Button(
-                        value="🔗",
-                        scale=1,
-                    )
+                    with gr.Group(), gr.Accordion(label="User / Session", open=False):
+                        session_id = gr.Textbox(
+                            label="User/Session",
+                            show_label=False,
+                            value="none",
+                            scale=10,
+                            container=False,
+                        )
+                        add_ctrl("session_id", session_id)
+                        session_btn = gr.Button(
+                            value="🔗 Connect",
+                            scale=1,
+                        )
 
             with gr.Tab(label="Models"):
                 with gr.Row():

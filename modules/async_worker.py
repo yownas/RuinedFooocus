@@ -259,7 +259,6 @@ def worker():
         time.sleep(0.1)
         for queue_name in list(buffer.keys()):
             if len(buffer[queue_name]) > 0:
-                print(f"DEBUG: task {queue_name}")
                 if queue_name not in outputs:
                     outputs[queue_name] = []
                 task = buffer[queue_name].pop(0)
