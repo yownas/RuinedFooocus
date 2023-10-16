@@ -425,6 +425,14 @@ def ui_onebutton(prompt):
                 antistring = gr.Textbox(
                     label="Filter out following properties (comma seperated). Example " "film grain, purple, cat" " "
                 )
+        with gr.Row():
+            gr.Markdown(
+                """
+                        <font size="2">
+                        Proud to be powered by One Button Prompt
+                        </font>
+                        """
+            )
 
         # turn things on and off for gender
         def subjectsvalue(subject):
