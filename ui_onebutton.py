@@ -124,6 +124,7 @@ generateflora = True
 generateanimal = True
 generatemanwoman = True
 generatemanwomanrelation = True
+generatemanwomanmultiple = True
 generatefictionalcharacter = True
 generatenonfictionalcharacter = True
 generatehumanoids = True
@@ -134,6 +135,7 @@ generateevent = True
 generateconcepts = True
 generatepoemline = True
 generatesongline = True
+generatecardname = True
 
 config = load_config_csv()
 
@@ -159,6 +161,8 @@ for item in config:
         generatemanwoman = False
     if item[0] == "subject_manwomanrelation" and item[1] != "on":
         generatemanwomanrelation = False
+    if item[0] == 'subject_manwomanmultiple' and item[1] != 'on':
+            generatemanwomanmultiple = False
     if item[0] == "subject_fictional" and item[1] != "on":
         generatefictionalcharacter = False
     if item[0] == "subject_nonfictional" and item[1] != "on":
@@ -181,6 +185,8 @@ for item in config:
         generatepoemline = False
     if item[0] == "songline" and item[1] != "on":
         generatesongline = False
+    if item[0] == 'subject_cardname' and item[1] != 'on':
+        generatecardname = False
 
 # build up all subjects we can choose based on the loaded config file
 if generatevehicle or generateobject or generatefood or generatebuilding or generatespace:
@@ -236,6 +242,8 @@ if generatejob:
     subjectsubtypeshumanoid.append("based on job or title")
 if generatefirstnames:
     subjectsubtypeshumanoid.append("based on first name")
+if(generatemanwomanmultiple):
+     subjectsubtypeshumanoid.append("multiple humans")
 
 # concepts
 if generateevent:
@@ -246,7 +254,8 @@ if generatepoemline:
     subjectsubtypesconcept.append("lines from poems")
 if generatesongline:
     subjectsubtypesconcept.append("lines from songs")
-
+if(generatecardname):
+     subjectsubtypesconcept.append("names from card based games")
 
 def ui_onebutton(prompt):
     def gen_prompt(
@@ -265,6 +274,7 @@ def ui_onebutton(prompt):
         chosensubjectsubtypeobject,
         chosensubjectsubtypehumanoid,
         chosensubjectsubtypeconcept,
+        givenoutfit,
     ):
         prompt = build_dynamic_prompt(
             insanitylevel,
@@ -285,6 +295,10 @@ def ui_onebutton(prompt):
             chosensubjectsubtypeobject,
             chosensubjectsubtypehumanoid,
             chosensubjectsubtypeconcept,
+            True,
+            False,
+            0,
+            givenoutfit,
         )
 
         return prompt
@@ -306,6 +320,7 @@ def ui_onebutton(prompt):
         chosensubjectsubtypeobject,
         chosensubjectsubtypehumanoid,
         chosensubjectsubtypeconcept,
+        givenoutfit,
     ):
         prompt = (
             prompt
@@ -329,6 +344,10 @@ def ui_onebutton(prompt):
                 chosensubjectsubtypeobject,
                 chosensubjectsubtypehumanoid,
                 chosensubjectsubtypeconcept,
+                True,
+                False,
+                0,
+                givenoutfit,
             )
         )
 
@@ -378,6 +397,7 @@ def ui_onebutton(prompt):
         with gr.Row():
             givensubject = gr.Textbox(label="Overwrite subject: ", value="")
             smartsubject = gr.Checkbox(label="Smart subject", value=True)
+            givenoutfit = gr.Textbox(label="Overwrite outfit: ", value="")
         with gr.Row():
             gr.Markdown(
                 """
@@ -460,6 +480,7 @@ def ui_onebutton(prompt):
                 chosensubjectsubtypeobject,
                 chosensubjectsubtypehumanoid,
                 chosensubjectsubtypeconcept,
+                givenoutfit,
             ],
             outputs=[prompt],
         )
@@ -482,6 +503,7 @@ def ui_onebutton(prompt):
                 chosensubjectsubtypeobject,
                 chosensubjectsubtypehumanoid,
                 chosensubjectsubtypeconcept,
+                givenoutfit,
             ],
             outputs=[prompt],
         )

@@ -16,6 +16,7 @@ subject_animal;on
 # humanoids;
 subject_manwoman;on
 subject_manwomanrelation;on
+subject_manwomanmultiple;on
 subject_fictional;on
 subject_nonfictional;on
 subject_humanoid;on
@@ -28,6 +29,7 @@ subject_event;on
 subject_concept;on
 subject_poemline;on
 subject_songline;on
+subject_cardname;on
 #----;
 # other main lists, in order of appearance;
 # setting the random chance, for normal generation;
@@ -62,6 +64,9 @@ humanadditionchance;rare
 overalladditionchance;extraordinary
 # humanoid other stuff;
 emojichance;legendary
+buildfacechance;legendary
+humanexpressionchance;rare
+humanvomitchance;rare
 joboractivitychance;normal
 # things in the middle of the prompt;
 custominputmidrepeats;2
