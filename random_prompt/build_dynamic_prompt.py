@@ -1,7 +1,7 @@
 import random
 import re
-from csv_reader import *
-from random_functions import *
+from random_prompt.csv_reader import *
+from random_prompt.random_functions import *
 
 
 
