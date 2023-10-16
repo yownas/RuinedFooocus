@@ -108,7 +108,12 @@ imagetypes = [
 ]
 promptmode = ["at the back", "in the front"]
 promptcompounder = ["1", "2", "3", "4", "5"]
-ANDtogglemode = ["none", "automatic", "prefix AND prompt + suffix", "prefix + prefix + prompt + suffix"]
+ANDtogglemode = [
+    "none",
+    "automatic",
+    "prefix AND prompt + suffix",
+    "prefix + prefix + prompt + suffix",
+]
 seperatorlist = ["comma", "AND", "BREAK"]
 genders = ["all", "male", "female"]
 
@@ -161,8 +166,8 @@ for item in config:
         generatemanwoman = False
     if item[0] == "subject_manwomanrelation" and item[1] != "on":
         generatemanwomanrelation = False
-    if item[0] == 'subject_manwomanmultiple' and item[1] != 'on':
-            generatemanwomanmultiple = False
+    if item[0] == "subject_manwomanmultiple" and item[1] != "on":
+        generatemanwomanmultiple = False
     if item[0] == "subject_fictional" and item[1] != "on":
         generatefictionalcharacter = False
     if item[0] == "subject_nonfictional" and item[1] != "on":
@@ -185,11 +190,17 @@ for item in config:
         generatepoemline = False
     if item[0] == "songline" and item[1] != "on":
         generatesongline = False
-    if item[0] == 'subject_cardname' and item[1] != 'on':
+    if item[0] == "subject_cardname" and item[1] != "on":
         generatecardname = False
 
 # build up all subjects we can choose based on the loaded config file
-if generatevehicle or generateobject or generatefood or generatebuilding or generatespace:
+if (
+    generatevehicle
+    or generateobject
+    or generatefood
+    or generatebuilding
+    or generatespace
+):
     subjects.append("object")
 if generateanimal:
     subjects.append("animal")
@@ -242,8 +253,8 @@ if generatejob:
     subjectsubtypeshumanoid.append("based on job or title")
 if generatefirstnames:
     subjectsubtypeshumanoid.append("based on first name")
-if(generatemanwomanmultiple):
-     subjectsubtypeshumanoid.append("multiple humans")
+if generatemanwomanmultiple:
+    subjectsubtypeshumanoid.append("multiple humans")
 
 # concepts
 if generateevent:
@@ -254,8 +265,9 @@ if generatepoemline:
     subjectsubtypesconcept.append("lines from poems")
 if generatesongline:
     subjectsubtypesconcept.append("lines from songs")
-if(generatecardname):
-     subjectsubtypesconcept.append("names from card based games")
+if generatecardname:
+    subjectsubtypesconcept.append("names from card based games")
+
 
 def ui_onebutton(prompt):
     def gen_prompt(
@@ -360,7 +372,11 @@ def ui_onebutton(prompt):
 
         with gr.Row():
             insanitylevel = gr.Slider(
-                1, 10, value=5, step=1, label="Higher levels increases complexity and randomness of generated prompt"
+                1,
+                10,
+                value=5,
+                step=1,
+                label="Higher levels increases complexity and randomness of generated prompt",
             )
         with gr.Row():
             with gr.Column(scale=1, variant="compact"):
@@ -370,21 +386,36 @@ def ui_onebutton(prompt):
 
         with gr.Row():
             chosensubjectsubtypeobject = gr.Dropdown(
-                subjectsubtypesobject, label="Type of object", value="all", visible=False
+                subjectsubtypesobject,
+                label="Type of object",
+                value="all",
+                visible=False,
             )
             chosensubjectsubtypehumanoid = gr.Dropdown(
-                subjectsubtypeshumanoid, label="Type of humanoids", value="all", visible=False
+                subjectsubtypeshumanoid,
+                label="Type of humanoids",
+                value="all",
+                visible=False,
             )
             chosensubjectsubtypeconcept = gr.Dropdown(
-                subjectsubtypesconcept, label="Type of concept", value="all", visible=False
+                subjectsubtypesconcept,
+                label="Type of concept",
+                value="all",
+                visible=False,
             )
-            chosengender = gr.Dropdown(genders, label="gender", value="all", visible=False)
+            chosengender = gr.Dropdown(
+                genders, label="gender", value="all", visible=False
+            )
         with gr.Row():
             with gr.Column(scale=2, variant="compact"):
                 imagetype = gr.Dropdown(imagetypes, label="type of image", value="all")
             with gr.Column(scale=2, variant="compact"):
                 imagemodechance = gr.Slider(
-                    1, 100, value="20", step=1, label="One in X chance to use special image type mode"
+                    1,
+                    100,
+                    value="20",
+                    step=1,
+                    label="One in X chance to use special image type mode",
                 )
         with gr.Row():
             gr.Markdown(
@@ -408,8 +439,12 @@ def ui_onebutton(prompt):
             )
         with gr.Row():
             with gr.Column():
-                prefixprompt = gr.Textbox(label="Place this in front of generated prompt (prefix)", value="")
-                suffixprompt = gr.Textbox(label="Place this at back of generated prompt (suffix)", value="")
+                prefixprompt = gr.Textbox(
+                    label="Place this in front of generated prompt (prefix)", value=""
+                )
+                suffixprompt = gr.Textbox(
+                    label="Place this at back of generated prompt (suffix)", value=""
+                )
         with gr.Row():
             gr.Markdown(
                 """
@@ -423,15 +458,15 @@ def ui_onebutton(prompt):
         with gr.Row():
             with gr.Column():
                 antistring = gr.Textbox(
-                    label="Filter out following properties (comma seperated). Example " "film grain, purple, cat" " "
+                    label="Filter out following properties (comma seperated). Example "
+                    "film grain, purple, cat"
+                    " "
                 )
         with gr.Row():
             gr.Markdown(
                 """
-                        <font size="2">
-                        Proud to be powered by One Button Prompt
-                        </font>
-                        """
+                Proud to be powered by [One Button Prompt](https://github.com/AIrjen/OneButtonPrompt)
+                """
             )
 
         # turn things on and off for gender
@@ -450,7 +485,9 @@ def ui_onebutton(prompt):
                 chosensubjectsubtypeobject: gr.update(visible=enable),
             }
 
-        subject.change(subjectsvalueforsubtypeobject, [subject], [chosensubjectsubtypeobject])
+        subject.change(
+            subjectsvalueforsubtypeobject, [subject], [chosensubjectsubtypeobject]
+        )
 
         # turn things on and off for subject subtype humanoid
         def subjectsvalueforsubtypeobject(subject):
@@ -459,7 +496,9 @@ def ui_onebutton(prompt):
                 chosensubjectsubtypehumanoid: gr.update(visible=enable),
             }
 
-        subject.change(subjectsvalueforsubtypeobject, [subject], [chosensubjectsubtypehumanoid])
+        subject.change(
+            subjectsvalueforsubtypeobject, [subject], [chosensubjectsubtypehumanoid]
+        )
 
         # turn things on and off for subject subtype concept
         def subjectsvalueforsubtypeconcept(subject):
@@ -468,7 +507,9 @@ def ui_onebutton(prompt):
                 chosensubjectsubtypeconcept: gr.update(visible=enable),
             }
 
-        subject.change(subjectsvalueforsubtypeconcept, [subject], [chosensubjectsubtypeconcept])
+        subject.change(
+            subjectsvalueforsubtypeconcept, [subject], [chosensubjectsubtypeconcept]
+        )
 
         random_button.click(
             gen_prompt,

@@ -68,7 +68,7 @@ Coming soon ...
 3. Apply multiple styles to one prompt and a send style to prompt button.
 4. Ability to save full metadata for generated images embedded in PNG.
 5. Ability to change default values of UI settings (loaded from `settings/settings.json`).
-6. Generate a completely random prompt (taken from onebuttonprompt) with its own "special" tab
+6. Generate a completely random prompt (taken from onebuttonprompt) with its own "special" tab (now officially supported by [Arljen](https://github.com/AIrjen/OneButtonPrompt))
 7. Made Resolutions mode readable
 8. Added theme support in `settings/settings.json` you can see available themes [HERE](https://huggingface.co/spaces/gradio/theme-gallery)
 9. Added `settings/resolutions.json` to allow users to add their own custom resolutions

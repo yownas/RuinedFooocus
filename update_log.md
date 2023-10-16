@@ -1,3 +1,6 @@
+### 1.7.1
+* Update to one button prompt (provided by [Alrjen](https://github.com/AIrjen/OneButtonPrompt))
+
 ### 1.7.0
 * Custom Controlnet Modes
 * minor bugfixes
