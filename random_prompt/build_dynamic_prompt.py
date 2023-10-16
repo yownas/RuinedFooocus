@@ -4,95 +4,107 @@ from random_prompt.csv_reader import *
 from random_prompt.random_functions import *
 
 
-# builds a prompt dynamically
+
+
+#builds a prompt dynamically
 # insanity level controls randomness of propmt 0-10
 # forcesubject van be used to force a certain type of subject
-# Set artistmode to none, to exclude artists
-def build_dynamic_prompt(
-    insanitylevel=5,
-    forcesubject="all",
-    artists="all",
-    imagetype="all",
-    onlyartists=False,
-    antivalues="",
-    prefixprompt="",
-    suffixprompt="",
-    promptcompounderlevel="1",
-    seperator="comma",
-    givensubject="",
-    smartsubject=True,
-    giventypeofimage="",
-    imagemodechance=20,
-    gender="all",
-    subtypeobject="all",
-    subtypehumanoid="all",
-    subtypeconcept="all",
-    advancedprompting=True,
-):
+# Set artistmode to none, to exclude artists 
+def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all", imagetype = "all", onlyartists = False, antivalues = "", prefixprompt = "", suffixprompt ="",promptcompounderlevel ="1", seperator = "comma", givensubject="",smartsubject = True,giventypeofimage="", imagemodechance = 20, gender = "all", subtypeobject="all", subtypehumanoid="all", subtypeconcept="all", advancedprompting=True, hardturnoffemojis=False, seed=-1, overrideoutfit=""):
+
+    # set seed
+    # For use in ComfyUI (might bring to Automatic1111 as well)
+    # lets do it when its larger than 0
+    # Otherwise, just do nothing and it will keep on working based on an earlier set seed
+    if(seed > 0):
+        random.seed(seed)
+
+    #
+    if(advancedprompting != False and random.randint(0,max(0, insanitylevel - 2)) <= 0):
+        advancedprompting == False
+
+
     # load the config file
     config = load_config_csv()
 
+    
+    
     # first build up a complete anti list. Those values are removing during list building
     # this uses the antivalues string AND the antilist.csv
     emptylist = []
-    antilist = csv_to_list("antilist", emptylist, "./userfiles/", 1)
+    antilist = csv_to_list("antilist",emptylist , "./userfiles/",1)
+    
     antivaluelist = antivalues.split(",")
 
     antilist += antivaluelist
 
+    # clean up antivalue list:
+    antilist = [s.strip().lower() for s in antilist]
+
+    # Some tricks for gender to make sure we can choose Him/Her/It etc on the right time.
+    if(gender=="all"):
+        genderchoicelist = ["male", "female"]
+        gender = random.choice(genderchoicelist)
+    heshelist = ["it"]
+    hisherlist = ["its"]
+    himherlist = ["it"]
+    # we also need to oppositegender for some fun!
+    oppositegender = "male"
+    if(gender=="male"):
+        oppositegender = "female"
+
     # build all lists here
 
-    colorlist = csv_to_list("colors", antilist)
-    animallist = csv_to_list("animals", antilist)
-    materiallist = csv_to_list("materials", antilist)
-    objectlist = csv_to_list("objects", antilist)
-    fictionallist = csv_to_list(csvfilename="fictional characters", antilist=antilist, skipheader=True, gender=gender)
-    nonfictionallist = csv_to_list(
-        csvfilename="nonfictional characters", antilist=antilist, skipheader=True, gender=gender
-    )
-    conceptsuffixlist = csv_to_list("concept_suffix", antilist)
-    buildinglist = csv_to_list("buildings", antilist)
-    vehiclelist = csv_to_list("vehicles", antilist)
-    outfitlist = csv_to_list("outfits", antilist)
-    locationlist = csv_to_list("locations", antilist)
+    colorlist = csv_to_list("colors",antilist)
+    animallist = csv_to_list("animals",antilist)    
+    materiallist = csv_to_list("materials",antilist)
+    objectlist = csv_to_list("objects",antilist)
+    fictionallist = csv_to_list(csvfilename="fictional characters",antilist=antilist,skipheader=True,gender=gender)
+    nonfictionallist = csv_to_list(csvfilename="nonfictional characters",antilist=antilist,skipheader=True,gender=gender)
+    oppositefictionallist = csv_to_list(csvfilename="fictional characters",antilist=antilist,skipheader=True,gender=oppositegender)
+    oppositenonfictionallist = csv_to_list(csvfilename="nonfictional characters",antilist=antilist,skipheader=True,gender=oppositegender)
+    conceptsuffixlist = csv_to_list("concept_suffix",antilist)
+    buildinglist = csv_to_list("buildings",antilist)
+    vehiclelist = csv_to_list("vehicles",antilist)
+    outfitlist = csv_to_list("outfits",antilist)
+    locationlist = csv_to_list("locations",antilist)
 
-    accessorielist = csv_to_list("accessories", antilist)
-    artmovementlist = csv_to_list("artmovements", antilist)
-    bodytypelist = csv_to_list("body_types", antilist)
-    cameralist = csv_to_list("cameras", antilist)
-    colorschemelist = csv_to_list("colorscheme", antilist)
-    conceptprefixlist = csv_to_list("concept_prefix", antilist)
-    culturelist = csv_to_list("cultures", antilist)
-    descriptorlist = csv_to_list("descriptors", antilist)
-    devmessagelist = csv_to_list("devmessages", antilist)
-    directionlist = csv_to_list("directions", antilist)
-    emojilist = csv_to_list("emojis", antilist)
-    eventlist = csv_to_list("events", antilist)
-    focuslist = csv_to_list("focus", antilist)
-    greatworklist = csv_to_list("greatworks", antilist)
-    haircolorlist = csv_to_list("haircolors", antilist)
-    hairstylelist = csv_to_list("hairstyles", antilist)
-    humanactivitylist = csv_to_list("human_activities", antilist)
-    humanoidlist = csv_to_list("humanoids", antilist)
-    imagetypelist = csv_to_list("imagetypes", antilist)
-    joblist = csv_to_list("jobs", antilist)
-    lenslist = csv_to_list("lenses", antilist)
-    lightinglist = csv_to_list("lighting", antilist)
-    malefemalelist = csv_to_list(csvfilename="malefemale", antilist=antilist, skipheader=True, gender=gender)
-    manwomanlist = csv_to_list(csvfilename="manwoman", antilist=antilist, skipheader=True, gender=gender)
-    moodlist = csv_to_list("moods", antilist)
-    othertypelist = csv_to_list("othertypes", antilist)
-    poselist = csv_to_list("poses", antilist)
-    qualitylist = csv_to_list("quality", antilist)
-    shotsizelist = csv_to_list("shotsizes", antilist)
-    timeperiodlist = csv_to_list("timeperiods", antilist)
-    vomitlist = csv_to_list("vomit", antilist)
+    accessorielist = csv_to_list("accessories",antilist,"./csvfiles/",0,"?",False,False,gender)
+    artmovementlist = csv_to_list("artmovements",antilist)
+    bodytypelist = csv_to_list("body_types",antilist=antilist,skipheader=True,gender=gender)
+    cameralist = csv_to_list("cameras",antilist)
+    colorschemelist = csv_to_list("colorscheme",antilist)
+    conceptprefixlist = csv_to_list("concept_prefix",antilist)
+    culturelist = csv_to_list("cultures",antilist)
+    descriptorlist = csv_to_list("descriptors",antilist)
+    devmessagelist = csv_to_list("devmessages",antilist)
+    directionlist = csv_to_list("directions",antilist)
+    emojilist = csv_to_list("emojis",antilist)
+    eventlist = csv_to_list("events",antilist)
+    focuslist = csv_to_list("focus",antilist)
+    greatworklist = csv_to_list("greatworks",antilist)
+    haircolorlist = csv_to_list("haircolors",antilist)
+    hairstylelist = csv_to_list("hairstyles",antilist)
+    hairvomitlist = csv_to_list("hairvomit",antilist,"./csvfiles/",0,"?",False,False)
+    humanactivitylist = csv_to_list("human_activities",antilist)
+    humanoidlist = csv_to_list("humanoids",antilist)
+    imagetypelist = csv_to_list("imagetypes",antilist)
+    joblist = csv_to_list(csvfilename="jobs",antilist=antilist,skipheader=True,gender=gender)
+    lenslist = csv_to_list("lenses",antilist)
+    lightinglist = csv_to_list("lighting",antilist)
+    malefemalelist = csv_to_list(csvfilename="malefemale",antilist=antilist,skipheader=True,gender=gender)
+    manwomanlist = csv_to_list(csvfilename="manwoman",antilist=antilist,skipheader=True,gender=gender)
+    moodlist = csv_to_list("moods",antilist)
+    othertypelist = csv_to_list("othertypes",antilist)
+    poselist = csv_to_list("poses",antilist)
+    qualitylist = csv_to_list("quality",antilist)
+    shotsizelist = csv_to_list("shotsizes",antilist)
+    timeperiodlist = csv_to_list("timeperiods",antilist)
+    vomitlist = csv_to_list("vomit",antilist)
     foodlist = csv_to_list("foods", antilist)
-    genderdescriptionlist = csv_to_list(
-        csvfilename="genderdescription", antilist=antilist, skipheader=True, gender=gender
-    )
+    genderdescriptionlist = csv_to_list(csvfilename="genderdescription",antilist=antilist,skipheader=True,gender=gender)
     minilocationlist = csv_to_list("minilocations", antilist)
-    minioutfitlist = csv_to_list("minioutfits", antilist)
+    minioutfitlist = csv_to_list("minioutfits",antilist,"./csvfiles/",0,"?",False,False,gender)
     seasonlist = csv_to_list("seasons", antilist)
     elaborateoutfitlist = csv_to_list("elaborateoutfits", antilist)
     minivomitlist = csv_to_list("minivomit", antilist)
@@ -103,68 +115,146 @@ def build_dynamic_prompt(
     poemlinelist = csv_to_list("poemlines", antilist)
     songlinelist = csv_to_list("songlines", antilist)
     musicgenrelist = csv_to_list("musicgenres", antilist)
-    manwomanrelationlist = csv_to_list(
-        csvfilename="manwomanrelations", antilist=antilist, skipheader=True, gender=gender
-    )
+    manwomanrelationlist = csv_to_list(csvfilename="manwomanrelations",antilist=antilist,skipheader=True,gender=gender)
+    manwomanmultiplelist = csv_to_list(csvfilename="manwomanmultiples",antilist=antilist,skipheader=True,gender=gender,delimiter="?")
     waterlocationlist = csv_to_list("waterlocations", antilist)
     containerlist = csv_to_list("containers", antilist)
-    firstnamelist = csv_to_list(csvfilename="firstnames", antilist=antilist, skipheader=True, gender=gender)
+    firstnamelist = csv_to_list(csvfilename="firstnames",antilist=antilist,skipheader=True,gender=gender)
     floralist = csv_to_list("flora", antilist)
+    printlist = csv_to_list("prints", antilist)
+    patternlist = csv_to_list("patterns", antilist)
+    chairlist = csv_to_list("chairs", antilist)
+    cardnamelist = csv_to_list("card_names", antilist)
+    coveringlist = csv_to_list("coverings", antilist)
+    facepartlist = csv_to_list("faceparts", antilist)
+    outfitvomitlist = csv_to_list(csvfilename="outfitvomit",antilist=antilist,delimiter="?")
+    humanexpressionlist = csv_to_list(csvfilename="humanexpressions",antilist=antilist,delimiter="?")
+    humanvomitlist = csv_to_list("humanvomit", antilist)
+    eyecolorlist = csv_to_list("eyecolors", antilist)
+    fashiondesignerlist = csv_to_list("fashiondesigners", antilist)
+    colorcombinationlist = csv_to_list("colorcombinations", antilist)
+    materialcombinationlist = csv_to_list("materialcombinations", antilist)
+    agelist = csv_to_list("ages", antilist)
+    agecalculatorlist = csv_to_list("agecalculator", antilist)
+    
+
+    # additional descriptor lists
+    outfitdescriptorlist = csv_to_list("outfitdescriptors",antilist)
+    hairdescriptorlist = csv_to_list("hairdescriptors",antilist)
+    humandescriptorlist = csv_to_list("humandescriptors",antilist)
+    locationdescriptorlist = csv_to_list("locationdescriptors",antilist)
+    basicbitchdescriptorlist = csv_to_list("basicbitchdescriptors",antilist)
+    animaldescriptorlist = csv_to_list("animaldescriptors",antilist)
+
+    # descriptorlist becomes one with everything
+    descriptortotallist = descriptorlist + outfitdescriptorlist + hairdescriptorlist + humandescriptorlist + locationdescriptorlist + basicbitchdescriptorlist + animaldescriptorlist
+    # Deduplicate the list while preserving casings
+    descriptorlist = []
+    seen_items = set()
+
+    for item in descriptortotallist:
+        # Convert the item to lowercase to ignore casing
+        item_lower = item.lower()
+        
+        if item_lower not in seen_items:
+            seen_items.add(item_lower)
+            descriptorlist.append(item)
 
     humanlist = fictionallist + nonfictionallist + humanoidlist
-    objecttotallist = objectlist + buildinglist + vehiclelist + foodlist + spacelist + floralist
+    objecttotallist = objectlist + buildinglist + vehiclelist + foodlist + spacelist + floralist + containerlist
+    outfitprinttotallist = objecttotallist + locationlist + colorlist + musicgenrelist + seasonlist + animallist + patternlist
 
     # build artists list
+
+    # we want to create more cohorence, so we are adding all (wild) mode for the old logic
+    
+    # all else will be more constrained per type, to produce better images.
+    # the popular artists will be used more the lower the insanitylevel is
+    # Future: add in personal artists lists as well
+    
+    # lets maybe go wild "sometimes", based on insanitylevel
+    if(artists == "all" and rare_dist(insanitylevel)):
+       artists = "all (wild)"
+
+    artisttypes = ["popular", "3D",	"abstract",	"angular", "anime"	,"architecture",	"art nouveau",	"art deco",	"baroque",	"bauhaus", 	"cartoon",	"character",	"children's illustration", 	"cityscape", "cinema",	"clean",	"cloudscape",	"collage",	"colorful",	"comics",	"cubism",	"dark",	"detailed", 	"digital",	"expressionism",	"fantasy",	"fashion",	"fauvism",	"figurativism",	"graffiti",	"graphic design",	"high contrast",	"horror",	"impressionism",	"installation",	"landscape",	"light",	"line drawing",	"low contrast",	"luminism",	"magical realism",	"manga",	"melanin",	"messy",	"monochromatic",	"nature",	"photography",	"pop art",	"portrait",	"primitivism",	"psychedelic",	"realism",	"renaissance",	"romanticism",	"scene",	"sci-fi",	"sculpture",	"seascape",	"space",	"stained glass",	"still life",	"storybook realism",	"street art",	"streetscape",	"surrealism",	"symbolism",	"textile",	"ukiyo-e",	"vibrant",	"watercolor",	"whimsical"]
+    artiststyleselector = ""
+    artiststyleselectormode = "normal"
+    if(artists == "all" and normal_dist(insanitylevel + 1)):
+        artiststyleselector = random.choice(artisttypes)
+        artists = artiststyleselector
+    elif(artists == "all"):
+        artiststyleselectormode = "custom"
+        # go popular! Or even worse, we go full greg mode!
+        if(common_dist(max(3,insanitylevel))):
+            artists = "popular"
+        # only on lower instanity levels anyway
+        elif(insanitylevel < 6):
+            artists = "greg mode"
+        else:
+            artists = "popular"
+
+
+    else:
+        artiststyleselectormode = "custom"
+
+
+
     artistlist = []
     # create artist list to use in the code, maybe based on category  or personal lists
-    if (
-        artists != "all"
-        and artists != "none"
-        and artists.startswith("personal_artists") == False
-        and artists.startswith("personal artists") == False
-    ):
-        artistlist = artist_category_csv_to_list("artists_and_category", artists)
-    elif artists.startswith("personal_artists") == True or artists.startswith("personal artists") == True:
-        artists = artists.replace(" ", "_", -1)  # add underscores back in
-        artistlist = csv_to_list(artists, antilist, "./userfiles/")
-    elif artists != "none":
-        artistlist = csv_to_list("artists", antilist)
+    if(artists != "all (wild)" and artists != "all" and artists != "none" and artists.startswith("personal_artists") == False and artists.startswith("personal artists") == False):
+        artistlist = artist_category_csv_to_list("artists_and_category",artists)
+    elif(artists.startswith("personal_artists") == True or artists.startswith("personal artists") == True):
+        artists = artists.replace(" ","_",-1) # add underscores back in
+        artistlist = csv_to_list(artists,antilist,"./userfiles/")
+    elif(artists != "none"):
+        artistlist = csv_to_list("artists",antilist)
 
     # create special artists lists, used in templates
-    fantasyartistlist = artist_category_csv_to_list("artists_and_category", "fantasy")
-    popularartistlist = artist_category_csv_to_list("artists_and_category", "popular")
-    romanticismartistlist = artist_category_csv_to_list("artists_and_category", "romanticism")
-    photographyartistlist = artist_category_csv_to_list("artists_and_category", "photography")
+    fantasyartistlist = artist_category_csv_to_list("artists_and_category","fantasy")
+    popularartistlist = artist_category_csv_to_list("artists_and_category","popular")
+    romanticismartistlist = artist_category_csv_to_list("artists_and_category","romanticism")
+    photographyartistlist = artist_category_csv_to_list("artists_and_category","photography")
+    gregmodelist = csv_to_list("gregmode", antilist)
+
 
     # add any other custom lists
-    stylestiloralist = csv_to_list("styles_ti_lora", antilist, "./userfiles/")
-    generatestyle = bool(stylestiloralist)  # True of not empty
+    stylestiloralist = csv_to_list("styles_ti_lora",antilist,"./userfiles/")
+    generatestyle = bool(stylestiloralist) # True of not empty
 
-    custominputprefixlist = csv_to_list("custom_input_prefix", antilist, "./userfiles/")
-    generatecustominputprefix = bool(custominputprefixlist)  # True of not empty
+    custominputprefixlist = csv_to_list("custom_input_prefix",antilist,"./userfiles/")
+    generatecustominputprefix = bool(custominputprefixlist) # True of not empty
 
-    custominputmidlist = csv_to_list("custom_input_mid", antilist, "./userfiles/")
-    generatecustominputmid = bool(custominputmidlist)  # True of not empty
+    custominputmidlist = csv_to_list("custom_input_mid",antilist,"./userfiles/")
+    generatecustominputmid = bool(custominputmidlist) # True of not empty
 
-    custominputsuffixlist = csv_to_list("custom_input_suffix", antilist, "./userfiles/")
-    generatecustominputsuffix = bool(custominputsuffixlist)  # True of not empty
+    custominputsuffixlist = csv_to_list("custom_input_suffix",antilist,"./userfiles/")
+    generatecustominputsuffix = bool(custominputsuffixlist) # True of not empty
 
-    customsubjectslist = csv_to_list("custom_subjects", antilist, "./userfiles/")
+    customsubjectslist = csv_to_list("custom_subjects",antilist,"./userfiles/")
+    customoutfitslist = csv_to_list("custom_outfits",antilist,"./userfiles/")
 
     # special lists
-    backgroundtypelist = csv_to_list("backgroundtypes", antilist, "./csvfiles/special_lists/")
-    insideshotlist = csv_to_list("insideshots", antilist, "./csvfiles/special_lists/")
-    photoadditionlist = csv_to_list("photoadditions", antilist, "./csvfiles/special_lists/")
-    buildhairlist = csv_to_list("buildhair", antilist, "./csvfiles/special_lists/")
-    buildoutfitlist = csv_to_list("buildoutfit", antilist, "./csvfiles/special_lists/")
-    objectadditionslist = csv_to_list("objectadditions", antilist, "./csvfiles/special_lists/")
-    humanadditionlist = csv_to_list("humanadditions", antilist, "./csvfiles/special_lists/")
-    animaladditionlist = csv_to_list("animaladditions", antilist, "./csvfiles/special_lists/")
-    buildaccessorielist = csv_to_list("buildaccessorie", antilist, "./csvfiles/special_lists/")
-    minilocationadditionslist = csv_to_list("minilocationadditions", antilist, "./csvfiles/special_lists/")
-    overalladditionlist = csv_to_list("overalladditions", antilist, "./csvfiles/special_lists/")
-    imagetypemodelist = csv_to_list("imagetypemodes", antilist, "./csvfiles/special_lists/")
+    backgroundtypelist = csv_to_list("backgroundtypes", antilist,"./csvfiles/special_lists/",0,"?")
+    insideshotlist =  csv_to_list("insideshots", antilist,"./csvfiles/special_lists/",0,"?")
+    photoadditionlist = csv_to_list("photoadditions", antilist,"./csvfiles/special_lists/",0,"?")
+    buildhairlist = csv_to_list("buildhair", antilist,"./csvfiles/special_lists/",0,"?")
+    buildoutfitlist = csv_to_list("buildoutfit", antilist,"./csvfiles/special_lists/",0,"?")
+    objectadditionslist = csv_to_list("objectadditions", antilist,"./csvfiles/special_lists/",0,"?")
+    humanadditionlist = csv_to_list("humanadditions", antilist,"./csvfiles/special_lists/",0,"?")
+    animaladditionlist = csv_to_list("animaladditions", antilist,"./csvfiles/special_lists/",0,"?")
+    buildaccessorielist = csv_to_list("buildaccessorie", antilist,"./csvfiles/special_lists/",0,"?")
+    minilocationadditionslist = csv_to_list("minilocationadditions", antilist,"./csvfiles/special_lists/",0,"?")
+    overalladditionlist = csv_to_list("overalladditions", antilist,"./csvfiles/special_lists/",0,"?")
+    imagetypemodelist = csv_to_list("imagetypemodes", antilist,"./csvfiles/special_lists/",0,"?")
+    miniactivitylist = csv_to_list("miniactivity", antilist,"./csvfiles/special_lists/",0,"?")
+    animalsuffixadditionlist = csv_to_list("animalsuffixadditions", antilist,"./csvfiles/special_lists/",0,"?")
+    buildfacepartlist = csv_to_list("buildfaceparts", antilist,"./csvfiles/special_lists/",0,"?")
+    buildfacelist = csv_to_list("buildface", antilist,"./csvfiles/special_lists/",0,"?")
+    
+    styleslist = csv_to_list("styles", antilist,"./csvfiles/templates/",0,"?")
 
+
+    
     # subjects
     mainchooserlist = []
     objectwildcardlist = []
@@ -185,6 +275,7 @@ def build_dynamic_prompt(
     generateanimal = True
     generatemanwoman = True
     generatemanwomanrelation = True
+    generatemanwomanmultiple = True
     generatefictionalcharacter = True
     generatenonfictionalcharacter = True
     generatehumanoids = True
@@ -195,258 +286,275 @@ def build_dynamic_prompt(
     generateconcepts = True
     generatepoemline = True
     generatesongline = True
+    generatecardname = True
 
     custominputprefixrepeats = 2
-    custominputprefixchance = "uncommon"
+    custominputprefixchance = 'uncommon'
 
-    imagetypechance = "normal"
+    imagetypechance = 'normal'
     generateimagetype = True
-    imagetypequalitychance = "rare"
+    imagetypequalitychance = 'rare'
     generateimagetypequality = True
     generateminilocationaddition = True
-    minilocationadditionchance = "unique"
-    artmovementprefixchance = "unique"
-    minivomitprefix1chance = "rare"
-    minivomitprefix2chance = "unique"
-    shotsizechance = "uncommon"
+    minilocationadditionchance = 'unique'
+    artmovementprefixchance = 'unique'
+    minivomitprefix1chance = 'rare'
+    minivomitprefix2chance = 'unique'
+    shotsizechance = 'uncommon'
 
-    subjectdescriptor1chance = "common"
-    subjectdescriptor2chance = "uncommon"
-    subjectbodytypechance = "normal"
-    subjectculturechance = "normal"
-    subjectconceptsuffixchance = "unique"
+    subjectdescriptor1chance = 'common'
+    subjectdescriptor2chance = 'uncommon'
+    subjectbodytypechance = 'normal'
+    subjectculturechance = 'normal'
+    subjectconceptsuffixchance = 'unique'
 
-    subjectlandscapeinsideshotchance = "unique"
-    subjectlandscapeaddonlocationchance = "normal"
-    subjectlandscapeaddonlocationdescriptorchance = "rare"
-    subjectlandscapeaddonlocationculturechance = "rare"
+    subjectlandscapeinsideshotchance = 'unique'
+    subjectlandscapeaddonlocationchance = 'normal'
+    subjectlandscapeaddonlocationdescriptorchance = 'rare'
+    subjectlandscapeaddonlocationculturechance = 'rare'
 
     objectadditionsrepeats = 2
-    objectadditionschance = "uncommon"
-    humanadditionchance = "rare"
-    overalladditionchance = "extraordinary"
+    objectadditionschance = 'uncommon'
+    humanadditionchance = 'rare'
+    overalladditionchance = 'extraordinary'
 
-    emojichance = "legendary"
-    joboractivitychance = "normal"
+    emojichance = 'legendary'
+    buildfacechance = 'legendary'
+    humanexpressionchance = 'rare'
+    joboractivitychance = 'normal'
+    humanvomitchance = 'rare'
 
     custominputmidrepeats = 2
-    custominputmidchance = "uncommon"
-    minivomitmidchance = "unique"
+    custominputmidchance = 'uncommon'
+    minivomitmidchance = 'unique'
 
-    outfitchance = "normal"
-    posechance = "uncommon"
-    hairchance = "normal"
-    accessorychance = "normal"
-    humanoidinsideshotchance = "legendary"
-    humanoidbackgroundchance = "uncommon"
+    outfitchance = 'normal'
+    posechance = 'uncommon'
+    hairchance = 'normal'
+    accessorychance = 'normal'
+    humanoidinsideshotchance = 'legendary'
+    humanoidbackgroundchance = 'uncommon'
 
-    landscapeminilocationchance = "uncommon"
-    generalminilocationchance = "rare"
+    landscapeminilocationchance = 'uncommon'
+    generalminilocationchance = 'rare'
 
-    timperiodchance = "normal"
-    focuschance = "normal"
-    directionchance = "normal"
-    moodchance = "normal"
-    minivomitsuffixchance = "unique"
-    artmovementchance = "normal"
-    lightingchance = "normal"
-    photoadditionchance = "common"
-    lenschance = "normal"
-    colorschemechance = "normal"
-    vomit1chance = "uncommon"
-    vomit2chance = "uncommon"
-    greatworkchance = "novel"
-    poemlinechance = "novel"
-    songlinechance = "novel"
-    quality1chance = "uncommon"
-    quality2chance = "uncommon"
+    timperiodchance = 'normal'
+    focuschance = 'normal'
+    directionchance = 'normal'
+    moodchance = 'normal'
+    minivomitsuffixchance = 'unique'
+    artmovementchance = 'normal'
+    lightingchance = 'normal'
+    photoadditionchance = 'common'
+    lenschance = 'normal'
+    colorschemechance = 'normal'
+    vomit1chance = 'uncommon'
+    vomit2chance= 'uncommon'
+    greatworkchance = 'novel'
+    poemlinechance = 'novel'
+    songlinechance = 'novel'
+    quality1chance = 'uncommon'
+    quality2chance = 'uncommon'
 
-    customstyle1chance = "uncommon"
-    customstyle2chance = "uncommon"
+    customstyle1chance = 'uncommon'
+    customstyle2chance = 'uncommon'
 
     custominputsuffixrepeats = 2
-    custominputsuffixchance = "uncommon"
+    custominputsuffixchance = 'uncommon'
 
-    artistsatbackchance = "uncommon"
+    artistsatbackchance = 'uncommon'
 
     for item in config:
         # objects
-        if item[0] == "subject_vehicle" and item[1] != "on":
+        if item[0] == 'subject_vehicle' and item[1] != 'on':
             generatevehicle = False
-        if item[0] == "subject_object" and item[1] != "on":
+        if item[0] == 'subject_object' and item[1] != 'on':
             generateobject = False
-        if item[0] == "subject_food" and item[1] != "on":
+        if item[0] == 'subject_food' and item[1] != 'on':
             generatefood = False
-        if item[0] == "subject_building" and item[1] != "on":
+        if item[0] == 'subject_building' and item[1] != 'on':
             generatebuilding = False
-        if item[0] == "subject_space" and item[1] != "on":
+        if item[0] == 'subject_space' and item[1] != 'on':
             generatespace = False
-        if item[0] == "subject_flora" and item[1] != "on":
+        if item[0] == 'subject_flora' and item[1] != 'on':
             generateflora = False
         # animals
-        if item[0] == "subject_animal" and item[1] != "on":
+        if item[0] == 'subject_animal' and item[1] != 'on':
             generateanimal = False
         # humanoids
-        if item[0] == "subject_manwoman" and item[1] != "on":
+        if item[0] == 'subject_manwoman' and item[1] != 'on':
             generatemanwoman = False
-        if item[0] == "subject_manwomanrelation" and item[1] != "on":
+        if item[0] == 'subject_manwomanrelation' and item[1] != 'on':
             generatemanwomanrelation = False
-        if item[0] == "subject_fictional" and item[1] != "on":
+        if item[0] == 'subject_manwomanmultiple' and item[1] != 'on':
+            generatemanwomanmultiple = False
+        if item[0] == 'subject_fictional' and item[1] != 'on':
             generatefictionalcharacter = False
-        if item[0] == "subject_nonfictional" and item[1] != "on":
+        if item[0] == 'subject_nonfictional' and item[1] != 'on':
             generatenonfictionalcharacter = False
-        if item[0] == "subject_humanoid" and item[1] != "on":
+        if item[0] == 'subject_humanoid' and item[1] != 'on':
             generatehumanoids = False
-        if item[0] == "subject_job" and item[1] != "on":
+        if item[0] == 'subject_job' and item[1] != 'on':
             generatejob = False
-        if item[0] == "subject_firstnames" and item[1] != "on":
+        if item[0] == 'subject_firstnames' and item[1] != 'on':
             generatefirstnames = False
         # landscape
-        if item[0] == "subject_landscape" and item[1] != "on":
+        if item[0] == 'subject_landscape' and item[1] != 'on':
             generatelandscape = False
         # concept
-        if item[0] == "subject_event" and item[1] != "on":
+        if item[0] == 'subject_event' and item[1] != 'on':
             generateevent = False
-        if item[0] == "subject_concept" and item[1] != "on":
+        if item[0] == 'subject_concept' and item[1] != 'on':
             generateconcepts = False
-        if item[0] == "poemline" and item[1] != "on":
+        if item[0] == 'subject_poemline' and item[1] != 'on':
             generatepoemline = False
-        if item[0] == "songline" and item[1] != "on":
+        if item[0] == 'subject_songline' and item[1] != 'on':
             generatesongline = False
-
+        if item[0] == 'subject_cardname' and item[1] != 'on':
+            generatecardname = False
+        
         # main list stuff
-        if item[0] == "custominputprefixrepeats":
+        if item[0] == 'custominputprefixrepeats':
             custominputprefixrepeats = int(item[1])
-        if item[0] == "custominputprefixchance":
+        if item[0] == 'custominputprefixchance':
             custominputprefixchance = item[1]
-            if custominputprefixchance == "never":
+            if(custominputprefixchance == 'never'):
                 generatecustominputprefix = False
-        if item[0] == "imagetypechance":
+        if item[0] == 'imagetypechance':
             imagetypechance = item[1]
-            if imagetypechance == "never":
+            if(imagetypechance == 'never'):
                 generateimagetype = False
-        if item[0] == "imagetypequalitychance":
+        if item[0] == 'imagetypequalitychance':
             imagetypequalitychance = item[1]
-            if imagetypequalitychance == "never":
+            if(imagetypequalitychance == 'never'):
                 generateimagetypequality = False
-        if item[0] == "minilocationadditionchance":
+        if item[0] == 'minilocationadditionchance':
             minilocationadditionchance = item[1]
-        if item[0] == "artmovementprefixchance":
+        if item[0] == 'artmovementprefixchance':
             artmovementprefixchance = item[1]
-        if item[0] == "minivomitprefix1chance":
+        if item[0] == 'minivomitprefix1chance':
             minivomitprefix1chance = item[1]
-        if item[0] == "minivomitprefix2chance":
+        if item[0] == 'minivomitprefix2chance':
             minivomitprefix2chance = item[1]
-
-        if item[0] == "shotsizechance":
+        
+        if item[0] == 'shotsizechance':
             shotsizechance = item[1]
 
-        if item[0] == "subjectdescriptor1chance":
+        if item[0] == 'subjectdescriptor1chance':
             subjectdescriptor1chance = item[1]
-        if item[0] == "subjectdescriptor2chance":
+        if item[0] == 'subjectdescriptor2chance':
             subjectdescriptor2chance = item[1]
-        if item[0] == "subjectbodytypechance":
+        if item[0] == 'subjectbodytypechance':
             subjectbodytypechance = item[1]
-        if item[0] == "subjectculturechance":
+        if item[0] == 'subjectculturechance':
             subjectculturechance = item[1]
-        if item[0] == "subjectconceptsuffixchance":
+        if item[0] == 'subjectconceptsuffixchance':
             subjectconceptsuffixchance = item[1]
 
-        if item[0] == "subjectlandscapeinsideshotchance":
+        if item[0] == 'subjectlandscapeinsideshotchance':
             subjectlandscapeinsideshotchance = item[1]
-        if item[0] == "subjectlandscapeaddonlocationchance":
+        if item[0] == 'subjectlandscapeaddonlocationchance':
             subjectlandscapeaddonlocationchance = item[1]
-        if item[0] == "subjectlandscapeaddonlocationdescriptorchance":
+        if item[0] == 'subjectlandscapeaddonlocationdescriptorchance':
             subjectlandscapeaddonlocationdescriptorchance = item[1]
-        if item[0] == "subjectlandscapeaddonlocationculturechance":
+        if item[0] == 'subjectlandscapeaddonlocationculturechance':
             subjectlandscapeaddonlocationculturechance = item[1]
 
-        if item[0] == "objectadditionsrepeats":
+        if item[0] == 'objectadditionsrepeats':
             objectadditionsrepeats = int(item[1])
-        if item[0] == "objectadditionschance":
+        if item[0] == 'objectadditionschance':
             objectadditionschance = item[1]
-        if item[0] == "humanadditionchance":
+        if item[0] == 'humanadditionchance':
             humanadditionchance = item[1]
-        if item[0] == "overalladditionchance":
+        if item[0] == 'overalladditionchance':
             overalladditionchance = item[1]
 
-        if item[0] == "emojichance":
+        if item[0] == 'emojichance':
             emojichance = item[1]
-        if item[0] == "joboractivitychance":
+            if(hardturnoffemojis==True):
+                emojichance='never'
+        if item[0] == 'buildfacechance':
+            buildfacechance = item[1]
+        if item[0] == 'humanexpressionchance':
+            humanexpressionchance = item[1]
+        if item[0] == 'humanvomitchance':
+            humanvomitchance = item[1]
+        if item[0] == 'joboractivitychance':
             joboractivitychance = item[1]
 
-        if item[0] == "custominputmidrepeats":
+        if item[0] == 'custominputmidrepeats':
             custominputmidrepeats = int(item[1])
-        if item[0] == "custominputmidchance":
+        if item[0] == 'custominputmidchance':
             custominputmidchance = item[1]
-        if item[0] == "minivomitmidchance":
+        if item[0] == 'minivomitmidchance':
             minivomitmidchance = item[1]
-
-        if item[0] == "outfitchance":
+        
+        if item[0] == 'outfitchance':
             outfitchance = item[1]
-        if item[0] == "posechance":
+        if item[0] == 'posechance':
             posechance = item[1]
-        if item[0] == "hairchance":
+        if item[0] == 'hairchance':
             hairchance = item[1]
-        if item[0] == "accessorychance":
+        if item[0] == 'accessorychance':
             accessorychance = item[1]
-        if item[0] == "humanoidinsideshotchance":
+        if item[0] == 'humanoidinsideshotchance':
             humanoidinsideshotchance = item[1]
-        if item[0] == "humanoidbackgroundchance":
+        if item[0] == 'humanoidbackgroundchance':
             humanoidbackgroundchance = item[1]
 
-        if item[0] == "landscapeminilocationchance":
+        if item[0] == 'landscapeminilocationchance':
             landscapeminilocationchance = item[1]
-        if item[0] == "generalminilocationchance":
+        if item[0] == 'generalminilocationchance':
             generalminilocationchance = item[1]
 
-        if item[0] == "timperiodchance":
+        if item[0] == 'timperiodchance':
             timperiodchance = item[1]
-        if item[0] == "focuschance":
+        if item[0] == 'focuschance':
             focuschance = item[1]
-        if item[0] == "directionchance":
+        if item[0] == 'directionchance':
             directionchance = item[1]
-        if item[0] == "moodchance":
+        if item[0] == 'moodchance':
             moodchance = item[1]
-        if item[0] == "minivomitsuffixchance":
+        if item[0] == 'minivomitsuffixchance':
             minivomitsuffixchance = item[1]
-        if item[0] == "artmovementchance":
+        if item[0] == 'artmovementchance':
             artmovementchance = item[1]
-        if item[0] == "lightingchance":
+        if item[0] == 'lightingchance':
             lightingchance = item[1]
-        if item[0] == "photoadditionchance":
+        if item[0] == 'photoadditionchance':
             photoadditionchance = item[1]
-        if item[0] == "lenschance":
+        if item[0] == 'lenschance':
             lenschance = item[1]
-        if item[0] == "colorschemechance":
+        if item[0] == 'colorschemechance':
             colorschemechance = item[1]
-        if item[0] == "vomit1chance":
+        if item[0] == 'vomit1chance':
             vomit1chance = item[1]
-        if item[0] == "vomit2chance":
+        if item[0] == 'vomit2chance':
             vomit2chance = item[1]
-        if item[0] == "greatworkchance":
+        if item[0] == 'greatworkchance':
             greatworkchance = item[1]
-        if item[0] == "poemlinechance":
+        if item[0] == 'poemlinechance':
             poemlinechance = item[1]
-        if item[0] == "songlinechance":
+        if item[0] == 'songlinechance':
             songlinechance = item[1]
-        if item[0] == "quality1chance":
+        if item[0] == 'quality1chance':
             quality1chance = item[1]
-        if item[0] == "quality2chance":
+        if item[0] == 'quality2chance':
             quality2chance = item[1]
 
-        if item[0] == "customstyle1chance":
+        if item[0] == 'customstyle1chance':
             customstyle1chance = item[1]
-        if item[0] == "customstyle2chance":
+        if item[0] == 'customstyle2chance':
             customstyle2chance = item[1]
-
-        if item[0] == "custominputsuffixrepeats":
+        
+        if item[0] == 'custominputsuffixrepeats':
             custominputsuffixrepeats = int(item[1])
-        if item[0] == "custominputsuffixchance":
+        if item[0] == 'custominputsuffixchance':
             custominputsuffixchance = item[1]
 
-        if item[0] == "artistsatbackchance":
+        if item[0] == 'artistsatbackchance':
             artistsatbackchance = item[1]
+
 
     generatevehicle = bool(vehiclelist) and generatevehicle
     generateobject = bool(objectlist) and generateobject
@@ -454,40 +562,39 @@ def build_dynamic_prompt(
     generatebuilding = bool(buildinglist) and generatebuilding
     generatespace = bool(spacelist) and generatespace
     generateflora = bool(floralist) and generateflora
-    generateobject = (
-        generatevehicle or generateobject or generatefood or generatebuilding or generatespace or generateflora
-    )
+    generateobject = generatevehicle or generateobject or generatefood or generatebuilding or generatespace or generateflora
+    
 
-    if generatevehicle:
+    if(generatevehicle):
         objectwildcardlist.append("-vehicle-")
         hybridlist.append("-vehicle-")
         addontolocationlist.append("-vehicle-")
-
-    if generateobject:
+    
+    if(generateobject):
         objectwildcardlist.append("-object-")
         hybridlist.append("-object-")
 
-    if generatefood:
+    if(generatefood):
         objectwildcardlist.append("-food-")
         hybridlist.append("-food-")
-
-    if generatespace:
+    
+    if(generatespace):
         objectwildcardlist.append("-space-")
         hybridlist.append("-space-")
         addontolocationlist.append("-space-")
 
-    if generatebuilding:
+    if(generatebuilding):
         objectwildcardlist.append("-building-")
         hybridlist.append("-building-")
         addontolocationlist.append("-building-")
         addontolocationinsidelist.append("-building-")
-
-    if generateflora:
+    
+    if(generateflora):
         objectwildcardlist.append("-flora-")
         hybridlist.append("-flora-")
         addontolocationlist.append("-flora-")
-
-    if generateobject:
+    
+    if(generateobject):
         mainchooserlist.append("object")
 
     generatefictionalcharacter = bool(fictionallist) and generatefictionalcharacter
@@ -495,86 +602,93 @@ def build_dynamic_prompt(
     generatehumanoids = bool(humanoidlist) and generatehumanoids
     generatemanwoman = bool(manwomanlist) and generatemanwoman
     generatemanwomanrelation = bool(manwomanrelationlist) and generatemanwomanrelation
+    generatemanwomanmultiple = bool(manwomanmultiplelist) and generatemanwomanmultiple
     generatejob = bool(joblist) and generatejob
     generatefirstnames = bool(firstnamelist) and generatefirstnames
-    generatehumanoid = (
-        generatefictionalcharacter
-        or generatenonfictionalcharacter
-        or generatehumanoids
-        or generatemanwoman
-        or generatejob
-        or generatemanwomanrelation
-        or generatefirstnames
-    )
+    generatehumanoid = generatefictionalcharacter or generatenonfictionalcharacter or generatehumanoids or generatemanwoman or generatejob or generatemanwomanrelation or generatefirstnames or generatemanwomanmultiple
 
-    if generatefictionalcharacter:
+
+    if(generatefictionalcharacter):
         humanoidsubjectchooserlist.append("fictional")
         hybridlist.append("-fictional-")
         hybridhumanlist.append("-fictional-")
 
-    if generatefictionalcharacter:
+    if(generatefictionalcharacter):
         humanoidsubjectchooserlist.append("non fictional")
         hybridlist.append("-nonfictional-")
         hybridhumanlist.append("-nonfictional-")
-
-    if generatehumanoids:
+    
+    if(generatehumanoids):
         humanoidsubjectchooserlist.append("humanoid")
         hybridlist.append("-humanoid-")
         hybridhumanlist.append("-humanoid-")
-
-    if generatemanwoman:
+    
+    if(generatemanwoman):
         humanoidsubjectchooserlist.append("human")
 
-    if generatemanwomanrelation:
+    if(generatemanwomanrelation):
         humanoidsubjectchooserlist.append("manwomanrelation")
+    
+    if(generatemanwomanmultiple):
+        humanoidsubjectchooserlist.append("manwomanmultiple")
 
-    if generatejob:
+    if(generatejob):
         humanoidsubjectchooserlist.append("job")
-
-    if generatehumanoid:
+   
+    if(generatehumanoid):
         mainchooserlist.append("humanoid")
 
-    if generatefirstnames:
+    if(generatefirstnames):
         humanoidsubjectchooserlist.append("firstname")
-
+    
+    
     generateanimal = bool(animallist) and generateanimal
 
-    if generateanimal:
+    if(generateanimal):
         mainchooserlist.append("animal")
         hybridlist.append("-animal-")
 
     generatelandscape = bool(locationlist) and generatelandscape
 
-    if generatelandscape:
+    if(generatelandscape):
         mainchooserlist.append("landscape")
         addontolocationlist.append("-location-")
         addontolocationinsidelist.append("-location-")
-
+    
     generateevent = bool(eventlist) and generateevent
     generateconcepts = bool(conceptprefixlist) and bool(conceptsuffixlist) and generateconcepts
-    generatepoemline = bool(poemlinelist) and generatepoemline
+    generatepoemline = bool(poemlinelist) and generatepoemline 
     generatesongline = bool(songlinelist) and generatesongline
+    generatecardname = bool(cardnamelist) and generatecardname
+    
+
 
     generateconcept = generateevent or generateconcepts or generatepoemline or generatesongline
 
-    if generateevent:
+    if(generateevent):
         eventsubjectchooserlist.append("event")
-
-    if generateconcepts:
+    
+    if(generateconcepts):
         eventsubjectchooserlist.append("concept")
 
-    if generatepoemline:
+    if(generatepoemline):
         eventsubjectchooserlist.append("poemline")
-
-    if generatesongline:
+    
+    if(generatesongline):
         eventsubjectchooserlist.append("songline")
+    
+    if(generatecardname):
+        eventsubjectchooserlist.append("cardname")
 
-    if generateconcept:
+    if(generateconcept):
         mainchooserlist.append("concept")
 
+
+
     # determine wether we have a special mode or not
-    if random.randint(1, int(imagemodechance)) == 1 and imagetype == "all" and giventypeofimage == "":
+    if(random.randint(1,int(imagemodechance)) == 1 and imagetype == "all" and giventypeofimage == ""):
         imagetype = random.choice(imagetypemodelist)  # override imagetype with a random "mode" value
+
 
     specialmode = False
     templatemode = False
@@ -585,47 +699,55 @@ def build_dynamic_prompt(
     photofantasymode = False
     massivemadnessmode = False
     onlysubjectmode = False
+    stylesmode = False
+
     # determine wether we should go for a template or not. Not hooked up to insanitylevel
-    if imagetype == "only templates mode":
+    if(imagetype == "only templates mode"):
         specialmode = True
         templatemode = True
         print("Running with a randomized template instead of a randomized prompt")
 
-    if imagetype == "art blaster mode":
+    if(imagetype == "art blaster mode"):
         specialmode = True
         artblastermode = True
         print("Running in art blaster mode")
 
-    if imagetype == "unique art mode":
+    if(imagetype == "unique art mode"):
         specialmode = True
         uniqueartmode = True
         print("Running in unique art mode")
 
-    if imagetype == "quality vomit mode":
+    if(imagetype == "quality vomit mode"):
         specialmode = True
         qualityvomitmode = True
         print("Running in quality vomit mode")
 
-    if imagetype == "color cannon mode":
+    if(imagetype == "color cannon mode"):
         specialmode = True
         colorcannonmode = True
         print("Running in color cannon mode")
 
-    if imagetype == "photo fantasy mode":
+    if(imagetype == "photo fantasy mode"):
         specialmode = True
         photofantasymode = True
         print("Running in photo fantasy mode")
 
-    if imagetype == "massive madness mode":
+    if(imagetype == "massive madness mode"):
         specialmode = True
         massivemadnessmode = True
         print("Running in massive madness mode")
         print("Are you ready for this?")
 
-    if imagetype == "subject only mode":
+    if(imagetype == "subject only mode"):
         specialmode = True
         onlysubjectmode = True
         print("Running in only subject mode")
+
+    if(imagetype == "fixed styles mode"):
+        specialmode = True
+        stylesmode = True
+        print("Running with a randomized style instead of a randomized prompt")
+
 
     # main stuff
     generatetype = not specialmode
@@ -652,6 +774,9 @@ def build_dynamic_prompt(
     generateshot = bool(shotsizelist) and not specialmode
     generatetimeperiod = bool(timeperiodlist) and not specialmode
     generateemoji = bool(emojilist) and not templatemode
+    generateface = bool(buildfacelist) and not specialmode
+    generatehumanexpression = bool(humanexpressionlist) and not specialmode
+    generatehumanvomit = bool(humanvomitlist) and not specialmode
 
     # specials:
     generatebackground = bool(backgroundtypelist) and not specialmode
@@ -666,15 +791,18 @@ def build_dynamic_prompt(
     generategreatwork = bool(greatworklist) and not specialmode
     generatepoemline = bool(poemlinelist) and not specialmode
     generatesongline = bool(songlinelist) and not specialmode
-
+    generatecardname = bool(cardnamelist) and not specialmode
+    
     generateminilocationaddition = bool(minilocationadditionslist) and not specialmode
     generateminivomit = bool(minivomitlist) and not specialmode
     generateimagetypequality = bool(imagetypequalitylist) and not specialmode and generateimagetypequality
     generateoveralladdition = bool(overalladditionlist) and not specialmode
     generateimagetype = bool(imagetypelist) and not specialmode and generateimagetype
 
+
     # Smart subject logic
-    if givensubject != "" and smartsubject == True:
+    if(givensubject != "" and smartsubject == True):
+    
         # Remove any list that has a matching word in the list
         # Remove any list/logic with keywords, such as:
         # wearing, bodytype, pose, location, hair, background
@@ -682,7 +810,7 @@ def build_dynamic_prompt(
         # first get all the words
 
         # Split the string by commas and spaces
-        words = re.split(r"[,\s]+", givensubject)
+        words = re.split(r'[,\s]+', givensubject)
         # Remove leading/trailing whitespaces from each word
         words = [word.strip() for word in words]
 
@@ -693,8 +821,8 @@ def build_dynamic_prompt(
         givensubjectlistsinglewords = list(set(words))
 
         # now get all words clumped together by commas
-        if "," in givensubject:
-            allwords = givensubject.split(",")
+        if ',' in givensubject:
+            allwords = givensubject.split(',')
         else:
             allwords = [givensubject]
         # Remove leading/trailing whitespaces from each word and convert to lowercase
@@ -705,126 +833,134 @@ def build_dynamic_prompt(
 
         givensubjectlist = givensubjectlistsinglewords + givensubjectlistwords
 
-        # Check only for the lists that make sense?
 
+        # Check only for the lists that make sense?
+        
         # outfit
         foundinlist = any(word.lower() in [item.lower() for item in outfitlist] for word in givensubjectlist)
-        keywordslist = ["wearing", "outfit", "dressed"]
+        keywordslist = ["wearing","outfit", "dressed"]
         keywordsinstring = any(word.lower() in givensubject.lower() for word in keywordslist)
-        if foundinlist == True or keywordsinstring == True:
+        if(foundinlist == True or keywordsinstring == True):
             generateoutfit = False
-
+        
         # bodytype
         foundinlist = any(word.lower() in [item.lower() for item in bodytypelist] for word in givensubjectlist)
-        keywordslist = ["bodytype", "body type"]
+        keywordslist = ["bodytype","body type"]
         keywordsinstring = any(word.lower() in givensubject.lower() for word in keywordslist)
-        if foundinlist == True or keywordsinstring == True:
+        if(foundinlist == True or keywordsinstring == True):
             generatebodytype = False
 
         # hair
         foundinlist = any(word.lower() in [item.lower() for item in hairstylelist] for word in givensubjectlist)
         keywordslist = ["hair"]
         keywordsinstring = any(word.lower() in givensubject.lower() for word in keywordslist)
-        if foundinlist == True or keywordsinstring == True:
+        if(foundinlist == True or keywordsinstring == True):
             generatehairstyle = False
-
+        
         # descriptorlist
         foundinlist = any(word.lower() in [item.lower() for item in descriptorlist] for word in givensubjectlist)
         foundinlist2 = any(word.lower() in [item.lower() for item in culturelist] for word in givensubjectlist)
-        if foundinlist == True or foundinlist2 == True:
+        if(foundinlist == True or foundinlist2 == True):
             generatedescriptors = False
 
         # background
         foundinlist = any(word.lower() in [item.lower() for item in locationlist] for word in givensubjectlist)
         foundinlist2 = any(word.lower() in [item.lower() for item in buildinglist] for word in givensubjectlist)
-        keywordslist = ["location", "background", "inside"]
+        keywordslist = ["location","background", "inside"]
         keywordsinstring = any(word.lower() in givensubject.lower() for word in keywordslist)
-        if foundinlist == True or foundinlist2 == True or keywordsinstring == True:
+        if(foundinlist == True or foundinlist2 == True or keywordsinstring == True):
             generatebackground = False
             generateinsideshot = False
 
         # accessorielist
         foundinlist = any(word.lower() in [item.lower() for item in accessorielist] for word in givensubjectlist)
-        if foundinlist == True:
+        if(foundinlist == True):
             generateaccessorie = False
 
         # lenslist
         foundinlist = any(word.lower() in [item.lower() for item in lenslist] for word in givensubjectlist)
-        if foundinlist == True:
+        if(foundinlist == True):
             generatelens = False
 
         # lightinglist
         foundinlist = any(word.lower() in [item.lower() for item in lightinglist] for word in givensubjectlist)
         keywordslist = ["lighting"]
         keywordsinstring = any(word.lower() in givensubject.lower() for word in keywordslist)
-        if foundinlist == True or keywordsinstring == True:
+        if(foundinlist == True or keywordsinstring == True):
             generatelighting = False
 
         # mood
         foundinlist = any(word.lower() in [item.lower() for item in moodlist] for word in givensubjectlist)
         keywordslist = ["mood"]
         keywordsinstring = any(word.lower() in givensubject.lower() for word in keywordslist)
-        if foundinlist == True or keywordsinstring == True:
+        if(foundinlist == True or keywordsinstring == True):
             generatemood = False
+
 
         # poselist
         foundinlist = any(word.lower() in [item.lower() for item in poselist] for word in givensubjectlist)
         keywordslist = ["pose", "posing"]
         keywordsinstring = any(word.lower() in givensubject.lower() for word in keywordslist)
-        if foundinlist == True or keywordsinstring == True:
+        if(foundinlist == True or keywordsinstring == True):
             generatepose = False
 
         # qualitylist
         foundinlist = any(word.lower() in [item.lower() for item in qualitylist] for word in givensubjectlist)
         keywordslist = ["quality"]
         keywordsinstring = any(word.lower() in givensubject.lower() for word in keywordslist)
-        if foundinlist == True or keywordsinstring == True:
+        if(foundinlist == True or keywordsinstring == True):
             generatequality = False
 
         # shotsize
         foundinlist = any(word.lower() in [item.lower() for item in shotsizelist] for word in givensubjectlist)
         keywordslist = ["shot"]
         keywordsinstring = any(word.lower() in givensubject.lower() for word in keywordslist)
-        if foundinlist == True or keywordsinstring == True:
+        if(foundinlist == True or keywordsinstring == True):
             generateshot = False
 
         # timeperiodlist
         foundinlist = any(word.lower() in [item.lower() for item in timeperiodlist] for word in givensubjectlist)
-        if foundinlist == True:
+        if(foundinlist == True):
             generatetimeperiod = False
 
         # vomit
         foundinlist = any(word.lower() in [item.lower() for item in vomitlist] for word in givensubjectlist)
-        if foundinlist == True:
+        if(foundinlist == True):
             generatevomit = False
 
         # directionlist
         foundinlist = any(word.lower() in [item.lower() for item in directionlist] for word in givensubjectlist)
-        if foundinlist == True:
+        if(foundinlist == True):
             generatedirection = False
 
         # focus
         foundinlist = any(word.lower() in [item.lower() for item in focuslist] for word in givensubjectlist)
-        if foundinlist == True:
+        if(foundinlist == True):
             generatefocus = False
 
         # artmovementlist
         foundinlist = any(word.lower() in [item.lower() for item in artmovementlist] for word in givensubjectlist)
-        if foundinlist == True:
+        if(foundinlist == True):
             generateartmovement = False
-
+        
         # camera
         foundinlist = any(word.lower() in [item.lower() for item in cameralist] for word in givensubjectlist)
-        if foundinlist == True:
+        if(foundinlist == True):
             generatecamera = False
 
         # colorschemelist
         foundinlist = any(word.lower() in [item.lower() for item in colorschemelist] for word in givensubjectlist)
-        if foundinlist == True:
+        if(foundinlist == True):
             generatecolorscheme = False
 
-    completeprompt = ""
 
+
+
+    completeprompt = ""
+    
+    
+  
+    
     promptstocompound = int(promptcompounderlevel)
     compoundcounter = 0
 
@@ -838,14 +974,18 @@ def build_dynamic_prompt(
         hybridorswap = ""
         artistmode = "normal"
         insideshot = 0
-
+        buildingfullmode = False
+        subjectchooser = ""
+        mainchooser = ""
+      
         completeprompt += prefixprompt
 
         completeprompt += ", "
 
-        if templatemode == True:
-            templatelist = csv_to_list("templates", antilist, "./csvfiles/templates/", 1, ";", True)
+        if(templatemode==True):
+            templatelist = csv_to_list("templates", antilist,"./csvfiles/templates/",1,";",True)
 
+            
             # templateenvironments = [templateenvironment[1] for templateenvironment in templatelist]
             # templateenvironmentsources = [templateenvironmentsource[2] for templateenvironmentsource in templatelist]
             # templatesubjecttypes = [templatesubjecttype[3] for templatesubjecttype in templatelist]
@@ -856,34 +996,10 @@ def build_dynamic_prompt(
             # takes the prompt based on filters:
             # targettemplateenvironment: either civitai model or website
             # templateenvironmentsources: either
-            templateprompts = [
-                templateprompt[0]
-                for templateprompt in templatelist
-                if (
-                    (templateprompt[1] == targettemplateenvironment or targettemplateenvironment == "all")
-                    and (templateprompt[2] == templateenvironmentsources or templateenvironmentsources == "all")
-                    and (templateprompt[3] == forcesubject or forcesubject == "all")
-                )
-            ]
-            templatepromptcreator = [
-                templateprompt[1]
-                for templateprompt in templatelist
-                if (
-                    (templateprompt[1] == targettemplateenvironment or targettemplateenvironment == "all")
-                    and (templateprompt[2] == templateenvironmentsources or templateenvironmentsources == "all")
-                    and (templateprompt[3] == forcesubject or forcesubject == "all")
-                )
-            ]
-            templatesubjects = [
-                templateprompt[4]
-                for templateprompt in templatelist
-                if (
-                    (templateprompt[1] == targettemplateenvironment or targettemplateenvironment == "all")
-                    and (templateprompt[2] == templateenvironmentsources or templateenvironmentsources == "all")
-                    and (templateprompt[3] == forcesubject or forcesubject == "all")
-                )
-            ]
-
+            templateprompts = [templateprompt[0] for templateprompt in templatelist if( (templateprompt[1] == targettemplateenvironment or targettemplateenvironment =="all") and (templateprompt[2] == templateenvironmentsources or templateenvironmentsources == "all") and (templateprompt[3] == forcesubject or forcesubject == "all") ) ]
+            templatepromptcreator = [templateprompt[1] for templateprompt in templatelist if( (templateprompt[1] == targettemplateenvironment or targettemplateenvironment =="all") and (templateprompt[2] == templateenvironmentsources or templateenvironmentsources == "all") and (templateprompt[3] == forcesubject or forcesubject == "all") ) ]
+            templatesubjects= [templateprompt[4] for templateprompt in templatelist if( (templateprompt[1] == targettemplateenvironment or targettemplateenvironment =="all") and (templateprompt[2] == templateenvironmentsources or templateenvironmentsources == "all") and (templateprompt[3] == forcesubject or forcesubject == "all") )]
+            
             # choose the template
             chosentemplate = random.choice(templateprompts)
             templateindex = templateprompts.index(chosentemplate)
@@ -891,418 +1007,593 @@ def build_dynamic_prompt(
             print("Processing a prompt that was inspired from: " + templatepromptcreator[templateindex])
 
             # if there is a subject override, then replace the subject with that
-            if givensubject == "":
-                completeprompt += chosentemplate.replace("-subject-", templatesubjects[templateindex])
+            if(givensubject==""):
+                completeprompt += chosentemplate.replace("-subject-",templatesubjects[templateindex] )
             else:
-                completeprompt += chosentemplate.replace("-subject-", givensubject)
+                completeprompt += chosentemplate.replace("-subject-",givensubject )
+
 
         # custom prefix list
         for i in range(custominputprefixrepeats):
-            if chance_roll(insanitylevel, custominputprefixchance) and generatecustominputprefix == True:
+            if(chance_roll(insanitylevel, custominputprefixchance) and generatecustominputprefix == True):
                 completeprompt += random.choice(custominputprefixlist) + ", "
 
-        if insanitylevel == 0:
-            insanitylevel = random.randint(1, 10)  # 10 = add everything, 1 is add almost nothing
-        insanitylevel3 = int((insanitylevel / 3) + 1.20)
+
+
+        if(insanitylevel==0):
+            insanitylevel =  random.randint(1, 10)  # 10 = add everything, 1 is add almost nothing
+        insanitylevel3 = int((insanitylevel/3) + 1.20)
 
         # print("Setting insanity level to " + str(insanitylevel))
 
         # main chooser: 0 object, 1 animal, 2 humanoid, 3 landscape, 4 event/concept
-        # mainchooserlist = ["object","animal","humanoid", "landscape", "concept"]
-        mainchooser = random.choice(mainchooserlist)
+        #mainchooserlist = ["object","animal","humanoid", "landscape", "concept"]
 
-        if forcesubject != "" and forcesubject != "all":
-            mainchooser = forcesubject
+        # ["popular", "3D",	"abstract",	"angular", "anime"	,"architecture",	"art nouveau",	"art deco",	"baroque",	"bauhaus", 	"cartoon",	"character",	"children's illustration", 	"cityscape", 	"clean",	"cloudscape",	"collage",	"colorful",	"comics",	"cubism",	"dark",	"detailed", 	"digital",	"expressionism",	"fantasy",	"fashion",	"fauvism",	"figurativism",	"gore",	"graffiti",	"graphic design",	"high contrast",	"horror",	"impressionism",	"installation",	"landscape",	"light",	"line drawing",	"low contrast",	"luminism",	"magical realism",	"manga",	"melanin",	"messy",	"monochromatic",	"nature",	"photography",	"pop art",	"portrait",	"primitivism",	"psychedelic",	"realism",	"renaissance",	"romanticism",	"scene",	"sci-fi",	"sculpture",	"seascape",	"space",	"stained glass",	"still life",	"storybook realism",	"street art",	"streetscape",	"surrealism",	"symbolism",	"textile",	"ukiyo-e",	"vibrant",	"watercolor",	"whimsical"]
+    
+        # Some new logic, lets base the main chooser list on the chosen art category, to make it more cohorent
+        # first for humanoids
+        artiststylelistforchecking = ["popular", "3D",	"anime"	"art nouveau",	"art deco",	"character", "fantasy",	"fashion", "manga", "photography","portrait","sci-fi"]
+        if((artiststyleselector in artiststylelistforchecking
+           or artists in artiststylelistforchecking)
+           and (forcesubject == "all" or forcesubject == "")):
+
+            # remove the shizzle based on chance?
+            # we want it to be MORE diverce when the insanity level raises
+            # in this case, raise the chance for a humanoid, gets more wierd when going above 5
+
+            if(random.randint(0,6) > max(2,insanitylevel -2) and "concept" in mainchooserlist):
+                mainchooserlist.remove("concept")
+            if(random.randint(0,6) > max(2,insanitylevel -2) and "landscape" in mainchooserlist):
+                mainchooserlist.remove("landscape")
+            if(random.randint(0,6) > max(2,insanitylevel -2) and "object" in mainchooserlist):
+                mainchooserlist.remove("object")
+            if(random.randint(0,6) > max(2,insanitylevel -2) and "animal" in mainchooserlist):
+                mainchooserlist.remove("animal")
+        
+        # second for landscapes
+        # Some new logic, lets base the main chooser list on the chosen art category, to make it more cohorent
+        artiststylelistforchecking = ["architecture","bauhaus", "cityscape", "cinema", "cloudscape","impressionism",	"installation",	"landscape","magical realism",	"nature", "romanticism","seascape",	"space",	"streetscape"]
+    
+        if((artiststyleselector in artiststylelistforchecking
+           or artists in artiststylelistforchecking)
+           and (forcesubject == "all" or forcesubject == "")):
+ 
+            # remove the shizzle based on chance?
+            # we want it to be MORE diverce when the insanity level raises
+            # in this case, raise the chance for a landscape, gets more wierd when going above 5
+            if(random.randint(0,6) > max(2,insanitylevel -2) and "concept" in mainchooserlist):
+                mainchooserlist.remove("concept")
+            if(random.randint(0,6) > max(2,insanitylevel -2) and "animal" in mainchooserlist):
+                mainchooserlist.remove("animal")
+            if(random.randint(0,6) > max(2,insanitylevel -2) and "object" in mainchooserlist):
+                mainchooserlist.remove("object")
+            if(random.randint(0,8) > max(2,insanitylevel -2) and "humanoid" in mainchooserlist):
+                mainchooserlist.remove("humanoid")
+ 
+
+        # choose the main subject type
+        mainchooser = random.choice(mainchooserlist)
+        
+        if(forcesubject != "" and forcesubject != "all"):
+            mainchooser = forcesubject    
         # 0 object, 1 animal, 2 animal as human, 3 ManWoman, 4 Job, 5 fictional, 6 non fictional, 7 humanoid, 8 landscape, 9 event
-        if mainchooser == "object":
+        if(mainchooser == "object"):
             subjectchooser = "object"
-        if mainchooser == "animal":
+        if(mainchooser == "animal"):
             # sometimes interpret the animal as a human
-            if random.randint(0, 5) < 5:
+            if(random.randint(0,5) < 5):
                 subjectchooser = "animal"
             else:
                 subjectchooser = "animal as human"
-        if mainchooser == "humanoid":
-            # humanoidsubjectchooserlist = ["human", "job", "fictional", "non fictional", "humanoid", "manwomanrelation", "firstname"]
-            subjectchooser = random.choice(humanoidsubjectchooserlist)
-            if subtypehumanoid != "all":
-                if subtypehumanoid == "generic humans":
-                    subjectchooser = "human"
-                if subtypehumanoid == "generic human relations":
-                    subjectchooser = "manwomanrelation"
-                if subtypehumanoid == "celebrities e.a.":
-                    subjectchooser = "non fictional"
-                if subtypehumanoid == "fictional characters":
-                    subjectchooser = "fictional"
-                if subtypehumanoid == "humanoids":
-                    subjectchooser = "humanoid"
-                if subtypehumanoid == "based on job or title":
-                    subjectchooser = "job"
-                if subtypehumanoid == "based on first name":
-                    subjectchooser = "firstname"
-        if mainchooser == "landscape":
-            subjectchooser = "landscape"
-        if mainchooser == "concept":
-            # eventsubjectchooserlist = ["event", "concept", "poemline", "songline"]
-            subjectchooser = random.choice(eventsubjectchooserlist)
-            if subtypeconcept != "all":
-                if subtypeconcept == "event":
-                    subjectchooser = "event"
-                if subtypeconcept == "the X of Y concepts":
-                    subjectchooser = "concept"
-                if subtypeconcept == "lines from poems":
-                    subjectchooser = "poemline"
-                if subtypeconcept == "lines from songs":
-                    subjectchooser = "songline"
+        if(mainchooser == "humanoid"):
+            #humanoidsubjectchooserlist = ["human", "job", "fictional", "non fictional", "humanoid", "manwomanrelation", "firstname"]
+            # Lets put generic humans as a more 'normal' value. Manwoman relation as the least picked.
+            # balanced around 5, to have more normal man/woman
+            # lower values even more stable
+            # Upper values are still quite random
+            humanoidsubjectchooserlistbackup = humanoidsubjectchooserlist.copy() # make a backup of the list
 
-        # special modes
+            if(random.randint(0,6) > max(2,insanitylevel -2) and "manwomanrelation" in humanoidsubjectchooserlist):
+                humanoidsubjectchooserlist.remove("manwomanrelation")
+            if(random.randint(0,5) > max(2,insanitylevel -2) and "manwomanmultiple" in humanoidsubjectchooserlist):
+                humanoidsubjectchooserlist.remove("manwomanmultiple")
+            if(random.randint(0,6) > max(2,insanitylevel -2) and "firstname" in humanoidsubjectchooserlist):
+                humanoidsubjectchooserlist.remove("firstname")
+            if(random.randint(0,5) > max(2,insanitylevel -2) and "job" in humanoidsubjectchooserlist):
+                humanoidsubjectchooserlist.remove("job")
+            if(random.randint(0,5) > max(2,insanitylevel -2) and "fictional" in humanoidsubjectchooserlist):
+                humanoidsubjectchooserlist.remove("fictional")
+            if(random.randint(0,5) > max(2,insanitylevel -2) and "non fictional" in humanoidsubjectchooserlist):
+                humanoidsubjectchooserlist.remove("non fictional")
+            if(random.randint(0,5) > max(2,insanitylevel -2) and "humanoid" in humanoidsubjectchooserlist):
+                humanoidsubjectchooserlist.remove("humanoid")
+            # more random stuff on higher levels
+            if(random.randint(0,4) > max(2,insanitylevel -2) and "human" in humanoidsubjectchooserlist):
+                humanoidsubjectchooserlist.remove("human")
+
+            # if we accidently remove everything, then restore the backup list
+            if(not bool(humanoidsubjectchooserlist)):
+                humanoidsubjectchooserlist = humanoidsubjectchooserlistbackup
+                        
+            subjectchooser = random.choice(humanoidsubjectchooserlist)
+            
+            
+            
+            if(subtypehumanoid != "all"):
+                if(subtypehumanoid == "generic humans"):
+                    subjectchooser = "human"
+                if(subtypehumanoid == "generic human relations"):
+                    subjectchooser = "manwomanrelation"
+                if(subtypehumanoid == "multiple humans"):
+                    subjectchooser = "manwomanmultiple"
+                if(subtypehumanoid == "celebrities e.a."):
+                    subjectchooser = "non fictional"
+                if(subtypehumanoid == "fictional characters"):
+                    subjectchooser = "fictional"
+                if(subtypehumanoid == "humanoids"):
+                    subjectchooser = "humanoid"
+                if(subtypehumanoid == "based on job or title"):
+                    subjectchooser = "job"
+                if(subtypehumanoid == "based on first name"):
+                    subjectchooser = "firstname"
+        if(mainchooser == "landscape"):
+            subjectchooser = "landscape"
+        if(mainchooser == "concept"):
+            #eventsubjectchooserlist = ["event", "concept", "poemline", "songline"]
+            subjectchooser = random.choice(eventsubjectchooserlist)
+            if(subtypeconcept != "all"):
+                if(subtypeconcept == "event"):
+                    subjectchooser = "event"
+                if(subtypeconcept == "the X of Y concepts"):
+                    subjectchooser = "concept"
+                if(subtypeconcept == "lines from poems"):
+                    subjectchooser = "poemline"
+                if(subtypeconcept == "lines from songs"):
+                    subjectchooser = "songline"
+                if(subtypeconcept == "names from card based games"):
+                    subjectchooser = "cardname"
+
+        # After we chose the subject, lets set all things ready for He/She/It etc
+        if(subjectchooser in ["human", "job", "fictional", "non fictional", "humanoid", "manwomanrelation","firstname"]):
+            if(gender == "male"):
+                heshelist = ["he"]
+                hisherlist = ["his"]
+                himherlist = ["him"]
+            if(gender == "female"):
+                heshelist = ["she"]
+                hisherlist = ["her"]
+                himherlist = ["her"]
+        if(subjectchooser in ["manwomanmultiple"]):
+            heshelist = ["they"]
+            hisherlist = ["their"]
+            himherlist = ["them"]
+            # on rare occasions do "one of them"
+            if(random.randint(0,20) == 0):
+                heshelist = ["one of them"]
+                hisherlist = ["one of their"]
+                himherlist = ["one of them"]
+
+
+
+           
+        
+        # special modes        
 
         # start art blaster here
-        if artblastermode == True:
+        if(artblastermode==True):
             step = 0
             end = random.randint(1, insanitylevel) + 1
             while step < end:
-                if uncommon_dist(insanitylevel) and bool(artistlist):
+                if(uncommon_dist(insanitylevel) and bool(artistlist)):
                     completeprompt += "-artist-, "
-                if uncommon_dist(insanitylevel) and bool(artmovementlist):
+                if(uncommon_dist(insanitylevel) and bool(artmovementlist)):
                     completeprompt += "-artmovement-, "
-                if unique_dist(insanitylevel) and bool(vomitlist):
+                if(unique_dist(insanitylevel) and bool(vomitlist)):
                     completeprompt += "-vomit-, "
-                if unique_dist(insanitylevel) and bool(imagetypelist):
+                if(unique_dist(insanitylevel) and bool(imagetypelist)):
                     completeprompt += "-imagetype-, "
-                if unique_dist(insanitylevel) and bool(colorschemelist):
+                if(unique_dist(insanitylevel) and bool(colorschemelist)):
                     completeprompt += "-colorscheme-, "
-                step = step + 1
+                step = step + 1 
 
         # start unique art here
-        if uniqueartmode == True:
+        if(uniqueartmode==True):
             step = 0
             end = random.randint(1, insanitylevel) + 1
             while step < end:
-                if uncommon_dist(insanitylevel) and bool(othertypelist):
+                if(uncommon_dist(insanitylevel) and bool(othertypelist)):
                     completeprompt += "-othertype-, "
-                if uncommon_dist(insanitylevel) and bool(artmovementlist):
+                if(uncommon_dist(insanitylevel) and bool(artmovementlist)):
                     completeprompt += "-artmovement-, "
-                if uncommon_dist(insanitylevel) and bool(colorschemelist):
+                if(uncommon_dist(insanitylevel) and bool(colorschemelist)):
                     completeprompt += "-colorscheme-, "
-                if rare_dist(insanitylevel) and bool(vomitlist):
+                if(rare_dist(insanitylevel) and bool(vomitlist)):
                     completeprompt += "-vomit-, "
-                if rare_dist(insanitylevel) and bool(lightinglist):
+                if(rare_dist(insanitylevel) and bool(lightinglist)):
                     completeprompt += "-lighting-, "
-                if unique_dist(insanitylevel) and bool(imagetypelist):
+                if(unique_dist(insanitylevel) and bool(imagetypelist)):
                     completeprompt += "-imagetype-, "
-                if unique_dist(insanitylevel) and bool(qualitylist):
+                if(unique_dist(insanitylevel) and bool(qualitylist)):
                     completeprompt += "-quality-, "
-
-                step = step + 1
+                
+                step = step + 1 
 
         # start quality vomit here
-        if qualityvomitmode == True:
+        if(qualityvomitmode==True):
             step = 0
             end = random.randint(1, insanitylevel) + 1
             while step < end:
-                if uncommon_dist(insanitylevel) and bool(vomitlist):
+                if(uncommon_dist(insanitylevel) and bool(vomitlist)):
                     completeprompt += "-vomit-, "
-                if uncommon_dist(insanitylevel) and bool(qualitylist):
+                if(uncommon_dist(insanitylevel) and bool(qualitylist)):
                     completeprompt += "-quality-, "
-                if unique_dist(insanitylevel) and bool(minivomitlist):
+                if(unique_dist(insanitylevel) and bool(minivomitlist)):
                     completeprompt += "-minivomit-, "
-                if unique_dist(insanitylevel) and bool(artmovementlist):
+                if(unique_dist(insanitylevel) and bool(artmovementlist)):
                     completeprompt += "-artmovement-, "
-                if unique_dist(insanitylevel) and bool(colorschemelist):
+                if(unique_dist(insanitylevel) and bool(colorschemelist)):
                     completeprompt += "-colorscheme-, "
                 step = step + 1
 
         # start mood color here
-        if colorcannonmode == True:
+        if(colorcannonmode == True):
             step = 0
             end = random.randint(1, insanitylevel) + 1
             while step < end:
-                if uncommon_dist(insanitylevel) and bool(moodlist):
+                if(uncommon_dist(insanitylevel) and bool(moodlist)):
                     completeprompt += "-mood-, "
-                if uncommon_dist(insanitylevel) and bool(colorschemelist):
+                if(uncommon_dist(insanitylevel) and bool(colorschemelist)):
                     completeprompt += "-colorscheme-, "
-                if rare_dist(insanitylevel) and bool(vomitlist):
+                if(rare_dist(insanitylevel) and bool(vomitlist)):
                     completeprompt += "-vomit-, "
-                if unique_dist(insanitylevel) and bool(artmovementlist):
+                if(unique_dist(insanitylevel) and bool(artmovementlist)):
                     completeprompt += "-artmovement-, "
-                if unique_dist(insanitylevel) and bool(lightinglist):
+                if(unique_dist(insanitylevel) and bool(lightinglist)):
                     completeprompt += "-lighting-, "
-                step = step + 1
+                step = step + 1 
 
         # start photo fantasy here
-        if photofantasymode == True:
+        if(photofantasymode == True):
             step = 0
             end = random.randint(1, insanitylevel) + 1
-            if common_dist(insanitylevel):
-                if uncommon_dist(insanitylevel):
+            if(common_dist(insanitylevel)):
+                if(uncommon_dist(insanitylevel)):
                     completeprompt += "-imagetypequality- "
                 completeprompt += " photograph, "
             while step < end:
-                if uncommon_dist(insanitylevel) and bool(lightinglist):
+                if(uncommon_dist(insanitylevel) and bool(lightinglist)):
+                    completeprompt += "-photoaddition-, "
+                if(uncommon_dist(insanitylevel) and bool(lightinglist)):
                     completeprompt += "-lighting-, "
-                if uncommon_dist(insanitylevel) and bool(cameralist):
+                if(uncommon_dist(insanitylevel) and bool(cameralist)):
                     completeprompt += "-camera-, "
-                if rare_dist(insanitylevel) and bool(lenslist):
+                if(rare_dist(insanitylevel) and bool(lenslist)):
                     completeprompt += "-lens-, "
-                if unique_dist(insanitylevel) and bool(moodlist):
+                if(unique_dist(insanitylevel) and bool(moodlist)):
                     completeprompt += "-mood-, "
-                if unique_dist(insanitylevel) and bool(colorschemelist):
+                if(unique_dist(insanitylevel) and bool(colorschemelist)):
                     completeprompt += "-colorscheme-, "
-                step = step + 1
+                step = step + 1 
 
         # start massive madness here
-        if massivemadnessmode == True:
+        if(massivemadnessmode == True):
             step = 0
             end = random.randint(1, insanitylevel) + 1
             while step < end:
-                if rare_dist(insanitylevel) and bool(artistlist):
+                if(rare_dist(insanitylevel) and bool(artistlist)):
                     completeprompt += "-artist-, "
-                if rare_dist(insanitylevel) and bool(descriptorlist):
+                if(rare_dist(insanitylevel) and bool(descriptorlist)):
                     completeprompt += "-descriptor-, "
-                if rare_dist(insanitylevel) and bool(moodlist):
+                if(rare_dist(insanitylevel) and bool(moodlist)):
                     completeprompt += "-mood-, "
-                if rare_dist(insanitylevel) and bool(colorschemelist):
+                if(rare_dist(insanitylevel) and bool(colorschemelist)):
                     completeprompt += "-colorscheme-, "
-                if rare_dist(insanitylevel) and bool(vomitlist):
+                if(rare_dist(insanitylevel) and bool(vomitlist)):
                     completeprompt += "-vomit-, "
-                if rare_dist(insanitylevel) and bool(artmovementlist):
+                if(rare_dist(insanitylevel) and bool(artmovementlist)):
                     completeprompt += "-artmovement-, "
-                if rare_dist(insanitylevel) and bool(lightinglist):
+                if(rare_dist(insanitylevel) and bool(lightinglist)):
                     completeprompt += "-lighting-, "
-                if rare_dist(insanitylevel) and bool(minilocationadditionslist):
+                if(rare_dist(insanitylevel) and bool(minilocationadditionslist)):
                     completeprompt += "-minilocationaddition-, "
-                if rare_dist(insanitylevel) and bool(materiallist):
+                if(rare_dist(insanitylevel) and bool(materiallist)):
                     completeprompt += "-material-, "
-                if rare_dist(insanitylevel) and bool(conceptsuffixlist):
+                if(rare_dist(insanitylevel) and bool(conceptsuffixlist)):
                     completeprompt += "-conceptsuffix-, "
-                if rare_dist(insanitylevel) and bool(qualitylist):
+                if(rare_dist(insanitylevel) and bool(qualitylist)):
                     completeprompt += "-quality-, "
-                if rare_dist(insanitylevel) and bool(cameralist):
+                if(rare_dist(insanitylevel) and bool(cameralist)):
                     completeprompt += "-camera-, "
-                if rare_dist(insanitylevel) and bool(lenslist):
+                if(rare_dist(insanitylevel) and bool(lenslist)):
                     completeprompt += "-lens-, "
-                if rare_dist(insanitylevel) and bool(imagetypelist):
+                if(rare_dist(insanitylevel) and bool(imagetypelist)):
                     completeprompt += "-imagetype-, "
-                step = step + 1
-            completeprompt += " ("
+                step = step + 1 
+            
+
+
+         # start styles mode here
+        if(stylesmode == True):
+            chosenstyle = random.choice(styleslist)
+            chosenstyleprefix = chosenstyle.split("-subject-")[0]
+            chosenstylesuffix= chosenstyle.split("-subject-")[1]
+            completeprompt += chosenstyleprefix
+
+
 
         # start artist part
 
         artistsplacement = "front"
-        if chance_roll(insanitylevel, artistsatbackchance) and onlyartists == False:
-            artistsplacement = "back"
+        # remove the artistsatbackchange to be depended on the insanitylevel, we would like this to be a set chance
+        if(random.randint(0, 2) == 0 and onlyartists == False):
+            artistlocations = ["back", "middle"]
+            artistsplacement = random.choice(artistlocations)
 
-        if artists != "none" and artistsplacement == "front" and generateartist == True:
-            # take 1-3 artists, weighted to 1-2
-            step = random.randint(0, 1)
-            end = random.randint(1, insanitylevel3)
+        if(artists != "none" and artistsplacement == "front" and generateartist == True):
+            if(artists == "greg mode"):
+                artistbylist = ["art by", "designed by", "stylized by", "by"]
+                completeprompt += random.choice(artistbylist) + " -gregmode- "
+            else:
+                    
+                # take 1-3 artists, weighted to 1-2
+                step = random.randint(0, 1)
+                minstep = step
+                end = random.randint(1, insanitylevel3)
 
-            # determine artist mode:
-            # normal
-            # hybrid |
-            # switching A:B:X
-            # adding at step x  a:X
-            # stopping at step x ::X
-            # enhancing from step  x
 
-            modeselector = random.randint(0, 10)
-            if modeselector < 5 and end - step >= 2:
-                artistmodeslist = ["hybrid", "stopping", "adding", "switching", "enhancing"]
-                artistmode = artistmodeslist[modeselector]
-                if advancedprompting == False:
+
+
+                # determine artist mode:
+                # normal
+                # hybrid |
+                # switching A:B:X
+                # adding at step x  a:X
+                # stopping at step x ::X
+                # enhancing from step  x
+
+
+
+
+                modeselector = random.randint(0,10)
+                if modeselector < 5 and end - step >= 2:
+                    artistmodeslist = ["hybrid", "stopping", "adding", "switching", "enhancing"]
+                    artistmode = artistmodeslist[modeselector]
+                    if(advancedprompting == False):
+                        artistmode = "normal"
+                    if (artistmode in ["hybrid","switching"] and end - step == 1):
+                        artistmode = "normal"
+                
+                if(onlyartists == True and artistmode == "enhancing"):
                     artistmode = "normal"
-                if artistmode in ["hybrid", "switching"] and end - step == 1:
+                # if there are not enough artists in the list, then just go normal
+                if(len(artistlist) < 3):
                     artistmode = "normal"
+                if(onlyartists == True and step == end):
+                    step = step - 1
 
-            if onlyartists == True and artistmode == "enhancing":
-                artistmode = "normal"
-            # if there are not enough artists in the list, then just go normal
-            if len(artistlist) < 3:
-                artistmode = "normal"
-            if onlyartists == True and step == end:
-                step = step - 1
+                if artistmode in ["hybrid", "stopping", "adding","switching"]:
+                    completeprompt += " ["
+                    
+                while step < end: 
+                    if(normal_dist(insanitylevel)):
+                        isweighted = 1
+                    
+                    if isweighted == 1:
+                        completeprompt += " ("
 
-            if artistmode in ["hybrid", "stopping", "adding", "switching"]:
-                completeprompt += " ["
+                    #completeprompt = add_from_csv(completeprompt, "artists", 0, "art by ","")
+                    if(step == minstep):
+                        # sometimes do this
+                        if(giventypeofimage=="" and imagetype == "all" and random.randint(0, 1) == 0):
+                            if(artiststyleselectormode == "normal"):
+                                completeprompt += artiststyleselector + " art "
+                            else:
+                                completeprompt += "-artiststyle- art "
+                        artistbylist = ["art by", "designed by", "stylized by", "by"]
+                    else:
+                        artistbylist = [""]
+                    completeprompt += random.choice(artistbylist) + " -artist-"
+                    
+                    if isweighted == 1:
+                        completeprompt += ":" + str(1 + (random.randint(-3,3)/10)) + ")"       
+                    
+                    if artistmode in ["hybrid"] and not end - step == 1:
+                        completeprompt += "|"
+                    if artistmode in ["switching"] and not end - step == 1:
+                        completeprompt += ":"
+                    
+                    if artistmode not in ["hybrid", "switching"]and not end - step > 1:
+                        completeprompt += ","
+                    elif artistmode not in ["hybrid", "switching"]and not end - step == 1:
+                        completeprompt += " and "
+                    
+                    isweighted = 0
+                    
+                    step = step + 1
 
-            while step < end:
-                if normal_dist(insanitylevel):
-                    isweighted = 1
+                if artistmode in ["stopping"]:
+                    completeprompt += "::"
+                    completeprompt += str(random.randint(1,19))
+                
+                if artistmode in ["switching","adding"]:
+                    completeprompt += ":" + str(random.randint(1,18))
+                if artistmode in ["hybrid", "stopping","adding", "switching"]:
+                    completeprompt += "] "
 
-                if isweighted == 1:
-                    completeprompt += " ("
 
-                # completeprompt = add_from_csv(completeprompt, "artists", 0, "art by ","")
-                completeprompt += "-artist-"
+            if(onlyartists == True):
 
-                if isweighted == 1:
-                    completeprompt += ":" + str(1 + (random.randint(-3, 3) / 10)) + ")"
-
-                if artistmode in ["hybrid"] and not end - step == 1:
-                    completeprompt += "|"
-                if artistmode in ["switching"] and not end - step == 1:
-                    completeprompt += ":"
-
-                if artistmode not in ["hybrid", "switching"] and not end - step == 1:
-                    completeprompt += ","
-
-                isweighted = 0
-
-                step = step + 1
-
-            if artistmode in ["stopping"]:
-                completeprompt += "::"
-                completeprompt += str(random.randint(1, 19))
-
-            if artistmode in ["switching", "adding"]:
-                completeprompt += ":" + str(random.randint(1, 18))
-            if artistmode in ["hybrid", "stopping", "adding", "switching"]:
-                completeprompt += "] "
-
-            if onlyartists == True:
                 # replace artist wildcards
                 completeprompt = replacewildcard(completeprompt, insanitylevel, "-artist-", artistlist, False, False)
-
+                completeprompt = replacewildcard(completeprompt, insanitylevel, "-gregmode-", gregmodelist, False, False)
+                    
                 # clean it up
-                completeprompt = cleanup(completeprompt, advancedprompting)
+                completeprompt = cleanup(completeprompt, advancedprompting, insanitylevel)
 
                 print("only generated these artists:" + completeprompt)
                 return completeprompt
 
+
             completeprompt += ", "
+
+            
+            # sometimes do this as well
+            if(giventypeofimage=="" and imagetype == "all" and random.randint(0, 2) == 0):
+                completeprompt += "-artiststyle- art, "
+
 
             if artistmode in ["enhancing"]:
                 completeprompt += " ["
-
+        
         # start image type
 
-        if giventypeofimage == "" and generatetype == True:
-            if imagetype != "all" and imagetype != "all - force multiple" and imagetype != "only other types":
-                completeprompt += " " + imagetype + ", "
-            elif imagetype == "all - force multiple" or unique_dist(insanitylevel):
-                amountofimagetypes = random.randint(2, 3)
-            elif imagetype == "only other types":
+        if(giventypeofimage=="" and generatetype == True):
+            if(imagetype != "all" and imagetype != "all - force multiple" and imagetype != "only other types"):
+                 
+                    completeprompt += " " + imagetype + ", "
+            elif(imagetype == "all - force multiple" or unique_dist(insanitylevel)):
+                amountofimagetypes = random.randint(2,3)
+            elif(imagetype == "only other types"):
                 othertype = 1
                 completeprompt += random.choice(othertypelist)
-
-            if imagetype == "all" and chance_roll(insanitylevel, imagetypechance) and amountofimagetypes <= 1:
+            
+            if(imagetype == "all" and chance_roll(insanitylevel, imagetypechance) and amountofimagetypes <= 1):
                 amountofimagetypes = 1
+            
+            
 
             for i in range(amountofimagetypes):
-                # one in 6 images is a complex/other type
-                if chance_roll(insanitylevel, imagetypequalitychance) and generateimagetypequality:
+            # one in 6 images is a complex/other type
+                if(chance_roll(insanitylevel, imagetypequalitychance) and generateimagetypequality):
                     completeprompt += "-imagetypequality- "
-                if random.randint(0, 5) < 5:
-                    completeprompt += " -imagetype-, "
+               # if("photography" in artiststyleselector
+               #         or "photography" in artists):
+               #      completeprompt += " photograph, "
+               # elif("portrait" in artiststyleselector 
+               #         or "portrait" in artists):
+               #     completeprompt += " portrait, "
+               # if("landscape" in artiststyleselector
+               #         or "landscape" in artists):
+               #     completeprompt += " landscape, "
+
+               # woops, never to this as wildcards. We need to know as early as possible wether something is a photo. Lets put it back!
+                elif(random.randint(0,5) < 5):
+                    completeprompt += " " + random.choice(imagetypelist) + ", "
                 else:
                     othertype = 1
-                    completeprompt += " -othertype-, "
-
-            if othertype == 1:
+                    completeprompt += " " + random.choice(othertypelist) + ", "
+            
+            if(othertype==1):
                 completeprompt += " of a "
             else:
                 completeprompt += ", "
-        elif generatetype == True:
+        elif(generatetype == True):
             othertype = 1
             completeprompt += giventypeofimage + " of a "
 
-        ### here we can do some other stuff to spice things up
-        if chance_roll(insanitylevel, minilocationadditionchance) and generateminilocationaddition == True:
-            completeprompt += " -minilocationaddition-, "
 
-        if chance_roll(insanitylevel, artmovementprefixchance) and generateartmovement == True:
+        
+        ### here we can do some other stuff to spice things up
+        if(chance_roll(insanitylevel, minilocationadditionchance) and generateminilocationaddition == True):
+            completeprompt += " -minilocationaddition-, "
+        
+        if(chance_roll(insanitylevel, artmovementprefixchance) and generateartmovement == True):
             generateartmovement = False
             completeprompt += " -artmovement-, "
-
-        if chance_roll(insanitylevel, minivomitprefix1chance) and generateminivomit == True:
+        
+        if(chance_roll(insanitylevel, minivomitprefix1chance) and generateminivomit == True):
             completeprompt += " -minivomit-, "
-
-        if chance_roll(insanitylevel, minivomitprefix2chance) and generateminivomit == True:
+        
+        if(chance_roll(insanitylevel, minivomitprefix2chance) and generateminivomit == True):
             completeprompt += " -minivomit-, "
 
         # start shot size
 
-        if (
-            mainchooser in ["object", "animal", "humanoid", "concept"]
-            and othertype == 0
-            and "portrait" not in completeprompt
-            and generateshot == True
-            and chance_roll(insanitylevel, shotsizechance)
-        ):
+        if(mainchooser in ["object", "animal", "humanoid", "concept"] and othertype == 0 and "portrait" not in completeprompt and generateshot == True and chance_roll(insanitylevel,shotsizechance)):
             completeprompt += "-shotsize- of a "
-        elif "portrait" in completeprompt and generateshot == True:
+        elif("portrait" in completeprompt and generateshot == True):
             completeprompt += " ,close up of a "
-        elif mainchooser in ["landscape"] and generateshot == True:
+        elif(mainchooser in ["landscape"] and generateshot == True):
             completeprompt += " landscape of a "
-        elif generateshot == True:
+        elif(generateshot == True): 
             completeprompt += ", "
-
+    
+        genjoboractivity = False
         # start subject building
-        if generatesubject == True:
-            # start with descriptive qualities
+        if(generatesubject == True):
+        # start with descriptive qualities
 
-            # Common to have 1 description, uncommon to have 2
-            if chance_roll(insanitylevel, subjectdescriptor1chance) and generatedescriptors == True:
-                completeprompt += "-descriptor- "
+            # Once in a very rare while, we get a ... full of ...s
+            if(novel_dist(insanitylevel) and subjectchooser in ["animal", "animal as human,","human", "job", "fictional", "non fictional", "humanoid", "manwomanrelation","firstname"]):         
+                buildingfullmode = True
+                insideshot = 1
+                heshelist = ["they"]
+                hisherlist = ["their"]
+                himherlist = ["them"]
+                completeprompt += "a OR(-building-;-location-;-waterlocation-;-container-;rare) full of "
 
-            if chance_roll(insanitylevel, subjectdescriptor2chance) and generatedescriptors == True:
-                completeprompt += "-descriptor- "
 
-            if (
-                subjectchooser
-                in [
-                    "animal as human,",
-                    "human",
-                    "job",
-                    "fictional",
-                    "non fictional",
-                    "humanoid",
-                    "manwomanrelation",
-                    "firstname",
-                ]
-                and chance_roll(insanitylevel, subjectbodytypechance)
-                and generatebodytype == True
-            ):
+            # Sometimes the descriptors are at the back, in more natural language. Lets determine.
+            descriptorsintheback = random.randint(0,2)
+            if(descriptorsintheback < 2):
+                # Common to have 1 description, uncommon to have 2
+                if(chance_roll(insanitylevel, subjectdescriptor1chance) and generatedescriptors == True):
+                    if(subjectchooser in ["animal as human,","human", "job", "fictional", "non fictional", "humanoid", "manwomanrelation", "manwomanmultiple","firstname"]):
+                        completeprompt += "-humandescriptor- "
+                    elif(mainchooser == "landscape"):
+                        completeprompt += "-locationdescriptor- "
+                    elif(mainchooser == "animal"):
+                        completeprompt += "-animaldescriptor- "
+                    else:
+                        completeprompt += "-descriptor- "
+
+                if(chance_roll(insanitylevel, subjectdescriptor2chance) and generatedescriptors == True):
+                    if(subjectchooser in ["animal as human,","human", "job", "fictional", "non fictional", "humanoid", "manwomanrelation", "manwomanmultiple","firstname"]):
+                        completeprompt += "-humandescriptor- "
+                    elif(mainchooser == "landscape"):
+                        completeprompt += "-locationdescriptor- "
+                    elif(mainchooser == "animal"):
+                        completeprompt += "-animaldescriptor- "
+                    else:
+                        completeprompt += "-descriptor- "
+            
+            # color, for animals, landscape, objects and concepts
+            if(mainchooser in ["animal", "object", "landscape", "concept"] and unique_dist(insanitylevel)):
+                completeprompt += " OR(-color-;-colorcombination-) "
+            
+            # age, very rare to add.
+            if(subjectchooser in ["human", "job", "fictional", "non fictional", "humanoid", "manwomanrelation", "manwomanmultiple","firstname"] and extraordinary_dist(insanitylevel)):
+                completeprompt += str(random.randint(20,99)) + " OR(y.o.;year old) "
+
+            if(subjectchooser in ["animal as human,","human", "job", "fictional", "non fictional", "humanoid", "manwomanrelation", "manwomanmultiple","firstname"] and chance_roll(insanitylevel, subjectbodytypechance) and generatebodytype == True):
                 completeprompt += "-bodytype- "
 
-            if (
-                subjectchooser
-                in [
-                    "object",
-                    "animal as human,",
-                    "human",
-                    "job",
-                    "fictional",
-                    "non fictional",
-                    "humanoid",
-                    "manwomanrelation",
-                    "firstname",
-                ]
-                and chance_roll(insanitylevel, subjectculturechance)
-                and generatedescriptors == True
-            ):
+            if(subjectchooser in ["object","animal as human,","human", "job", "fictional", "non fictional", "humanoid", "manwomanrelation", "manwomanmultiple","firstname"] and chance_roll(insanitylevel, subjectculturechance) and generatedescriptors == True):
                 completeprompt += "-culture- "
 
-            if mainchooser == "object":
+            if(mainchooser == "object"):
+                # first add a wildcard that can be used to create prompt strenght
+                completeprompt += " -objectstrengthstart-"
                 # if we have an overwrite, then make sure we only take the override
-                if subtypeobject != "all":
-                    if subtypeobject == "generic objects":
+                if(subtypeobject != "all"):
+                    if(subtypeobject == "generic objects"):
                         objectwildcardlist = ["-object-"]
-                    if subtypeobject == "vehicles":
+                    if(subtypeobject == "vehicles"):
                         objectwildcardlist = ["-vehicle-"]
-                    if subtypeobject == "food":
+                    if(subtypeobject == "food"):
                         objectwildcardlist = ["-food-"]
-                    if subtypeobject == "buildings":
+                    if(subtypeobject == "buildings"):
                         objectwildcardlist = ["-building-"]
-                    if subtypeobject == "space":
+                    if(subtypeobject == "space"):
                         objectwildcardlist = ["-space-"]
-                    if subtypeobject == "flora":
+                    if(subtypeobject == "flora"):
                         objectwildcardlist = ["-flora-"]
-
+                
                 # if we have a given subject, we should skip making an actual subject
-                if givensubject == "":
-                    if rare_dist(insanitylevel) and advancedprompting == True:
+                if(givensubject == ""):
+
+                    if(rare_dist(insanitylevel) and advancedprompting == True):
                         hybridorswaplist = ["hybrid", "swap"]
                         hybridorswap = random.choice(hybridorswaplist)
                         completeprompt += "["
@@ -1311,865 +1602,1105 @@ def build_dynamic_prompt(
 
                     completeprompt += chosenobjectwildcard + " "
 
-                    if hybridorswap == "hybrid":
-                        if uncommon_dist(insanitylevel):
+                    if(hybridorswap == "hybrid"):
+                        if(uncommon_dist(insanitylevel)):
                             completeprompt += "|" + random.choice(objectwildcardlist) + "] "
                         else:
-                            completeprompt += "|"
+                            completeprompt += "|" 
                             completeprompt += chosenobjectwildcard + " "
                             completeprompt += "] "
-                    if hybridorswap == "swap":
-                        if uncommon_dist(insanitylevel):
-                            completeprompt += (
-                                ":" + random.choice(objectwildcardlist) + ":" + str(random.randint(1, 5)) + "] "
-                            )
+                    if(hybridorswap == "swap"):
+                        if(uncommon_dist(insanitylevel)):
+                            completeprompt += ":" + random.choice(objectwildcardlist) + ":" + str(random.randint(1,5)) +  "] "
                         else:
                             completeprompt += ":"
                             completeprompt += chosenobjectwildcard + " "
-                            completeprompt += ":" + str(random.randint(1, 5)) + "] "
+                            completeprompt += ":" + str(random.randint(1,5)) +  "] "
                 else:
                     completeprompt += " " + givensubject + " "
-
+                
                 hybridorswap = ""
 
-            if mainchooser == "animal":
+            if(mainchooser == "animal"):
+                # first add a wildcard that can be used to create prompt strenght
+                completeprompt += " -objectstrengthstart-"
+                
                 # if we have a given subject, we should skip making an actual subject
-                if givensubject == "":
-                    if rare_dist(insanitylevel) and advancedprompting == True:
+                if(givensubject == ""):
+
+                    if(rare_dist(insanitylevel) and advancedprompting == True):
                         hybridorswaplist = ["hybrid", "swap"]
                         hybridorswap = random.choice(hybridorswaplist)
                         completeprompt += "["
-
-                    if unique_dist(insanitylevel) and generateanimaladdition == True:
+                        
+                    if(unique_dist(insanitylevel) and generateanimaladdition == True):
                         animaladdedsomething = 1
                         completeprompt += "-animaladdition- -animal- "
-                    if animaladdedsomething != 1:
+                    if(animaladdedsomething != 1):
                         completeprompt += "-animal- "
 
-                    if hybridorswap == "hybrid":
-                        if uncommon_dist(insanitylevel):
+                   
+
+                    if(hybridorswap == "hybrid"):
+                        if(uncommon_dist(insanitylevel)):
                             completeprompt += "|" + random.choice(hybridlist) + "] "
                         else:
                             completeprompt += "| -animal- ] "
-                    if hybridorswap == "swap":
-                        if uncommon_dist(insanitylevel):
-                            completeprompt += ":" + random.choice(hybridlist) + ":" + str(random.randint(1, 5)) + "] "
+                    if(hybridorswap == "swap"):
+                        if(uncommon_dist(insanitylevel)):
+                            completeprompt += ":" + random.choice(hybridlist) + ":" + str(random.randint(1,5)) +  "] "
                         else:
-                            completeprompt += ":-animal-:" + str(random.randint(1, 5)) + "] "
+                            completeprompt += ":-animal-:" + str(random.randint(1,5)) +  "] "
                 else:
                     completeprompt += " " + givensubject + " "
-
+                
                 hybridorswap = ""
 
+             # move job or activity logic here. We want to place it at 2 different places maybe
+            
+            if(subjectchooser in ["animal as human","human","fictional", "non fictional", "humanoid", "manwomanrelation", "manwomanmultiple","firstname"]  and chance_roll(insanitylevel, joboractivitychance) and humanspecial != 1 and generatesubject == True):
+                genjoboractivity = True
+                genjoboractivitylocationslist = ["front","middle", "middle","back","back", "back"]
+                genjoboractivitylocation = random.choice(genjoboractivitylocationslist)
+    
+
+            if(genjoboractivity and genjoboractivitylocation=="front"):
+                completeprompt += "-job- "
+                
+            
             # if we have a given subject, we should skip making an actual subject
-            if mainchooser == "humanoid":
-                if givensubject == "":
-                    if subjectchooser == "human":
-                        completeprompt += "-manwoman- "
+            if(mainchooser == "humanoid"):
+                # first add a wildcard that can be used to create prompt strenght
+                completeprompt += " -objectstrengthstart-"
+                if(givensubject==""):
 
-                    if subjectchooser == "manwomanrelation":
-                        completeprompt += "-manwomanrelation- "
+                    if(subjectchooser == "human"):
+                        completeprompt += "-manwoman-"
+                    
+                    if(subjectchooser == "manwomanrelation"):
+                        completeprompt += "-manwomanrelation-"
 
-                    if subjectchooser == "job":
+                    if(subjectchooser == "manwomanmultiple"):
+                        completeprompt += "-manwomanmultiple-"
+
+                    if(subjectchooser == "job"):
                         completeprompt += "-malefemale- "
-                        completeprompt += "-job- "
+                        completeprompt += "-job-"
 
-                    if subjectchooser == "fictional":
-                        if rare_dist(insanitylevel) and advancedprompting == True:
+                    if(subjectchooser == "fictional"):
+                        if(rare_dist(insanitylevel) and advancedprompting == True and buildingfullmode == False):
                             hybridorswaplist = ["hybrid", "swap"]
                             hybridorswap = random.choice(hybridorswaplist)
                             completeprompt += "["
+                        
+                        # Sometimes, we do a gender swap. Much fun!
+                        if(novel_dist(insanitylevel)):
+                            completeprompt += gender + " version of -oppositefictional-"
+                        else:
+                            completeprompt += "-fictional-"
 
-                        completeprompt += "-fictional- "
-
-                        if hybridorswap == "hybrid":
+                        if(hybridorswap == "hybrid"):
                             completeprompt += "|" + random.choice(hybridhumanlist) + " ] "
-                        if hybridorswap == "swap":
-                            completeprompt += (
-                                ":" + random.choice(hybridhumanlist) + ":" + str(random.randint(1, 5)) + "] "
-                            )
+                        if(hybridorswap == "swap"):
+                            completeprompt += ":" + random.choice(hybridhumanlist) + ":" + str(random.randint(1,5)) +  "] "
                         hybridorswap = ""
 
-                    if subjectchooser == "non fictional":
-                        if rare_dist(insanitylevel) and advancedprompting == True:
+                    if(subjectchooser == "non fictional"):
+                        if(rare_dist(insanitylevel)  and advancedprompting == True and buildingfullmode == False):
                             hybridorswaplist = ["hybrid", "swap"]
                             hybridorswap = random.choice(hybridorswaplist)
                             completeprompt += "["
+                        # Sometimes, we do a gender swap. Much fun!
+                        if(novel_dist(insanitylevel)):
+                            completeprompt += gender + " version of -oppositenonfictional-"
+                        else:
+                            completeprompt += "-nonfictional-"
 
-                        completeprompt += "-nonfictional- "
-
-                        if hybridorswap == "hybrid":
+                        if(hybridorswap == "hybrid"):
                             completeprompt += "|" + random.choice(hybridhumanlist) + "] "
-                        if hybridorswap == "swap":
-                            completeprompt += (
-                                ":" + random.choice(hybridhumanlist) + ":" + str(random.randint(1, 5)) + "] "
-                            )
+                        if(hybridorswap == "swap"):
+                            completeprompt += ":" + random.choice(hybridhumanlist) + ":" + str(random.randint(1,5)) +  "] "
                         hybridorswap = ""
 
-                    if subjectchooser == "humanoid":
-                        if gender != "all":
+                    if(subjectchooser == "humanoid"):
+                        if(gender != "all"):
                             completeprompt += "-malefemale- "
-                        if rare_dist(insanitylevel) and advancedprompting == True:
+                        if(rare_dist(insanitylevel)  and advancedprompting == True and buildingfullmode == False):
                             hybridorswaplist = ["hybrid", "swap"]
                             hybridorswap = random.choice(hybridorswaplist)
                             completeprompt += "["
+                        
+                        completeprompt += "-humanoid-"
 
-                        completeprompt += "-humanoid- "
-
-                        if hybridorswap == "hybrid":
+                        if(hybridorswap == "hybrid"):
                             completeprompt += "|" + random.choice(hybridhumanlist) + "] "
-                        if hybridorswap == "swap":
-                            completeprompt += (
-                                ":" + random.choice(hybridhumanlist) + ":" + str(random.randint(1, 5)) + "] "
-                            )
+                        if(hybridorswap == "swap"):
+                            completeprompt += ":" + random.choice(hybridhumanlist) + ":" + str(random.randint(1,5)) +  "] "
                         hybridorswap = ""
 
-                    if subjectchooser == "firstname":
-                        if rare_dist(insanitylevel) and advancedprompting == True:
+                    if(subjectchooser == "firstname"):
+                        if(rare_dist(insanitylevel)  and advancedprompting == True and buildingfullmode == False):
                             hybridorswaplist = ["hybrid", "swap"]
                             hybridorswap = random.choice(hybridorswaplist)
                             completeprompt += "["
+                        
+                        completeprompt += "-firstname-"
 
-                        completeprompt += "-firstname- "
-
-                        if hybridorswap == "hybrid":
+                        if(hybridorswap == "hybrid"):
                             completeprompt += "|" + "-firstname-" + "] "
-                        if hybridorswap == "swap":
-                            completeprompt += ":" + "-firstname-" + ":" + str(random.randint(1, 5)) + "] "
+                        if(hybridorswap == "swap"):
+                            completeprompt += ":" + "-firstname-" + ":" + str(random.randint(1,5)) +  "] "
                         hybridorswap = ""
+                    if(buildingfullmode == True):
+                        completeprompt += "s"
+                    completeprompt += " "
 
                 else:
-                    completeprompt += " " + givensubject + " "
-
-            # sometimes add a suffix for more fun!
-            if (mainchooser == "humanoid" or mainchooser == "animal" or mainchooser == "object") and chance_roll(
-                insanitylevel, subjectconceptsuffixchance
-            ):
+                    completeprompt += " " + givensubject + " "  
+ 
+            
+             # sometimes add a suffix for more fun!
+            if( (mainchooser == "humanoid" or mainchooser == "animal" or mainchooser == "object") and  chance_roll(insanitylevel, subjectconceptsuffixchance)):
                 completeprompt += " of -conceptsuffix- "
 
-            if subjectchooser == "landscape":
+            if(mainchooser == "humanoid" or mainchooser == "animal" or mainchooser == "object"):
+            # completion of strenght end
+                completeprompt += "-objectstrengthend-"  
+            
+            if(mainchooser == 'animal' and legendary_dist(insanitylevel)):
+                animaladdedsomething = 1
+                completeprompt += " -animalsuffixaddition- "
+            
+            
+            if(subjectchooser == "landscape"):
+                # first add a wildcard that can be used to create prompt strenght
+                completeprompt += " -objectstrengthstart-"
+                
                 # if we have a given subject, we should skip making an actual subject
-                if givensubject == "":
-                    if rare_dist(insanitylevel) and advancedprompting == True:
+                if(givensubject == ""):
+                    if(rare_dist(insanitylevel) and advancedprompting == True):
                         hybridorswaplist = ["hybrid", "swap"]
                         hybridorswap = random.choice(hybridorswaplist)
                         completeprompt += "["
-
+                    
                     completeprompt += "-location- "
 
-                    if hybridorswap == "hybrid":
-                        completeprompt += "|" + "-location-" + "] "
-                    if hybridorswap == "swap":
-                        completeprompt += ":" + "-location-" + ":" + str(random.randint(1, 5)) + "] "
+                    if(hybridorswap == "hybrid"):
+                        completeprompt += "|" + "-location-"  + "] "
+                    if(hybridorswap == "swap"):
+                        completeprompt += ":" + "-location-" + ":" + str(random.randint(1,5)) +  "] "        
                 else:
-                    completeprompt += " " + givensubject + " "
-
+                    completeprompt += " " + givensubject + " " 
+                
                 hybridorswap = ""
 
-                # shots from inside can create cool effects in landscapes
-                if chance_roll(insanitylevel, subjectlandscapeaddonlocationchance):
-                    insideshot = 1
-                    completeprompt += " from inside of a -addontolocationinside- "
+                # completion of strenght end
+                completeprompt += "-objectstrengthend-"
 
-                if chance_roll(insanitylevel, subjectlandscapeaddonlocationchance) and insideshot == 0:
+                # shots from inside can create cool effects in landscapes
+                if(chance_roll(insanitylevel, subjectlandscapeaddonlocationchance) and insideshot == 0):
+                    insideshot = 1
+                    # lets cheat a bit here, we can do something cool I saw on reddit
+                    if(mainchooser=="humanoid" and legendary_dist(insanitylevel)):
+                        completeprompt += " looking at a -addontolocationinside- "
+                    elif(mainchooser=="humanoid" and legendary_dist(insanitylevel)):
+                        completeprompt += " facing a -addontolocationinside- "
+                    elif(legendary_dist(insanitylevel)):
+                        completeprompt += " in the distance there is a -addontolocationinside- "
+                    else:
+                        completeprompt += " from inside of a -addontolocationinside- "
+
+                if(chance_roll(insanitylevel, subjectlandscapeaddonlocationchance) and insideshot == 0):
                     completeprompt += " and "
-                    if chance_roll(insanitylevel, subjectlandscapeaddonlocationdescriptorchance):
-                        completeprompt += "-descriptor- "
-                    if chance_roll(insanitylevel, subjectlandscapeaddonlocationculturechance):
+                    if(chance_roll(insanitylevel, subjectlandscapeaddonlocationdescriptorchance)):
+                        completeprompt += "-locationdescriptor- " 
+                    if(chance_roll(insanitylevel, subjectlandscapeaddonlocationculturechance)):
                         completeprompt += "-culture- "
 
-                    # addontolocation = [locationlist,buildinglist, vehiclelist]
+                    #addontolocation = [locationlist,buildinglist, vehiclelist]
                     completeprompt += "-addontolocation- "
 
-            if mainchooser == "concept":
-                if givensubject == "":
-                    if subjectchooser == "event":
-                        completeprompt += ' "' + random.choice(eventlist) + '" '
 
-                    if subjectchooser == "concept":
-                        completeprompt += ' " The -conceptprefix- of -conceptsuffix- " '
+            if(mainchooser == "concept"):
+                # first add a wildcard that can be used to create prompt strenght
+                completeprompt += " -objectstrengthstart-"
+                if(givensubject == ""):
+                    if(subjectchooser == "event"):
+                        completeprompt += " \"" + random.choice(eventlist) + "\" "
+                    
+                    if(subjectchooser == "concept"):
+                        completeprompt += " \" The -conceptprefix- of -conceptsuffix- \" "
 
-                    if subjectchooser == "poemline":
-                        completeprompt += ' " -poemline- " '
+                    if(subjectchooser == "poemline"):
+                        completeprompt += " \" -poemline- \" "
 
-                    if subjectchooser == "songline":
-                        completeprompt += ' " -songline- " '
+                    if(subjectchooser == "songline"):
+                        completeprompt += " \" -songline- \" "
+
+                    if(subjectchooser == "cardname"):
+                        completeprompt += " \" -cardname- \" "
                 else:
-                    completeprompt += " " + givensubject + " "
+                    completeprompt += " " + givensubject + " " 
+
+                # completion of strenght end
+                completeprompt += "-objectstrengthend-"
+
+            if(genjoboractivity and genjoboractivitylocation=="middle"):
+                joboractivitylist = [joblist,humanactivitylist]
+                completeprompt += random.choice(random.choice(joboractivitylist)) + ", "
+            
+            
+            if(descriptorsintheback == 2):
+                # Common to have 1 description, uncommon to have 2
+                if(chance_roll(insanitylevel, subjectdescriptor1chance) and generatedescriptors == True):
+                    if(subjectchooser in ["animal as human,","human", "job", "fictional", "non fictional", "humanoid", "manwomanrelation","manwomanmultiple", "firstname"]):
+                        if(random.randint(0,3) > 0):
+                            completeprompt += ", OR(;-heshe- is;normal) OR(;very;rare) -humandescriptor- "
+                        elif(subjectchooser == "manwomanmultiple"):
+                            completeprompt += ", the -samehumansubject- are OR(;very;rare) -humandescriptor-"
+                        else:
+                            completeprompt += ", OR(the -manwoman-;-samehumansubject-) is OR(;very;rare) -humandescriptor-"
+                    elif(mainchooser == "landscape"):
+                        completeprompt += ", OR(;-heshe- is;normal) OR(;very;rare) -locationdescriptor- "
+                    elif(mainchooser == "animal"):
+                        completeprompt += ", OR(;-heshe- is;normal) OR(;very;rare) -animaldescriptor- "
+                    else:
+                        completeprompt += ", OR(;-heshe- is;normal) OR(;very;rare) -descriptor- "
+
+                    if(chance_roll(insanitylevel, subjectdescriptor2chance) and generatedescriptors == True):
+                        if(subjectchooser in ["animal as human,","human", "job", "fictional", "non fictional", "humanoid", "manwomanrelation","manwomanmultiple","firstname"]):
+                            completeprompt += " and -humandescriptor- "
+                        elif(mainchooser == "landscape"):
+                            completeprompt += " and -locationdescriptor- "
+                        elif(mainchooser == "animal"):
+                            completeprompt += " and -animaldescriptor- "
+                        else:
+                            completeprompt += " and -descriptor- "
+                completeprompt += ", "
 
         # object additions
         for i in range(objectadditionsrepeats):
-            if (
-                mainchooser == "object"
-                and chance_roll(insanitylevel, objectadditionschance)
-                and generateobjectaddition == True
-            ):
+            if(mainchooser == "object" and chance_roll(insanitylevel, objectadditionschance) and generateobjectaddition == True):
                 completeprompt += ", -objectaddition- , "
-
+        
+        
         # riding an animal, holding an object or driving a vehicle, rare
-        if (
-            subjectchooser
-            in ["animal as human,", "human", "fictional", "non fictional", "humanoid", "manwomanrelation", "firstname"]
-            and chance_roll(insanitylevel, humanadditionchance)
-            and generatehumanaddition == True
-        ):
+        if(subjectchooser in ["animal as human,","human","fictional", "non fictional", "humanoid", "manwomanrelation","manwomanmultiple","firstname"] and chance_roll(insanitylevel, humanadditionchance) and generatehumanaddition == True):
             humanspecial = 1
             completeprompt += "-humanaddition- "
-
+            
         completeprompt += ", "
 
         # unique additions for all types:
-        if chance_roll(insanitylevel, overalladditionchance) and generateoveralladdition == True:
+        if(chance_roll(insanitylevel, overalladditionchance) and generateoveralladdition == True):
             completeprompt += "-overalladdition- "
+
+
+
+
 
         # SD understands emoji's. Can be used to manipulate facial expressions.
         # emoji, legendary
-        if (
-            subjectchooser
-            in ["animal as human,", "human", "fictional", "non fictional", "humanoid", "manwomanrelation", "firstname"]
-            and chance_roll(insanitylevel, emojichance)
-            and generateemoji == True
-        ):
+        if(subjectchooser in ["animal as human,","human","fictional", "non fictional", "humanoid", "manwomanrelation","manwomanmultiple","firstname"] and chance_roll(insanitylevel, emojichance) and generateemoji== True):
             completeprompt += "-emoji-, "
 
+        # human expressions
+        if(subjectchooser in ["animal as human,","human","fictional", "non fictional", "humanoid", "manwomanrelation","manwomanmultiple","firstname"] and chance_roll(insanitylevel, humanexpressionchance) and generatehumanexpression== True):
+            completeprompt += "-humanexpression-, "
+            
+
         # cosplaying
-        # if(subjectchooser in ["animal as human", "non fictional", "humanoid"] and rare_dist(insanitylevel) and humanspecial != 1):
+        #if(subjectchooser in ["animal as human", "non fictional", "humanoid"] and rare_dist(insanitylevel) and humanspecial != 1):
         #    completeprompt += "cosplaying as " + random.choice(fictionallist) + ", "
 
-        # Job
+        # Job 
         # either go job or activity, not both
 
-        if (
-            subjectchooser
-            in ["animal as human", "human", "fictional", "non fictional", "humanoid", "manwomanrelation", "firstname"]
-            and chance_roll(insanitylevel, joboractivitychance)
-            and humanspecial != 1
-            and generatesubject == True
-        ):
-            joboractivitylist = [joblist, humanactivitylist]
+        if(genjoboractivity and genjoboractivitylocation=="back"):
+            joboractivitylist = [joblist,humanactivitylist]
             completeprompt += random.choice(random.choice(joboractivitylist)) + ", "
+
 
         # if(subjectchooser in ["animal as human","human","job", "fictional", "non fictional", "humanoid"] and legendary_dist(insanitylevel)):
         #    skintypelist = ["-color-", "-material-"]
         #    completeprompt += ", with " + random.choice(skintypelist) + " skin, "
 
+        # add face builder sometimes on generic humans
+        if(subjectchooser in ["human", "humanoid", "manwomanrelation","firstname"] and chance_roll(insanitylevel, buildfacechance) and generateface== True):
+            completeprompt += random.choice(buildfacelist) + ", "
+
         # custom mid list
         for i in range(custominputmidrepeats):
-            if chance_roll(insanitylevel, custominputmidchance) and generatecustominputmid == True:
+            if(chance_roll(insanitylevel, custominputmidchance) and generatecustominputmid == True):
                 completeprompt += random.choice(custominputmidlist) + ", "
-
+        
         # add in some more mini vomits
-        if chance_roll(insanitylevel, minivomitmidchance) and generateminivomit == True:
+        if(chance_roll(insanitylevel, minivomitmidchance) and generateminivomit == True):
             completeprompt += " -minivomit-, "
-
+        
         # outfit builder
-        if (
-            subjectchooser
-            in ["animal as human", "human", "fictional", "non fictional", "humanoid", "manwomanrelation", "firstname"]
-            and chance_roll(insanitylevel, outfitchance)
-            and generateoutfit == True
-            and humanspecial != 1
-        ):
-            completeprompt += ", wearing " + random.choice(buildoutfitlist) + ", "
+        if(subjectchooser in ["animal as human","human","fictional", "non fictional", "humanoid", "manwomanrelation","manwomanmultiple", "firstname"]  and chance_roll(insanitylevel, outfitchance) and generateoutfit == True and humanspecial != 1):
+            completeprompt += " " + random.choice(buildoutfitlist) + ", "
+            if(extraordinary_dist(insanitylevel)):
+                completeprompt += " -outfitvomit-"
+        elif(overrideoutfit != "" and imagetype != "only templates mode"):
+            completeprompt += " " + random.choice(buildoutfitlist) + ", "
+            if(extraordinary_dist(insanitylevel)):
+                completeprompt += " -outfitvomit-"
+        
 
-        if (
-            subjectchooser
-            in ["animal as human", "human", "fictional", "non fictional", "humanoid", "manwomanrelation", "firstname"]
-            and chance_roll(insanitylevel, posechance)
-            and humanspecial != 1
-            and generatepose == True
-        ):
+        
+        if(subjectchooser in ["animal as human","human","fictional", "non fictional", "humanoid", "manwomanrelation","manwomanmultiple", "firstname"]  and chance_roll(insanitylevel, posechance) and humanspecial != 1 and generatepose == True):
             completeprompt += random.choice(poselist) + ", "
-
-        if (
-            subjectchooser
-            in ["human", "job", "fictional", "non fictional", "humanoid", "manwomanrelation", "firstname"]
-            and chance_roll(insanitylevel, hairchance)
-            and generatehairstyle == True
-        ):
+        
+        if(subjectchooser in ["human","job","fictional", "non fictional", "humanoid", "manwomanrelation","manwomanmultiple", "firstname"]  and chance_roll(insanitylevel, hairchance) and generatehairstyle == True):
             completeprompt += random.choice(buildhairlist) + ", "
+            if(unique_dist(insanitylevel)):
+                completeprompt += " -hairvomit-, "
 
-        if (
-            subjectchooser
-            in ["animal as human,", "human", "fictional", "non fictional", "humanoid", "manwomanrelation", "firstname"]
-            and chance_roll(insanitylevel, accessorychance)
-            and generateaccessorie == True
-            and generateaccessories == True
-        ):
+        if(subjectchooser in ["animal as human,","human","fictional", "non fictional", "humanoid", "manwomanrelation","manwomanmultiple", "firstname"]  and chance_roll(insanitylevel, accessorychance) and generateaccessorie == True and generateaccessories == True):
             completeprompt += random.choice(buildaccessorielist) + ", "
 
-        if (
-            chance_roll(insanitylevel, humanoidinsideshotchance)
-            and subjectchooser not in ["landscape", "concept"]
-            and generateinsideshot == True
-        ):
+        if(chance_roll(insanitylevel, humanoidinsideshotchance) and subjectchooser not in ["landscape", "concept"] and generateinsideshot == True):
             insideshot = 1
             completeprompt += random.choice(insideshotlist) + ", "
-
-        if (
-            subjectchooser not in ["landscape", "concept"]
-            and humanspecial != 1
-            and insideshot == 0
-            and chance_roll(insanitylevel, humanoidbackgroundchance)
-            and generatebackground == True
-        ):
+        
+        if(subjectchooser not in ["landscape", "concept"] and humanspecial != 1 and insideshot == 0 and chance_roll(insanitylevel, humanoidbackgroundchance) and generatebackground == True):
             completeprompt += random.choice(backgroundtypelist) + ", "
 
         # minilocation bit
-        if (
-            subjectchooser in ["landscape"]
-            and chance_roll(insanitylevel, landscapeminilocationchance)
-            and generateminilocationaddition == True
-        ):
+        if(subjectchooser in ["landscape"] and chance_roll(insanitylevel, landscapeminilocationchance) and generateminilocationaddition == True):
+            completeprompt += " -minilocationaddition-, "
+            
+        if(chance_roll(insanitylevel, generalminilocationchance) and generateminilocationaddition == True):
             completeprompt += " -minilocationaddition-, "
 
-        if chance_roll(insanitylevel, generalminilocationchance) and generateminilocationaddition == True:
-            completeprompt += " -minilocationaddition-, "
+
 
         # landscapes it is nice to always have a time period
-        if chance_roll(insanitylevel, timperiodchance) or subjectchooser == "landscape":
-            if generatetimeperiod == True:
+        if(chance_roll(insanitylevel, timperiodchance) or subjectchooser=="landscape"):
+            if(generatetimeperiod == True):
                 completeprompt += "-timeperiod-, "
 
-        if mainchooser not in ["landscape"] and chance_roll(insanitylevel, focuschance) and generatefocus == True:
+        if(mainchooser not in ["landscape"]  and chance_roll(insanitylevel, focuschance) and generatefocus == True):
             completeprompt += "-focus-, "
+            
+
+        # artists in the middle, can happen as well:
+
+        if(artists != "none" and artistsplacement == "middle" and generateartist == True):
+            completeprompt += ", "
+            if(artists == "greg mode"):
+                artistbylist = ["art by", "designed by", "stylized by", "by"]
+                completeprompt += random.choice(artistbylist) + " -gregmode- "
+            else:
+                
+                # sometimes do this as well, but now in the front of the artists
+                if(giventypeofimage=="" and imagetype == "all" and random.randint(0, 2) == 0):
+                    completeprompt += "-artiststyle- art, "
+
+                # take 1-3 artists, weighted to 1-2
+                step = random.randint(0, 1)
+                minstep = step
+                end = random.randint(1, insanitylevel3)
+
+
+
+
+                # determine artist mode:
+                # normal
+                # hybrid |
+                # switching A:B:X
+                # adding at step x  a:X
+                # stopping at step x ::X
+
+                
+                modeselector = random.randint(0,10)
+                if modeselector < 4 and end - step >= 2:
+                    artistmodeslist = ["hybrid", "stopping", "adding", "switching"]
+                    artistmode = artistmodeslist[modeselector]
+                    if(advancedprompting == False):
+                        artistmode = "normal"
+                    if artistmode in ["hybrid","switching"] and end - step == 1:
+                        artistmode = "normal"
+                # if there are not enough artists in the list, then just go normal
+                if(len(artistlist) < 3):
+                    artistmode = "normal"
+                
+                if artistmode in ["hybrid", "stopping", "adding","switching"]:
+                    completeprompt += " ["
+                    
+                while step < end: 
+                    if(normal_dist(insanitylevel)):
+                        isweighted = 1
+                    
+                    if isweighted == 1:
+                        completeprompt += " ("
+
+                    #completeprompt = add_from_csv(completeprompt, "artists", 0, "art by ","")
+                    if(step == minstep):
+                        # sometimes do this
+                        if(giventypeofimage=="" and imagetype == "all" and random.randint(0, 1) == 0):
+                            if(artiststyleselectormode == "normal"):
+                                completeprompt += artiststyleselector + " art "
+                            else:
+                                completeprompt += "-artiststyle- art "
+                        artistbylist = ["art by", "designed by", "stylized by", "by"]
+                    else:
+                        artistbylist = [""]
+                    completeprompt += random.choice(artistbylist) + " -artist-"
+                    
+                    if isweighted == 1:
+                        completeprompt += ":" + str(1 + (random.randint(-3,3)/10)) + ")"       
+                    
+                    if artistmode in ["hybrid"] and not end - step == 1:
+                        completeprompt += "|"
+                    if artistmode in ["switching"] and not end - step == 1:
+                        completeprompt += ":"
+                
+                    if artistmode not in ["hybrid", "switching"]and not end - step == 1:
+                        completeprompt += ","
+                    
+                    isweighted = 0
+                    
+                    step = step + 1
+
+                if artistmode in ["stopping"]:
+                    completeprompt += "::"
+                    completeprompt += str(random.randint(1,19))
+                
+                if artistmode in ["switching","adding"]:
+                    completeprompt += ":" + str(random.randint(1,18))
+                if artistmode in ["hybrid", "stopping","adding", "switching"]:
+                    completeprompt += "] "
+                
+                completeprompt += ", "
+                # end of the artist stuff
 
         # others
-        if chance_roll(insanitylevel, directionchance) and generatedirection == True:
+        if(chance_roll(insanitylevel, directionchance) and generatedirection == True):
             completeprompt += "-direction-, "
 
-        if chance_roll(insanitylevel, moodchance) and generatemood == True:
-            completeprompt += "-mood-, "
+        if(chance_roll(insanitylevel, moodchance) and generatemood == True):
+            completeprompt += "-mood-, " 
 
         # add in some more mini vomits
-        if chance_roll(insanitylevel, minivomitsuffixchance) and generateminivomit == True:
+        if(chance_roll(insanitylevel, minivomitsuffixchance) and generateminivomit == True):
             completeprompt += " -minivomit-, "
-
-        if chance_roll(insanitylevel, artmovementchance) and generateartmovement == True:
-            completeprompt += "-artmovement-, "
-
-        if chance_roll(insanitylevel, lightingchance) and generatelighting == True:
-            completeprompt += "-lighting-, "
+       
+        if(chance_roll(insanitylevel, artmovementchance) and generateartmovement == True):
+            completeprompt += "-artmovement-, "  
+        
+        if(chance_roll(insanitylevel, lightingchance) and generatelighting == True):
+            completeprompt += "-lighting-, "  
 
         # determine wether we have a photo or not
-        if "photo" in completeprompt.lower():
+        if("photo" in completeprompt.lower()):
             isphoto = 1
-
-        if chance_roll(insanitylevel, photoadditionchance) and isphoto == 1 and generatephotoaddition == True:
+            
+        if(chance_roll(insanitylevel, photoadditionchance) and isphoto == 1 and generatephotoaddition == True):
             completeprompt += random.choice(photoadditionlist) + ", "
+                
+        if(isphoto == 1 and generatecamera == True):
+            completeprompt += "-camera-, "  
 
-        if isphoto == 1 and generatecamera == True:
-            completeprompt += "-camera-, "
-
-        if chance_roll(insanitylevel, lenschance) or isphoto == 1:
-            if generatelens == True:
+        if(chance_roll(insanitylevel, lenschance) or isphoto == 1):
+            if(generatelens == True):
                 completeprompt += "-lens-, "
 
-        if chance_roll(insanitylevel, colorschemechance) and generatecolorscheme == True:
+        if(chance_roll(insanitylevel, colorschemechance) and generatecolorscheme == True):
             completeprompt += "-colorscheme-, "
 
         # vomit some cool/wierd things into the prompt
-        if chance_roll(insanitylevel, vomit1chance) and generatevomit == True:
+        if(chance_roll(insanitylevel, vomit1chance) and generatevomit == True):
             completeprompt += "-vomit-, "
-            if chance_roll(insanitylevel, vomit2chance):
+            if(chance_roll(insanitylevel, vomit2chance)):
                 completeprompt += "-vomit-, "
 
-        # adding a great work of art, like starry night has cool effects. But this should happen only very rarely.
-        if chance_roll(insanitylevel, greatworkchance) and generategreatwork == True:
+        # human specfic vomit
+        if(mainchooser == "humanoid" and chance_roll(insanitylevel, humanvomitchance) and generatehumanvomit == True):
+            completeprompt += "-humanvomit-, "
+            if(chance_roll(insanitylevel, humanvomitchance)):
+                completeprompt += "-humanvomit-, "
+
+        #adding a great work of art, like starry night has cool effects. But this should happen only very rarely.
+        if(chance_roll(insanitylevel, greatworkchance) and generategreatwork == True):
             completeprompt += " in the style of -greatwork-, "
 
-        # adding a poemline. But this should happen only very rarely.
-        if chance_roll(insanitylevel, poemlinechance) and generatepoemline == True:
-            completeprompt += ' "-poemline-", '
+        #adding a poemline. But this should happen only very rarely.
+        if(chance_roll(insanitylevel, poemlinechance) and generatepoemline == True):
+            completeprompt += " \"-poemline-\", "
 
-        # adding a songline. But this should happen only very rarely.
-        if chance_roll(insanitylevel, songlinechance) and generatesongline == True:
-            completeprompt += ' "-songline-", '
+        #adding a songline. But this should happen only very rarely.
+        if(chance_roll(insanitylevel, songlinechance) and generatesongline == True):
+            completeprompt += " \"-songline-\", "
 
         # everyone loves the adding quality. The better models don't need this, but lets add it anyway
-        if chance_roll(insanitylevel, quality1chance) and generatequality == True:
+        if(chance_roll(insanitylevel, quality1chance) and generatequality == True):
             completeprompt += "-quality-, "
-            if chance_roll(insanitylevel, quality2chance):
+            if(chance_roll(insanitylevel, quality2chance)):
                 completeprompt += "-quality-, "
 
+        
+        
         # start second part of art blaster here
-        if artblastermode == True:
+        if(artblastermode==True):
             step = 0
             end = random.randint(1, insanitylevel) + 1
             while step < end:
-                if uncommon_dist(insanitylevel) and bool(artistlist):
+                if(uncommon_dist(insanitylevel) and bool(artistlist)):
                     completeprompt += "-artist-, "
-                if uncommon_dist(insanitylevel) and bool(artmovementlist):
+                if(uncommon_dist(insanitylevel) and bool(artmovementlist)):
                     completeprompt += "-artmovement-, "
-                if unique_dist(insanitylevel) and bool(vomitlist):
+                if(unique_dist(insanitylevel) and bool(vomitlist)):
                     completeprompt += "-vomit-, "
-                if unique_dist(insanitylevel) and bool(imagetypelist):
+                if(unique_dist(insanitylevel) and bool(imagetypelist)):
                     completeprompt += "-imagetype-, "
-                if unique_dist(insanitylevel) and bool(colorschemelist):
+                if(unique_dist(insanitylevel) and bool(colorschemelist)):
                     completeprompt += "-colorscheme-, "
-                step = step + 1
-
-        # start second part of unique art here
-        if uniqueartmode == True:
+                step = step + 1 
+        
+         # start second part of unique art here
+        if(uniqueartmode==True):
             step = 0
             end = random.randint(1, insanitylevel) + 1
             while step < end:
-                if uncommon_dist(insanitylevel) and bool(artmovementlist):
+                if(uncommon_dist(insanitylevel) and bool(artmovementlist)):
                     completeprompt += "-artmovement-, "
-                if uncommon_dist(insanitylevel) and bool(colorschemelist):
+                if(uncommon_dist(insanitylevel) and bool(colorschemelist)):
                     completeprompt += "-colorscheme-, "
-                if rare_dist(insanitylevel) and bool(vomitlist):
+                if(rare_dist(insanitylevel) and bool(vomitlist)):
                     completeprompt += "-vomit-, "
-                if rare_dist(insanitylevel) and bool(lightinglist):
+                if(rare_dist(insanitylevel) and bool(lightinglist)):
                     completeprompt += "-lighting-, "
-                if unique_dist(insanitylevel) and bool(qualitylist):
+                if(unique_dist(insanitylevel) and bool(qualitylist)):
                     completeprompt += "-quality-, "
-                if unique_dist(insanitylevel) and bool(artistlist):
+                if(unique_dist(insanitylevel) and bool(artistlist)):
                     completeprompt += "-artist-, "
-                if novel_dist(insanitylevel) and bool(greatworklist):
+                if(novel_dist(insanitylevel) and bool(greatworklist)):
                     completeprompt += "in style of -greatwork-, "
-                if novel_dist(insanitylevel) and bool(poemlinelist):
-                    completeprompt += '"-poemline-", '
-                if novel_dist(insanitylevel) and bool(songlinelist):
-                    completeprompt += '"-songline-", '
-
-                step = step + 1
-
+                if(novel_dist(insanitylevel) and bool(poemlinelist)):
+                    completeprompt += "\"-poemline-\", "
+                if(novel_dist(insanitylevel) and bool(songlinelist)):
+                    completeprompt += "\"-songline-\", "
+                
+                step = step + 1 
+        
+        
         # start second part of quality vomit here
-        if qualityvomitmode == True:
+        if(qualityvomitmode==True):
             step = 0
             end = random.randint(1, insanitylevel) + 1
             while step < end:
-                if uncommon_dist(insanitylevel) and bool(vomitlist):
+                if(uncommon_dist(insanitylevel) and bool(vomitlist)):
                     completeprompt += "-vomit-, "
-                if uncommon_dist(insanitylevel) and bool(qualitylist):
+                if(uncommon_dist(insanitylevel) and bool(qualitylist)):
                     completeprompt += "-quality-, "
-                if unique_dist(insanitylevel) and bool(minivomitlist):
+                if(unique_dist(insanitylevel) and bool(minivomitlist)):
                     completeprompt += "-minivomit-, "
-                if unique_dist(insanitylevel) and bool(artmovementlist):
+                if(unique_dist(insanitylevel) and bool(artmovementlist)) :
                     completeprompt += "-artmovement-, "
-                if unique_dist(insanitylevel) and bool(colorschemelist):
+                if(unique_dist(insanitylevel) and bool(colorschemelist)):
                     completeprompt += "-colorscheme-, "
-                step = step + 1
-
+                step = step + 1 
+        
         # start second part of mood color here
-        if colorcannonmode == True:
+        if(colorcannonmode == True):
             step = 0
             end = random.randint(1, insanitylevel) + 1
             while step < end:
-                if uncommon_dist(insanitylevel) and bool(moodlist):
+                if(uncommon_dist(insanitylevel) and bool(moodlist)):
                     completeprompt += "-mood-, "
-                if uncommon_dist(insanitylevel) and bool(colorschemelist):
+                if(uncommon_dist(insanitylevel) and bool(colorschemelist)):
                     completeprompt += "-colorscheme-, "
-                if rare_dist(insanitylevel) and bool(vomitlist):
+                if(rare_dist(insanitylevel) and bool(vomitlist)):
                     completeprompt += "-vomit-, "
-                if unique_dist(insanitylevel) and bool(artmovementlist):
+                if(unique_dist(insanitylevel) and bool(artmovementlist)):
                     completeprompt += "-artmovement-, "
-                if unique_dist(insanitylevel) and bool(lightinglist):
+                if(unique_dist(insanitylevel) and bool(lightinglist)):
                     completeprompt += "-lighting-, "
-                step = step + 1
+                step = step + 1 
 
+        
         # start second part of photo fantasy here
-        if photofantasymode == True:
+        if(photofantasymode == True):
             step = 0
             end = random.randint(1, insanitylevel) + 1
             while step < end:
-                if uncommon_dist(insanitylevel) and bool(lightinglist):
+                if(uncommon_dist(insanitylevel) and bool(lightinglist)):
                     completeprompt += "-lighting-, "
-                if uncommon_dist(insanitylevel) and bool(cameralist):
+                if(uncommon_dist(insanitylevel) and bool(cameralist)):
                     completeprompt += "-camera-, "
-                if rare_dist(insanitylevel) and bool(lenslist):
+                if(rare_dist(insanitylevel) and bool(lenslist)):
                     completeprompt += "-lens-, "
-                if unique_dist(insanitylevel) and bool(moodlist):
+                if(unique_dist(insanitylevel) and bool(moodlist)):
                     completeprompt += "-mood-, "
-                if unique_dist(insanitylevel) and bool(colorschemelist):
+                if(unique_dist(insanitylevel) and bool(colorschemelist)):
                     completeprompt += "-colorscheme-, "
-                step = step + 1
-
+                step = step + 1 
+        
         # start second part of massive madness here
-        if massivemadnessmode == True:
-            completeprompt += ":1.3), "
+        if(massivemadnessmode == True):
+            completeprompt += ", "
             step = 0
             end = random.randint(1, insanitylevel) + 1
             while step < end:
-                if rare_dist(insanitylevel) and bool(artistlist):
+                if(rare_dist(insanitylevel) and bool(artistlist)):
                     completeprompt += "-artist-, "
-                if rare_dist(insanitylevel) and bool(descriptorlist):
+                if(rare_dist(insanitylevel) and bool(descriptorlist)):
                     completeprompt += "-descriptor-, "
-                if rare_dist(insanitylevel) and bool(moodlist):
+                if(rare_dist(insanitylevel) and bool(moodlist)):
                     completeprompt += "-mood-, "
-                if rare_dist(insanitylevel) and bool(colorschemelist):
+                if(rare_dist(insanitylevel) and bool(colorschemelist)):
                     completeprompt += "-colorscheme-, "
-                if rare_dist(insanitylevel) and bool(vomitlist):
+                if(rare_dist(insanitylevel) and bool(vomitlist)):
                     completeprompt += "-vomit-, "
-                if rare_dist(insanitylevel) and bool(artmovementlist):
+                if(rare_dist(insanitylevel) and bool(artmovementlist)):
                     completeprompt += "-artmovement-, "
-                if rare_dist(insanitylevel) and bool(lightinglist):
+                if(rare_dist(insanitylevel) and bool(lightinglist)):
                     completeprompt += "-lighting-, "
-                if rare_dist(insanitylevel) and bool(minilocationadditionslist):
+                if(rare_dist(insanitylevel) and bool(minilocationadditionslist)):
                     completeprompt += "-minilocationaddition-, "
-                if rare_dist(insanitylevel) and bool(materiallist):
+                if(rare_dist(insanitylevel) and bool(materiallist)):
                     completeprompt += "-material-, "
-                if rare_dist(insanitylevel) and bool(conceptsuffixlist):
+                if(rare_dist(insanitylevel) and bool(conceptsuffixlist)):
                     completeprompt += "-conceptsuffix-, "
-                if rare_dist(insanitylevel) and bool(qualitylist):
+                if(rare_dist(insanitylevel) and bool(qualitylist)):
                     completeprompt += "-quality-, "
-                if rare_dist(insanitylevel) and bool(cameralist):
+                if(rare_dist(insanitylevel) and bool(cameralist)):
                     completeprompt += "-camera-, "
-                step = step + 1
+                step = step + 1 
 
+        # start styles mode here
+        if(stylesmode == True):
+            completeprompt += chosenstylesuffix
+
+        
         # custom style list
-        if chance_roll(insanitylevel, customstyle1chance) and generatestyle == True:
+        if(chance_roll(insanitylevel, customstyle1chance) and generatestyle == True):
             completeprompt += "-styletilora-, "
-            if chance_roll(insanitylevel, customstyle2chance):
+            if(chance_roll(insanitylevel, customstyle2chance)):
                 completeprompt += "-styletilora-, "
+
 
         # custom suffix list
         for i in range(custominputsuffixrepeats):
-            if chance_roll(insanitylevel, custominputsuffixchance) and generatecustominputsuffix == True:
+            if(chance_roll(insanitylevel, custominputsuffixchance) and generatecustominputsuffix == True):
                 completeprompt += random.choice(custominputsuffixlist) + ", "
 
+
+
         if artistmode in ["enhancing"]:
-            completeprompt += "::" + str(random.randint(1, 17)) + "] "
+            completeprompt += "::" + str(random.randint(1,17)) + "] "
 
-        if artists != "none" and artistsplacement == "back" and generateartist == True:
+
+
+        if(artists != "none" and artistsplacement == "back" and generateartist == True):
             completeprompt += ", "
-            # take 1-3 artists, weighted to 1-2
-            step = random.randint(0, 1)
-            end = random.randint(1, insanitylevel3)
+            if(artists == "greg mode"):
+                artistbylist = ["art by", "designed by", "stylized by", "by"]
+                completeprompt += random.choice(artistbylist) + " -gregmode- "
+            else:
+                # take 1-3 artists, weighted to 1-2
+                step = random.randint(0, 1)
+                minstep = step
+                end = random.randint(1, insanitylevel3)
 
-            # determine artist mode:
-            # normal
-            # hybrid |
-            # switching A:B:X
-            # adding at step x  a:X
-            # stopping at step x ::X
 
-            modeselector = random.randint(0, 10)
-            if modeselector < 4 and end - step >= 2:
-                artistmodeslist = ["hybrid", "stopping", "adding", "switching"]
-                artistmode = artistmodeslist[modeselector]
-                if advancedprompting == False:
+
+
+                # determine artist mode:
+                # normal
+                # hybrid |
+                # switching A:B:X
+                # adding at step x  a:X
+                # stopping at step x ::X
+
+                
+                modeselector = random.randint(0,10)
+                if modeselector < 4 and end - step >= 2:
+                    artistmodeslist = ["hybrid", "stopping", "adding", "switching"]
+                    artistmode = artistmodeslist[modeselector]
+                    if(advancedprompting == False):
+                        artistmode = "normal"
+                    if artistmode in ["hybrid","switching"] and end - step == 1:
+                        artistmode = "normal"
+                # if there are not enough artists in the list, then just go normal
+                if(len(artistlist) < 3):
                     artistmode = "normal"
-                if artistmode in ["hybrid", "switching"] and end - step == 1:
-                    artistmode = "normal"
-            # if there are not enough artists in the list, then just go normal
-            if len(artistlist) < 3:
-                artistmode = "normal"
+                
+                if artistmode in ["hybrid", "stopping", "adding","switching"]:
+                    completeprompt += " ["
+                    
+                while step < end: 
+                    if(normal_dist(insanitylevel)):
+                        isweighted = 1
+                    
+                    if isweighted == 1:
+                        completeprompt += " ("
 
-            if artistmode in ["hybrid", "stopping", "adding", "switching"]:
-                completeprompt += " ["
+                    #completeprompt = add_from_csv(completeprompt, "artists", 0, "art by ","")
+                    if(step == minstep):
+                        # sometimes do this
+                        if(giventypeofimage=="" and imagetype == "all" and random.randint(0, 1) == 0):
+                            if(artiststyleselectormode == "normal"):
+                                completeprompt += artiststyleselector + " art "
+                            else:
+                                completeprompt += "-artiststyle- art "
+                        artistbylist = ["art by", "designed by", "stylized by", "by"]
+                    else:
+                        artistbylist = [""]
+                    completeprompt += random.choice(artistbylist) + " -artist-"
+                    
+                    if isweighted == 1:
+                        completeprompt += ":" + str(1 + (random.randint(-3,3)/10)) + ")"       
+                    
+                    if artistmode in ["hybrid"] and not end - step == 1:
+                        completeprompt += "|"
+                    if artistmode in ["switching"] and not end - step == 1:
+                        completeprompt += ":"
+                
+                    if artistmode not in ["hybrid", "switching"]and not end - step == 1:
+                        completeprompt += ","
+                    
+                    isweighted = 0
+                    
+                    step = step + 1
 
-            while step < end:
-                if normal_dist(insanitylevel):
-                    isweighted = 1
+                if artistmode in ["stopping"]:
+                    completeprompt += "::"
+                    completeprompt += str(random.randint(1,19))
+                
+                if artistmode in ["switching","adding"]:
+                    completeprompt += ":" + str(random.randint(1,18))
+                if artistmode in ["hybrid", "stopping","adding", "switching"]:
+                    completeprompt += "] "
+                # end of the artist stuff
 
-                if isweighted == 1:
-                    completeprompt += " ("
-
-                # completeprompt = add_from_csv(completeprompt, "artists", 0, "art by ","")
-                completeprompt += "-artist-"
-
-                if isweighted == 1:
-                    completeprompt += ":" + str(1 + (random.randint(-3, 3) / 10)) + ")"
-
-                if artistmode in ["hybrid"] and not end - step == 1:
-                    completeprompt += "|"
-                if artistmode in ["switching"] and not end - step == 1:
-                    completeprompt += ":"
-
-                if artistmode not in ["hybrid", "switching"] and not end - step == 1:
-                    completeprompt += ","
-
-                isweighted = 0
-
-                step = step + 1
-
-            if artistmode in ["stopping"]:
-                completeprompt += "::"
-                completeprompt += str(random.randint(1, 19))
-
-            if artistmode in ["switching", "adding"]:
-                completeprompt += ":" + str(random.randint(1, 18))
-            if artistmode in ["hybrid", "stopping", "adding", "switching"]:
-                completeprompt += "] "
-            # end of the artist stuff
-
+        
+        
+        
         completeprompt += ", "
         completeprompt += suffixprompt
 
         # and then up the compounding stuff
         compoundcounter += 1
-
+        
         # Here comes all the seperator stuff for prompt compounding
-        if compoundcounter < promptstocompound:
-            if seperator == "comma":
+        if(compoundcounter < promptstocompound):
+            if(seperator == "comma"):
                 completeprompt += " \n , "
             else:
                 completeprompt += " \n " + seperator + " "
 
-    # end of the while loop, now clean up the prompt
+
+
+
+
+    #end of the while loop, now clean up the prompt
+
+
+    
+
+
+    # In front and the back?
+    completeprompt = parse_custom_functions(completeprompt, insanitylevel)
+    
+    # Sometimes change he/she to the actual subject
+    # Doesnt work if someone puts in a manual subject
+    if(mainchooser == "humanoid" and givensubject == "" and subjectchooser != "manwomanmultiple"):
+        samehumanreplacementlist = ["-heshe-","-heshe-","-heshe-","-heshe-","-heshe-", "-samehumansubject-", "-samehumansubject-", "-samehumansubject-", "-samehumansubject-", "-samehumansubject-"]
+        random.shuffle(samehumanreplacementlist)
+        
+        # Convert completeprompt to a list to allow character-wise manipulation
+        completeprompt_list = list(completeprompt)
+        # Iterate over the characters in completeprompt_list
+        for i in range(len(completeprompt_list) - len("-heshe-") + 1):
+            if "".join(completeprompt_list[i:i+len("-heshe-")]) == "-heshe-":
+                # Replace -heshe- with a value from the shuffled list
+                replacement = samehumanreplacementlist.pop()
+                completeprompt_list[i:i+len("-heshe-")] = replacement
+
+        # Convert the list back to a string
+        completeprompt = "".join(completeprompt_list)
+
+        # Sometimes change he/she to the actual subject
+    if(mainchooser in  ["animal", "object"] and givensubject == ""):
+        sameobjectreplacementlist = ["-heshe-","-heshe-","-heshe-","-heshe-","-heshe-", "-sameothersubject-", "-sameothersubject-", "-sameothersubject-", "-sameothersubject-", "-sameothersubject-"]
+        random.shuffle(sameobjectreplacementlist)
+        # Convert completeprompt to a list to allow character-wise manipulation
+        completeprompt_list = list(completeprompt)
+
+        # Iterate over the characters in completeprompt_list
+        for i in range(len(completeprompt_list) - len("-heshe-") + 1):
+            if "".join(completeprompt_list[i:i+len("-heshe-")]) == "-heshe-":
+                # Replace -heshe- with a value from the shuffled list
+                replacement = sameobjectreplacementlist.pop()
+                completeprompt_list[i:i+len("-heshe-")] = replacement
+        # Convert the list back to a string
+        completeprompt = "".join(completeprompt_list)
+
+    # hair descriptor
+    if(rare_dist(insanitylevel)): # Use base hair descriptor, until we are not.
+        completeprompt = completeprompt.replace("-hairdescriptor-", "-descriptor-")
+    
+    # human descriptor
+    if(rare_dist(insanitylevel)): # Use base human descriptor, until we are not.
+        completeprompt = completeprompt.replace("-humandescriptor-", "-descriptor-")
+    
+    # location descriptor
+    if(rare_dist(insanitylevel)): # Use base location descriptor, until we are not.
+        completeprompt = completeprompt.replace("-locationdescriptor-", "-descriptor-")
+    
+    # human descriptor
+    if(rare_dist(insanitylevel)): # Use base human descriptor, until we are not.
+        completeprompt = completeprompt.replace("-animaldescriptor-", "-descriptor-")
+
 
     # first some manual stuff for outfit
 
-    if unique_dist(
-        insanitylevel
-    ):  # sometimes, its just nice to have descriptor and a normal "outfit". We use mini outfits for this!
-        completeprompt = completeprompt.replace("-outfit-", "-minioutfit-", 1)
+    if(unique_dist(insanitylevel)): # sometimes, its just nice to have descriptor and a normal "outfit". We use mini outfits for this!
+        completeprompt = completeprompt.replace("-outfit-", "-minioutfit-",1)
+    if(rare_dist(insanitylevel)): # Use base outfit descriptor, until we are not.
+        completeprompt = completeprompt.replace("-outfitdescriptor-", "-descriptor-")
 
+    if(overrideoutfit != ""):
+        completeprompt = completeprompt.replace("-sameoutfit-", overrideoutfit)
+        completeprompt = completeprompt.replace("-outfit-", overrideoutfit,1)
+        completeprompt = completeprompt.replace("-minioutfit-", overrideoutfit,1)
+        completeprompt = completeprompt.replace("-overrideoutfit-", overrideoutfit)
+    
+    # If we don't have an override outfit, then remove this part
+    completeprompt = completeprompt.replace("-overrideoutfit-", "")
+
+    # sometimes replace one descriptor with a artmovement, only on high insanitylevels
+    if(insanitylevel > 7 and unique_dist(insanitylevel)):
+        completeprompt = completeprompt.replace("-descriptor-", "-artmovement-",1)
+
+    # On low insanity levels (lower than 5) ,a chance refer to the basic bitch list on some occasions
+    if(random.randint(0,insanitylevel) == 0 and insanitylevel < 5): 
+        completeprompt = completeprompt.replace("-locationdescriptor-", "-basicbitchdescriptor-")
+        completeprompt = completeprompt.replace("-humandescriptor-", "-basicbitchdescriptor-")
+        completeprompt = completeprompt.replace("-outfitdescriptor-", "-basicbitchdescriptor-")
+        completeprompt = completeprompt.replace("-descriptor-", "-basicbitchdescriptor-")
+        completeprompt = completeprompt.replace("-animaldescriptor-", "-basicbitchdescriptor-")
+
+    # we now have color combinations, which are stronger than just color. So lets change them while we are at it.
+    if(random.randint(0,max(0, insanitylevel - 2)) <= 0):
+        completeprompt = completeprompt.replace("-color- and -color-", "-colorcombination-") # any color and color becomes a color combination
+
+        colorreplacementlist = ["-color-","-color-","-color-","-colorcombination-","-colorcombination-", "-colorcombination-", "-colorcombination-", "-colorcombination-", "-colorcombination-", "-colorcombination-"]
+        random.shuffle(colorreplacementlist)
+        
+        # Convert completeprompt to a list to allow character-wise manipulation
+        completeprompt_list = list(completeprompt)
+        # Iterate over the characters in completeprompt_list
+        for i in range(len(completeprompt_list) - len("-color-") + 1):
+            if "".join(completeprompt_list[i:i+len("-color-")]) == "-color-":
+                # Replace -heshe- with a value from the shuffled list
+                replacement = colorreplacementlist.pop()
+                completeprompt_list[i:i+len("-color-")] = replacement
+
+        # Convert the list back to a string
+        completeprompt = "".join(completeprompt_list)
+
+
+     # we now have material combinations, which are stronger than just one material. So lets change them while we are at it.
+    if(random.randint(0,max(0, insanitylevel - 4)) <= 0):
+        completeprompt = completeprompt.replace("-material- and -material-", "-materialcombination-") # any color and color becomes a color combination
+
+        materialreplacementlist = ["-material-","-material-","-material-","-materialcombination-","-materialcombination-", "-materialcombination-", "-materialcombination-", "-materialcombination-", "-materialcombination-", "-materialcombination-"]
+        random.shuffle(materialreplacementlist)
+        
+        # Convert completeprompt to a list to allow character-wise manipulation
+        completeprompt_list = list(completeprompt)
+        # Iterate over the characters in completeprompt_list
+        for i in range(len(completeprompt_list) - len("-material-") + 1):
+            if "".join(completeprompt_list[i:i+len("-material-")]) == "-material-":
+                # Replace -heshe- with a value from the shuffled list
+                replacement = materialreplacementlist.pop()
+                completeprompt_list[i:i+len("-material-")] = replacement
+
+        # Convert the list back to a string
+        completeprompt = "".join(completeprompt_list)
+
+        
+
+    
     # lol, this needs a rewrite :D
     while (
-        "-color-" in completeprompt
-        or "-material-" in completeprompt
-        or "-animal-" in completeprompt
-        or "-object-" in completeprompt
-        or "-fictional-" in completeprompt
-        or "-nonfictional-" in completeprompt
-        or "-conceptsuffix-" in completeprompt
-        or "-building-" in completeprompt
-        or "-vehicle-" in completeprompt
-        or "-outfit-" in completeprompt
-        or "-location-" in completeprompt
-        or "-conceptprefix-" in completeprompt
-        or "-descriptor-" in completeprompt
-        or "-food-" in completeprompt
-        or "-haircolor-" in completeprompt
-        or "-hairstyle-" in completeprompt
-        or "-job-" in completeprompt
-        or "-culture-" in completeprompt
-        or "-accessory-" in completeprompt
-        or "-humanoid-" in completeprompt
-        or "-manwoman-" in completeprompt
-        or "-human-" in completeprompt
-        or "-colorscheme-" in completeprompt
-        or "-mood-" in completeprompt
-        or "-genderdescription-" in completeprompt
-        or "-artmovement-" in completeprompt
-        or "-malefemale-" in completeprompt
-        or "-objecttotal-" in completeprompt
-        or "-bodytype-" in completeprompt
-        or "-minilocation-" in completeprompt
-        or "-minilocationaddition-" in completeprompt
-        or "-pose-" in completeprompt
-        or "-season-" in completeprompt
-        or "-minioutfit-" in completeprompt
-        or "-elaborateoutfit-" in completeprompt
-        or "-minivomit-" in completeprompt
-        or "-vomit-" in completeprompt
-        or "-rpgclass-" in completeprompt
-        or "-subjectfromfile-" in completeprompt
-        or "-brand-" in completeprompt
-        or "-space-" in completeprompt
-        or "-artist-" in completeprompt
-        or "-imagetype-" in completeprompt
-        or "-othertype-" in completeprompt
-        or "-quality-" in completeprompt
-        or "-lighting-" in completeprompt
-        or "-camera-" in completeprompt
-        or "-lens-" in completeprompt
-        or "-imagetypequality-" in completeprompt
-        or "-poemline-" in completeprompt
-        or "-songline-" in completeprompt
-        or "-greatwork-" in completeprompt
-        or "-artistfantasy-" in completeprompt
-        or "-artistpopular-" in completeprompt
-        or "-artistromanticism-" in completeprompt
-        or "-artistphotography-" in completeprompt
-        or "-emoji-" in completeprompt
-        or "-timeperiod-" in completeprompt
-        or "-shotsize-" in completeprompt
-        or "-musicgenre-" in completeprompt
-        or "-animaladdition-" in completeprompt
-        or "-addontolocationinside-" in completeprompt
-        or "-addontolocation-" in completeprompt
-        or "-objectaddition-" in completeprompt
-        or "-humanaddition-" in completeprompt
-        or "-overalladdition-" in completeprompt
-        or "-focus-" in completeprompt
-        or "-direction-" in completeprompt
-        or "-styletilora-" in completeprompt
-        or "-manwomanrelation-" in completeprompt
-        or "-waterlocation-" in completeprompt
-        or "-container-" in completeprompt
-        or "-firstname-" in completeprompt
-        or "-flora-" in completeprompt
-    ):
-        allwildcardslistnohybrid = [
-            "-color-",
-            "-object-",
-            "-animal-",
-            "-fictional-",
-            "-nonfictional-",
-            "-building-",
-            "-vehicle-",
-            "-location-",
-            "-conceptprefix-",
-            "-food-",
-            "-haircolor-",
-            "-hairstyle-",
-            "-job-",
-            "-accessory-",
-            "-humanoid-",
-            "-manwoman-",
-            "-human-",
-            "-colorscheme-",
-            "-mood-",
-            "-genderdescription-",
-            "-artmovement-",
-            "-malefemale-",
-            "-bodytype-",
-            "-minilocation-",
-            "-minilocationaddition-",
-            "-pose-",
-            "-season-",
-            "-minioutfit-",
-            "-elaborateoutfit-",
-            "-minivomit-",
-            "-vomit-",
-            "-rpgclass-",
-            "-subjectfromfile-",
-            "-brand-",
-            "-space-",
-            "-artist-",
-            "-imagetype-",
-            "-othertype-",
-            "-quality-",
-            "-lighting-",
-            "-camera-",
-            "-lens-",
-            "-imagetypequality-",
-            "-poemline-",
-            "-songline-",
-            "-greatwork-",
-            "-artistfantasy-",
-            "-artistpopular-",
-            "-artistromanticism-",
-            "-artistphotography-",
-            "-emoji-",
-            "-timeperiod-",
-            "-shotsize-",
-            "-musicgenre-",
-            "-animaladdition-",
-            "-addontolocationinside-",
-            "-addontolocation-",
-            "-objectaddition-",
-            "-humanaddition-",
-            "-overalladdition-",
-            "-focus-",
-            "-direction-",
-            "-styletilora-",
-            "-manwomanrelation-",
-            "-waterlocation-",
-            "-container-",
-            "-firstname-",
-            "-flora-",
-        ]
-        allwildcardslistnohybridlists = [
-            colorlist,
-            objectlist,
-            animallist,
-            fictionallist,
-            nonfictionallist,
-            buildinglist,
-            vehiclelist,
-            locationlist,
-            conceptprefixlist,
-            foodlist,
-            haircolorlist,
-            hairstylelist,
-            joblist,
-            accessorielist,
-            humanoidlist,
-            manwomanlist,
-            humanlist,
-            colorschemelist,
-            moodlist,
-            genderdescriptionlist,
-            artmovementlist,
-            malefemalelist,
-            bodytypelist,
-            minilocationlist,
-            minilocationadditionslist,
-            poselist,
-            seasonlist,
-            minioutfitlist,
-            elaborateoutfitlist,
-            minivomitlist,
-            vomitlist,
-            rpgclasslist,
-            customsubjectslist,
-            brandlist,
-            spacelist,
-            artistlist,
-            imagetypelist,
-            othertypelist,
-            qualitylist,
-            lightinglist,
-            cameralist,
-            lenslist,
-            imagetypequalitylist,
-            poemlinelist,
-            songlinelist,
-            greatworklist,
-            fantasyartistlist,
-            popularartistlist,
-            romanticismartistlist,
-            photographyartistlist,
-            emojilist,
-            timeperiodlist,
-            shotsizelist,
-            musicgenrelist,
-            animaladditionlist,
-            addontolocationinsidelist,
-            addontolocationlist,
-            objectadditionslist,
-            humanadditionlist,
-            overalladditionlist,
-            focuslist,
-            directionlist,
-            stylestiloralist,
-            manwomanrelationlist,
-            waterlocationlist,
-            containerlist,
-            firstnamelist,
-            floralist,
-        ]
-
-        allwildcardslistwithhybrid = [
-            "-material-",
-            "-descriptor-",
-            "-outfit-",
-            "-conceptsuffix-",
-            "-culture-",
-            "-objecttotal-",
-        ]
-        allwildcardslistwithhybridlists = [
-            materiallist,
-            descriptorlist,
-            outfitlist,
-            conceptsuffixlist,
-            culturelist,
-            objecttotallist,
-        ]
-
+    "-color-" in completeprompt or
+    "-material-" in completeprompt or
+    "-animal-" in completeprompt or
+    "-object-" in completeprompt or
+    "-fictional-" in completeprompt or
+    "-nonfictional-" in completeprompt or
+    "-conceptsuffix-" in completeprompt or
+    "-building-" in completeprompt or
+    "-vehicle-" in completeprompt or
+    "-outfit-" in completeprompt or
+    "-location-" in completeprompt or
+    "-conceptprefix-" in completeprompt or
+    "-descriptor-" in completeprompt or
+    "-food-" in completeprompt or
+    "-haircolor-" in completeprompt or
+    "-hairstyle-" in completeprompt or
+    "-job-" in completeprompt or
+    "-culture-" in completeprompt or
+    "-accessory-" in completeprompt or
+    "-humanoid-" in completeprompt or
+    "-manwoman-" in completeprompt or
+    "-human-" in completeprompt or
+    "-colorscheme-" in completeprompt or
+    "-mood-" in completeprompt or
+    "-genderdescription-" in completeprompt or
+    "-artmovement-" in completeprompt or
+    "-malefemale-" in completeprompt or
+    "-objecttotal-" in completeprompt or
+    "-outfitprinttotal-" in completeprompt or
+    "-bodytype-" in completeprompt or
+    "-minilocation-" in completeprompt or
+    "-minilocationaddition-" in completeprompt or
+    "-pose-" in completeprompt or
+    "-season-" in completeprompt or
+    "-minioutfit-" in completeprompt or
+    "-elaborateoutfit-" in completeprompt or
+    "-minivomit-" in completeprompt or
+    "-vomit-" in completeprompt or
+    "-rpgclass-" in completeprompt or
+    "-subjectfromfile-" in completeprompt or
+    "-outfitfromfile-" in completeprompt or
+    "-brand-" in completeprompt or
+    "-space-" in completeprompt or
+    "-artist-" in completeprompt or
+    "-imagetype-" in completeprompt or
+    "-othertype-" in completeprompt or
+    "-quality-" in completeprompt or
+    "-lighting-" in completeprompt or
+    "-camera-" in completeprompt or
+    "-lens-" in completeprompt or
+    "-imagetypequality-" in completeprompt or
+    "-poemline-" in completeprompt or
+    "-songline-" in completeprompt or
+    "-greatwork-" in completeprompt or
+    "-artistfantasy-" in completeprompt or 
+    "-artistpopular-" in completeprompt or 
+    "-artistromanticism-" in completeprompt or 
+    "-artistphotography-" in completeprompt or
+    "-emoji-" in completeprompt or
+    "-timeperiod-" in completeprompt or
+    "-shotsize-" in completeprompt or
+    "-musicgenre-" in completeprompt or
+    "-animaladdition-" in completeprompt or
+    "-addontolocationinside-" in completeprompt or
+    "-addontolocation-" in completeprompt or
+    "-objectaddition-" in completeprompt or
+    "-humanaddition-" in completeprompt or
+    "-overalladdition-" in completeprompt or
+    "-focus-" in completeprompt or
+    "-direction-" in completeprompt or
+    "-styletilora-" in completeprompt or
+    "-manwomanrelation-" in completeprompt or
+    "-manwomanmultiple-" in completeprompt or
+    "-waterlocation-" in completeprompt or
+    "-container-" in completeprompt or
+    "-firstname-" in completeprompt or
+    "-flora-" in completeprompt or
+    "-print-" in completeprompt or
+    "-miniactivity-" in completeprompt or
+    "-pattern-" in completeprompt or
+    "-animalsuffixaddition-" in completeprompt or
+    "-chair-" in completeprompt or
+    "-cardname-" in completeprompt or
+    "-covering-" in completeprompt or
+    "-heshe-" in completeprompt or
+    "-hisher-" in completeprompt or
+    "-himher-" in completeprompt or
+    "-outfitdescriptor-" in completeprompt or
+    "-hairdescriptor-" in completeprompt or
+    "-hairvomit-" in completeprompt or
+    "-humandescriptor-" in completeprompt or
+    "-facepart-" in completeprompt or
+    "-buildfacepart-" in completeprompt or
+    "-outfitvomit-" in completeprompt or
+    "-locationdescriptor-" in completeprompt or
+    "-basicbitchdescriptor-" in completeprompt or
+    "-animaldescriptor-" in completeprompt or
+    "-humanexpression-" in completeprompt or
+    "-humanvomit-" in completeprompt or
+    "-eyecolor-" in completeprompt or
+    "-fashiondesigner-" in completeprompt or
+    "-colorcombination-" in completeprompt or
+    "-materialcombination-" in completeprompt or
+    "-oppositefictional-" in completeprompt or
+    "-oppositenonfictional-" in completeprompt or
+    "-photoaddition-" in completeprompt or
+    "-age-" in completeprompt or
+    "-agecalculator-" in completeprompt or
+    "-gregmode-" in completeprompt):
+        allwildcardslistnohybrid = [ "-color-","-object-", "-animal-", "-fictional-","-nonfictional-","-building-","-vehicle-","-location-","-conceptprefix-","-food-","-haircolor-","-hairstyle-","-job-", "-accessory-", "-humanoid-", "-manwoman-", "-human-", "-colorscheme-", "-mood-", "-genderdescription-", "-artmovement-", "-malefemale-", "-bodytype-", "-minilocation-", "-minilocationaddition-", "-pose-", "-season-", "-minioutfit-", "-elaborateoutfit-", "-minivomit-", "-vomit-", "-rpgclass-", "-subjectfromfile-","-subjectfromfile-", "-brand-", "-space-", "-artist-", "-imagetype-", "-othertype-", "-quality-", "-lighting-", "-camera-", "-lens-","-imagetypequality-", "-poemline-", "-songline-", "-greatwork-", "-artistfantasy-", "-artistpopular-", "-artistromanticism-", "-artistphotography-", "-emoji-", "-timeperiod-", "-shotsize-", "-musicgenre-", "-animaladdition-", "-addontolocationinside-", "-addontolocation-", "-objectaddition-", "-humanaddition-", "-overalladdition-", "-focus-", "-direction-", "-styletilora-", "-manwomanrelation-", "-waterlocation-", "-container-", "-firstname-", "-flora-", "-print-", "-miniactivity-", "-pattern-", "-animalsuffixaddition-", "-chair-", "-cardname-", "-covering-", "-heshe-", "-hisher-", "-himher-", "-outfitdescriptor-", "-hairdescriptor-", "-hairvomit-", "-humandescriptor-", "-manwomanmultiple-", "-facepart-", "-buildfacepart-", "-outfitvomit-", "-locationdescriptor-", "-basicbitchdescriptor-", "-animaldescriptor-", "-humanexpression-", "-humanvomit-", "-eyecolor-", "-fashiondesigner-", "-colorcombination-", "-materialcombination-", "-oppositefictional-", "-oppositenonfictional-", "-photoaddition-", "-age-", "-agecalculator-", "-gregmode-"]
+        allwildcardslistnohybridlists = [colorlist, objectlist, animallist, fictionallist, nonfictionallist, buildinglist, vehiclelist, locationlist,conceptprefixlist,foodlist,haircolorlist, hairstylelist,joblist, accessorielist, humanoidlist, manwomanlist, humanlist, colorschemelist, moodlist, genderdescriptionlist, artmovementlist, malefemalelist, bodytypelist, minilocationlist, minilocationadditionslist, poselist, seasonlist, minioutfitlist, elaborateoutfitlist, minivomitlist, vomitlist, rpgclasslist, customsubjectslist, customoutfitslist, brandlist, spacelist, artistlist, imagetypelist, othertypelist, qualitylist, lightinglist, cameralist, lenslist, imagetypequalitylist, poemlinelist, songlinelist, greatworklist, fantasyartistlist, popularartistlist, romanticismartistlist, photographyartistlist, emojilist, timeperiodlist, shotsizelist, musicgenrelist, animaladditionlist, addontolocationinsidelist, addontolocationlist, objectadditionslist, humanadditionlist, overalladditionlist, focuslist, directionlist, stylestiloralist, manwomanrelationlist, waterlocationlist, containerlist, firstnamelist, floralist, printlist, miniactivitylist, patternlist, animalsuffixadditionlist, chairlist, cardnamelist, coveringlist, heshelist, hisherlist, himherlist, outfitdescriptorlist, hairdescriptorlist, hairvomitlist, humandescriptorlist, manwomanmultiplelist, facepartlist, buildfacepartlist, outfitvomitlist, locationdescriptorlist, basicbitchdescriptorlist, animaldescriptorlist, humanexpressionlist, humanvomitlist, eyecolorlist, fashiondesignerlist, colorcombinationlist, materialcombinationlist, oppositefictionallist, oppositenonfictionallist, photoadditionlist, agelist, agecalculatorlist, gregmodelist]
+        
+        allwildcardslistwithhybrid = ["-material-", "-descriptor-", "-outfit-", "-conceptsuffix-","-culture-", "-objecttotal-", "-outfitprinttotal-"]
+        allwildcardslistwithhybridlists = [materiallist, descriptorlist,outfitlist,conceptsuffixlist,culturelist, objecttotallist, outfitprinttotallist]
+        
+        
         #  keywordsinstring = any(word.lower() in givensubject.lower() for word in keywordslist)
         for wildcard in allwildcardslistnohybrid:
             attachedlist = allwildcardslistnohybridlists[allwildcardslistnohybrid.index(wildcard)]
-            completeprompt = replacewildcard(
-                completeprompt, insanitylevel, wildcard, attachedlist, False, advancedprompting
-            )
+            completeprompt = replacewildcard(completeprompt, insanitylevel, wildcard, attachedlist,False, advancedprompting, artiststyleselector)
 
+
+        
         for wildcard in allwildcardslistwithhybrid:
             attachedlist = allwildcardslistwithhybridlists[allwildcardslistwithhybrid.index(wildcard)]
-            completeprompt = replacewildcard(
-                completeprompt, insanitylevel, wildcard, attachedlist, True, advancedprompting
-            )
+            completeprompt = replacewildcard(completeprompt, insanitylevel, wildcard, attachedlist,True, advancedprompting, artiststyleselector)
 
+
+      
+    # prompt strenght stuff
+
+    # if the given subject already is formed like this ( :1.x)
+    # then just ignore this
+    
+    matches = []
+    if(givensubject != ""):
+        pattern = r'\(\w+:\d+\.\d+\)'
+        matches = re.findall(pattern, givensubject)
+
+
+    if(len(completeprompt) > 325 and matches == []):
+        if(len(completeprompt) < 375):
+            strenght = "1.1"  
+        elif(len(completeprompt) < 450):
+            strenght = "1.2"  
+        else:
+            strenght = "1.3"  
+        completeprompt = completeprompt.replace("-objectstrengthstart-","(")
+        completeprompt = completeprompt.replace("-objectstrengthend-",":" + strenght + ")")
+    else:
+        completeprompt = completeprompt.replace("-objectstrengthstart-","")
+        completeprompt = completeprompt.replace("-objectstrengthend-","")
+
+    
+    # Now, we are going to parse any custom functions we have build in
+    # this is OR()
+    # OR()
+    
+    # OR(foo;bar;bla)  --> randomly take foo, bar or bla
+    # OR(foo;bar;bla;uncommon) --> Take foo, unless it hits uncommon roll. Then take bar or bla
+    # OR(;foo)  --> empty or foo
+    # OR(;foo;uncommon) --> empty unless it hits uncommon roll. Then take foo
+    # OR(;foo;bar;uncommon) --> empty unless it hits uncommon roll. Then take foo or bar
+    
+    
+    completeprompt = parse_custom_functions(completeprompt, insanitylevel)
+    
     # clean it up
-    completeprompt = cleanup(completeprompt, advancedprompting)
+    completeprompt = cleanup(completeprompt, advancedprompting, insanitylevel)
 
-    # just for me, some fun with posting fake dev messages (ala old sim games)
-    if random.randint(1, 50) == 1:
+    #just for me, some fun with posting fake dev messages (ala old sim games)
+    if(random.randint(1, 50)==1):
         print("")
         print(random.choice(devmessagelist))
         print("")
@@ -2179,71 +2710,68 @@ def build_dynamic_prompt(
 
 
 # function that takes an existing prompt and tries to create a variant out of it
-def createpromptvariant(prompt="", insanitylevel=5, antivalues="", gender="all", artists="all", advancedprompting=True):
+def createpromptvariant(prompt = "", insanitylevel = 5, antivalues = "" , gender = "all", artists = "all", advancedprompting = True):
     # first load the lists, all copied from above (can that be done better?)
     # do we want to use the same settings or keep it open??
 
     # first build up a complete anti list. Those values are removing during list building
     # this uses the antivalues string AND the antilist.csv
     emptylist = []
-    antilist = csv_to_list("antilist", emptylist, "./userfiles/", 1)
+    antilist = csv_to_list("antilist",emptylist , "./userfiles/",1)
     antivaluelist = antivalues.split(",")
 
     antilist += antivaluelist
 
     # build all lists here
 
-    colorlist = csv_to_list("colors", antilist)
-    animallist = csv_to_list("animals", antilist)
-    materiallist = csv_to_list("materials", antilist)
-    objectlist = csv_to_list("objects", antilist)
-    fictionallist = csv_to_list(csvfilename="fictional characters", antilist=antilist, skipheader=True, gender=gender)
-    nonfictionallist = csv_to_list(
-        csvfilename="nonfictional characters", antilist=antilist, skipheader=True, gender=gender
-    )
-    conceptsuffixlist = csv_to_list("concept_suffix", antilist)
-    buildinglist = csv_to_list("buildings", antilist)
-    vehiclelist = csv_to_list("vehicles", antilist)
-    outfitlist = csv_to_list("outfits", antilist)
-    locationlist = csv_to_list("locations", antilist)
+    colorlist = csv_to_list("colors",antilist)
+    animallist = csv_to_list("animals",antilist)    
+    materiallist = csv_to_list("materials",antilist)
+    objectlist = csv_to_list("objects",antilist)
+    fictionallist = csv_to_list(csvfilename="fictional characters",antilist=antilist,skipheader=True,gender=gender)
+    nonfictionallist = csv_to_list(csvfilename="nonfictional characters",antilist=antilist,skipheader=True,gender=gender)
+    conceptsuffixlist = csv_to_list("concept_suffix",antilist)
+    buildinglist = csv_to_list("buildings",antilist)
+    vehiclelist = csv_to_list("vehicles",antilist)
+    outfitlist = csv_to_list("outfits",antilist)
+    locationlist = csv_to_list("locations",antilist)
 
-    accessorielist = csv_to_list("accessories", antilist)
-    artmovementlist = csv_to_list("artmovements", antilist)
-    bodytypelist = csv_to_list("body_types", antilist)
-    cameralist = csv_to_list("cameras", antilist)
-    colorschemelist = csv_to_list("colorscheme", antilist)
-    conceptprefixlist = csv_to_list("concept_prefix", antilist)
-    culturelist = csv_to_list("cultures", antilist)
-    descriptorlist = csv_to_list("descriptors", antilist)
-    devmessagelist = csv_to_list("devmessages", antilist)
-    directionlist = csv_to_list("directions", antilist)
-    emojilist = csv_to_list("emojis", antilist)
-    eventlist = csv_to_list("events", antilist)
-    focuslist = csv_to_list("focus", antilist)
-    greatworklist = csv_to_list("greatworks", antilist)
-    haircolorlist = csv_to_list("haircolors", antilist)
-    hairstylelist = csv_to_list("hairstyles", antilist)
-    humanactivitylist = csv_to_list("human_activities", antilist)
-    humanoidlist = csv_to_list("humanoids", antilist)
-    imagetypelist = csv_to_list("imagetypes", antilist)
-    joblist = csv_to_list("jobs", antilist)
-    lenslist = csv_to_list("lenses", antilist)
-    lightinglist = csv_to_list("lighting", antilist)
-    malefemalelist = csv_to_list(csvfilename="malefemale", antilist=antilist, skipheader=True, gender=gender)
-    manwomanlist = csv_to_list(csvfilename="manwoman", antilist=antilist, skipheader=True, gender=gender)
-    moodlist = csv_to_list("moods", antilist)
-    othertypelist = csv_to_list("othertypes", antilist)
-    poselist = csv_to_list("poses", antilist)
-    qualitylist = csv_to_list("quality", antilist)
-    shotsizelist = csv_to_list("shotsizes", antilist)
-    timeperiodlist = csv_to_list("timeperiods", antilist)
-    vomitlist = csv_to_list("vomit", antilist)
+    accessorielist = csv_to_list("accessories",antilist,"./csvfiles/",0,"?")
+    artmovementlist = csv_to_list("artmovements",antilist)
+    bodytypelist = csv_to_list("body_types",antilist)
+    cameralist = csv_to_list("cameras",antilist)
+    colorschemelist = csv_to_list("colorscheme",antilist)
+    conceptprefixlist = csv_to_list("concept_prefix",antilist)
+    culturelist = csv_to_list("cultures",antilist)
+    descriptorlist = csv_to_list("descriptors",antilist)
+    devmessagelist = csv_to_list("devmessages",antilist)
+    directionlist = csv_to_list("directions",antilist)
+    emojilist = csv_to_list("emojis",antilist)
+    eventlist = csv_to_list("events",antilist)
+    focuslist = csv_to_list("focus",antilist)
+    greatworklist = csv_to_list("greatworks",antilist)
+    haircolorlist = csv_to_list("haircolors",antilist)
+    hairstylelist = csv_to_list("hairstyles",antilist)
+    hairvomitlist = csv_to_list("hairvomit",antilist,"./csvfiles/",0,"?",False,False)
+    humanactivitylist = csv_to_list("human_activities",antilist)
+    humanoidlist = csv_to_list("humanoids",antilist)
+    imagetypelist = csv_to_list("imagetypes",antilist)
+    joblist = joblist = csv_to_list(csvfilename="jobs",antilist=antilist,skipheader=True,gender=gender)
+    lenslist = csv_to_list("lenses",antilist)
+    lightinglist = csv_to_list("lighting",antilist)
+    malefemalelist = csv_to_list(csvfilename="malefemale",antilist=antilist,skipheader=True,gender=gender)
+    manwomanlist = csv_to_list(csvfilename="manwoman",antilist=antilist,skipheader=True,gender=gender)
+    moodlist = csv_to_list("moods",antilist)
+    othertypelist = csv_to_list("othertypes",antilist)
+    poselist = csv_to_list("poses",antilist)
+    qualitylist = csv_to_list("quality",antilist)
+    shotsizelist = csv_to_list("shotsizes",antilist)
+    timeperiodlist = csv_to_list("timeperiods",antilist)
+    vomitlist = csv_to_list("vomit",antilist)
     foodlist = csv_to_list("foods", antilist)
-    genderdescriptionlist = csv_to_list(
-        csvfilename="genderdescription", antilist=antilist, skipheader=True, gender=gender
-    )
+    genderdescriptionlist = csv_to_list(csvfilename="genderdescription",antilist=antilist,skipheader=True,gender=gender)
     minilocationlist = csv_to_list("minilocations", antilist)
-    minioutfitlist = csv_to_list("minioutfits", antilist)
+    minioutfitlist = csv_to_list("minioutfits",antilist,"./csvfiles/",0,"?",False,False,gender)
     seasonlist = csv_to_list("seasons", antilist)
     elaborateoutfitlist = csv_to_list("elaborateoutfits", antilist)
     minivomitlist = csv_to_list("minivomit", antilist)
@@ -2254,67 +2782,87 @@ def createpromptvariant(prompt="", insanitylevel=5, antivalues="", gender="all",
     poemlinelist = csv_to_list("poemlines", antilist)
     songlinelist = csv_to_list("songlines", antilist)
     musicgenrelist = csv_to_list("musicgenres", antilist)
-    manwomanrelationlist = csv_to_list(
-        csvfilename="manwomanrelations", antilist=antilist, skipheader=True, gender=gender
-    )
+    manwomanrelationlist = csv_to_list(csvfilename="manwomanrelations",antilist=antilist,skipheader=True,gender=gender)
+    manwomanmultiplelist = csv_to_list(csvfilename="manwomanmultiples",antilist=antilist,skipheader=True,gender=gender,delimiter="?")
     waterlocationlist = csv_to_list("waterlocations", antilist)
     containerlist = csv_to_list("containers", antilist)
-    firstnamelist = csv_to_list(csvfilename="firstnames", antilist=antilist, skipheader=True, gender=gender)
+    firstnamelist = csv_to_list(csvfilename="firstnames",antilist=antilist,skipheader=True,gender=gender)
     floralist = csv_to_list("flora", antilist)
+    printlist = csv_to_list("prints", antilist)
+    patternlist = csv_to_list("patterns", antilist)
+    chairlist = csv_to_list("chairs", antilist)
+    cardnamelist = csv_to_list("card_names", antilist)
+    coveringlist = csv_to_list("coverings", antilist)
+    facepartlist = csv_to_list("faceparts", antilist)
+    humanexpressionlist = csv_to_list(csvfilename="humanexpressions",antilist=antilist,delimiter="?")
+    humanvomitlist = csv_to_list("humanvomit", antilist)
+    eyecolorlist = csv_to_list("eyecolors", antilist)
+    fashiondesignerlist = csv_to_list("fashiondesigners", antilist)
+    colorcombinationlist  = csv_to_list("colorcombinations", antilist)
+    materialcombinationlist  = csv_to_list("materialcombinations", antilist)
+    agelist = csv_to_list("ages", antilist)
+    agecalculatorlist = csv_to_list("agecalculator", antilist)
 
-    humanlist = fictionallist + nonfictionallist + humanoidlist + malefemalelist + manwomanlist + manwomanrelationlist
-    objecttotallist = objectlist + buildinglist + vehiclelist + foodlist + spacelist + floralist
+    outfitdescriptorlist = csv_to_list("outfitdescriptors",antilist)
+    hairdescriptorlist = csv_to_list("hairdescriptors",antilist)
+    humandescriptorlist = csv_to_list("humandescriptors",antilist)
+    locationdescriptorlist = csv_to_list("locationdescriptors",antilist)
+    basicbitchdescriptorlist = csv_to_list("basicbitchdescriptors",antilist)
+    animaldescriptorlist = csv_to_list("animaldescriptors",antilist)
+
+    humanlist = fictionallist + nonfictionallist + humanoidlist + malefemalelist + manwomanlist + manwomanrelationlist + manwomanmultiplelist
+    objecttotallist = objectlist + buildinglist + vehiclelist + foodlist + spacelist + floralist + containerlist
+    outfitprinttotallist = objecttotallist + locationlist + colorlist + musicgenrelist + seasonlist + animallist + patternlist
 
     # build artists list
     artistlist = []
     # create artist list to use in the code, maybe based on category  or personal lists
-    if (
-        artists != "all"
-        and artists != "none"
-        and artists.startswith("personal_artists") == False
-        and artists.startswith("personal artists") == False
-    ):
-        artistlist = artist_category_csv_to_list("artists_and_category", artists)
-    elif artists.startswith("personal_artists") == True or artists.startswith("personal artists") == True:
-        artists = artists.replace(" ", "_", -1)  # add underscores back in
-        artistlist = csv_to_list(artists, antilist, "./userfiles/")
-    elif artists != "none":
-        artistlist = csv_to_list("artists", antilist)
+    if(artists != "all" and artists != "none" and artists.startswith("personal_artists") == False and artists.startswith("personal artists") == False):
+        artistlist = artist_category_csv_to_list("artists_and_category",artists)
+    elif(artists.startswith("personal_artists") == True or artists.startswith("personal artists") == True):
+        artists = artists.replace(" ","_",-1) # add underscores back in
+        artistlist = csv_to_list(artists,antilist,"./userfiles/")
+    elif(artists != "none"):
+        artistlist = csv_to_list("artists",antilist)
 
     # create special artists lists, used in templates
-    fantasyartistlist = artist_category_csv_to_list("artists_and_category", "fantasy")
-    popularartistlist = artist_category_csv_to_list("artists_and_category", "popular")
-    romanticismartistlist = artist_category_csv_to_list("artists_and_category", "romanticism")
-    photographyartistlist = artist_category_csv_to_list("artists_and_category", "photography")
+    fantasyartistlist = artist_category_csv_to_list("artists_and_category","fantasy")
+    popularartistlist = artist_category_csv_to_list("artists_and_category","popular")
+    romanticismartistlist = artist_category_csv_to_list("artists_and_category","romanticism")
+    photographyartistlist = artist_category_csv_to_list("artists_and_category","photography")
+    gregmodelist = csv_to_list("gregmode", antilist)
 
     # add any other custom lists
-    stylestiloralist = csv_to_list("styles_ti_lora", antilist, "./userfiles/")
-    generatestyle = bool(stylestiloralist)  # True of not empty
+    stylestiloralist = csv_to_list("styles_ti_lora",antilist,"./userfiles/")
+    generatestyle = bool(stylestiloralist) # True of not empty
 
-    custominputprefixlist = csv_to_list("custom_input_prefix", antilist, "./userfiles/")
-    generatecustominputprefix = bool(custominputprefixlist)  # True of not empty
+    custominputprefixlist = csv_to_list("custom_input_prefix",antilist,"./userfiles/")
+    generatecustominputprefix = bool(custominputprefixlist) # True of not empty
 
-    custominputmidlist = csv_to_list("custom_input_mid", antilist, "./userfiles/")
-    generatecustominputmid = bool(custominputmidlist)  # True of not empty
+    custominputmidlist = csv_to_list("custom_input_mid",antilist,"./userfiles/")
+    generatecustominputmid = bool(custominputmidlist) # True of not empty
 
-    custominputsuffixlist = csv_to_list("custom_input_suffix", antilist, "./userfiles/")
-    generatecustominputsuffix = bool(custominputsuffixlist)  # True of not empty
+    custominputsuffixlist = csv_to_list("custom_input_suffix",antilist,"./userfiles/")
+    generatecustominputsuffix = bool(custominputsuffixlist) # True of not empty
 
-    customsubjectslist = csv_to_list("custom_subjects", antilist, "./userfiles/")
+    customsubjectslist = csv_to_list("custom_subjects",antilist,"./userfiles/")
+    customoutfitslist = csv_to_list("custom_outfits",antilist,"./userfiles/")
 
     # special lists
-    backgroundtypelist = csv_to_list("backgroundtypes", antilist, "./csvfiles/special_lists/")
-    insideshotlist = csv_to_list("insideshots", antilist, "./csvfiles/special_lists/")
-    photoadditionlist = csv_to_list("photoadditions", antilist, "./csvfiles/special_lists/")
-    buildhairlist = csv_to_list("buildhair", antilist, "./csvfiles/special_lists/")
-    buildoutfitlist = csv_to_list("buildoutfit", antilist, "./csvfiles/special_lists/")
-    objectadditionslist = csv_to_list("objectadditions", antilist, "./csvfiles/special_lists/")
-    humanadditionlist = csv_to_list("humanadditions", antilist, "./csvfiles/special_lists/")
-    animaladditionlist = csv_to_list("animaladditions", antilist, "./csvfiles/special_lists/")
-    buildaccessorielist = csv_to_list("buildaccessorie", antilist, "./csvfiles/special_lists/")
-    minilocationadditionslist = csv_to_list("minilocationadditions", antilist, "./csvfiles/special_lists/")
-    overalladditionlist = csv_to_list("overalladditions", antilist, "./csvfiles/special_lists/")
-    imagetypemodelist = csv_to_list("imagetypemodes", antilist, "./csvfiles/special_lists/")
+    backgroundtypelist = csv_to_list("backgroundtypes", antilist,"./csvfiles/special_lists/",0,"?")
+    insideshotlist =  csv_to_list("insideshots", antilist,"./csvfiles/special_lists/",0,"?")
+    photoadditionlist = csv_to_list("photoadditions", antilist,"./csvfiles/special_lists/",0,"?")
+    buildhairlist = csv_to_list("buildhair", antilist,"./csvfiles/special_lists/",0,"?")
+    buildoutfitlist = csv_to_list("buildoutfit", antilist,"./csvfiles/special_lists/",0,"?")
+    objectadditionslist = csv_to_list("objectadditions", antilist,"./csvfiles/special_lists/",0,"?")
+    humanadditionlist = csv_to_list("humanadditions", antilist,"./csvfiles/special_lists/",0,"?")
+    animaladditionlist = csv_to_list("animaladditions", antilist,"./csvfiles/special_lists/",0,"?")
+    buildaccessorielist = csv_to_list("buildaccessorie", antilist,"./csvfiles/special_lists/",0,"?")
+    minilocationadditionslist = csv_to_list("minilocationadditions", antilist,"./csvfiles/special_lists/",0,"?")
+    overalladditionlist = csv_to_list("overalladditions", antilist,"./csvfiles/special_lists/",0,"?")
+    imagetypemodelist = csv_to_list("imagetypemodes", antilist,"./csvfiles/special_lists/",0,"?")
+    miniactivitylist = csv_to_list("miniactivity", antilist,"./csvfiles/special_lists/",0,"?")
+
 
     prompt = prompt.replace(",", " , ")
     prompt = prompt.replace("(", " ( ")
@@ -2329,592 +2877,561 @@ def createpromptvariant(prompt="", insanitylevel=5, antivalues="", gender="all",
     originalprompt = prompt
     ### Get all combinations of 1 to 4 consecutive words
 
+
     words = prompt.split()
     num_words = len(words)
-
+    
     combinations_list = []
-
+    
     for length in range(1, 5):  # Generate combinations of length 1 to 4
         for start_idx in range(num_words - length + 1):
             end_idx = start_idx + length
-            combination = " ".join(words[start_idx:end_idx])
+            combination = ' '.join(words[start_idx:end_idx])
             combinations_list.append(combination)
-
+    
     maxamountofruns = 4
     runs = 0
 
-    if insanitylevel != 0:
+    if(insanitylevel != 0):
         print("")
         print("Creating a prompt variation")
         print("")
-        while originalprompt == prompt and runs != maxamountofruns:
+        while(originalprompt == prompt and runs != maxamountofruns):
             for combination in combinations_list:
                 lowercase_combination = combination.lower()
                 combination = " " + combination + " "
 
-                # some rare changes if needed
+               # some rare changes if needed
                 if lowercase_combination in [x.lower() for x in humanlist] and chance_roll(insanitylevel, "rare"):
-                    prompt = prompt.replace(combination, " -human- ")
+                    prompt = prompt.replace(combination," -human- ")
 
                 if lowercase_combination in [x.lower() for x in objecttotallist] and chance_roll(insanitylevel, "rare"):
-                    prompt = prompt.replace(combination, " -objecttotal- ")
-
+                    prompt = prompt.replace(combination," -objecttotal- ")
+                
                 if lowercase_combination in [x.lower() for x in artistlist] and chance_roll(insanitylevel, "rare"):
-                    prompt = prompt.replace(combination, " -artist- ")
+                    prompt = prompt.replace(combination," -artist- ")
+                
 
                 if lowercase_combination in [x.lower() for x in colorlist] and chance_roll(insanitylevel, "uncommon"):
-                    prompt = prompt.replace(combination, " -color- ")
+                    prompt = prompt.replace(combination," -color- ")
 
                 if lowercase_combination in [x.lower() for x in animallist] and chance_roll(insanitylevel, "uncommon"):
-                    prompt = prompt.replace(combination, " -animal- ")
-
+                    prompt = prompt.replace(combination," -animal- ")
+                
                 if lowercase_combination in [x.lower() for x in objectlist] and chance_roll(insanitylevel, "uncommon"):
-                    prompt = prompt.replace(combination, " -object- ")
+                    prompt = prompt.replace(combination," -object- ")
+                            
+                if lowercase_combination in [x.lower() for x in fictionallist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -fictional- ")
 
-                if lowercase_combination in [x.lower() for x in fictionallist] and chance_roll(
-                    insanitylevel, "uncommon"
-                ):
-                    prompt = prompt.replace(combination, " -fictional- ")
+                
+                if lowercase_combination in [x.lower() for x in nonfictionallist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -nonfictional- ")
 
-                if lowercase_combination in [x.lower() for x in nonfictionallist] and chance_roll(
-                    insanitylevel, "uncommon"
-                ):
-                    prompt = prompt.replace(combination, " -nonfictional- ")
-
-                # if lowercase_combination in [x.lower() for x in conceptsuffixlist] and chance_roll(insanitylevel, "uncommon"):
+                
+                #if lowercase_combination in [x.lower() for x in conceptsuffixlist] and chance_roll(insanitylevel, "uncommon"):
                 #   prompt = prompt.replace(combination," -conceptsuffix- ")
 
-                if lowercase_combination in [x.lower() for x in buildinglist] and chance_roll(
-                    insanitylevel, "uncommon"
-                ):
-                    prompt = prompt.replace(combination, " -building- ")
+                
+                if lowercase_combination in [x.lower() for x in buildinglist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -building- ")
 
+                
                 if lowercase_combination in [x.lower() for x in vehiclelist] and chance_roll(insanitylevel, "uncommon"):
-                    prompt = prompt.replace(combination, " -vehicle- ")
+                    prompt = prompt.replace(combination," -vehicle- ")
 
+                
                 if lowercase_combination in [x.lower() for x in outfitlist] and chance_roll(insanitylevel, "uncommon"):
-                    prompt = prompt.replace(combination, " -outfit- ")
+                    prompt = prompt.replace(combination," -outfit- ")
 
-                if lowercase_combination in [x.lower() for x in locationlist] and chance_roll(
-                    insanitylevel, "uncommon"
-                ):
-                    prompt = prompt.replace(combination, " -location- ")
+                
+                if lowercase_combination in [x.lower() for x in locationlist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -location- ")
 
-                if lowercase_combination in [x.lower() for x in accessorielist] and chance_roll(
-                    insanitylevel, "uncommon"
-                ):
-                    prompt = prompt.replace(combination, " -accessorie- ")
+                
+                if lowercase_combination in [x.lower() for x in accessorielist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -accessory- ")
 
-                if lowercase_combination in [x.lower() for x in artmovementlist] and chance_roll(
-                    insanitylevel, "uncommon"
-                ):
-                    prompt = prompt.replace(combination, " -artmovement- ")
+                
+                if lowercase_combination in [x.lower() for x in artmovementlist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -artmovement- ")
 
-                if lowercase_combination in [x.lower() for x in bodytypelist] and chance_roll(
-                    insanitylevel, "uncommon"
-                ):
-                    prompt = prompt.replace(combination, " -bodytype- ")
+                
+                if lowercase_combination in [x.lower() for x in bodytypelist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -bodytype- ")
 
+                
                 if lowercase_combination in [x.lower() for x in cameralist] and chance_roll(insanitylevel, "uncommon"):
-                    prompt = prompt.replace(combination, " -camera- ")
+                    prompt = prompt.replace(combination," -camera- ")
 
-                if lowercase_combination in [x.lower() for x in colorschemelist] and chance_roll(
-                    insanitylevel, "uncommon"
-                ):
-                    prompt = prompt.replace(combination, " -colorscheme- ")
+                
+                if lowercase_combination in [x.lower() for x in colorschemelist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -colorscheme- ")
 
-                # if lowercase_combination in [x.lower() for x in conceptprefixlist] and chance_roll(insanitylevel, "uncommon"):
+                if lowercase_combination in [x.lower() for x in eyecolorlist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -eyecolor- ")
+
+                if lowercase_combination in [x.lower() for x in fashiondesignerlist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -fashiondesigner- ")
+
+                if lowercase_combination in [x.lower() for x in colorcombinationlist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -colorcombination- ")
+
+                if lowercase_combination in [x.lower() for x in materialcombinationlist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -materialcombination- ")
+
+                if lowercase_combination in [x.lower() for x in photoadditionlist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -photoaddition- ")
+
+                if lowercase_combination in [x.lower() for x in agelist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -age- ")
+
+                if lowercase_combination in [x.lower() for x in agecalculatorlist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -agecalculator- ")
+
+                if lowercase_combination in [x.lower() for x in gregmodelist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -gregmode- ")
+
+                
+                #if lowercase_combination in [x.lower() for x in conceptprefixlist] and chance_roll(insanitylevel, "uncommon"):
                 #    prompt = prompt.replace(combination," -conceptprefix- ")
 
+                
                 if lowercase_combination in [x.lower() for x in culturelist] and chance_roll(insanitylevel, "uncommon"):
-                    prompt = prompt.replace(combination, " -culture- ")
+                    prompt = prompt.replace(combination," -culture- ")
 
-                if lowercase_combination in [x.lower() for x in descriptorlist] and chance_roll(
-                    insanitylevel, "uncommon"
-                ):
-                    prompt = prompt.replace(combination, " -descriptor- ")
+                
+                if lowercase_combination in [x.lower() for x in descriptorlist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -descriptor- ")
 
-                if lowercase_combination in [x.lower() for x in directionlist] and chance_roll(
-                    insanitylevel, "uncommon"
-                ):
-                    prompt = prompt.replace(combination, " -direction- ")
+                if lowercase_combination in [x.lower() for x in outfitdescriptorlist] and chance_roll(insanitylevel, "rare"):
+                    prompt = prompt.replace(combination," -outfitdescriptor- ")
+                if lowercase_combination in [x.lower() for x in hairdescriptorlist] and chance_roll(insanitylevel, "rare"):
+                    prompt = prompt.replace(combination," -hairdescriptor- ")
+                if lowercase_combination in [x.lower() for x in hairvomitlist] and chance_roll(insanitylevel, "rare"):
+                    prompt = prompt.replace(combination," -hairvomit- ")
+                if lowercase_combination in [x.lower() for x in humandescriptorlist] and chance_roll(insanitylevel, "rare"):
+                    prompt = prompt.replace(combination," -humandescriptor- ")
+                if lowercase_combination in [x.lower() for x in locationdescriptorlist] and chance_roll(insanitylevel, "rare"):
+                    prompt = prompt.replace(combination," -locationdescriptor- ")
+                if lowercase_combination in [x.lower() for x in basicbitchdescriptorlist] and chance_roll(insanitylevel, "rare"):
+                    prompt = prompt.replace(combination," -basicbitchdescriptor- ")
+                if lowercase_combination in [x.lower() for x in animaldescriptorlist] and chance_roll(insanitylevel, "rare"):
+                    prompt = prompt.replace(combination," -animaldescriptor- ")
+
+                if lowercase_combination in [x.lower() for x in directionlist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -direction- ")
 
                 if lowercase_combination in [x.lower() for x in emojilist] and chance_roll(insanitylevel, "uncommon"):
-                    prompt = prompt.replace(combination, " -emoji- ")
+                    prompt = prompt.replace(combination," -emoji- ")
 
+                if lowercase_combination in [x.lower() for x in humanexpressionlist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -humanexpression- ")
+                if lowercase_combination in [x.lower() for x in humanvomitlist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -humanvomit- ")
+                
                 if lowercase_combination in [x.lower() for x in eventlist] and chance_roll(insanitylevel, "uncommon"):
-                    prompt = prompt.replace(combination, " -event- ")
+                    prompt = prompt.replace(combination," -event- ")
 
                 if lowercase_combination in [x.lower() for x in focuslist] and chance_roll(insanitylevel, "uncommon"):
-                    prompt = prompt.replace(combination, " -focus- ")
+                    prompt = prompt.replace(combination," -focus- ")
 
-                if lowercase_combination in [x.lower() for x in greatworklist] and chance_roll(
-                    insanitylevel, "uncommon"
-                ):
-                    prompt = prompt.replace(combination, " -greatwork- ")
+                if lowercase_combination in [x.lower() for x in greatworklist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -greatwork- ")
 
-                if lowercase_combination in [x.lower() for x in haircolorlist] and chance_roll(
-                    insanitylevel, "uncommon"
-                ):
-                    prompt = prompt.replace(combination, " -haircolor- ")
+                if lowercase_combination in [x.lower() for x in haircolorlist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -haircolor- ")
 
-                if lowercase_combination in [x.lower() for x in hairstylelist] and chance_roll(
-                    insanitylevel, "uncommon"
-                ):
-                    prompt = prompt.replace(combination, " -hairstyle- ")
+                if lowercase_combination in [x.lower() for x in hairstylelist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -hairstyle- ")
 
-                if lowercase_combination in [x.lower() for x in directionlist] and chance_roll(
-                    insanitylevel, "uncommon"
-                ):
-                    prompt = prompt.replace(combination, " -direction- ")
+                if lowercase_combination in [x.lower() for x in directionlist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -direction- ")
 
-                if lowercase_combination in [x.lower() for x in humanoidlist] and chance_roll(
-                    insanitylevel, "uncommon"
-                ):
-                    prompt = prompt.replace(combination, " -humanoid- ")
+                if lowercase_combination in [x.lower() for x in humanoidlist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -humanoid- ")
 
                 if lowercase_combination in [x.lower() for x in joblist] and chance_roll(insanitylevel, "uncommon"):
-                    prompt = prompt.replace(combination, " -job- ")
+                    prompt = prompt.replace(combination," -job- ")
 
                 if lowercase_combination in [x.lower() for x in lenslist] and chance_roll(insanitylevel, "uncommon"):
-                    prompt = prompt.replace(combination, " -lens- ")
-                if lowercase_combination in [x.lower() for x in lightinglist] and chance_roll(
-                    insanitylevel, "uncommon"
-                ):
-                    prompt = prompt.replace(combination, " -lighting- ")
-                if lowercase_combination in [x.lower() for x in malefemalelist] and chance_roll(
-                    insanitylevel, "uncommon"
-                ):
-                    prompt = prompt.replace(combination, " -malefemale- ")
-                if lowercase_combination in [x.lower() for x in manwomanlist] and chance_roll(
-                    insanitylevel, "uncommon"
-                ):
-                    prompt = prompt.replace(combination, " -manwoman- ")
+                    prompt = prompt.replace(combination," -lens- ")
+                if lowercase_combination in [x.lower() for x in lightinglist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -lighting- ")
+                if lowercase_combination in [x.lower() for x in malefemalelist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -malefemale- ")
+                if lowercase_combination in [x.lower() for x in manwomanlist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -manwoman- ")
                 if lowercase_combination in [x.lower() for x in moodlist] and chance_roll(insanitylevel, "uncommon"):
-                    prompt = prompt.replace(combination, " -mood- ")
-                if lowercase_combination in [x.lower() for x in othertypelist] and chance_roll(
-                    insanitylevel, "uncommon"
-                ):
-                    prompt = prompt.replace(combination, " -othertype- ")
+                    prompt = prompt.replace(combination," -mood- ")
+                if lowercase_combination in [x.lower() for x in othertypelist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -othertype- ")
                 if lowercase_combination in [x.lower() for x in poselist] and chance_roll(insanitylevel, "uncommon"):
-                    prompt = prompt.replace(combination, " -pose- ")
+                    prompt = prompt.replace(combination," -pose- ")
                 if lowercase_combination in [x.lower() for x in qualitylist] and chance_roll(insanitylevel, "uncommon"):
-                    prompt = prompt.replace(combination, " -quality- ")
-                if lowercase_combination in [x.lower() for x in shotsizelist] and chance_roll(
-                    insanitylevel, "uncommon"
-                ):
-                    prompt = prompt.replace(combination, " -shotsize- ")
-                if lowercase_combination in [x.lower() for x in timeperiodlist] and chance_roll(
-                    insanitylevel, "uncommon"
-                ):
-                    prompt = prompt.replace(combination, " -timeperiod- ")
+                    prompt = prompt.replace(combination," -quality- ")
+                if lowercase_combination in [x.lower() for x in shotsizelist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -shotsize- ")
+                if lowercase_combination in [x.lower() for x in timeperiodlist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -timeperiod- ")
                 if lowercase_combination in [x.lower() for x in vomitlist] and chance_roll(insanitylevel, "uncommon"):
-                    prompt = prompt.replace(combination, " -vomit- ")
+                    prompt = prompt.replace(combination," -vomit- ")
                 if lowercase_combination in [x.lower() for x in foodlist] and chance_roll(insanitylevel, "uncommon"):
-                    prompt = prompt.replace(combination, " -food- ")
-                if lowercase_combination in [x.lower() for x in genderdescriptionlist] and chance_roll(
-                    insanitylevel, "uncommon"
-                ):
-                    prompt = prompt.replace(combination, " -genderdescription- ")
-                if lowercase_combination in [x.lower() for x in minilocationlist] and chance_roll(
-                    insanitylevel, "uncommon"
-                ):
-                    prompt = prompt.replace(combination, " -minilocation- ")
-                if lowercase_combination in [x.lower() for x in minioutfitlist] and chance_roll(
-                    insanitylevel, "uncommon"
-                ):
-                    prompt = prompt.replace(combination, " -minioutfit- ")
+                    prompt = prompt.replace(combination," -food- ")
+                if lowercase_combination in [x.lower() for x in genderdescriptionlist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -genderdescription- ")
+                if lowercase_combination in [x.lower() for x in minilocationlist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -minilocation- ")
+                if lowercase_combination in [x.lower() for x in minioutfitlist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -minioutfit- ")
                 if lowercase_combination in [x.lower() for x in lenslist] and chance_roll(insanitylevel, "uncommon"):
-                    prompt = prompt.replace(combination, " -lens- ")
+                    prompt = prompt.replace(combination," -lens- ")
                 if lowercase_combination in [x.lower() for x in seasonlist] and chance_roll(insanitylevel, "uncommon"):
-                    prompt = prompt.replace(combination, " -season- ")
-                if lowercase_combination in [x.lower() for x in imagetypequalitylist] and chance_roll(
-                    insanitylevel, "uncommon"
-                ):
-                    prompt = prompt.replace(combination, " -imagetypequality- ")
-                if lowercase_combination in [x.lower() for x in rpgclasslist] and chance_roll(
-                    insanitylevel, "uncommon"
-                ):
-                    prompt = prompt.replace(combination, " -rpgclass- ")
+                    prompt = prompt.replace(combination," -season- ")
+                if lowercase_combination in [x.lower() for x in imagetypequalitylist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -imagetypequality- ")
+                if lowercase_combination in [x.lower() for x in rpgclasslist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -rpgclass- ")
                 if lowercase_combination in [x.lower() for x in brandlist] and chance_roll(insanitylevel, "uncommon"):
-                    prompt = prompt.replace(combination, " -brand- ")
+                    prompt = prompt.replace(combination," -brand- ")
                 if lowercase_combination in [x.lower() for x in spacelist] and chance_roll(insanitylevel, "uncommon"):
-                    prompt = prompt.replace(combination, " -space- ")
-                if lowercase_combination in [x.lower() for x in poemlinelist] and chance_roll(
-                    insanitylevel, "uncommon"
-                ):
-                    prompt = prompt.replace(combination, " -poemline- ")
-                if lowercase_combination in [x.lower() for x in songlinelist] and chance_roll(
-                    insanitylevel, "uncommon"
-                ):
-                    prompt = prompt.replace(combination, " -songline- ")
-                if lowercase_combination in [x.lower() for x in musicgenrelist] and chance_roll(
-                    insanitylevel, "uncommon"
-                ):
-                    prompt = prompt.replace(combination, " -musicgenre- ")
-                if lowercase_combination in [x.lower() for x in manwomanrelationlist] and chance_roll(
-                    insanitylevel, "uncommon"
-                ):
-                    prompt = prompt.replace(combination, " -manwomanrelation- ")
-                if lowercase_combination in [x.lower() for x in waterlocationlist] and chance_roll(
-                    insanitylevel, "uncommon"
-                ):
-                    prompt = prompt.replace(combination, " -waterlocation- ")
-                if lowercase_combination in [x.lower() for x in containerlist] and chance_roll(
-                    insanitylevel, "uncommon"
-                ):
-                    prompt = prompt.replace(combination, " -container- ")
-                if lowercase_combination in [x.lower() for x in firstnamelist] and chance_roll(
-                    insanitylevel, "uncommon"
-                ):
-                    prompt = prompt.replace(combination, " -firstname- ")
+                    prompt = prompt.replace(combination," -space- ")
+                if lowercase_combination in [x.lower() for x in poemlinelist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -poemline- ")
+                if lowercase_combination in [x.lower() for x in songlinelist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -songline- ")
+                if lowercase_combination in [x.lower() for x in musicgenrelist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -musicgenre- ")
+                if lowercase_combination in [x.lower() for x in manwomanrelationlist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -manwomanrelation- ")
+                if lowercase_combination in [x.lower() for x in manwomanmultiplelist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -manwomanmultiple- ")
+                if lowercase_combination in [x.lower() for x in waterlocationlist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -waterlocation- ")
+                if lowercase_combination in [x.lower() for x in containerlist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -container- ")
+                if lowercase_combination in [x.lower() for x in firstnamelist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -firstname- ")
                 if lowercase_combination in [x.lower() for x in floralist] and chance_roll(insanitylevel, "uncommon"):
-                    prompt = prompt.replace(combination, " -flora- ")
+                    prompt = prompt.replace(combination," -flora- ")
+                if lowercase_combination in [x.lower() for x in printlist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -print- ")
+                if lowercase_combination in [x.lower() for x in miniactivitylist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -miniactivity- ")
+                if lowercase_combination in [x.lower() for x in patternlist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -pattern- ")
+                if lowercase_combination in [x.lower() for x in chairlist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -chair- ")
+                if lowercase_combination in [x.lower() for x in cardnamelist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -cardname- ")
+                if lowercase_combination in [x.lower() for x in coveringlist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -covering- ")
+                if lowercase_combination in [x.lower() for x in facepartlist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -facepart- ")
 
-                if lowercase_combination in [x.lower() for x in fantasyartistlist] and chance_roll(
-                    insanitylevel, "uncommon"
-                ):
-                    prompt = prompt.replace(combination, " -artistfantasy- ")
-                if lowercase_combination in [x.lower() for x in popularartistlist] and chance_roll(
-                    insanitylevel, "uncommon"
-                ):
-                    prompt = prompt.replace(combination, " -artistpopular- ")
-                if lowercase_combination in [x.lower() for x in romanticismartistlist] and chance_roll(
-                    insanitylevel, "uncommon"
-                ):
-                    prompt = prompt.replace(combination, " -artistromanticism- ")
-                if lowercase_combination in [x.lower() for x in photographyartistlist] and chance_roll(
-                    insanitylevel, "uncommon"
-                ):
-                    prompt = prompt.replace(combination, " -artistphotography- ")
 
-                if lowercase_combination in [x.lower() for x in stylestiloralist] and chance_roll(
-                    insanitylevel, "uncommon"
-                ):
-                    prompt = prompt.replace(combination, " -styletilora- ")
-                if lowercase_combination in [x.lower() for x in waterlocationlist] and chance_roll(
-                    insanitylevel, "uncommon"
-                ):
-                    prompt = prompt.replace(combination, " -waterlocation- ")
+                if lowercase_combination in [x.lower() for x in fantasyartistlist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -artistfantasy- ")
+                if lowercase_combination in [x.lower() for x in popularartistlist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -artistpopular- ")
+                if lowercase_combination in [x.lower() for x in romanticismartistlist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -artistromanticism- ")
+                if lowercase_combination in [x.lower() for x in photographyartistlist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -artistphotography- ")
+
+                if lowercase_combination in [x.lower() for x in stylestiloralist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -styletilora- ")
+                if lowercase_combination in [x.lower() for x in waterlocationlist] and chance_roll(insanitylevel, "uncommon"):
+                    prompt = prompt.replace(combination," -waterlocation- ")
 
             runs += 1
+         
+        
 
     prompt = prompt.replace(" :", ":")
     prompt = prompt.replace(": ", ":")
 
     completeprompt = prompt
 
+
+
     while (
-        "-color-" in completeprompt
-        or "-material-" in completeprompt
-        or "-animal-" in completeprompt
-        or "-object-" in completeprompt
-        or "-fictional-" in completeprompt
-        or "-nonfictional-" in completeprompt
-        or "-conceptsuffix-" in completeprompt
-        or "-building-" in completeprompt
-        or "-vehicle-" in completeprompt
-        or "-outfit-" in completeprompt
-        or "-location-" in completeprompt
-        or "-conceptprefix-" in completeprompt
-        or "-descriptor-" in completeprompt
-        or "-food-" in completeprompt
-        or "-haircolor-" in completeprompt
-        or "-hairstyle-" in completeprompt
-        or "-job-" in completeprompt
-        or "-culture-" in completeprompt
-        or "-accessory-" in completeprompt
-        or "-humanoid-" in completeprompt
-        or "-manwoman-" in completeprompt
-        or "-human-" in completeprompt
-        or "-colorscheme-" in completeprompt
-        or "-mood-" in completeprompt
-        or "-genderdescription-" in completeprompt
-        or "-artmovement-" in completeprompt
-        or "-malefemale-" in completeprompt
-        or "-objecttotal-" in completeprompt
-        or "-bodytype-" in completeprompt
-        or "-minilocation-" in completeprompt
-        or "-minilocationaddition-" in completeprompt
-        or "-pose-" in completeprompt
-        or "-season-" in completeprompt
-        or "-minioutfit-" in completeprompt
-        or "-elaborateoutfit-" in completeprompt
-        or "-minivomit-" in completeprompt
-        or "-vomit-" in completeprompt
-        or "-rpgclass-" in completeprompt
-        or "-subjectfromfile-" in completeprompt
-        or "-brand-" in completeprompt
-        or "-space-" in completeprompt
-        or "-artist-" in completeprompt
-        or "-imagetype-" in completeprompt
-        or "-othertype-" in completeprompt
-        or "-quality-" in completeprompt
-        or "-lighting-" in completeprompt
-        or "-camera-" in completeprompt
-        or "-lens-" in completeprompt
-        or "-imagetypequality-" in completeprompt
-        or "-poemline-" in completeprompt
-        or "-songline-" in completeprompt
-        or "-greatwork-" in completeprompt
-        or "-artistfantasy-" in completeprompt
-        or "-artistpopular-" in completeprompt
-        or "-artistromanticism-" in completeprompt
-        or "-artistphotography-" in completeprompt
-        or "-emoji-" in completeprompt
-        or "-timeperiod-" in completeprompt
-        or "-shotsize-" in completeprompt
-        or "-musicgenre-" in completeprompt
-        or "-animaladdition-" in completeprompt
-        or "-objectaddition-" in completeprompt
-        or "-humanaddition-" in completeprompt
-        or "-overalladdition-" in completeprompt
-        or "-focus-" in completeprompt
-        or "-direction-" in completeprompt
-        or "-styletilora-" in completeprompt
-        or "-manwomanrelation-" in completeprompt
-        or "-waterlocation-" in completeprompt
-        or "-container-" in completeprompt
-        or "-firstname-" in completeprompt
-        or "-flora-" in completeprompt
-    ):
-        allwildcardslistnohybrid = [
-            "-color-",
-            "-object-",
-            "-animal-",
-            "-fictional-",
-            "-nonfictional-",
-            "-building-",
-            "-vehicle-",
-            "-location-",
-            "-conceptprefix-",
-            "-food-",
-            "-haircolor-",
-            "-hairstyle-",
-            "-job-",
-            "-accessory-",
-            "-humanoid-",
-            "-manwoman-",
-            "-human-",
-            "-colorscheme-",
-            "-mood-",
-            "-genderdescription-",
-            "-artmovement-",
-            "-malefemale-",
-            "-bodytype-",
-            "-minilocation-",
-            "-minilocationaddition-",
-            "-pose-",
-            "-season-",
-            "-minioutfit-",
-            "-elaborateoutfit-",
-            "-minivomit-",
-            "-vomit-",
-            "-rpgclass-",
-            "-subjectfromfile-",
-            "-brand-",
-            "-space-",
-            "-artist-",
-            "-imagetype-",
-            "-othertype-",
-            "-quality-",
-            "-lighting-",
-            "-camera-",
-            "-lens-",
-            "-imagetypequality-",
-            "-poemline-",
-            "-songline-",
-            "-greatwork-",
-            "-artistfantasy-",
-            "-artistpopular-",
-            "-artistromanticism-",
-            "-artistphotography-",
-            "-emoji-",
-            "-timeperiod-",
-            "-shotsize-",
-            "-musicgenre-",
-            "-animaladdition-",
-            "-objectaddition-",
-            "-humanaddition-",
-            "-overalladdition-",
-            "-focus-",
-            "-direction-",
-            "-styletilora-",
-            "-manwomanrelation-",
-            "-waterlocation-",
-            "-container-",
-            "-firstname-",
-            "-flora-",
-        ]
-        allwildcardslistnohybridlists = [
-            colorlist,
-            objectlist,
-            animallist,
-            fictionallist,
-            nonfictionallist,
-            buildinglist,
-            vehiclelist,
-            locationlist,
-            conceptprefixlist,
-            foodlist,
-            haircolorlist,
-            hairstylelist,
-            joblist,
-            accessorielist,
-            humanoidlist,
-            manwomanlist,
-            humanlist,
-            colorschemelist,
-            moodlist,
-            genderdescriptionlist,
-            artmovementlist,
-            malefemalelist,
-            bodytypelist,
-            minilocationlist,
-            minilocationadditionslist,
-            poselist,
-            seasonlist,
-            minioutfitlist,
-            elaborateoutfitlist,
-            minivomitlist,
-            vomitlist,
-            rpgclasslist,
-            customsubjectslist,
-            brandlist,
-            spacelist,
-            artistlist,
-            imagetypelist,
-            othertypelist,
-            qualitylist,
-            lightinglist,
-            cameralist,
-            lenslist,
-            imagetypequalitylist,
-            poemlinelist,
-            songlinelist,
-            greatworklist,
-            fantasyartistlist,
-            popularartistlist,
-            romanticismartistlist,
-            photographyartistlist,
-            emojilist,
-            timeperiodlist,
-            shotsizelist,
-            musicgenrelist,
-            animaladditionlist,
-            objectadditionslist,
-            humanadditionlist,
-            overalladditionlist,
-            focuslist,
-            directionlist,
-            stylestiloralist,
-            manwomanrelationlist,
-            waterlocationlist,
-            containerlist,
-            firstnamelist,
-            floralist,
-        ]
+        "-color-" in completeprompt or
+        "-material-" in completeprompt or
+        "-animal-" in completeprompt or
+        "-object-" in completeprompt or
+        "-fictional-" in completeprompt or
+        "-nonfictional-" in completeprompt or
+        "-conceptsuffix-" in completeprompt or
+        "-building-" in completeprompt or
+        "-vehicle-" in completeprompt or
+        "-outfit-" in completeprompt or
+        "-location-" in completeprompt or
+        "-conceptprefix-" in completeprompt or
+        "-descriptor-" in completeprompt or
+        "-food-" in completeprompt or
+        "-haircolor-" in completeprompt or
+        "-hairstyle-" in completeprompt or
+        "-job-" in completeprompt or
+        "-culture-" in completeprompt or
+        "-accessory-" in completeprompt or
+        "-humanoid-" in completeprompt or
+        "-manwoman-" in completeprompt or
+        "-human-" in completeprompt or
+        "-colorscheme-" in completeprompt or
+        "-mood-" in completeprompt or
+        "-genderdescription-" in completeprompt or
+        "-artmovement-" in completeprompt or
+        "-malefemale-" in completeprompt or
+        "-objecttotal-" in completeprompt or
+        "-outfitprinttotal-" in completeprompt or
+        "-bodytype-" in completeprompt or
+        "-minilocation-" in completeprompt or
+        "-minilocationaddition-" in completeprompt or
+        "-pose-" in completeprompt or
+        "-season-" in completeprompt or
+        "-minioutfit-" in completeprompt or
+        "-elaborateoutfit-" in completeprompt or
+        "-minivomit-" in completeprompt or
+        "-vomit-" in completeprompt or
+        "-rpgclass-" in completeprompt or
+        "-subjectfromfile-" in completeprompt or
+        "-outfitfromfile-" in completeprompt or
+        "-brand-" in completeprompt or
+        "-space-" in completeprompt or
+        "-artist-" in completeprompt or
+        "-imagetype-" in completeprompt or
+        "-othertype-" in completeprompt or
+        "-quality-" in completeprompt or
+        "-lighting-" in completeprompt or
+        "-camera-" in completeprompt or
+        "-lens-" in completeprompt or
+        "-imagetypequality-" in completeprompt or
+        "-poemline-" in completeprompt or
+        "-songline-" in completeprompt or
+        "-greatwork-" in completeprompt or
+        "-artistfantasy-" in completeprompt or 
+        "-artistpopular-" in completeprompt or 
+        "-artistromanticism-" in completeprompt or 
+        "-artistphotography-" in completeprompt or
+        "-emoji-" in completeprompt or
+        "-timeperiod-" in completeprompt or
+        "-shotsize-" in completeprompt or
+        "-musicgenre-" in completeprompt or
+        "-animaladdition-" in completeprompt or
+        "-objectaddition-" in completeprompt or
+        "-humanaddition-" in completeprompt or
+        "-overalladdition-" in completeprompt or
+        "-focus-" in completeprompt or
+        "-direction-" in completeprompt or
+        "-styletilora-" in completeprompt or
+        "-manwomanrelation-" in completeprompt or
+        "-manwomanmultiple-" in completeprompt or
+        "-waterlocation-" in completeprompt or
+        "-container-" in completeprompt or
+        "-firstname-" in completeprompt or
+        "-flora-" in completeprompt or
+        "-print-" in completeprompt or
+        "-miniactivity-" in completeprompt or
+        "-pattern-" in completeprompt or
+        "-chair-" in completeprompt or
+        "-cardname-" in completeprompt or
+        "-covering-" in completeprompt or
+        "-outfitdescriptor-" in completeprompt or
+        "-hairdescriptor-" in completeprompt or
+        "-hairvomit-" in completeprompt or
+        "-humandescriptor-" in completeprompt or
+        "-facepart-" in completeprompt or
+        "-locationdescriptor-" in completeprompt or
+        "-basicbitchdescriptor-" in completeprompt or
+        "-animaldescriptor-" in completeprompt or
+        "-humanexpression-" in completeprompt or
+        "-humanvomit-" in completeprompt or
+        "-eyecolor-" in completeprompt or
+        "-fashiondesigner-" in completeprompt or
+        "-colorcombination-" in completeprompt or
+        "-materialcombination-" in completeprompt or
+        "-photoaddition-" in completeprompt or
+        "-age-" in completeprompt or
+        "-agecalculator-" in completeprompt or
+        "-gregmode-" in completeprompt
+        ):
+            allwildcardslistnohybrid = [ "-color-","-object-", "-animal-", "-fictional-","-nonfictional-","-building-","-vehicle-","-location-","-conceptprefix-","-food-","-haircolor-","-hairstyle-","-job-", "-accessory-", "-humanoid-", "-manwoman-", "-human-", "-colorscheme-", "-mood-", "-genderdescription-", "-artmovement-", "-malefemale-", "-bodytype-", "-minilocation-", "-minilocationaddition-", "-pose-", "-season-", "-minioutfit-", "-elaborateoutfit-", "-minivomit-", "-vomit-", "-rpgclass-", "-subjectfromfile-", "-subjectfromfile-", "-brand-", "-space-", "-artist-", "-imagetype-", "-othertype-", "-quality-", "-lighting-", "-camera-", "-lens-","-imagetypequality-", "-poemline-", "-songline-", "-greatwork-", "-artistfantasy-", "-artistpopular-", "-artistromanticism-", "-artistphotography-", "-emoji-", "-timeperiod-", "-shotsize-", "-musicgenre-", "-animaladdition-", "-objectaddition-", "-humanaddition-", "-overalladdition-", "-focus-", "-direction-", "-styletilora-", "-manwomanrelation-", "-waterlocation-", "-container-", "-firstname-", "-flora-", "-print-", "-miniactivity-", "-pattern-", "-chair-", "-cardname-", "-covering-", "-outfitdescriptor-", "-hairdescriptor-", "-hairvomit-", "-humandescriptor-", "-manwomanmultiple-", "-facepart-", "-locationdescriptor-", "-basicbitchdescriptor-", "-animaldescriptor-", "-humanexpression-", "-humanvomit-", "-eyecolor-", "-fashiondesigner-", "-colorcombination-", "-materialcombination-", "-photoaddition-", "-age-", "agecalculator-", "-gregmode-"]
+            allwildcardslistnohybridlists = [colorlist, objectlist, animallist, fictionallist, nonfictionallist, buildinglist, vehiclelist, locationlist,conceptprefixlist,foodlist,haircolorlist, hairstylelist,joblist, accessorielist, humanoidlist, manwomanlist, humanlist, colorschemelist, moodlist, genderdescriptionlist, artmovementlist, malefemalelist, bodytypelist, minilocationlist, minilocationadditionslist, poselist, seasonlist, minioutfitlist, elaborateoutfitlist, minivomitlist, vomitlist, rpgclasslist, customsubjectslist, customoutfitslist, brandlist, spacelist, artistlist, imagetypelist, othertypelist, qualitylist, lightinglist, cameralist, lenslist, imagetypequalitylist, poemlinelist, songlinelist, greatworklist, fantasyartistlist, popularartistlist, romanticismartistlist, photographyartistlist, emojilist, timeperiodlist, shotsizelist, musicgenrelist, animaladditionlist, objectadditionslist, humanadditionlist, overalladditionlist, focuslist, directionlist, stylestiloralist, manwomanrelationlist, waterlocationlist, containerlist, firstnamelist, floralist, printlist, miniactivitylist, patternlist, chairlist, cardnamelist, coveringlist, outfitdescriptorlist, hairdescriptorlist, hairvomitlist, humandescriptorlist, manwomanmultiplelist, facepartlist, locationdescriptorlist, basicbitchdescriptorlist, animaldescriptorlist, humanexpressionlist, humanvomitlist, eyecolorlist, fashiondesignerlist, colorcombinationlist, materialcombinationlist, photoadditionlist, agelist, agecalculatorlist, gregmodelist]
+            
+            allwildcardslistwithhybrid = ["-material-", "-descriptor-", "-outfit-", "-conceptsuffix-","-culture-", "-objecttotal-", "-outfitprinttotal-"]
+            allwildcardslistwithhybridlists = [materiallist, descriptorlist,outfitlist,conceptsuffixlist,culturelist, objecttotallist, outfitprinttotallist]
+            
+            
+            #  keywordsinstring = any(word.lower() in givensubject.lower() for word in keywordslist)
+            for wildcard in allwildcardslistnohybrid:
+                attachedlist = allwildcardslistnohybridlists[allwildcardslistnohybrid.index(wildcard)]
+                completeprompt = replacewildcard(completeprompt, insanitylevel, wildcard, attachedlist,False, advancedprompting)
 
-        allwildcardslistwithhybrid = [
-            "-material-",
-            "-descriptor-",
-            "-outfit-",
-            "-conceptsuffix-",
-            "-culture-",
-            "-objecttotal-",
-        ]
-        allwildcardslistwithhybridlists = [
-            materiallist,
-            descriptorlist,
-            outfitlist,
-            conceptsuffixlist,
-            culturelist,
-            objecttotallist,
-        ]
 
-        #  keywordsinstring = any(word.lower() in givensubject.lower() for word in keywordslist)
-        for wildcard in allwildcardslistnohybrid:
-            attachedlist = allwildcardslistnohybridlists[allwildcardslistnohybrid.index(wildcard)]
-            completeprompt = replacewildcard(
-                completeprompt, insanitylevel, wildcard, attachedlist, False, advancedprompting
-            )
+            
+            for wildcard in allwildcardslistwithhybrid:
+                attachedlist = allwildcardslistwithhybridlists[allwildcardslistwithhybrid.index(wildcard)]
+                completeprompt = replacewildcard(completeprompt, insanitylevel, wildcard, attachedlist,True, advancedprompting)
 
-        for wildcard in allwildcardslistwithhybrid:
-            attachedlist = allwildcardslistwithhybridlists[allwildcardslistwithhybrid.index(wildcard)]
-            completeprompt = replacewildcard(
-                completeprompt, insanitylevel, wildcard, attachedlist, True, advancedprompting
-            )
 
+        
     # clean it up
-    completeprompt = cleanup(completeprompt, advancedprompting)
+    completeprompt = cleanup(completeprompt, advancedprompting, insanitylevel)
+    
+
+
+
 
     return completeprompt
 
     # function
+def replacewildcard(completeprompt, insanitylevel, wildcard,listname, activatehybridorswap, advancedprompting, artiststyleselector = ""):
 
-
-def replacewildcard(completeprompt, insanitylevel, wildcard, listname, activatehybridorswap, advancedprompting):
-    if len(listname) == 0:
+    if(len(listname) == 0):
         # handling empty lists
-        completeprompt = completeprompt.replace(wildcard, "", 1)
+        completeprompt = completeprompt.replace(wildcard, "",1)
     else:
+
         while wildcard in completeprompt:
-            if (
-                unique_dist(insanitylevel)
-                and activatehybridorswap == True
-                and len(listname) > 2
-                and advancedprompting == True
-            ):
+            if(unique_dist(insanitylevel) and activatehybridorswap == True and len(listname)>2 and advancedprompting==True):
                 hybridorswaplist = ["hybrid", "swap"]
                 hybridorswap = random.choice(hybridorswaplist)
                 replacementvalue = random.choice(listname)
                 listname.remove(replacementvalue)
                 hybridorswapreplacementvalue = "[" + replacementvalue
+                
+                if(hybridorswap == "hybrid"):
+                        replacementvalue = random.choice(listname)
+                        listname.remove(replacementvalue)
+                        hybridorswapreplacementvalue += "|" + replacementvalue + "] "
+                if(hybridorswap == "swap"):
+                        replacementvalue = random.choice(listname)
+                        listname.remove(replacementvalue)
+                        hybridorswapreplacementvalue += ":" + replacementvalue + ":" + str(random.randint(1,20)) +  "] "
+                
+                completeprompt = completeprompt.replace(wildcard, hybridorswapreplacementvalue,1)
 
-                if hybridorswap == "hybrid":
-                    replacementvalue = random.choice(listname)
-                    listname.remove(replacementvalue)
-                    hybridorswapreplacementvalue += "|" + replacementvalue + "] "
-                if hybridorswap == "swap":
-                    replacementvalue = random.choice(listname)
-                    listname.remove(replacementvalue)
-                    hybridorswapreplacementvalue += ":" + replacementvalue + ":" + str(random.randint(1, 20)) + "] "
-
-                completeprompt = completeprompt.replace(wildcard, hybridorswapreplacementvalue, 1)
-
-            # if list is not empty
-            if bool(listname):
+            #if list is not empty
+            if(bool(listname)):
                 replacementvalue = random.choice(listname)
-                listname.remove(replacementvalue)
-                if wildcard == "-artist-":
-                    replacementvalue = "art by " + replacementvalue
+                if(wildcard not in ["-heshe-", "-himher-","-hisher-"]):
+                    listname.remove(replacementvalue)
 
+
+                
             else:
                 replacementvalue = ""
 
-            completeprompt = completeprompt.replace(wildcard, replacementvalue, 1)
+            # override for artist and artiststyle, only for first artist
+            if(wildcard == "-artist-" and "-artiststyle-" in completeprompt):
+                artiststyles = []
+                artiststyle = []
+                chosenartiststyle = ""
+                artiststyles = artist_category_by_category_csv_to_list("artists_and_category",replacementvalue)
+                artiststyle = [x.strip() for x in artiststyles[0].split(",")]
+
+                artiststyle = list(filter(lambda x: len(x) > 0, artiststyle)) # remove empty values
+
+                if(artiststyleselector in artiststyle):
+                    artiststyle.remove(artiststyleselector)
+
+                # Sorry folks, this only works when you directly select it as a style
+                if("nudity" in artiststyle):
+                    artiststyle.remove("nudity")
+
+                # keep on looping until we have no more wildcards or no more styles to choose from
+                # leftovers will be removed in the cleaning step
+                while bool(artiststyle) and "-artiststyle-" in completeprompt:
+                
+                    chosenartiststyle = random.choice(artiststyle)
+                    completeprompt = completeprompt.replace("-artiststyle-",chosenartiststyle ,1)
+                    artiststyle.remove(chosenartiststyle)
+
+            
+            
+            # Sneaky overrides for "same" wildcards
+            # Are overwritten with their first parent
+            if(wildcard == "-outfit-" or wildcard == "-minioutfit-"):
+                completeprompt = completeprompt.replace("-sameoutfit-", replacementvalue,1)
+
+            # Why do it in this detail?? Because we can:
+            # Check if "from" exists in the string. For example Chun Li from Streetfighter, becomes Chun li
+            if "from" in replacementvalue:
+                # Find the index of "from" in the string
+                from_index = replacementvalue.find("from")
+
+                # Remove everything from and including "from"
+                replacementvalueforoverrides = replacementvalue[:from_index].strip()
+            else:
+                replacementvalueforoverrides = replacementvalue
+
+            if(wildcard in ["-human-"
+                            ,"-humanoid-"
+                            , "-manwoman-"                            
+                            , "-job-"
+                            , "-manwomanrelation-"
+                            , "-manwomanmultiple-"]
+                            and "-samehumansubject-" in completeprompt):
+                            if(completeprompt.index(wildcard) < completeprompt.index("-samehumansubject-")):
+                                completeprompt = completeprompt.replace("-samehumansubject-", "the " + replacementvalueforoverrides)
+            
+            if(wildcard in ["-fictional-"
+                            , "-nonfictional-"
+                            , "-firstname-"]
+                            and "-samehumansubject-" in completeprompt):
+                            if(completeprompt.index(wildcard) < completeprompt.index("-samehumansubject-")):
+                                completeprompt = completeprompt.replace("-samehumansubject-", replacementvalueforoverrides)
+
+            # This one last, since then it is the only subject we have left
+            if(wildcard in ["-malefemale-"]
+               and "-samehumansubject-" in completeprompt):
+               if(completeprompt.index(wildcard) < completeprompt.index("-samehumansubject-")):
+                    completeprompt = completeprompt.replace("-samehumansubject-", "the " + replacementvalueforoverrides)
+
+            if(wildcard in ["-animal-"                         
+                            , "-object-"
+                            , "-vehicle-"
+                            , "-food-"
+                            , "-objecttotal-" 
+                            , "-space-"
+                            , "-flora-"
+                            , "-location-"
+                            , "-building-"]
+                        and "-sameothersubject-" in completeprompt):
+                if(completeprompt.index(wildcard) < completeprompt.index("-sameothersubject-")):
+                            completeprompt = completeprompt.replace("-sameothersubject-", "the " + replacementvalueforoverrides)
+
+
+
+            completeprompt = completeprompt.replace(wildcard, replacementvalue,1)
+            
+            
+
 
     return completeprompt
 
-
 def replace_match(match):
     # Extract the first word from the match
-    words = match.group(0)[1:-1].split("|")
+    words = match.group(0)[1:-1].split('|')
     return words[0]
 
+def cleanup(completeprompt, advancedprompting, insanitylevel = 5):
 
-def cleanup(completeprompt, advancedprompting):
+    # This part is turned off, will bring it back later as an option
+    
     # first, move LoRA's to the back dynamically
 
     # Find all occurrences of text between < and > using regex
-    allLoRA = re.findall(r"<[^>]+>", completeprompt)
+    # allLoRA = re.findall(r"<[^>]+>", completeprompt)
 
     # Remove the extracted matches from completeprompt
-    completeprompt = re.sub(r"<[^>]+>", "", completeprompt)
+    # completeprompt = re.sub(r"<[^>]+>", "", completeprompt)
+
 
     # if we are not using advanced prompting, remove any hybrid stuff:
-    if advancedprompting == False:
-        hybridpattern = r"\[\w+\|\w+\]"
+    if(advancedprompting==False):
+        hybridpattern = r'\[\w+\|\w+\]'
         # Replace the matched pattern with the first word in the group
         completeprompt = re.sub(hybridpattern, replace_match, completeprompt)
 
@@ -2924,47 +3441,162 @@ def cleanup(completeprompt, advancedprompting):
         completeprompt = completeprompt.replace("|", " ")
 
     # sometimes if there are not enough artist, we get left we things formed as (:1.2)
-    completeprompt = re.sub("\(\:\d+\.\d+\)", "", completeprompt)
+    completeprompt = re.sub('\(\:\d+\.\d+\)', '', completeprompt) 
+
+    # lets also remove some wierd stuff on lower insanitylevels
+    if(insanitylevel < 7):
+        completeprompt = completeprompt.replace("DayGlo", " ")
+        completeprompt = completeprompt.replace("fluorescent", " ")
 
     # all cleanup steps moved here
-    completeprompt = re.sub("\[ ", "[", completeprompt)
-    completeprompt = re.sub("\[,", "[", completeprompt)
-    completeprompt = re.sub(" \]", "]", completeprompt)
-    completeprompt = re.sub(" \|", "|", completeprompt)
-    completeprompt = re.sub(' "', '"', completeprompt)
-    completeprompt = re.sub('" ', '"', completeprompt)
-    completeprompt = re.sub("\( ", "(", completeprompt)
-    completeprompt = re.sub(" \(", "(", completeprompt)
-    completeprompt = re.sub("\) ", ")", completeprompt)
-    completeprompt = re.sub(" \)", ")", completeprompt)
+    completeprompt = re.sub('\[ ', '[', completeprompt)
+    completeprompt = re.sub('\[,', '[', completeprompt) 
+    completeprompt = re.sub(' \]', ']', completeprompt)
+    completeprompt = re.sub(' \|', '|', completeprompt)
+    completeprompt = re.sub(' \"', '\"', completeprompt)
+    completeprompt = re.sub('\" ', '\"', completeprompt)
+    completeprompt = re.sub('\( ', '(', completeprompt)
+    completeprompt = re.sub(' \(', '(', completeprompt)
+    completeprompt = re.sub('\) ', ')', completeprompt)
+    completeprompt = re.sub(' \)', ')', completeprompt)
 
-    completeprompt = re.sub(" :", ":", completeprompt)
-    completeprompt = re.sub(",::", "::", completeprompt)
-    completeprompt = re.sub(",:", ":", completeprompt)
+    completeprompt = re.sub(' :', ':', completeprompt)
+    completeprompt = re.sub(',::', '::', completeprompt)
+    completeprompt = re.sub(',:', ':', completeprompt)
 
-    completeprompt = re.sub(",,", ", ", completeprompt)
-    completeprompt = re.sub(",,,", ", ", completeprompt)
-    completeprompt = re.sub(", ,", ",", completeprompt)
-    completeprompt = re.sub(" , ", ", ", completeprompt)
-    completeprompt = re.sub(" ,", ",", completeprompt)
-    completeprompt = re.sub(",\(", ", (", completeprompt)
+    completeprompt = re.sub(',,', ', ', completeprompt)
+    completeprompt = re.sub(',,', ', ', completeprompt)
+    completeprompt = re.sub(',,,', ', ', completeprompt)
+    completeprompt = re.sub(', ,', ',', completeprompt)
+    completeprompt = re.sub(' , ', ', ', completeprompt)
+    completeprompt = re.sub(' ,', ',', completeprompt)
+    completeprompt = re.sub(',\(', ', (', completeprompt)
 
     while "  " in completeprompt:
-        completeprompt = re.sub("  ", " ", completeprompt)
-    completeprompt = re.sub("a The", "The", completeprompt)
-    completeprompt = re.sub(", ,", ",", completeprompt)
-    completeprompt = re.sub(",,", ",", completeprompt)
+        completeprompt = re.sub('  ', ' ', completeprompt)
+    completeprompt = re.sub('a The', 'The', completeprompt)
+    completeprompt = re.sub('the the', 'the', completeprompt)
+    completeprompt = re.sub(', ,', ',', completeprompt)
+    completeprompt = re.sub(',,', ',', completeprompt)
 
-    completeprompt = re.sub(", of a", " of a", completeprompt)
-    completeprompt = re.sub("of a,", "of a", completeprompt)
-    completeprompt = re.sub("of a of a", "of a", completeprompt)
+    completeprompt = re.sub(', of a', ' of a', completeprompt)
+    completeprompt = re.sub('of a,', 'of a', completeprompt)
+    completeprompt = re.sub('of a of a', 'of a', completeprompt)
+    completeprompt = re.sub(' a a ', ' a ', completeprompt)
 
-    completeprompt = re.sub("(?<!\()\s?\(", " (", completeprompt)
-    completeprompt = re.sub("\)(?![\s)])", ") ", completeprompt)
+    # a / an
+    completeprompt = re.sub(' a a', ' an a', completeprompt)
+    completeprompt = re.sub(' a e', ' an e', completeprompt)
+    completeprompt = re.sub(' a i', ' an i', completeprompt)
+    completeprompt = re.sub(' a u', ' an u', completeprompt)
+    completeprompt = re.sub(' a o', ' an o', completeprompt)
+
+
+    completeprompt = re.sub('art art', 'art', completeprompt)
+    completeprompt = re.sub('-artiststyle- art,', '', completeprompt)
+    completeprompt = re.sub('-artiststyle- art', '', completeprompt)
+    completeprompt = re.sub('-artiststyle-', '', completeprompt)
+    completeprompt = re.sub('- art ', '', completeprompt)
+    
+
+    completeprompt = re.sub('a his', 'his', completeprompt)
+    completeprompt = re.sub('a her', 'her', completeprompt)
+    completeprompt = re.sub('they is', 'they are', completeprompt)
+    completeprompt = re.sub('they has', 'they have', completeprompt)
+
+    # some space tricks
+    completeprompt = re.sub('- shaped', '-shaped', completeprompt)
+    completeprompt = re.sub('echa- ', 'echa-', completeprompt)
+
+
+    # clean up some hacky multiples with adding a s to the end
+    completeprompt = re.sub('fs ', 'ves ', completeprompt)
+    completeprompt = re.sub('fs,', 'ves,', completeprompt)
+    completeprompt = re.sub('sss ', 'ss ', completeprompt)
+    completeprompt = re.sub('sss,', 'ss,', completeprompt)
+    completeprompt = re.sub(' Mans', ' Men,', completeprompt)
+    completeprompt = re.sub(' mans', ' men', completeprompt)
+    completeprompt = re.sub(' Womans,', ' Women', completeprompt)
+    completeprompt = re.sub(' womans,', ' women,', completeprompt)
+    completeprompt = re.sub('\(Mans', '(Men,', completeprompt)
+    completeprompt = re.sub('\(mans', '(men', completeprompt)
+    completeprompt = re.sub('\(Womans', '(Women', completeprompt)
+    completeprompt = re.sub('\(womans', '(women', completeprompt)
+
+    
+    completeprompt = re.sub('(?<!\()\s?\(', ' (', completeprompt)
+    completeprompt = re.sub('\)(?![\s)])', ') ', completeprompt)
 
     # Move the extracted LoRA's to the end of completeprompt
-    completeprompt += " " + " ".join(allLoRA)
+    #completeprompt += " " + " ".join(allLoRA)   
 
     completeprompt = completeprompt.strip(", ")
+
+    return completeprompt
+
+def custom_or(values, insanitylevel = 5):
+    # Check if the last element is one of the specific values
+    last_element = values[-1]
+    first_element = values[0]
+
+   
+    if last_element in ['always', 'common', 'normal','uncommon', 'rare', 'legendary','unique', 'extraordinary', 'novel', 'never']:
+        # If we do not hit the change roll, then take the first element.
+        if not(chance_roll(insanitylevel, last_element)):
+            return first_element
+        # Else anything but the first or last element
+        else:
+            values.remove(first_element)
+            values.remove(last_element)
+            selected_value = random.choice(values)
+            return selected_value
+
+
+    else:
+        # Randomly select one element from the list
+        selected_value = random.choice(values)
+    return selected_value
+
+def parse_custom_functions(completeprompt, insanitylevel = 5):
+
+    # Regular expression pattern to match 'or()' function calls and their arguments
+    ORpattern = r'OR\((.*?)\)'
+    ORbasesearch = 'OR('
+
+
+
+    while re.findall(ORpattern, completeprompt):
+
+        # basically start from right to left to start replacing, so we can do nesting
+        # probably not very stable, but seems to work :)
+        startofOR = completeprompt.rfind(ORbasesearch)
+
+        lastpartofcompleteprompt = completeprompt[startofOR:]
+ 
+        # Find all 'or()' function calls and their arguments in the text
+        matches = re.findall(ORpattern, lastpartofcompleteprompt)
+
+        # Sort the matches based on the length of the OR expressions
+        matches.sort(key=len)
+
+
+        match = matches[0] # get the first value, so smallest goes first!
+
+        or_replacement = ""
+
+
+        # Split the arguments by ';'
+        arguments = [arg.strip() for arg in match.split(';')]
+        
+        # Evaluate the 'or()' function and append the result to the results list
+
+        # For debugging, enable these lines
+        #print(completeprompt)
+        #print(arguments)
+        or_replacement = custom_or(arguments, insanitylevel)
+        completematch = 'OR(' + match + ')'
+        completeprompt = completeprompt.replace(completematch, or_replacement)
+
+    
 
     return completeprompt

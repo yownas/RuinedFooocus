@@ -1,371 +1,525 @@
-Pirate
-Explorer
-Scientist
-Detective
-Athlete
-Musician
-Chef
-Politician
-Entrepreneur
-Artist
-Sailor
-Soldier
-Astronaut
-Author
-Actor
-Dancer
-Singer
-Architect
-Engineer
-Doctor
-Lawyer
-Teacher
-Professor
-Historian
-Philosopher
-Mathematician
-Programmer
-Designer
-Journalist
-Photographer
-Filmmaker
-Activist
-Environmentalist
-Humanitarian
-Psychologist
-Anthropologist
-Sociologist
-Economist
-Businessperson
-CEO
-Marketer
-Salesperson
-Financial analyst
-Economist
-Geologist
-Biologist
-Chemist
-Physicist
-Veterinarian
-Zoologist
-Botanist
-Ecologist
-Ornithologist
-Entomologist
-Archeologist
-Paleontologist
-Cartographer
-Surveyor
-Explorer
-Mountaineer
-Rock climber
-Surfer
-Scuba diver
-Skydiver
-Base jumper
-Race car driver
-Pilot
-Train conductor
-Ship captain
-Air traffic controller
-Firefighter
-Paramedic
-Emergency medical technician
-Police officer
-Private investigator
-Lawyer
-Judge
-Legal assistant
-Paralegal
-Librarian
-Museum curator
-Gallery owner
-Music producer
-Sound engineer
-Record label executive
-DJ
-Music journalist
-Music critic
-Music teacher
-Dance teacher
-Theater director
-Playwright
-Set designer
-Costume designer
-Makeup artist
-Fashion designer
-Interior designer
-Landscape architect
-Personal trainer
-Yoga instructor
-Blacksmith
-Baker
-Brewer
-Butcher
-Carpenter
-Cook
-Cooper
-Dockworker
-Farmer
-Fisherman
-Glassblower
-Hunter
-Innkeeper
-Jeweler
-Leatherworker
-Lumberjack
-Mason
-Miller
-Miner
-Potter
-Sailor
-Shepherd
-Shoemaker
-Silk weaver
-Soldier
-Spice merchant
-Spinner
-Tailor
-Tanner
-Trader
-Vintner
-Weaver
-Woodcarver
-Alchemist
-Apothecary
-Architect
-Artist
-Astronomer
-Barber
-Bookbinder
-Calligrapher
-Cartographer
-Clerk
-Clockmaker
-Diplomat
-Doctor
-Engineer
-Explorer
-Farrier
-Geographer
-Goldsmith
-Historian
-Illustrator
-Judge
-Librarian
-Mathematician
-Mercenary
-Musician
-Notary
-Painter
-Philosopher
-Physician
-Pilgrim
-Pirate
-Printer
-Professor
-Rabbi
-Sailor
-Sculptor
-Scribe
-Shipbuilder
-Spy
-Surgeon
-Tax collector
-Teacher
-Theologian
-Town crier
-Translator
-Traveler
-Troubadour
-Watchmaker
-Weaponsmith
-Writer
-Bard
-Chancellor
-Chronicler
-Court jester
-Executioner
-Falconer
-Footman
-Gardener
-Groom
-Harpist
-Herald
-Jester
-Lady-in-waiting
-Page
-Stablehand
-Sword bearer
-Valet
-Knight
-Mage
-Rogue
-Samurai
-Barbarian
-Assassin
-Sorcerer
-Paladin
-Druid
-Gladiator
-Pirate
-Ranger
-Bard
-Warlock
-Monk
-Necromancer
-Witch
-Alchemist
-Summoner
-Demon hunter
-Archmage
-Crusader
-Elemental mage
-Shadow assassin
-Dark knight
-Dragon slayer
-Illusionist
-Beastmaster
-Time traveler
-Vampire hunter
-Blacksmith
-Falconer
-Astronomer
-Herbalist
-Inquisitor
-Oracle
-Scribe
-Siege engineer
-Swashbuckler
-Templar
-Thunderer
-Warden
-Arcanist
-Bladesinger
-Celestial
-Dragon rider
-Enchanter
-Healer
-Jester
-Lancer
-Marshal
-Mystic
-Necrophage
-Phantom
-Rune mage
-Sentinel
-Shadowmage
-Soul reaver
-Spellblade
-Star mage
-Technomancer
-Theurge
-Titan
-Trickster
-Valkyrie
-Warlord
-Weaver
-Windcaller
-Witch hunter
-Abjurer
-Arcane trickster
-Beast tamer
-Blood mage
-Bounty hunter
-Chaos mage
-Chronomancer
-Cryptographer
-Death knight
-Dragon knight
-Dreamweaver
-Elementalist
-Enforcer
-Executioner
-Explorer
-Fire mage
-Frost mage
-Geomancer
-Ghost hunter
-Grave robber
-Guardian
-Gunner
-Harbinger
-Ice queen/king
-Investigator
-Judge
-Knight errant
-Librarian
-Loremaster
-Mage slayer
-Mind reader
-Bishop
-Cardinal
-Chaplain
-Deacon
-Elder
-Friar
-Imām
-Monk
-Nuncio
-Pastor
-Priest
-Rabbi
-Reverend
-Sister
-Vicar
-Abbot
-Canon
-Chancellor
-Confessor
-Curate
-Exorcist
-Inquisitor
-Lector
-Missionary
-Papal legate
-Private
-Private First Class
-Lance Corporal
-Corporal
-Sergeant
-Staff Sergeant
-Gunnery Sergeant
-Master Sergeant
-First Sergeant
-Sergeant Major
-Command Sergeant Major
-Sergeant Major of the Army
-Second Lieutenant
-First Lieutenant
-Captain
-Major
-Lieutenant Colonel
-Colonel
-Brigadier General
-General
-King
-Queen
-Lord
-Lady
-Duke
-Duchess
-Count
-Countess
-Baron
-Baroness
-Nobleman
-Vizier
-Sultan
-Geisha
-Yogi
-Adventurer
-Royalty
-Cowboy
-Cowgirl
-Pop Singer
-President
-Construction worker
-Idol
-Nerd
-Geek
-Muse
+-musicgenre-mancer;both
+Abbot;both
+Abjurer;both
+Acrobat;both
+Activist;both
+Actor;male
+Actress;female
+Adventurer;both
+Air traffic controller;both
+Airbender;both
+Alchemist;both
+Alchemist;both
+Alchemist;both
+Amazone;female
+Android;both
+Anthropologist;both
+Apothecary;both
+Arcane trickster;both
+Arcanist;both
+Archeologist;both
+Architect;both
+Archmage;both
+Artisan;both
+Artist;both
+Assassin;both
+Astronaut;both
+Astronomer;both
+Athlete;both
+Attacker;both
+Author;both
+Avatar;both
+Bagpiper;both
+Baker;both
+Baker;both
+Ballerina;female
+Ballerino;male
+Ballroom Dancer;both
+Barbarian;both
+Barber;both
+Bard;both
+Barista;both
+Baron;male
+Baroness;female
+Base jumper;both
+Baseball Player;both
+Beast tamer;both
+Beastmaster;both
+Beekeeper;both
+Belly dancer;female
+Berseker;both
+bimbo;female
+Biologist;both
+Bishop;both
+Blacksmith;both
+Bladesinger;both
+Blood mage;both
+Bohemian;both
+Bollywood Dancer;both
+Boss;both
+Bookbinder;both
+Botanist;both
+Bounty hunter;both
+Brewer;both
+Brewer;both
+Bride;female
+Brigadier General;both
+Businessperson;both
+Butcher;both
+Butcher;both
+Calligrapher;both
+Canon;both
+Captain;both
+Cardinal;both
+Carpenter;both
+Cartographer;both
+Caveman;male
+Cavewoman;female
+Ceasar;both
+Celestial;both
+CEO;both
+Chancellor;both
+Chaos mage;both
+Chaplain;both
+Chauffeur;both
+Chef;both
+Chemist;both
+Chimney Sweep;both
+Chronicler;both
+Chronomancer;both
+Citizen;both
+Cleric;both
+Clerk;both
+Cloaked figure;both
+Clockmaker;both
+Clown;both
+Colonel;both
+Command Sergeant Major;both
+Commander;both
+Concubine;female
+Confessor;both
+Conquistador;both
+Construction worker;both
+Construction worker;both
+Cook;both
+Cooper;both
+Corporal;both
+Cosplayer;both
+Costume designer;both
+Count;male
+Countess;female
+Court jester;both
+Cowboy;male
+Cowgirl;female
+Crusader;both
+Cryptographer;both
+Curate;both
+Cyborg;both
+Dance teacher;both
+Dancer;both
+Dandy;male
+Dark Knight;both
+Dark Souls Boss;both
+Deacon;both
+Death knight;both
+Death knight;both
+Deep-Sea Diver;both
+Defender;both
+Demon hunter;both
+Demon Hunter;both
+Designer;both
+Detective;both
+Diplomat;both
+DJ;both
+Dockworker;both
+Doctor;both
+Doll;both
+Dragon knight;both
+Dragon rider;both
+Dragon slayer;both
+Dreamweaver;both
+Druid;both
+Duchess;female
+Duke;male
+Earthbender;both
+Ecologist;both
+Economist;both
+Elder;both
+Elemental mage;both
+Elementalist;both
+Emergency medical technician;both
+Emperor;male
+Empress;female
+Enchanter;both
+Enforcer;both
+Engineer;both
+Engineer;both
+Engineer;both
+Entomologist;both
+Entrepreneur;both
+Environmentalist;both
+Envoy;both
+Eskimo;both
+Executioner;both
+Exorcist;both
+Explorer;both
+Falconer;both
+Fallen Paladin;both
+Farmer;both
+Farmer;both
+Farrier;both
+Fashion designer;both
+Fashion model;both
+Fashionista;female
+femme fatale;female
+Fencer;both
+Feudal lord;both
+Fighter;both
+Fighting game character;both
+Filmmaker;both
+Financial analyst;both
+Fire mage;both
+Firebender;both
+Firefighter;both
+First Lieutenant;both
+First Sergeant;both
+Fisherman;both
+Flamengo Dancer;female
+Florist;both
+Footman;both
+Free Spirit;both
+Friar;both
+Frost mage;both
+Gallery owner;both
+Gangster;both
+Gardener;both
+Gardener;both
+Geek;both
+Geisha;both
+Geisha;female
+General;both
+Geographer;both
+Geologist;both
+Geologist;both
+Geomancer;both
+Ghost hunter;both
+Ghost;both
+Gladiator;both
+Glassblower;both
+Goldsmith;both
+Gondolier;both
+Grave robber;both
+Groom;both
+Groom;male
+Guardian;both
+Gunner;both
+Gunnery Sergeant;both
+Guru;both
+Gypsy;both
+Harbinger;both
+Harpist;both
+Healer;both
+Henchman;both
+Herald;both
+Herbalist;both
+Highland Scotsman;both
+Highway Patrol Officer;both
+Hippie;both
+Hipster;both
+Historian;both
+Hillbilly;both
+Hooded figure;both
+Humanitarian;both
+hunk;male
+Hunter;both
+Hunter;both
+Ice Cream Vendor;both
+Ice king;male
+Ice queen;female
+Idol;both
+Illusionist;both
+Illustrator;both
+Imām;both
+Innkeeper;both
+Inquisitor;both
+Intellectual;both
+Interior designer;both
+Investigator;both
+Investor;both
+Jazz Musician;both
+Jedi knight;both
+Jedi;both
+Jester;both
+Jeweler;both
+Jock;both
+Journalist;both
+Judge;both
+K-pop star;both
+Khan;both
+King;male
+Kingsguard;both
+Knight errant;both
+Knight;both
+Lady-in-waiting;female
+Lady;female
+Lance Corporal;both
+Lancer;both
+Landscape architect;both
+Lawyer;both
+Leatherworker;both
+Lector;both
+Legal assistant;both
+Librarian;both
+Lich king;both
+Lieutenant Colonel;both
+Lifeguard;both
+Lord;male
+Loremaster;both
+Lumberjack;both
+Lumberjack;both
+Maffiosi;both
+Mage slayer;both
+Mage;both
+Magician;both
+Magician;both
+Maid;female
+Maiden;female
+Major;both
+Makeup artist;both
+Marketer;both
+Marshal;both
+Mason;both
+Master Sergeant;both
+Matador;both
+Mathematician;both
+Mentor;both
+Mercenary;both
+Mermaid;female
+Merman;male
+Metalhead;both
+Miller;both
+Mime;both
+Mind reader;both
+Miner;both
+Missionary;both
+Mistress;female
+Model;both
+Monk;both
+Monster Hunter;both
+Mother Nature;female
+Mountaineer;both
+Muppet;both
+Muse;both
+Museum curator;both
+Music critic;both
+Music journalist;both
+Music producer;both
+Music teacher;both
+Musician;both
+Mystic;both
+Naruto-style ninja;both
+Necromancer;both
+Necrophage;both
+Nerd;both
+Ninja;both
+Nobleman;male
+Nomad;both
+Notary;both
+Nuncio;both
+Oathbreaker;both
+Office worker;both
+Oliarch;both
+One piece-style Pirate;both
+Opera Singer;both
+Oracle;both
+Ornithologist;both
+Page;both
+Painter;both
+Paladin;both
+Paleontologist;both
+Papal legate;both
+Paralegal;both
+Paramedic;both
+Park Ranger;both
+Pastor;both
+Patrician;both
+Peasant;both
+Personal trainer;both
+Phantom;both
+Pharao;both
+Philosopher;both
+Photographer;both
+Physician;both
+Physicist;both
+Pilgrim;both
+Pilot;both
+Pirate captain;both
+Pirate;both
+Plain Jane;female
+Playwright;both
+Plumber;both
+Pokemon Gym Leader;both
+Pokemon trainer;both
+Police officer;both
+Politician;both
+Pop Singer;both
+Pop star;both
+Pope;both
+Potter;both
+President;both
+Priest;both
+Prince;male
+Princess;female
+Printer;both
+Private First Class;both
+Private investigator;both
+Private;both
+Professor;both
+Programmer;both
+protagonist;both
+Protector;both
+Psychologist;both
+Punk Rocker;both
+Queen;female
+Rabbi;both
+Race car driver;both
+Ranger;both
+Rapper;both
+Record label executive;both
+Renaissance Person;both
+Reverend;both
+Robot;both
+Rock climber;both
+Rock Star;both
+Rogue;both
+Ronin;both
+Royal Guard;both
+Royalty;both
+Rune mage;both
+Safari Guide;both
+Sailor;both
+Sailor;both
+Salaryman;male
+Salesperson;both
+Salsa Dancer;both
+Samurai;both
+Scholar;both
+Science officer;both
+Scientist;both
+Scribe;both
+Scuba diver;both
+Sculptor;both
+Second Lieutenant;both
+Secret lover;both
+Secretary;both
+Sentinel;both
+Sergeant Major of the Army;both
+Sergeant Major;both
+Sergeant;both
+Set designer;both
+Shadow assassin;both
+Shadowmage;both
+Shady figure;both
+Shaolinn Monk;both
+Shepherd;both
+Ship captain;both
+Shipbuilder;both
+Shoemaker;both
+Siege engineer;both
+Silk weaver;both
+Singer;both
+Sister;female
+Sith lord;both
+Sith;both
+Skateboarder;both
+Skydiver;both
+Socialite;both
+Sociologist;both
+Soldier;both
+Sorcerer;both
+Soul reaver;both
+Sound engineer;both
+Southern Belle;female
+Space Alien;both
+Spellblade;both
+Spice merchant;both
+Spinner;both
+Spy;both
+Stablehand;both
+Staff Sergeant;both
+Star mage;both
+Starfleet captain;both
+Steeplejack;both
+Student;both
+Sultan;both
+Summoner;both
+Sumo Wrestler;both
+Super model;female
+Superhero;both
+Surfer;both
+Surgeon;both
+Surveyor;both
+Swashbuckler;both
+Sword bearer;both
+Tailor;both
+Tanner;both
+Tax collector;both
+Taxi driver;both
+Teacher;both
+Teacher;both
+Technomancer;both
+Templar;both
+Theater director;both
+Theologian;both
+Theurge;both
+Thunderer;both
+Time traveler;both
+Titan;both
+Tomboy;female
+Toreador;both
+Tourist;both
+Town crier;both
+Trader;both
+Trailer trash;both
+Train conductor;both
+Tramp;both
+Translator;both
+Traveler;both
+Tribal Chief;both
+Trickster;both
+Troubadour;both
+Vagabond;both
+Valet;both
+Valkyrie;both
+Vampire hunter;both
+Vampire lord;both
+Veterinarian;both
+Vicar;both
+Video Game Character;both
+Video Game Boss;both
+Viking Berserker;both
+Viking Warrior;both
+Viking;both
+villain;both
+Vintner;both
+Vizier;both
+Wallflower;both
+Warden;both
+Warlock;both
+Warlord;both
+Warrior;both
+Watchmaker;both
+Waterbender;both
+Weaponsmith;both
+Weaver;both
+Windcaller;both
+Witch hunter;both
+Witch;female
+Witcher;both
+Wizard;male
+Woodcarver;both
+Writer;both
+Yoga instructor;both
+Yogi;both
+Zoologist;both
+Zorro;both
