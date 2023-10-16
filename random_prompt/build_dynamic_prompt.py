@@ -3328,7 +3328,7 @@ def replacewildcard(completeprompt, insanitylevel, wildcard,listname, activatehy
                 artiststyles = []
                 artiststyle = []
                 chosenartiststyle = ""
-                artiststyles = artist_category_csv_to_list("artists_and_category",replacementvalue)
+                artiststyles = artist_category_by_category_csv_to_list("artists_and_category",replacementvalue)
                 artiststyle = [x.strip() for x in artiststyles[0].split(",")]
 
                 artiststyle = list(filter(lambda x: len(x) > 0, artiststyle)) # remove empty values

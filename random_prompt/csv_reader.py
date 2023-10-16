@@ -105,7 +105,16 @@ def artist_category_csv_to_list(csvfilename,category):
                                 csvlist.append(row["Artist"])
         return csvlist
 
-
+def artist_category_by_category_csv_to_list(csvfilename,artist):
+        csvlist = []
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        full_path = os.path.join(script_dir, "./csvfiles/" )
+        with open(full_path + csvfilename + ".csv", "r", newline="",encoding="utf8") as file:
+                reader = csv.DictReader(file, delimiter=",")
+                for row in reader:
+                        if(row["Artist"] == artist):
+                                csvlist.append(row["Tags"])
+        return csvlist
 
 def load_config_csv():
         csvlist = []
