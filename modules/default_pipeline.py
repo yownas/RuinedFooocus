@@ -7,6 +7,7 @@ import warnings
 import modules.core as core
 import modules.path
 import modules.controlnet
+import modules.async_worker as worker
 
 from PIL import Image, ImageOps
 
@@ -178,6 +179,8 @@ def process(
     global positive_conditions_cache, negative_conditions_cache, positive_conditions_refiner_cache, negative_conditions_refiner_cache
     global xl_controlnet
 
+    worker.outputs.append(["preview", (0, f"Processing text encoding ...", None)])
+
     with suppress_stdout():
         positive_conditions_cache = (
             core.encode_prompt_condition(clip=xl_base_patched.clip, prompt=positive_prompt)
@@ -228,6 +231,8 @@ def process(
                 else negative_conditions_refiner_cache
             )
 
+    worker.outputs.append(["preview", (0, f"Start sampling ...", None)])
+
     sampled_latent = core.ksampler_with_refiner(
         model=xl_base_patched.unet,
         positive=positive_conditions_cache,
@@ -249,6 +254,8 @@ def process(
         cfg=cfg,
         callback_function=callback,
     )
+
+    worker.outputs.append(["preview", (100, f"VAE decoding ...", None)])
 
     decoded_latent = core.decode_vae(vae=xl_base_patched.vae, latent_image=sampled_latent)
 
