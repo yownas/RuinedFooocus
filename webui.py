@@ -72,7 +72,7 @@ def update_clicked():
         stop_button: gr.update(interactive=True, visible=True),
         progress_html: gr.update(
             visible=True,
-            value=modules.html.make_progress_html(0, "Processing text encoding ..."),
+            value=modules.html.make_progress_html(0, "Please wait ..."),
         ),
         progress_window: gr.update(visible=True, value="init_image.png"),
     }
