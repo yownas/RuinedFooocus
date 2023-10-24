@@ -32,24 +32,31 @@ def get_promptlist(gen_data):
 
 def process_wildcards(wildcard_text, directory="wildcards"):
     placeholders = re.findall(r"__(\w+)__", wildcard_text)
-    for placeholder in placeholders:
-        found = False
-        for root, dirs, files in os.walk(directory):
-            if f"{placeholder}.txt" in files:
-                file_path = os.path.join(root, f"{placeholder}.txt")
-                with open(file_path) as f:
-                    words = f.read().splitlines()
-                wildcard_text = re.sub(
-                    rf"__{placeholder}__", random.choice(words), wildcard_text
-                )
-                found = True
-                break
+    placeholder_choices = {}  # Store random choices for each placeholder
 
-        if not found:
-            wildcard_text = re.sub(rf"__{placeholder}__", placeholder, wildcard_text)
-            print(
-                f"Error: Could not find file {placeholder}.txt in {directory} or its subdirectories."
-            )
+    for placeholder in placeholders:
+        if placeholder not in placeholder_choices:
+            found = False
+            for root, dirs, files in os.walk(directory):
+                if f"{placeholder}.txt" in files:
+                    file_path = os.path.join(root, f"{placeholder}.txt")
+                    with open(file_path) as f:
+                        words = f.read().splitlines()
+                    placeholder_choices[placeholder] = words
+                    found = True
+                    break
+
+            if not found:
+                placeholder_choices[placeholder] = [placeholder]
+                print(
+                    f"Error: Could not find file {placeholder}.txt in {directory} or its subdirectories."
+                )
+
+    for placeholder in placeholders:
+        random_choice = random.choice(placeholder_choices[placeholder])
+        wildcard_text = re.sub(
+            rf"__{placeholder}__", random_choice, wildcard_text, count=1
+        )
 
     return wildcard_text
 
