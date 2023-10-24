@@ -184,6 +184,7 @@ def process(
     global xl_controlnet
 
     worker.outputs.append(["preview", (0, f"Processing text encoding ...", None)])
+    img2img_mode = False
 
     with suppress_stdout():
         positive_conditions_cache = (
@@ -228,13 +229,14 @@ def process(
                 float(controlnet["start"]),
                 float(controlnet["stop"]),
             )
-            latent = core.generate_empty_latent(
-                width=width, height=height, batch_size=1
-            )
-            force_full_denoise = True
-        if controlnet["type"].lower() == "img2img":
-            latent = core.encode_vae(vae=xl_base_patched.vae, pixels=input_image)
-            force_full_denoise = False
+            if controlnet["type"].lower() == "img2img":
+                latent = core.encode_vae(vae=xl_base_patched.vae, pixels=input_image)
+                force_full_denoise = False
+                img2img_mode = True
+
+    if not img2img_mode:
+        latent = core.generate_empty_latent(width=width, height=height, batch_size=1)
+        force_full_denoise = True
 
     denoise = None
 
