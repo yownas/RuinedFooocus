@@ -1,3 +1,8 @@
+### 1.7.2
+* Wildcards can now use subdirectories
+* Fixed issue where if you placed 2 placeholders with the same name, you got the same results, a new one is now chosen
+* Updated status to show model loading / vae decoding
+
 ### 1.7.1
 * Update to one button prompt (provided by [Alrjen](https://github.com/AIrjen/OneButtonPrompt))
 
