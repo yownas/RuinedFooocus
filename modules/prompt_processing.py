@@ -33,13 +33,24 @@ def get_promptlist(gen_data):
 def process_wildcards(wildcard_text, directory="wildcards"):
     placeholders = re.findall(r"__(\w+)__", wildcard_text)
     for placeholder in placeholders:
-        try:
-            with open(os.path.join(directory, f"{placeholder}.txt")) as f:
-                words = f.read().splitlines()
-            wildcard_text = re.sub(rf"__{placeholder}__", random.choice(words), wildcard_text)
-        except IOError:
+        found = False
+        for root, dirs, files in os.walk(directory):
+            if f"{placeholder}.txt" in files:
+                file_path = os.path.join(root, f"{placeholder}.txt")
+                with open(file_path) as f:
+                    words = f.read().splitlines()
+                wildcard_text = re.sub(
+                    rf"__{placeholder}__", random.choice(words), wildcard_text
+                )
+                found = True
+                break
+
+        if not found:
             wildcard_text = re.sub(rf"__{placeholder}__", placeholder, wildcard_text)
-            print(f"Error: Could not open file {placeholder}.txt. Please ensure the file exists and is readable.")
+            print(
+                f"Error: Could not find file {placeholder}.txt in {directory} or its subdirectories."
+            )
+
     return wildcard_text
 
 
