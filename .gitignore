@@ -33,6 +33,8 @@ notification.mp3
 /node_modules
 /package-lock.json
 /.coverage*
+/wildcards/*
+!/wildcards/colors.txt
 models/vae/config.json
 settings.json
 styles.csv
