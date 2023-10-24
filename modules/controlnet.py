@@ -4,7 +4,7 @@ import json
 from os.path import exists
 
 DEFAULT_CNSETTINGS_FILE = "settings/controlnet.default"
-CNSETTINGS_FILE = "settings/controlnet.json"
+CNSETTINGS_FILE = "settings/powerup.json"
 NEWCN = "Custom..."
 
 # https://huggingface.co/stabilityai/control-lora/tree/main/control-LoRAs-rank128
@@ -13,6 +13,7 @@ controlnet_models = {
     "depth": "control-lora-depth-rank128.safetensors",
     "recolour": "control-lora-recolor-rank128.safetensors",
     "sketch": "control-lora-sketch-rank128-metadata.safetensors",
+    "img2img": None,
 }
 
 
@@ -37,6 +38,7 @@ def save_cnsettings(cn_save_options):
     controlnet_settings = cn_save_options
     cn_options = {f"{k}": v for k, v in controlnet_settings.items()}
 
+
 def modes():
     return controlnet_settings.keys()
 
@@ -57,9 +59,11 @@ def get_settings(gen_data):
         }
     else:
         return (
-            controlnet_settings[gen_data["cn_selection"]] if gen_data["cn_selection"] in controlnet_settings else None
+            controlnet_settings[gen_data["cn_selection"]]
+            if gen_data["cn_selection"] in controlnet_settings
+            else None
         )
+
 
 controlnet_settings = load_cnsettings()
 cn_options = {f"{k}": v for k, v in controlnet_settings.items()}
-

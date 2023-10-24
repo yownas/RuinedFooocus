@@ -19,4 +19,5 @@
     "Depth (high)": {"type": "depth", "strength": 1.0, "start": 0.0, "stop": 0.99},
     "Recolour": {"type": "recolour", "strength": 1.0, "start": 0.0, "stop": 1.0},
     "Sketch": {"type": "sketch", "strength": 0.9, "start": 0.0, "stop": 1.0}
+    "Img2Img": {"type": "img2img", "start": 0.06, "denoise": 0.94}
 }

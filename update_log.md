@@ -1,3 +1,9 @@
+### 1.8.0
+* Added the basics for image 2 image
+* Renamed Controlnet to PowerUp
+* Now uses `powerup.json` as default
+
+
 ### 1.7.2
 * Wildcards can now use subdirectories
 * Fixed issue where if you placed 2 placeholders with the same name, you got the same results, a new one is now chosen

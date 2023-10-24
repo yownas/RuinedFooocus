@@ -11,10 +11,10 @@ from shared import add_ctrl
 
 
 def add_controlnet_tab():
-    with gr.Tab(label="CN"):
+    with gr.Tab(label="PowerUp"):
         with gr.Row():
             cn_selection = gr.Dropdown(
-                label="Controlnet",
+                label="Cheat Code",
                 choices=["None"] + list(cn_options.keys()) + [NEWCN],
                 value="None",
             )

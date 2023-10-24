@@ -53,7 +53,9 @@ def load_base_model(name):
             xl_base = core.load_model(filename)
 
         if not isinstance(xl_base.unet.model, SDXL):
-            print("Model not supported. Fooocus only support SDXL model as the base model.")
+            print(
+                "Model not supported. Fooocus only support SDXL model as the base model."
+            )
             xl_base = None
 
         if xl_base is not None:
@@ -116,7 +118,9 @@ def load_loras(loras):
         filename = os.path.join(modules.path.lorafile_path, name)
         print(f"Loading LoRAs: {name}")
         with suppress_stdout():
-            model = core.load_lora(model, filename, strength_model=weight, strength_clip=weight)
+            model = core.load_lora(
+                model, filename, strength_model=weight, strength_clip=weight
+            )
     xl_base_patched = model
     xl_base_patched_hash = str(loras)
     print(f"LoRAs loaded: {xl_base_patched_hash}")
@@ -183,12 +187,16 @@ def process(
 
     with suppress_stdout():
         positive_conditions_cache = (
-            core.encode_prompt_condition(clip=xl_base_patched.clip, prompt=positive_prompt)
+            core.encode_prompt_condition(
+                clip=xl_base_patched.clip, prompt=positive_prompt
+            )
             if positive_conditions_cache is None
             else positive_conditions_cache
         )
         negative_conditions_cache = (
-            core.encode_prompt_condition(clip=xl_base_patched.clip, prompt=negative_prompt)
+            core.encode_prompt_condition(
+                clip=xl_base_patched.clip, prompt=negative_prompt
+            )
             if negative_conditions_cache is None
             else negative_conditions_cache
         )
@@ -202,9 +210,16 @@ def process(
         if xl_controlnet:
             match controlnet["type"].lower():
                 case "canny":
-                    input_image = core.detect_edge(input_image, float(controlnet["edge_low"]), float(controlnet["edge_high"]))
+                    input_image = core.detect_edge(
+                        input_image,
+                        float(controlnet["edge_low"]),
+                        float(controlnet["edge_high"]),
+                    )
                 # case "depth": (no preprocessing?)
-            positive_conditions_cache, negative_conditions_cache = core.apply_controlnet(
+            (
+                positive_conditions_cache,
+                negative_conditions_cache,
+            ) = core.apply_controlnet(
                 positive_conditions_cache,
                 negative_conditions_cache,
                 xl_controlnet,
@@ -213,20 +228,29 @@ def process(
                 float(controlnet["start"]),
                 float(controlnet["stop"]),
             )
+            latent = core.generate_empty_latent(
+                width=width, height=height, batch_size=1
+            )
+            force_full_denoise = True
+        if controlnet["type"].lower() == "img2img":
+            latent = core.encode_vae(vae=xl_base_patched.vae, pixels=input_image)
+            force_full_denoise = False
 
-    latent = core.generate_empty_latent(width=width, height=height, batch_size=1)
-    force_full_denoise = True
     denoise = None
 
     if xl_refiner is not None:
         with suppress_stdout():
             positive_conditions_refiner_cache = (
-                core.encode_prompt_condition(clip=xl_refiner.clip, prompt=positive_prompt)
+                core.encode_prompt_condition(
+                    clip=xl_refiner.clip, prompt=positive_prompt
+                )
                 if positive_conditions_refiner_cache is None
                 else positive_conditions_refiner_cache
             )
             negative_conditions_refiner_cache = (
-                core.encode_prompt_condition(clip=xl_refiner.clip, prompt=negative_prompt)
+                core.encode_prompt_condition(
+                    clip=xl_refiner.clip, prompt=negative_prompt
+                )
                 if negative_conditions_refiner_cache is None
                 else negative_conditions_refiner_cache
             )
@@ -257,7 +281,9 @@ def process(
 
     worker.outputs.append(["preview", (100, f"VAE decoding ...", None)])
 
-    decoded_latent = core.decode_vae(vae=xl_base_patched.vae, latent_image=sampled_latent)
+    decoded_latent = core.decode_vae(
+        vae=xl_base_patched.vae, latent_image=sampled_latent
+    )
 
     images = core.image_to_numpy(decoded_latent)
 
