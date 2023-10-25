@@ -1,3 +1,6 @@
+### 1.8.2
+* Update Comfy version and fix changes :D
+
 ### 1.8.1
 * Improved image2image and allowed settings to be changed when "custom" is selected form the PowerUp Tab.
 

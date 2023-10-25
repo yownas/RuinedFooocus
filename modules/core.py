@@ -17,7 +17,7 @@ from nodes import (
 )
 from comfy.sample import (
     prepare_mask,
-    broadcast_cond,
+    convert_cond,
     get_additional_models,
     cleanup_additional_models,
 )
@@ -261,8 +261,8 @@ def ksampler_with_refiner(
     noise = noise.to(device)
     latent_image = latent_image.to(device)
 
-    positive_copy = broadcast_cond(positive, noise.shape[0], device)
-    negative_copy = broadcast_cond(negative, noise.shape[0], device)
+    positive_copy = convert_cond(positive)
+    negative_copy = convert_cond(negative)
 
     kwargs = {
         "cfg": cfg,
@@ -276,8 +276,8 @@ def ksampler_with_refiner(
         "seed": seed,
     }
     if refiner is not None:
-        refiner_positive_copy = broadcast_cond(refiner_positive, noise.shape[0], device)
-        refiner_negative_copy = broadcast_cond(refiner_negative, noise.shape[0], device)
+        refiner_positive_copy = convert_cond(refiner_positive)
+        refiner_negative_copy = convert_cond(refiner_negative)
 
         sampler = KSamplerWithRefiner(
             model=model,
