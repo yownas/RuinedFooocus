@@ -229,16 +229,16 @@ def process(
                 float(controlnet["start"]),
                 float(controlnet["stop"]),
             )
-            if controlnet["type"].lower() == "img2img":
-                latent = core.encode_vae(vae=xl_base_patched.vae, pixels=input_image)
-                force_full_denoise = False
-                img2img_mode = True
+        if controlnet["type"].lower() == "img2img":
+            latent = core.encode_vae(vae=xl_base_patched.vae, pixels=input_image)
+            force_full_denoise = False
+            denoise = float(controlnet.get("denoise", controlnet.get("strength")))
+            img2img_mode = True
 
     if not img2img_mode:
         latent = core.generate_empty_latent(width=width, height=height, batch_size=1)
         force_full_denoise = True
-
-    denoise = None
+        denoise = None
 
     if xl_refiner is not None:
         with suppress_stdout():

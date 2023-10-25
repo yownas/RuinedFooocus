@@ -1,3 +1,6 @@
+### 1.8.1
+* Improved image2image and allowed settings to be changed when "custom" is selected form the PowerUp Tab.
+
 ### 1.8.0
 * Added the basics for image 2 image
 * Renamed Controlnet to PowerUp
