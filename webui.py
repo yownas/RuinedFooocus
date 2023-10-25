@@ -437,7 +437,6 @@ with shared.gradio_root as block:
                         return s
 
             with gr.Tab(label="Models"):
-                print(modules.path.model_filenames)
                 with gr.Row():
                     base_model = gr.Dropdown(
                         label="SDXL Base Model",
