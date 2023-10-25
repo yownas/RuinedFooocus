@@ -437,13 +437,14 @@ with shared.gradio_root as block:
                         return s
 
             with gr.Tab(label="Models"):
+                print(modules.path.model_filenames)
                 with gr.Row():
                     base_model = gr.Dropdown(
                         label="SDXL Base Model",
                         choices=modules.path.model_filenames,
                         value=settings["base_model"]
                         if settings["base_model"] in modules.path.model_filenames
-                        else modules.path.model_filenames[0],
+                        else [modules.path.model_filenames[0]],
                         show_label=True,
                     )
                     add_ctrl("base_model_name", base_model)
