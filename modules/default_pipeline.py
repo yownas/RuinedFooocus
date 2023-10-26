@@ -140,7 +140,7 @@ def process(
     global positive_conditions_cache, negative_conditions_cache
     global xl_controlnet
 
-    worker.outputs.append(["preview", (0, f"Processing text encoding ...", None)])
+    worker.outputs.append(["preview", (-1, f"Processing text encoding ...", None)])
     img2img_mode = False
 
     with suppress_stdout():
@@ -197,7 +197,7 @@ def process(
         force_full_denoise = True
         denoise = None
 
-    worker.outputs.append(["preview", (0, f"Start sampling ...", None)])
+    worker.outputs.append(["preview", (-1, f"Start sampling ...", None)])
 
     sampled_latent = core.ksampler(
         model=xl_base_patched.unet,
@@ -217,7 +217,7 @@ def process(
         callback_function=callback,
     )
 
-    worker.outputs.append(["preview", (100, f"VAE decoding ...", None)])
+    worker.outputs.append(["preview", (-1, f"VAE decoding ...", None)])
 
     decoded_latent = core.decode_vae(
         vae=xl_base_patched.vae, latent_image=sampled_latent
