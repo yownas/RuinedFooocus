@@ -90,10 +90,10 @@ def worker():
         loras.extend(parsed_loras)
 
         outputs.append(
-            ["preview", (0, f"Loading base model: {gen_data['base_model_name']}", None)]
+            ["preview", (-1, f"Loading base model: {gen_data['base_model_name']}", None)]
         )
         pipeline.load_base_model(gen_data["base_model_name"])
-        outputs.append(["preview", (0, f"Loading LoRA models ...", None)])
+        outputs.append(["preview", (-1, f"Loading LoRA models ...", None)])
         pipeline.load_loras(loras)
         pipeline.clean_prompt_cond_caches()
 

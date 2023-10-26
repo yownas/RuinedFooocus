@@ -123,6 +123,11 @@ function generate_shortcut(){
 }
 """
 
+from shared import state
 
 def make_progress_html(number, text):
+    if number == -1:
+        number = state["last_progress"]
+    else:
+        state["last_progress"] = number
     return progress_html.replace("*number*", str(number)).replace("*text*", text)
