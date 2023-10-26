@@ -482,7 +482,6 @@ with shared.gradio_root as block:
                 results = []
                 results += [
                     gr.update(choices=modules.path.model_filenames),
-                    gr.update(choices=["None"] + modules.path.model_filenames),
                 ]
                 for i in range(5):
                     results += [
