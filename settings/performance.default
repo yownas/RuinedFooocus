@@ -1,5 +1,5 @@
 {
-    "Speed": {"custom_steps": 30, "custom_switch": 20, "cfg": 8, "base_clip_skip": -2, "refiner_clip_skip": -2, "sampler_name": "dpmpp_2m_sde_gpu", "scheduler": "karras"},
-    "Quality": {"custom_steps": 60, "custom_switch": 40, "cfg": 8, "base_clip_skip": -2, "refiner_clip_skip": -2, "sampler_name": "dpmpp_2m_sde_gpu", "scheduler": "karras"}
+    "Speed": {"custom_steps": 30, "cfg": 8, "sampler_name": "dpmpp_2m_sde_gpu", "scheduler": "karras"},
+    "Quality": {"custom_steps": 60, "cfg": 8, "sampler_name": "dpmpp_2m_sde_gpu", "scheduler": "karras"}
 }
 

@@ -257,15 +257,6 @@ with shared.gradio_root as block:
                     visible=False,
                 )
                 add_ctrl("custom_steps", custom_steps)
-                custom_switch = gr.Slider(
-                    label="Custom Switch",
-                    minimum=10,
-                    maximum=200,
-                    step=1,
-                    value=20,
-                    visible=False,
-                )
-                add_ctrl("custom_switch", custom_switch)
 
                 cfg = gr.Slider(
                     label="CFG",
@@ -276,15 +267,6 @@ with shared.gradio_root as block:
                     visible=False,
                 )
                 add_ctrl("cfg", cfg)
-                base_clip_skip = gr.Slider(
-                    label="Base CLIP Skip",
-                    minimum=-10,
-                    maximum=-1,
-                    step=1,
-                    value=-2,
-                    visible=False,
-                )
-                add_ctrl("base_clip_skip", base_clip_skip)
                 sampler_name = gr.Dropdown(
                     label="Sampler",
                     choices=KSampler.SAMPLERS,
@@ -304,11 +286,9 @@ with shared.gradio_root as block:
                     perf_name,
                     perf_save,
                     cfg,
-                    base_clip_skip,
                     sampler_name,
                     scheduler,
                     custom_steps,
-                    custom_switch,
                 ]
 
                 @performance_selection.change(
@@ -333,19 +313,15 @@ with shared.gradio_root as block:
                     perf_name,
                     perf_save,
                     cfg,
-                    base_clip_skip,
                     sampler_name,
                     scheduler,
                     custom_steps,
-                    custom_switch,
                 ):
                     if perf_name != "":
                         perf_options = load_performance()
                         opts = {
                             "custom_steps": custom_steps,
-                            "custom_switch": custom_switch,
                             "cfg": cfg,
-                            "base_clip_skip": base_clip_skip,
                             "sampler_name": sampler_name,
                             "scheduler": scheduler,
                         }

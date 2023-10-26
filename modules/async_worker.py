@@ -99,13 +99,11 @@ def worker():
 
         if gen_data["performance_selection"] == NEWPERF:
             steps = gen_data["custom_steps"]
-            switch = gen_data["custom_switch"]
         else:
             perf_options = get_perf_options(gen_data["performance_selection"])
             gen_data.update(perf_options)
 
         steps = gen_data["custom_steps"]
-        switch = gen_data["custom_switch"]
 
         width, height = aspect_ratios[gen_data["aspect_ratios_selection"]]
         if "width" in gen_data:
@@ -194,14 +192,12 @@ def worker():
                     gen_data["input_image"],
                     modules.controlnet.get_settings(gen_data),
                     steps,
-                    switch,
                     width,
                     height,
                     seed,
                     start_step,
                     denoise,
                     gen_data["cfg"],
-                    gen_data["base_clip_skip"],
                     gen_data["sampler_name"],
                     gen_data["scheduler"],
                     callback=callback,
@@ -223,7 +219,6 @@ def worker():
                     "Prompt": p_txt,
                     "Negative": n_txt,
                     "steps": steps,
-                    "switch": switch,
                     "cfg": gen_data["cfg"],
                     "width": width,
                     "height": height,
