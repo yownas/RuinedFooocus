@@ -93,41 +93,53 @@ def add_controlnet_tab():
             cn_name,
             cn_save_btn,
             cn_type,
+        ]
+        cn_sliders = [
             cn_start,
             cn_stop,
             cn_strength,
-        ]
-        cn_preprocess_outputs = [
             cn_edge_low,
             cn_edge_high,
         ]
 
         @cn_selection.change(
             inputs=[cn_selection],
-            outputs=[cn_name] + cn_outputs + cn_preprocess_outputs,
+            outputs=[cn_name] + cn_outputs + cn_sliders
         )
         def cn_changed(selection):
             if selection != NEWCN:
                 return [gr.update(visible=False)] + [gr.update(visible=False)] * len(
-                    cn_outputs + cn_preprocess_outputs
+                    cn_outputs + cn_sliders
                 )
             else:
                 return [gr.update(value="")] + [gr.update(visible=True)] * len(
-                    cn_outputs + cn_preprocess_outputs
+                    cn_outputs + cn_sliders
                 )
 
         @cn_type.change(
             inputs=[cn_type],
-            outputs=cn_preprocess_outputs,
+            outputs=cn_sliders,
         )
         def cn_type_changed(selection):
-            if selection.lower() == "canny":
-                return [gr.update(visible=True)] * len(cn_preprocess_outputs)
+            #cn_start,cn_stop,cn_strength,cn_edge_low,cn_edge_high
+            slider_states = {
+                    "canny": [True, True, True, True, True],
+                    "img2img": [False, False, True, False, False],
+                    "default": [True, True, True, False, False],
+            }
+            if selection.lower() in slider_states:
+                show = slider_states[selection.lower()]
             else:
-                return [gr.update(visible=False)] * len(cn_preprocess_outputs)
+                show = slider_states["default"]
+
+            result = []
+            for vis in show:
+                result += [gr.update(visible=vis)]
+
+            return result
 
         @cn_save_btn.click(
-            inputs=cn_outputs + cn_preprocess_outputs,
+            inputs=cn_outputs + cn_sliders,
             outputs=[cn_selection],
         )
         def cn_save(
