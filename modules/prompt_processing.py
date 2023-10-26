@@ -40,7 +40,7 @@ def process_wildcards(wildcard_text, directory="wildcards"):
             for root, dirs, files in os.walk(directory):
                 if f"{placeholder}.txt" in files:
                     file_path = os.path.join(root, f"{placeholder}.txt")
-                    with open(file_path) as f:
+                    with open(file_path, encoding="utf-8") as f:
                         words = f.read().splitlines()
                     placeholder_choices[placeholder] = words
                     found = True
