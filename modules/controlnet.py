@@ -3,7 +3,7 @@ import shutil
 import json
 from os.path import exists
 
-DEFAULT_CNSETTINGS_FILE = "settings/controlnet.default"
+DEFAULT_CNSETTINGS_FILE = "settings/powerup.default"
 CNSETTINGS_FILE = "settings/powerup.json"
 NEWCN = "Custom..."
 
