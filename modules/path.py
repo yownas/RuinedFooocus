@@ -53,7 +53,6 @@ temp_preview_path = get_abspath(paths["path_preview"])
 os.makedirs(temp_outputs_path, exist_ok=True)
 
 default_base_model_name = "sd_xl_base_1.0_0.9vae.safetensors"
-default_refiner_model_name = "sd_xl_refiner_1.0_0.9vae.safetensors"
 default_lora_name = "sd_xl_offset_example-lora_1.0.safetensors"
 default_lora_weight = 0.5
 

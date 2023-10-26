@@ -14,7 +14,6 @@ DEFAULT_SETTINGS = {
     "performance": "Speed",
     "resolution": "1152x896 (4:3)",
     "base_model": modules.path.default_base_model_name,
-    "refiner_model": modules.path.default_refiner_model_name,
     "lora_1_model": modules.path.default_lora_name,
     "lora_1_weight": modules.path.default_lora_weight,
     "lora_2_model": "None",

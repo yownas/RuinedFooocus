@@ -285,15 +285,6 @@ with shared.gradio_root as block:
                     visible=False,
                 )
                 add_ctrl("base_clip_skip", base_clip_skip)
-                refiner_clip_skip = gr.Slider(
-                    label="Refiner CLIP Skip",
-                    minimum=-10,
-                    maximum=-1,
-                    step=1,
-                    value=-2,
-                    visible=False,
-                )
-                add_ctrl("refiner_clip_skip", refiner_clip_skip)
                 sampler_name = gr.Dropdown(
                     label="Sampler",
                     choices=KSampler.SAMPLERS,
@@ -314,7 +305,6 @@ with shared.gradio_root as block:
                     perf_save,
                     cfg,
                     base_clip_skip,
-                    refiner_clip_skip,
                     sampler_name,
                     scheduler,
                     custom_steps,
@@ -344,7 +334,6 @@ with shared.gradio_root as block:
                     perf_save,
                     cfg,
                     base_clip_skip,
-                    refiner_clip_skip,
                     sampler_name,
                     scheduler,
                     custom_steps,
@@ -357,7 +346,6 @@ with shared.gradio_root as block:
                             "custom_switch": custom_switch,
                             "cfg": cfg,
                             "base_clip_skip": base_clip_skip,
-                            "refiner_clip_skip": refiner_clip_skip,
                             "sampler_name": sampler_name,
                             "scheduler": scheduler,
                         }
@@ -447,15 +435,6 @@ with shared.gradio_root as block:
                         show_label=True,
                     )
                     add_ctrl("base_model_name", base_model)
-                    refiner_model = gr.Dropdown(
-                        label="SDXL Refiner",
-                        choices=["None"] + modules.path.model_filenames,
-                        value=settings["refiner_model"]
-                        if settings["refiner_model"] in modules.path.model_filenames
-                        else "None",
-                        show_label=True,
-                    )
-                    add_ctrl("refiner_model_name", refiner_model)
                 with gr.Accordion(label="LoRA / Strength", open=True), gr.Group():
                     lora_ctrls = []
                     nones = 0
@@ -521,9 +500,7 @@ with shared.gradio_root as block:
                         elem_classes="refresh_button",
                     )
 
-            @model_refresh.click(
-                inputs=[], outputs=[base_model, refiner_model] + lora_ctrls
-            )
+            @model_refresh.click(inputs=[], outputs=[base_model] + lora_ctrls)
             def model_refresh_clicked():
                 modules.path.update_all_model_names()
                 results = []

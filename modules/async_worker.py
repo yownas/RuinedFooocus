@@ -89,10 +89,10 @@ def worker():
         )
         loras.extend(parsed_loras)
 
-        outputs.append(["preview", (0, f"Loading base model: {gen_data['base_model_name']}", None)])
+        outputs.append(
+            ["preview", (0, f"Loading base model: {gen_data['base_model_name']}", None)]
+        )
         pipeline.load_base_model(gen_data["base_model_name"])
-        outputs.append(["preview", (0, f"Loading refiner model: {gen_data['refiner_model_name']}", None)])
-        pipeline.load_refiner_model(gen_data["refiner_model_name"])
         outputs.append(["preview", (0, f"Loading LoRA models ...", None)])
         pipeline.load_loras(loras)
         pipeline.clean_prompt_cond_caches()
@@ -202,7 +202,6 @@ def worker():
                     denoise,
                     gen_data["cfg"],
                     gen_data["base_clip_skip"],
-                    gen_data["refiner_clip_skip"],
                     gen_data["sampler_name"],
                     gen_data["scheduler"],
                     callback=callback,
@@ -232,7 +231,6 @@ def worker():
                     "sampler_name": gen_data["sampler_name"],
                     "scheduler": gen_data["scheduler"],
                     "base_model_name": gen_data["base_model_name"],
-                    "refiner_model_name": gen_data["refiner_model_name"],
                     "loras": "Loras:"
                     + ",".join([f"<{lora[0]}:{lora[1]}>" for lora in loras]),
                     "start_step": start_step,

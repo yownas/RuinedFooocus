@@ -1,3 +1,6 @@
+### 1.9.0
+* Removed ref redundant code.
+
 ### 1.8.2
 * Update Comfy version and fix changes :D
 

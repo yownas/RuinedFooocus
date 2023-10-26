@@ -23,7 +23,6 @@ from comfy.sample import (
 )
 from comfy_extras.nodes_post_processing import ImageScaleToTotalPixels
 from comfy_extras.nodes_canny import Canny
-from modules.samplers_advanced import KSamplerWithRefiner
 from comfy.samplers import KSampler
 from modules.util import suppress_stdout
 
@@ -181,17 +180,13 @@ def get_previewer(device, latent_format):
 
 @torch.no_grad()
 @torch.inference_mode()
-def ksampler_with_refiner(
+def ksampler(
     model,
     positive,
     negative,
-    refiner,
-    refiner_positive,
-    refiner_negative,
     latent,
     seed=None,
     steps=30,
-    refiner_switch_step=20,
     cfg=7.0,
     sampler_name="dpmpp_2m_sde_gpu",
     scheduler="karras",
@@ -202,11 +197,6 @@ def ksampler_with_refiner(
     force_full_denoise=False,
     callback_function=None,
 ):
-    # SCHEDULERS = ["normal", "karras", "exponential", "simple", "ddim_uniform"]
-    # SAMPLERS = ["euler", "euler_ancestral", "heun", "dpm_2", "dpm_2_ancestral",
-    #             "lms", "dpm_fast", "dpm_adaptive", "dpmpp_2s_ancestral", "dpmpp_sde", "dpmpp_sde_gpu",
-    #             "dpmpp_2m", "dpmpp_2m_sde", "dpmpp_2m_sde_gpu", "ddim", "uni_pc", "uni_pc_bh2"]
-
     seed = seed if isinstance(seed, int) else random.randint(1, 2**64)
 
     device = comfy.model_management.get_torch_device()
@@ -275,39 +265,18 @@ def ksampler_with_refiner(
         "disable_pbar": disable_pbar,
         "seed": seed,
     }
-    if refiner is not None:
-        refiner_positive_copy = convert_cond(refiner_positive)
-        refiner_negative_copy = convert_cond(refiner_negative)
-
-        sampler = KSamplerWithRefiner(
-            model=model,
-            refiner_model=refiner,
-            steps=steps,
-            device=device,
-            sampler=sampler_name,
-            scheduler=scheduler,
-            denoise=denoise,
-            model_options=model.model_options,
-        )
-        extra_kwargs = {
-            "refiner_positive": refiner_positive_copy,
-            "refiner_negative": refiner_negative_copy,
-            "refiner_switch_step": refiner_switch_step,
-            "callback_function": callback,
-        }
-    else:
-        sampler = KSampler(
-            real_model,
-            steps=steps,
-            device=device,
-            sampler=sampler_name,
-            scheduler=scheduler,
-            denoise=denoise,
-            model_options=model.model_options,
-        )
-        extra_kwargs = {
-            "callback": callback,
-        }
+    sampler = KSampler(
+        real_model,
+        steps=steps,
+        device=device,
+        sampler=sampler_name,
+        scheduler=scheduler,
+        denoise=denoise,
+        model_options=model.model_options,
+    )
+    extra_kwargs = {
+        "callback": callback,
+    }
     kwargs.update(extra_kwargs)
 
     samples = sampler.sample(noise, positive_copy, negative_copy, **kwargs)

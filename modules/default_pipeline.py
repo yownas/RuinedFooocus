@@ -11,7 +11,7 @@ import modules.async_worker as worker
 
 from PIL import Image, ImageOps
 
-from comfy.model_base import SDXL, SDXLRefiner
+from comfy.model_base import SDXL
 from modules.settings import default_settings
 from modules.util import suppress_stdout
 
@@ -24,8 +24,6 @@ warnings.filterwarnings("ignore", category=UserWarning)
 xl_base: core.StableDiffusionModel = None
 xl_base_hash = ""
 
-xl_refiner: core.StableDiffusionModel = None
-xl_refiner_hash = ""
 
 xl_base_patched: core.StableDiffusionModel = None
 xl_base_patched_hash = ""
@@ -71,40 +69,6 @@ def load_base_model(name):
     return
 
 
-def load_refiner_model(name):
-    global xl_refiner, xl_refiner_hash
-    if xl_refiner_hash == str(name):
-        return
-
-    if name == "None":
-        xl_refiner = None
-        xl_refiner_hash = ""
-        return
-
-    filename = os.path.join(modules.path.modelfile_path, name)
-
-    if xl_refiner is not None:
-        xl_refiner.to_meta()
-        xl_refiner = None
-
-    print(f"Loading refiner model: {name}")
-    with suppress_stdout():
-        xl_refiner = core.load_model(filename)
-    if not isinstance(xl_refiner.unet.model, SDXLRefiner):
-        print("Model not supported. Fooocus only support SDXL refiner as the refiner.")
-        xl_refiner = None
-        xl_refiner_hash = ""
-        print(f"Refiner unloaded.")
-        return
-
-    xl_refiner_hash = name
-    print(f"Refiner model loaded: {xl_refiner_hash}")
-
-    xl_refiner.vae.first_stage_model.to("meta")
-    xl_refiner.vae = None
-    return
-
-
 def load_loras(loras):
     global xl_base, xl_base_patched, xl_base_patched_hash
     if xl_base_patched_hash == str(loras):
@@ -147,16 +111,12 @@ load_base_model(default_settings["base_model"])
 
 positive_conditions_cache = None
 negative_conditions_cache = None
-positive_conditions_refiner_cache = None
-negative_conditions_refiner_cache = None
 
 
 def clean_prompt_cond_caches():
-    global positive_conditions_cache, negative_conditions_cache, positive_conditions_refiner_cache, negative_conditions_refiner_cache
+    global positive_conditions_cache, negative_conditions_cache
     positive_conditions_cache = None
     negative_conditions_cache = None
-    positive_conditions_refiner_cache = None
-    negative_conditions_refiner_cache = None
     return
 
 
@@ -175,12 +135,11 @@ def process(
     denoise,
     cfg,
     base_clip_skip,
-    refiner_clip_skip,
     sampler_name,
     scheduler,
     callback,
 ):
-    global positive_conditions_cache, negative_conditions_cache, positive_conditions_refiner_cache, negative_conditions_refiner_cache
+    global positive_conditions_cache, negative_conditions_cache
     global xl_controlnet
 
     worker.outputs.append(["preview", (0, f"Processing text encoding ...", None)])
@@ -240,33 +199,12 @@ def process(
         force_full_denoise = True
         denoise = None
 
-    if xl_refiner is not None:
-        with suppress_stdout():
-            positive_conditions_refiner_cache = (
-                core.encode_prompt_condition(
-                    clip=xl_refiner.clip, prompt=positive_prompt
-                )
-                if positive_conditions_refiner_cache is None
-                else positive_conditions_refiner_cache
-            )
-            negative_conditions_refiner_cache = (
-                core.encode_prompt_condition(
-                    clip=xl_refiner.clip, prompt=negative_prompt
-                )
-                if negative_conditions_refiner_cache is None
-                else negative_conditions_refiner_cache
-            )
-
     worker.outputs.append(["preview", (0, f"Start sampling ...", None)])
 
-    sampled_latent = core.ksampler_with_refiner(
+    sampled_latent = core.ksampler(
         model=xl_base_patched.unet,
         positive=positive_conditions_cache,
         negative=negative_conditions_cache,
-        refiner=xl_refiner.unet if xl_refiner is not None else None,
-        refiner_positive=positive_conditions_refiner_cache,
-        refiner_negative=negative_conditions_refiner_cache,
-        refiner_switch_step=switch,
         latent=latent,
         steps=steps,
         start_step=start_step,
