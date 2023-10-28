@@ -1,3 +1,7 @@
+### 1.10.0
+* Updated Comfy Version
+* Added support for [SSD-1B Models](https://huggingface.co/segmind/SSD-1B)
+
 ### 1.9.0
 * Removed ref redundant code.
 

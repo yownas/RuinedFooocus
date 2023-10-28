@@ -31,9 +31,6 @@ After you download the file, please uncompress it, and then run the "run.bat".
 In the first time you launch the software, it will automatically download models:
 
 1. It will download [sd_xl_base_1.0_0.9vae.safetensors from here](https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0_0.9vae.safetensors) as the file "Fooocus\models\checkpoints\sd_xl_base_1.0_0.9vae.safetensors".
-2. It will download [sd_xl_refiner_1.0_0.9vae.safetensors from here](https://huggingface.co/stabilityai/stable-diffusion-xl-refiner-1.0/resolve/main/sd_xl_refiner_1.0_0.9vae.safetensors) as the file "Fooocus\models\checkpoints\sd_xl_refiner_1.0_0.9vae.safetensors".
-
-![image](https://github.com/lllyasviel/Fooocus/assets/19834515/d386f817-4bd7-490c-ad89-c1e228c23447)
 
 If you already have these files, you can copy them to the above locations to speed up installation.
 
@@ -90,6 +87,7 @@ Coming soon ...
 24. Save your own custom perfomances and easily load them back in with the dropdown
 25. Create your own default ControlNet settings, or just get into the hardcore details with the custom **PowerUp** mode
 26. Image2Image mode is now active and available in the **PowerUp** tab
+27. Added Support for [SSD-1B Models](https://huggingface.co/segmind/SSD-1B)
 
 ## Thanks
 
