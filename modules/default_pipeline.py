@@ -18,6 +18,17 @@ from modules.util import suppress_stdout
 import warnings
 import time
 
+from nodes import (
+    CLIPTextEncode,
+    ControlNetApplyAdvanced,
+    EmptyLatentImage,
+    VAEDecode,
+    VAEEncode,
+)
+from comfy_extras.nodes_post_processing import ImageScaleToTotalPixels
+from comfy_extras.nodes_canny import Canny
+
+
 warnings.filterwarnings("ignore", category=UserWarning)
 
 
@@ -132,8 +143,7 @@ def clean_prompt_cond_caches():
     negative_conditions_cache = None
     return
 
-
-@torch.no_grad()
+@torch.inference_mode()
 def process(
     positive_prompt,
     negative_prompt,
@@ -158,16 +168,16 @@ def process(
 
     with suppress_stdout():
         positive_conditions_cache = (
-            core.encode_prompt_condition(
-                clip=xl_base_patched.clip, prompt=positive_prompt
-            )
+            CLIPTextEncode().encode(
+                clip=xl_base_patched.clip, text=positive_prompt
+            )[0]
             if positive_conditions_cache is None
             else positive_conditions_cache
         )
         negative_conditions_cache = (
-            core.encode_prompt_condition(
-                clip=xl_base_patched.clip, prompt=negative_prompt
-            )
+            CLIPTextEncode().encode(
+                clip=xl_base_patched.clip, text=negative_prompt
+            )[0]
             if negative_conditions_cache is None
             else negative_conditions_cache
         )
@@ -176,37 +186,42 @@ def process(
         input_image = input_image.convert("RGB")
         input_image = np.array(input_image).astype(np.float32) / 255.0
         input_image = torch.from_numpy(input_image)[None,]
-        input_image = core.upscale(input_image)  # FIXME ?
+        input_image = ImageScaleToTotalPixels().upscale(
+            image=input_image, upscale_method="bicubic", megapixels=1.0
+        )[0]
         refresh_controlnet(name=controlnet["type"])
         if xl_controlnet:
             match controlnet["type"].lower():
                 case "canny":
-                    input_image = core.detect_edge(
-                        input_image,
-                        float(controlnet["edge_low"]),
-                        float(controlnet["edge_high"]),
-                    )
+                    input_image = Canny().detect_edge(
+                        image=input_image,
+                        low_threshold=float(controlnet["edge_low"]),
+                        high_threshold=float(controlnet["edge_high"]),
+                    )[0]
                 # case "depth": (no preprocessing?)
             (
                 positive_conditions_cache,
                 negative_conditions_cache,
-            ) = core.apply_controlnet(
-                positive_conditions_cache,
-                negative_conditions_cache,
-                xl_controlnet,
-                input_image,
-                float(controlnet["strength"]),
-                float(controlnet["start"]),
-                float(controlnet["stop"]),
+            ) = ControlNetApplyAdvanced().apply_controlnet(
+                positive=positive_conditions_cache,
+                negative=negative_conditions_cache,
+                control_net=xl_controlnet,
+                image=input_image,
+                strength=float(controlnet["strength"]),
+                start_percent=float(controlnet["start"]),
+                end_percent=float(controlnet["stop"]),
             )
+
         if controlnet["type"].lower() == "img2img":
-            latent = core.encode_vae(vae=xl_base_patched.vae, pixels=input_image)
+            latent = VAEEncode().encode(vae=xl_base_patched.vae, pixels=input_image)[0]
             force_full_denoise = False
             denoise = float(controlnet.get("denoise", controlnet.get("strength")))
             img2img_mode = True
 
     if not img2img_mode:
-        latent = core.generate_empty_latent(width=width, height=height, batch_size=1)
+        latent = EmptyLatentImage().generate(
+            width=width, height=height, batch_size=1
+        )[0]
         force_full_denoise = True
         denoise = None
 
@@ -232,11 +247,15 @@ def process(
 
     worker.outputs.append(["preview", (-1, f"VAE decoding ...", None)])
 
-    decoded_latent = core.decode_vae(
-        vae=xl_base_patched.vae, latent_image=sampled_latent
-    )
+    decoded_latent = VAEDecode().decode(
+        samples=sampled_latent, vae=xl_base_patched.vae
+    )[0]
+#    decoded_latent = core.decode_vae(
+#        vae=xl_base_patched.vae, latent_image=sampled_latent
+#    )
 
-    images = core.image_to_numpy(decoded_latent)
+
+    images = [np.clip(255.0 * y.cpu().numpy(), 0, 255).astype(np.uint8) for y in decoded_latent]
 
     if callback is not None:
         callback(steps, 0, 0, steps, images[0])

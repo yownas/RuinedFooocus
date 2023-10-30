@@ -10,9 +10,6 @@ import comfy.utils
 from comfy.sd import load_checkpoint_guess_config
 from nodes import (
     VAEDecode,
-    EmptyLatentImage,
-    CLIPTextEncode,
-    VAEEncode,
     ControlNetApplyAdvanced,
 )
 from comfy.sample import (
@@ -21,22 +18,12 @@ from comfy.sample import (
     get_additional_models,
     cleanup_additional_models,
 )
-from comfy_extras.nodes_post_processing import ImageScaleToTotalPixels
-from comfy_extras.nodes_canny import Canny
 from comfy.samplers import KSampler
 from modules.util import suppress_stdout
 
 comfy.model_management.DISABLE_SMART_MEMORY = True
 
-opCLIPTextEncode = CLIPTextEncode()
-opEmptyLatentImage = EmptyLatentImage()
 opVAEDecode = VAEDecode()
-opVAEEncode = VAEEncode()
-opImageScaleToTotalPixels = ImageScaleToTotalPixels()
-opCanny = Canny()
-opControlNetApplyAdvanced = ControlNetApplyAdvanced()
-opImageScaleToTotalPixels = ImageScaleToTotalPixels()
-
 
 class StableDiffusionModel:
     def __init__(self, unet, vae, clip, clip_vision):
@@ -85,62 +72,6 @@ def load_controlnet(ckpt_filename):
     return comfy.controlnet.load_controlnet(ckpt_filename)
 
 
-@torch.no_grad()
-@torch.inference_mode()
-def detect_edge(image, low_threshold, high_threshold):
-    return opCanny.detect_edge(
-        image=image, low_threshold=low_threshold, high_threshold=high_threshold
-    )[0]
-
-
-@torch.no_grad()
-@torch.inference_mode()
-def apply_controlnet(
-    positive, negative, control_net, image, strength, start_percent, end_percent
-):
-    return opControlNetApplyAdvanced.apply_controlnet(
-        positive=positive,
-        negative=negative,
-        control_net=control_net,
-        image=image,
-        strength=strength,
-        start_percent=start_percent,
-        end_percent=end_percent,
-    )
-
-
-@torch.no_grad()
-@torch.inference_mode()
-def encode_prompt_condition(clip, prompt):
-    return opCLIPTextEncode.encode(clip=clip, text=prompt)[0]
-
-
-@torch.no_grad()
-@torch.inference_mode()
-def generate_empty_latent(width=1024, height=1024, batch_size=1):
-    return opEmptyLatentImage.generate(
-        width=width, height=height, batch_size=batch_size
-    )[0]
-
-
-@torch.no_grad()
-@torch.inference_mode()
-def decode_vae(vae, latent_image):
-    return opVAEDecode.decode(samples=latent_image, vae=vae)[0]
-
-
-@torch.no_grad()
-@torch.inference_mode()
-def encode_vae(vae, pixels):
-    return opVAEEncode.encode(pixels=pixels, vae=vae)[0]
-
-
-@torch.no_grad()
-@torch.inference_mode()
-def upscale(image):
-    return opImageScaleToTotalPixels.upscale(
-        image=image, upscale_method="bicubic", megapixels=1.0
-    )[0]
 
 
 def get_previewer(device, latent_format):
@@ -291,7 +222,8 @@ def ksampler(
     return out
 
 
-@torch.no_grad()
-@torch.inference_mode()
-def image_to_numpy(x):
-    return [np.clip(255.0 * y.cpu().numpy(), 0, 255).astype(np.uint8) for y in x]
+#@torch.no_grad()
+#@torch.inference_mode()
+#def decode_vae(vae, latent_image):
+#    return opVAEDecode.decode(samples=latent_image, vae=vae)[0]
+
