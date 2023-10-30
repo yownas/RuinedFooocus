@@ -98,6 +98,8 @@ def worker():
         pipeline.load_base_model(gen_data["base_model_name"])
         outputs.append(["preview", (-1, f"Loading LoRA models ...", None)])
         lora_keywords = pipeline.load_loras(loras)
+        if lora_keywords is None:
+            lora_keywords = " "
         pipeline.clean_prompt_cond_caches()
 
         if gen_data["performance_selection"] == NEWPERF:

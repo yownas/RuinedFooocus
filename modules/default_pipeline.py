@@ -76,7 +76,7 @@ def load_keywords(lora):
             data = file.read()
         return data
     except FileNotFoundError:
-        return ""
+        return " "
 
 
 def load_loras(loras):
