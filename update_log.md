@@ -1,4 +1,7 @@
-### 1.10.0
+### 1.12.0
+* Automatically read triggerwords from <lora_filename>.txt
+
+### 1.11.0
 * Updated Comfy Version
 * Added support for [SSD-1B Models](https://huggingface.co/segmind/SSD-1B)
 
@@ -15,7 +18,6 @@
 * Added the basics for image 2 image
 * Renamed Controlnet to PowerUp
 * Now uses `powerup.json` as default
-
 
 ### 1.7.2
 * Wildcards can now use subdirectories
@@ -48,7 +50,6 @@
 * code cleanup and some renaming
 * inference model speed up
 * now only shows gallery when needed
-
 
 ### 1.5.0
 * removed metadata toggle, it will now always save metadata

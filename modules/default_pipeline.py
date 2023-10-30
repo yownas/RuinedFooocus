@@ -69,10 +69,22 @@ def load_base_model(name):
     return
 
 
+def load_keywords(lora):
+    filename = lora.replace(".safetensors", ".txt")
+    try:
+        with open(filename, "r") as file:
+            data = file.read()
+        return data
+    except FileNotFoundError:
+        return ""
+
+
 def load_loras(loras):
     global xl_base, xl_base_patched, xl_base_patched_hash
     if xl_base_patched_hash == str(loras):
         return
+
+    lora_prompt_addition = ""
 
     model = xl_base
     for name, weight in loras:
@@ -85,11 +97,12 @@ def load_loras(loras):
             model = core.load_lora(
                 model, filename, strength_model=weight, strength_clip=weight
             )
+            lora_prompt_addition = f"{lora_prompt_addition}, {load_keywords(filename)}"
     xl_base_patched = model
     xl_base_patched_hash = str(loras)
     print(f"LoRAs loaded: {xl_base_patched_hash}")
 
-    return
+    return lora_prompt_addition
 
 
 def refresh_controlnet(name=None):

@@ -90,11 +90,14 @@ def worker():
         loras.extend(parsed_loras)
 
         outputs.append(
-            ["preview", (-1, f"Loading base model: {gen_data['base_model_name']}", None)]
+            [
+                "preview",
+                (-1, f"Loading base model: {gen_data['base_model_name']}", None),
+            ]
         )
         pipeline.load_base_model(gen_data["base_model_name"])
         outputs.append(["preview", (-1, f"Loading LoRA models ...", None)])
-        pipeline.load_loras(loras)
+        lora_keywords = pipeline.load_loras(loras)
         pipeline.clean_prompt_cond_caches()
 
         if gen_data["performance_selection"] == NEWPERF:
@@ -181,6 +184,7 @@ def worker():
             p_txt, n_txt = process_prompt(
                 gen_data["style_selection"], pos_stripped, neg_stripped
             )
+            p_txt += lora_keywords
             start_step = 0
             denoise = None
             start_time = time.time()

@@ -88,6 +88,7 @@ Coming soon ...
 25. Create your own default ControlNet settings, or just get into the hardcore details with the custom **PowerUp** mode
 26. Image2Image mode is now active and available in the **PowerUp** tab
 27. Added Support for [SSD-1B Models](https://huggingface.co/segmind/SSD-1B)
+28. Automatically read triggerwords from <lora_filename>.txt just place a `.txt` file of the same name (minus the .safetensors) and it will read the triggerwords from the file
 
 ## Thanks
 
