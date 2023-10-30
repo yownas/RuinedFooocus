@@ -1,3 +1,6 @@
+### 1.12.1
+* Refactored backend code to allow for future pipeline changes
+
 ### 1.12.0
 * Automatically read triggerwords from <lora_filename>.txt
 
