@@ -18,6 +18,8 @@ from modules.util import suppress_stdout
 import warnings
 import time
 
+import comfy.utils
+from comfy.sd import load_checkpoint_guess_config
 from nodes import (
     CLIPTextEncode,
     ControlNetApplyAdvanced,
@@ -29,17 +31,32 @@ from comfy_extras.nodes_post_processing import ImageScaleToTotalPixels
 from comfy_extras.nodes_canny import Canny
 
 
+
 warnings.filterwarnings("ignore", category=UserWarning)
 
+class StableDiffusionModel:
+    def __init__(self, unet, vae, clip, clip_vision):
+        self.unet = unet
+        self.vae = vae
+        self.clip = clip
+        self.clip_vision = clip_vision
 
-xl_base: core.StableDiffusionModel = None
+    def to_meta(self):
+        if self.unet is not None:
+            self.unet.model.to("meta")
+        if self.clip is not None:
+            self.clip.cond_stage_model.to("meta")
+        if self.vae is not None:
+            self.vae.first_stage_model.to("meta")
+
+
+xl_base: StableDiffusionModel = None
 xl_base_hash = ""
 
-
-xl_base_patched: core.StableDiffusionModel = None
+xl_base_patched: StableDiffusionModel = None
 xl_base_patched_hash = ""
 
-xl_controlnet: core.StableDiffusionModel = None
+xl_controlnet: StableDiffusionModel = None
 xl_controlnet_hash = ""
 
 
@@ -59,8 +76,8 @@ def load_base_model(name):
 
     try:
         with suppress_stdout():
-            xl_base = core.load_model(filename)
-
+            unet, clip, vae, clip_vision = load_checkpoint_guess_config(filename)
+            xl_base = StableDiffusionModel(unet=unet, clip=clip, vae=vae, clip_vision=clip_vision)
         if not isinstance(xl_base.unet.model, SDXL):
             print(
                 "Model not supported. Fooocus only support SDXL model as the base model."
@@ -99,15 +116,22 @@ def load_loras(loras):
 
     model = xl_base
     for name, weight in loras:
-        if name == "None":
+        if name == "None" or weight == 0:
             continue
 
         filename = os.path.join(modules.path.lorafile_path, name)
         print(f"Loading LoRAs: {name}")
         with suppress_stdout():
-            model = core.load_lora(
-                model, filename, strength_model=weight, strength_clip=weight
-            )
+            try:
+                lora = comfy.utils.load_torch_file(filename, safe_load=True)
+                unet, clip = comfy.sd.load_lora_for_models(
+                    model.unet, model.clip, lora, weight, weight
+                )
+                model = StableDiffusionModel(
+                    unet=unet, clip=clip, vae=model.vae, clip_vision=model.clip_vision
+                )
+            except:
+                pass
             lora_prompt_addition = f"{lora_prompt_addition}, {load_keywords(filename)}"
     xl_base_patched = model
     xl_base_patched_hash = str(loras)
@@ -125,7 +149,7 @@ def refresh_controlnet(name=None):
 
     if name is not None and xl_controlnet_hash != name:
         filename = os.path.join(modules.path.controlnet_path, name)
-        xl_controlnet = core.load_controlnet(filename)
+        xl_controlnet = comfy.controlnet.load_controlnet(filename)
         xl_controlnet_hash = name
         print(f"ControlNet model loaded: {xl_controlnet_hash}")
     return
@@ -250,10 +274,6 @@ def process(
     decoded_latent = VAEDecode().decode(
         samples=sampled_latent, vae=xl_base_patched.vae
     )[0]
-#    decoded_latent = core.decode_vae(
-#        vae=xl_base_patched.vae, latent_image=sampled_latent
-#    )
-
 
     images = [np.clip(255.0 * y.cpu().numpy(), 0, 255).astype(np.uint8) for y in decoded_latent]
 

@@ -9,7 +9,6 @@ import comfy.utils
 
 from comfy.sd import load_checkpoint_guess_config
 from nodes import (
-    VAEDecode,
     ControlNetApplyAdvanced,
 )
 from comfy.sample import (
@@ -23,7 +22,6 @@ from modules.util import suppress_stdout
 
 comfy.model_management.DISABLE_SMART_MEMORY = True
 
-opVAEDecode = VAEDecode()
 
 class StableDiffusionModel:
     def __init__(self, unet, vae, clip, clip_vision):
@@ -41,29 +39,29 @@ class StableDiffusionModel:
             self.vae.first_stage_model.to("meta")
 
 
-@torch.no_grad()
-@torch.inference_mode()
-def load_model(ckpt_filename):
-    unet, clip, vae, clip_vision = load_checkpoint_guess_config(ckpt_filename)
-    return StableDiffusionModel(unet=unet, clip=clip, vae=vae, clip_vision=clip_vision)
+#@torch.no_grad()
+#@torch.inference_mode()
+#def load_model(ckpt_filename):
+#    unet, clip, vae, clip_vision = load_checkpoint_guess_config(ckpt_filename)
+#    return StableDiffusionModel(unet=unet, clip=clip, vae=vae, clip_vision=clip_vision)
 
 
-@torch.no_grad()
-@torch.inference_mode()
-def load_lora(model, lora_filename, strength_model=1.0, strength_clip=1.0):
-    if strength_model == 0 and strength_clip == 0:
-        return model
-
-    try:
-        lora = comfy.utils.load_torch_file(lora_filename, safe_load=True)
-        unet, clip = comfy.sd.load_lora_for_models(
-            model.unet, model.clip, lora, strength_model, strength_clip
-        )
-        return StableDiffusionModel(
-            unet=unet, clip=clip, vae=model.vae, clip_vision=model.clip_vision
-        )
-    except:
-        return model
+#@torch.no_grad()
+#@torch.inference_mode()
+#def load_lora(model, lora_filename, strength_model=1.0, strength_clip=1.0):
+#    if strength_model == 0 and strength_clip == 0:
+#        return model
+#
+#    try:
+#        lora = comfy.utils.load_torch_file(lora_filename, safe_load=True)
+#        unet, clip = comfy.sd.load_lora_for_models(
+#            model.unet, model.clip, lora, strength_model, strength_clip
+#        )
+#        return StableDiffusionModel(
+#            unet=unet, clip=clip, vae=model.vae, clip_vision=model.clip_vision
+#        )
+#    except:
+#        return model
 
 
 @torch.no_grad()
@@ -221,9 +219,4 @@ def ksampler(
 
     return out
 
-
-#@torch.no_grad()
-#@torch.inference_mode()
-#def decode_vae(vae, latent_image):
-#    return opVAEDecode.decode(samples=latent_image, vae=vae)[0]
 
