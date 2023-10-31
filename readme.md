@@ -89,6 +89,7 @@ Coming soon ...
 26. Image2Image mode is now active and available in the **PowerUp** tab
 27. Added Support for [SSD-1B Models](https://huggingface.co/segmind/SSD-1B)
 28. Automatically read triggerwords from <lora_filename>.txt just place a `.txt` file of the same name (minus the .safetensors) and it will read the triggerwords from the file
+29. Upscaling using whatever upscaler you prefer `4xUltrasharp` by default. Look for the new option in the powerup tab
 
 ## Thanks
 

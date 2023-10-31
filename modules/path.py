@@ -11,6 +11,7 @@ DEFAULT_PATHS = {
     "path_controlnet": "../models/controlnet/",
     "path_vae_approx": "../models/vae_approx/",
     "path_preview": "../outputs/preview.jpg",
+    "path_upscalers": "../models/upscale_models",
     "path_outputs": "../outputs/",
 }
 
@@ -49,6 +50,7 @@ controlnet_path = get_abspath(paths["path_controlnet"])
 vae_approx_path = get_abspath(paths["path_vae_approx"])
 temp_outputs_path = get_abspath(paths["path_outputs"])
 temp_preview_path = get_abspath(paths["path_preview"])
+upscaler_path = get_abspath(paths["path_upscalers"])
 
 os.makedirs(temp_outputs_path, exist_ok=True)
 
@@ -58,6 +60,7 @@ default_lora_weight = 0.5
 
 model_filenames = []
 lora_filenames = []
+upscaler_filenames = []
 
 extensions = [".pth", ".ckpt", ".bin", ".safetensors"]
 
@@ -82,9 +85,10 @@ def get_model_filenames(folder_path):
 
 
 def update_all_model_names():
-    global model_filenames, lora_filenames
+    global model_filenames, lora_filenames, upscaler_filenames
     model_filenames = get_model_filenames(modelfile_path)
     lora_filenames = get_model_filenames(lorafile_path)
+    upscaler_filenames = get_model_filenames(upscaler_path)
     return
 
 

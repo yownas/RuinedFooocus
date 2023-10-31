@@ -15,7 +15,13 @@ from modules.launch_util import (
     dir_repos,
 )
 from modules.util import load_file_from_url
-from modules.path import modelfile_path, lorafile_path, controlnet_path, vae_approx_path
+from modules.path import (
+    modelfile_path,
+    lorafile_path,
+    controlnet_path,
+    vae_approx_path,
+    upscaler_path,
+)
 
 REINSTALL_ALL = False
 
@@ -118,6 +124,13 @@ controlnet_filenames = [
     ),
 ]
 
+upscaler_filenames = [
+    (
+        "4x-UltraSharp.pth",
+        "https://huggingface.co/lokCX/4x-Ultrasharp/resolve/main/4x-UltraSharp.pth",
+    ),
+]
+
 
 def download_models():
     for file_name, url in model_filenames:
@@ -128,6 +141,8 @@ def download_models():
         load_file_from_url(url=url, model_dir=controlnet_path, file_name=file_name)
     for file_name, url in vae_approx_filenames:
         load_file_from_url(url=url, model_dir=vae_approx_path, file_name=file_name)
+    for file_name, url in upscaler_filenames:
+        load_file_from_url(url=url, model_dir=upscaler_path, file_name=file_name)
     return
 
 

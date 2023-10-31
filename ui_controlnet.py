@@ -5,7 +5,7 @@ from modules.controlnet import (
     save_cnsettings,
     NEWCN,
 )
-
+import modules.path
 import gradio as gr
 from shared import add_ctrl
 
@@ -89,6 +89,15 @@ def add_controlnet_tab():
         )
         add_ctrl("cn_strength", cn_strength)
 
+        cn_upscaler = gr.Dropdown(
+            label=f"Upscaler",
+            show_label=False,
+            choices=["None"] + modules.path.upscaler_filenames,
+            value="None",
+            visible=False,
+        )
+        add_ctrl("cn_upscale", cn_upscaler)
+
         cn_outputs = [
             cn_name,
             cn_save_btn,
@@ -100,11 +109,11 @@ def add_controlnet_tab():
             cn_strength,
             cn_edge_low,
             cn_edge_high,
+            cn_upscaler,
         ]
 
         @cn_selection.change(
-            inputs=[cn_selection],
-            outputs=[cn_name] + cn_outputs + cn_sliders
+            inputs=[cn_selection], outputs=[cn_name] + cn_outputs + cn_sliders
         )
         def cn_changed(selection):
             if selection != NEWCN:
@@ -121,11 +130,12 @@ def add_controlnet_tab():
             outputs=cn_sliders,
         )
         def cn_type_changed(selection):
-            #cn_start,cn_stop,cn_strength,cn_edge_low,cn_edge_high
+            # cn_start,cn_stop,cn_strength,cn_edge_low,cn_edge_high, cn_upscaler
             slider_states = {
-                    "canny": [True, True, True, True, True],
-                    "img2img": [False, False, True, False, False],
-                    "default": [True, True, True, False, False],
+                "canny": [True, True, True, True, True, False],
+                "img2img": [False, False, True, False, False, False],
+                "default": [True, True, True, False, False, False],
+                "upscale": [False, False, False, False, False, True],
             }
             if selection.lower() in slider_states:
                 show = slider_states[selection.lower()]
@@ -151,6 +161,7 @@ def add_controlnet_tab():
             cn_strength,
             cn_edge_low,
             cn_edge_high,
+            upscale_model,
         ):
             if cn_name != "":
                 cn_options = load_cnsettings()
@@ -159,6 +170,7 @@ def add_controlnet_tab():
                     "start": cn_start,
                     "stop": cn_stop,
                     "strength": cn_strength,
+                    "upscaler": cn_upscaler,
                 }
                 if cn_type.lower() == "canny":
                     opts.update(

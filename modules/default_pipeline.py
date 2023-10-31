@@ -21,6 +21,7 @@ import einops
 import comfy.utils
 import comfy.model_management
 from comfy.sd import load_checkpoint_guess_config
+from comfy_extras.chainner_models import model_loading
 from nodes import (
     CLIPTextEncode,
     ControlNetApplyAdvanced,
@@ -37,11 +38,13 @@ from comfy.sample import (
 from comfy.samplers import KSampler
 from comfy_extras.nodes_post_processing import ImageScaleToTotalPixels
 from comfy_extras.nodes_canny import Canny
+from comfy_extras.nodes_upscale_model import ImageUpscaleWithModel
 
 comfy.model_management.DISABLE_SMART_MEMORY = True
 
 
 warnings.filterwarnings("ignore", category=UserWarning)
+
 
 class StableDiffusionModel:
     def __init__(self, unet, vae, clip, clip_vision):
@@ -57,6 +60,7 @@ class StableDiffusionModel:
             self.clip.cond_stage_model.to("meta")
         if self.vae is not None:
             self.vae.first_stage_model.to("meta")
+
 
 def get_previewer(device, latent_format):
     from latent_preview import TAESD, TAESDPreviewerImpl
@@ -103,6 +107,15 @@ xl_controlnet: StableDiffusionModel = None
 xl_controlnet_hash = ""
 
 
+def load_upscaler_model(model_name):
+    model_path = os.path.join(modules.path.upscaler_path, model_name)
+    sd = comfy.utils.load_torch_file(model_path, safe_load=True)
+    if "module.layers.0.residual_group.blocks.0.norm1.weight" in sd:
+        sd = comfy.utils.state_dict_prefix_replace(sd, {"module.": ""})
+    out = model_loading.load_state_dict(sd).eval()
+    return out
+
+
 def load_base_model(name):
     global xl_base, xl_base_hash, xl_base_patched, xl_base_patched_hash
 
@@ -120,7 +133,9 @@ def load_base_model(name):
     try:
         with suppress_stdout():
             unet, clip, vae, clip_vision = load_checkpoint_guess_config(filename)
-            xl_base = StableDiffusionModel(unet=unet, clip=clip, vae=vae, clip_vision=clip_vision)
+            xl_base = StableDiffusionModel(
+                unet=unet, clip=clip, vae=vae, clip_vision=clip_vision
+            )
         if not isinstance(xl_base.unet.model, SDXL):
             print(
                 "Model not supported. Fooocus only support SDXL model as the base model."
@@ -210,6 +225,7 @@ def clean_prompt_cond_caches():
     negative_conditions_cache = None
     return
 
+
 @torch.inference_mode()
 def process(
     positive_prompt,
@@ -235,16 +251,12 @@ def process(
 
     with suppress_stdout():
         positive_conditions_cache = (
-            CLIPTextEncode().encode(
-                clip=xl_base_patched.clip, text=positive_prompt
-            )[0]
+            CLIPTextEncode().encode(clip=xl_base_patched.clip, text=positive_prompt)[0]
             if positive_conditions_cache is None
             else positive_conditions_cache
         )
         negative_conditions_cache = (
-            CLIPTextEncode().encode(
-                clip=xl_base_patched.clip, text=negative_prompt
-            )[0]
+            CLIPTextEncode().encode(clip=xl_base_patched.clip, text=negative_prompt)[0]
             if negative_conditions_cache is None
             else negative_conditions_cache
         )
@@ -284,11 +296,23 @@ def process(
             force_full_denoise = False
             denoise = float(controlnet.get("denoise", controlnet.get("strength")))
             img2img_mode = True
+        if controlnet["type"].lower() == "upscale":
+            worker.outputs.append(["preview", (-1, f"Upscaling image ...", None)])
+            upscaler_model = load_upscaler_model(controlnet["upscaler"])
+            decoded_latent = ImageUpscaleWithModel().upscale(
+                upscaler_model, input_image
+            )[0]
+
+            images = [
+                np.clip(255.0 * y.cpu().numpy(), 0, 255).astype(np.uint8)
+                for y in decoded_latent
+            ]
+            return images
 
     if not img2img_mode:
-        latent = EmptyLatentImage().generate(
-            width=width, height=height, batch_size=1
-        )[0]
+        latent = EmptyLatentImage().generate(width=width, height=height, batch_size=1)[
+            0
+        ]
         force_full_denoise = True
         denoise = None
 
@@ -298,14 +322,14 @@ def process(
 
     device = comfy.model_management.get_torch_device()
     latent_image = latent["samples"]
-    #if disable_noise:
+    # if disable_noise:
     #    noise = torch.zeros(
     #        latent_image.size(),
     #        dtype=latent_image.dtype,
     #        layout=latent_image.layout,
     #        device="cpu",
     #    )
-    #else:
+    # else:
     if True:
         batch_inds = latent["batch_index"] if "batch_index" in latent else None
         noise = comfy.sample.prepare_noise(latent_image, seed, batch_inds)
@@ -333,7 +357,9 @@ def process(
         noise_mask = prepare_mask(noise_mask, noise.shape, device)
 
     models, inference_memory = get_additional_models(
-        positive_conditions_cache, negative_conditions_cache, xl_base_patched.unet.model_dtype()
+        positive_conditions_cache,
+        negative_conditions_cache,
+        xl_base_patched.unet.model_dtype(),
     )
     with suppress_stdout():
         comfy.model_management.load_models_gpu(
@@ -390,7 +416,10 @@ def process(
         samples=sampled_latent, vae=xl_base_patched.vae
     )[0]
 
-    images = [np.clip(255.0 * y.cpu().numpy(), 0, 255).astype(np.uint8) for y in decoded_latent]
+    images = [
+        np.clip(255.0 * y.cpu().numpy(), 0, 255).astype(np.uint8)
+        for y in decoded_latent
+    ]
 
     if callback is not None:
         callback(steps, 0, 0, steps, images[0])

@@ -1,3 +1,8 @@
+### 1.13.0
+* Automatically download 4xUltrasharp Upscaler
+* Added the ability to upscale images wth upscaler of your choosing
+* Changed Powerup Settings so if there is a missing key from defaults it adds it to your custome settings.
+
 ### 1.12.1
 * Refactored backend code to allow for future pipeline changes
 

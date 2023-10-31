@@ -14,7 +14,13 @@ controlnet_models = {
     "recolour": "control-lora-recolor-rank128.safetensors",
     "sketch": "control-lora-sketch-rank128-metadata.safetensors",
     "img2img": None,
+    "upscale": None,
 }
+
+
+import json
+import os
+import shutil
 
 
 def load_cnsettings():
@@ -22,12 +28,25 @@ def load_cnsettings():
     if not os.path.isfile(CNSETTINGS_FILE):
         shutil.copy(DEFAULT_CNSETTINGS_FILE, CNSETTINGS_FILE)
 
-    if exists(CNSETTINGS_FILE):
+    if os.path.exists(CNSETTINGS_FILE):
         with open(CNSETTINGS_FILE) as f:
             settings.update(json.load(f))
-    else:
+
+    with open(DEFAULT_CNSETTINGS_FILE) as f:
+        default_settings = json.load(f)
+
+    # Update settings with any missing keys from default_settings
+    settings_updated = False
+    for key, value in default_settings.items():
+        if key not in settings:
+            settings[key] = value
+            settings_updated = True
+
+    # If settings were updated, write them back to the file
+    if settings_updated:
         with open(CNSETTINGS_FILE, "w") as f:
             json.dump(settings, f, indent=2)
+
     return settings
 
 
@@ -56,6 +75,7 @@ def get_settings(gen_data):
             "start": gen_data["cn_start"],
             "stop": gen_data["cn_stop"],
             "strength": gen_data["cn_strength"],
+            "upscaler": gen_data["cn_upscale"],
         }
     else:
         return (
