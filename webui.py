@@ -13,7 +13,7 @@ import ui_onebutton
 import ui_controlnet
 
 from comfy.samplers import KSampler
-from modules.sdxl_styles import style_keys, aspect_ratios, styles
+from modules.sdxl_styles import load_styles, aspect_ratios, styles
 from modules.performance import (
     performance_options,
     load_performance,
@@ -344,7 +344,7 @@ with shared.gradio_root as block:
                         label="Style Selection",
                         multiselect=True,
                         container=True,
-                        choices=style_keys,
+                        choices=list(load_styles().keys()),
                         value=settings["style"],
                     )
                     add_ctrl("style_selection", style_selection)
@@ -476,7 +476,9 @@ with shared.gradio_root as block:
                         elem_classes="refresh_button",
                     )
 
-            @model_refresh.click(inputs=[], outputs=[base_model] + lora_ctrls)
+            @model_refresh.click(
+                inputs=[], outputs=[base_model] + lora_ctrls + [style_selection]
+            )
             def model_refresh_clicked():
                 modules.path.update_all_model_names()
                 results = []
@@ -488,6 +490,7 @@ with shared.gradio_root as block:
                         gr.update(choices=["None"] + modules.path.lora_filenames),
                         gr.update(),
                     ]
+                results += [gr.update(choices=list(load_styles().keys()))]
                 return results
 
             ui_onebutton.ui_onebutton(prompt)

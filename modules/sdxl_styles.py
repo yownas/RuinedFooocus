@@ -59,7 +59,7 @@ def apply_style(style, prompt, negative_prompt):
 
 styles = load_styles()
 default_style = styles["None"]
-style_keys = list(styles.keys())
+
 
 SD_XL_BASE_RATIOS = load_resolutions()
 aspect_ratios = {f"{v[0]}x{v[1]} ({k})": v for k, v in SD_XL_BASE_RATIOS.items()}
