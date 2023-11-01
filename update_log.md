@@ -1,3 +1,7 @@
+### 1.14.0
+* Added Metadata Viewer for Gallery items (Viewable in `Info` Tab)
+* Refresh Files now also reloads your `styles.csv` file
+
 ### 1.13.0
 * Automatically download 4xUltrasharp Upscaler
 * Added the ability to upscale images wth upscaler of your choosing

@@ -150,6 +150,8 @@ if settings["theme"] == "None":
 else:
     theme = settings["theme"]
 
+metadata_json = gr.Json()
+
 shared.gradio_root = gr.Blocks(
     title="RuinedFooocus " + version.version,
     theme=theme,
@@ -189,10 +191,18 @@ with shared.gradio_root as block:
             )
 
             @gallery.select(
-                inputs=[gallery], outputs=[progress_window], show_progress="hidden"
+                inputs=[gallery],
+                outputs=[progress_window, metadata_json],
+                show_progress="hidden",
             )
             def gallery_change(files, sd: gr.SelectData):
-                return files[sd.index]["name"]
+                names = files[sd.index]["name"]
+                with Image.open(files[sd.index]["name"]) as im:
+                    if im.info.get("parameters"):
+                        metadata = im.info["parameters"]
+                    else:
+                        metadata = {"Data": "Preview Grid"}
+                return [names] + [gr.update(value=metadata)]
 
             with gr.Row(elem_classes="type_row"):
                 with gr.Column(scale=5):
@@ -496,6 +506,9 @@ with shared.gradio_root as block:
             ui_onebutton.ui_onebutton(prompt)
 
             ui_controlnet.add_controlnet_tab()
+
+            with gr.Tab(label="Info"):
+                metadata_json.render()
 
         advanced_checkbox.change(
             lambda x: gr.update(visible=x), advanced_checkbox, right_col
