@@ -93,11 +93,12 @@ def update_preview(product):
 
 
 def update_results(product):
-    with Image.open(product[0]) as im:
-        if im.info.get("parameters"):
-            metadata = im.info["parameters"]
-        else:
-            metadata = {"Data": "Preview Grid"}
+    metadata = {"Data": "Preview Grid"}
+    if len(product) > 0:
+        with Image.open(product[0]) as im:
+            if im.info.get("parameters"):
+                metadata = im.info["parameters"]
+
     return {
         run_button: gr.update(interactive=True, visible=True),
         stop_button: gr.update(interactive=False, visible=False),
