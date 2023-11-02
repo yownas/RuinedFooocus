@@ -13,6 +13,7 @@ from modules.util import suppress_stdout
 
 import warnings
 from diffusers import DiffusionPipeline
+#from diffusers import LCMScheduler, LatentConsistencyModelPipeline
 import torch
 
 class pipeline():
@@ -47,6 +48,12 @@ class pipeline():
                 custom_revision="main",
                 use_safetensors=True
             )
+            
+            #scheduler = LCMScheduler.from_pretrained(
+            #    "SimianLuo/LCM_Dreamshaper_v7", subfolder="scheduler")
+            #self.pipe = LatentConsistencyModelPipeline.from_pretrained(
+            #    "SimianLuo/LCM_Dreamshaper_v7", scheduler = scheduler, safety_checker = None)
+
             self.pipe.to(torch_device="cuda", torch_dtype=torch.float32)
             self.pipe.run_safety_checker = or_nice
 
@@ -102,6 +109,8 @@ class pipeline():
     ):
         worker.outputs.append(["preview", (-1, f"Generating ...", None)])
         
+        torch.manual_seed(image_seed)
+
         images = self.pipe(
             prompt=positive_prompt,
             num_inference_steps=steps,
