@@ -1,3 +1,6 @@
+### 1.14.1
+* Fixed small issue with metadata not updating
+
 ### 1.14.0
 * Added Metadata Viewer for Gallery items (Viewable in `Info` Tab)
 * Refresh Files now also reloads your `styles.csv` file

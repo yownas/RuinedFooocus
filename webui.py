@@ -93,6 +93,11 @@ def update_preview(product):
 
 
 def update_results(product):
+    with Image.open(product[0]) as im:
+        if im.info.get("parameters"):
+            metadata = im.info["parameters"]
+        else:
+            metadata = {"Data": "Preview Grid"}
     return {
         run_button: gr.update(interactive=True, visible=True),
         stop_button: gr.update(interactive=False, visible=False),
@@ -101,6 +106,7 @@ def update_results(product):
         if len(product) > 0
         else gr.update(),
         gallery: gr.update(allow_preview=True, preview=True, value=product),
+        metadata_json: gr.update(value=metadata),
     }
 
 
@@ -519,7 +525,14 @@ with shared.gradio_root as block:
         ).then(
             fn=generate_clicked,
             inputs=state["ctrls_obj"],
-            outputs=[run_button, stop_button, progress_html, progress_window, gallery],
+            outputs=[
+                run_button,
+                stop_button,
+                progress_html,
+                progress_window,
+                gallery,
+                metadata_json,
+            ],
         )
 
         def stop_clicked():
