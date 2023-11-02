@@ -14,7 +14,6 @@ metadatastrings = []
 
 interrupt_ruined_processing = False
 
-
 def worker():
     global buffer, outputs
 
@@ -23,7 +22,10 @@ def worker():
     import time
     import shared
     import random
-    import modules.default_pipeline as pipeline
+
+    import modules.lcm_pipeline as lcm_pipeline
+    import modules.sdxl_pipeline as sdxl_pipeline
+
     import modules.path
     from modules.prompt_processing import process_metadata, process_prompt, parse_loras
 
@@ -71,6 +73,15 @@ def worker():
         from shared import state
 
         gen_data = process_metadata(gen_data)
+
+        # Figure out which pipeline to use
+        if gen_data["base_model_name"].startswith("lcm/"):
+            if state["pipeline"] is None or "lcm" not in state["pipeline"].pipeline_type:
+                state["pipeline"] = lcm_pipeline.pipeline()
+        else:
+            if state["pipeline"] is None or "sdxl" not in state["pipeline"].pipeline_type:
+                state["pipeline"] = sdxl_pipeline.pipeline()
+        pipeline = state["pipeline"]
 
         loras = []
         i = 1
@@ -140,7 +151,9 @@ def worker():
                 raise InterruptProcessingException()
 
             done_steps = i * steps + step
-            if step % 10 == 0:
+            try: status
+            except NameError: status = None
+            if step % 10 == 0 or status == None:
                 status = random.choice(lines)
 
             grid_xsize = math.ceil(math.sqrt(state["preview_total"]))
@@ -151,7 +164,10 @@ def worker():
             if state["preview_grid"] is None:
                 state["preview_grid"] = Image.new("RGB", (pwidth, pheight))
             if y is not None:
-                image = Image.fromarray(y)
+                if isinstance(y, Image.Image):
+                    image = y
+                else:
+                    image = Image.fromarray(y)
                 grid_xpos = int(
                     (state["preview_count"] % grid_xsize) * (pwidth / grid_xsize)
                 )
@@ -242,7 +258,9 @@ def worker():
                 metadata.add_text("parameters", json.dumps(prompt))
 
                 state["preview_count"] += 1
-                Image.fromarray(x).save(local_temp_filename, pnginfo=metadata)
+                if not isinstance(x, Image.Image):
+                    x = Image.fromarray(x)
+                x.save(local_temp_filename, pnginfo=metadata)
                 results.append(local_temp_filename)
                 metadatastrings.append(json.dumps(prompt))
 
