@@ -252,7 +252,7 @@ def worker():
 
         if len(buffer) == 0:
             if state["preview_grid"] is not None and state["preview_total"] > 1:
-                results = [state["preview_grid"]] + results
+                results = [modules.path.temp_preview_path] + results
             outputs.append(["results", results])
             results = []
             metadatastrings = []
