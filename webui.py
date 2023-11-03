@@ -267,7 +267,7 @@ with shared.gradio_root as block:
                 )
                 custom_steps = gr.Slider(
                     label="Custom Steps",
-                    minimum=10,
+                    minimum=1,
                     maximum=200,
                     step=1,
                     value=30,
