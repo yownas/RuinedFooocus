@@ -23,9 +23,6 @@ def worker():
     import shared
     import random
 
-    import modules.lcm_pipeline as lcm_pipeline
-    import modules.sdxl_pipeline as sdxl_pipeline
-
     import modules.path
     from modules.prompt_processing import process_metadata, process_prompt, parse_loras
 
@@ -33,6 +30,7 @@ def worker():
     from PIL.PngImagePlugin import PngInfo
     from modules.sdxl_styles import aspect_ratios
     from modules.util import generate_temp_filename
+    import modules.pipelines
 
     try:
         async_gradio_app = shared.gradio_root
@@ -74,14 +72,7 @@ def worker():
 
         gen_data = process_metadata(gen_data)
 
-        # Figure out which pipeline to use
-        if gen_data["base_model_name"].startswith("lcm/"):
-            if state["pipeline"] is None or "lcm" not in state["pipeline"].pipeline_type:
-                state["pipeline"] = lcm_pipeline.pipeline()
-        else:
-            if state["pipeline"] is None or "sdxl" not in state["pipeline"].pipeline_type:
-                state["pipeline"] = sdxl_pipeline.pipeline()
-        pipeline = state["pipeline"]
+        pipeline = modules.pipelines.update(gen_data)
 
         loras = []
         i = 1
