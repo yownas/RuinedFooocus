@@ -35,7 +35,10 @@ class pipeline():
         #    self.xl_base.to_meta()
         #    self.xl_base = None
 
-        print(f"Loading model: {name}")
+        # This is the only supported model at the moment
+        model_id = "SimianLuo/LCM_Dreamshaper_v7"
+
+        print(f"Loading model: {model_id}")
 
         #try:
         if True:
@@ -43,10 +46,11 @@ class pipeline():
                 return image, None
 
             self.pipe = DiffusionPipeline.from_pretrained(
-                "SimianLuo/LCM_Dreamshaper_v7",
+                model_id,
+                local_files_only=False,
+                use_safetensors=True,
                 custom_pipeline="latent_consistency_txt2img",
                 custom_revision="main",
-                use_safetensors=True
             )
             
             #scheduler = LCMScheduler.from_pretrained(
