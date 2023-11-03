@@ -32,6 +32,11 @@ def worker():
     from modules.util import generate_temp_filename
     import modules.pipelines
 
+    pipeline = modules.pipelines.update(
+        {"base_model_name": modules.path.default_base_model_name}
+    )
+    pipeline.load_base_model(modules.path.default_base_model_name)
+
     try:
         async_gradio_app = shared.gradio_root
         flag = f"""App started successful. Use the app with {str(async_gradio_app.local_url)} or {str(async_gradio_app.server_name)}:{str(async_gradio_app.server_port)}"""
