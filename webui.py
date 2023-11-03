@@ -22,7 +22,7 @@ from modules.performance import (
 )
 from modules.settings import default_settings
 from modules.prompt_processing import get_promptlist
-
+import modules.pipelines
 
 from PIL import Image
 
@@ -541,6 +541,11 @@ with shared.gradio_root as block:
             worker.interrupt_ruined_processing = True
 
         stop_button.click(fn=stop_clicked, queue=False)
+
+pipeline = modules.pipelines.update(
+    {"base_model_name": modules.path.default_base_model_name}
+)
+pipeline.load_base_model(modules.path.default_base_model_name)
 
 args = parse_args()
 launch_app(args)
