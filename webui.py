@@ -74,6 +74,7 @@ def update_clicked():
             visible=True,
             value=modules.html.make_progress_html(0, "Please wait ..."),
         ),
+        gallery: gr.update(visible=False),
         progress_window: gr.update(visible=True, value="init_image.png"),
     }
 
@@ -106,7 +107,7 @@ def update_results(product):
         progress_window: gr.update(value=product[0])
         if len(product) > 0
         else gr.update(),
-        gallery: gr.update(allow_preview=True, preview=True, value=product),
+        gallery: gr.update(visible=True, allow_preview=True, preview=True, value=product),
         metadata_json: gr.update(value=metadata),
     }
 

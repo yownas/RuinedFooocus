@@ -170,7 +170,7 @@ def worker():
                 state["preview_grid"].paste(image, (grid_xpos, grid_ypos))
 
             state["preview_grid"].save(
-                modules.path.temp_preview_path, optimize=True, quality=35
+                modules.path.temp_preview_path, optimize=True, quality=35 if step < total_steps else 70
             )
 
             outputs.append(
