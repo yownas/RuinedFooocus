@@ -31,11 +31,12 @@ def worker():
     from modules.sdxl_styles import aspect_ratios
     from modules.util import generate_temp_filename
     import modules.pipelines
+    from modules.settings import default_settings
 
     pipeline = modules.pipelines.update(
-        {"base_model_name": modules.path.default_base_model_name}
+        {"base_model_name": default_settings["base_model"]}
     )
-    pipeline.load_base_model(modules.path.default_base_model_name)
+    pipeline.load_base_model(default_settings["base_model"])
 
     try:
         async_gradio_app = shared.gradio_root
