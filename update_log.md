@@ -1,3 +1,9 @@
+### 1.15.0
+* Different pipelines supporting lcm and sdxl/ssd
+* Let async_worker handle model preload
+* Lots of small fixes
+* fixed metadata bug when stopped
+
 ### 1.14.1
 * Fixed small issue with metadata not updating
 
