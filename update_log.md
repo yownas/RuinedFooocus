@@ -1,3 +1,6 @@
+###1.15.1
+* Updated Comfy Version
+
 ### 1.15.0
 * Different pipelines supporting lcm and sdxl/ssd
 * Let async_worker handle model preload
