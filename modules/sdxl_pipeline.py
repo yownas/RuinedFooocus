@@ -170,6 +170,7 @@ class pipeline():
             return
 
         lora_prompt_addition = ""
+        loaded_loras = []
 
         model = self.xl_base
         for name, weight in loras:
@@ -187,12 +188,13 @@ class pipeline():
                     model = self.StableDiffusionModel(
                         unet=unet, clip=clip, vae=model.vae, clip_vision=model.clip_vision
                     )
+                    loaded_loras += [(name, weight)]
                 except:
                     pass
                 lora_prompt_addition = f"{lora_prompt_addition}, {self.load_keywords(filename)}"
         self.xl_base_patched = model
         self.xl_base_patched_hash = str(loras)
-        print(f"LoRAs loaded: {self.xl_base_patched_hash}")
+        print(f"LoRAs loaded: {loaded_loras}")
 
         return lora_prompt_addition
 
