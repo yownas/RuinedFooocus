@@ -179,6 +179,7 @@ with shared.gradio_root as block:
                 image_mode="RGBA",
                 show_share_button=True,
             )
+            add_ctrl("progress_window", progress_window)
             progress_html = gr.HTML(
                 value=modules.html.make_progress_html(32, "Progress 32%"),
                 visible=False,

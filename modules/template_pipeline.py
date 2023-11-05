@@ -45,6 +45,7 @@ class pipeline():
         negative_prompt,
         input_image,
         controlnet,
+        progress_window,
         steps,
         width,
         height,
