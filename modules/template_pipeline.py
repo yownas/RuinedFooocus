@@ -6,12 +6,15 @@ from modules.util import suppress_stdout
 
 from PIL import Image
 
+# Copy this file, add suitable code and add logic to modules/pipelines.py to select it
+
 class pipeline():
     pipeline_type = ["template"]
 
     model_hash = ""
 
     def load_base_model(self, name):
+        # Check if model is already loaded
         if self.model_hash == name:
             return
         print(f"Loading model: {name}")

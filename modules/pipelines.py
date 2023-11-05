@@ -7,7 +7,7 @@ from shared import state
 def update(gen_data):
     prompt = gen_data["prompt"] if "prompt" in gen_data else ""
     try:
-        if prompt == "ruinedfooocus_test":
+        if prompt == "ruinedfooocuslogo":
             if state["pipeline"] is None or "template" not in state["pipeline"].pipeline_type:
                 state["pipeline"] = template_pipeline.pipeline()
 
