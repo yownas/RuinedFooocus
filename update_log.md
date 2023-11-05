@@ -1,5 +1,6 @@
 ### 1.16.0
 * Facewapping
+* Groop
 
 ### 1.15.1
 * Updated Comfy Version
