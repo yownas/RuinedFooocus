@@ -29,7 +29,7 @@ class pipeline():
         model_name = "inswapper_128.onnx"
         if not self.swapper_hash == model_name:
             print(f"Loading swapper model: {model_name}")
-            model_path = os.path.join(modules.path.insightface_path, model_name)
+            model_path = os.path.join(modules.path.faceswap_path, model_name)
             try:
                 with open(os.devnull, 'w') as sys.stdout:
                     self.swapper_model = insightface.model_zoo.get_model(

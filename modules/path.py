@@ -12,7 +12,7 @@ DEFAULT_PATHS = {
     "path_vae_approx": "../models/vae_approx/",
     "path_preview": "../outputs/preview.jpg",
     "path_upscalers": "../models/upscale_models",
-    "path_insightface": "../models/insightface",
+    "path_faceswap": "../models/faceswap",
     "path_outputs": "../outputs/",
 }
 
@@ -52,7 +52,7 @@ vae_approx_path = get_abspath(paths["path_vae_approx"])
 temp_outputs_path = get_abspath(paths["path_outputs"])
 temp_preview_path = get_abspath(paths["path_preview"])
 upscaler_path = get_abspath(paths["path_upscalers"])
-insightface_path = get_abspath(paths["path_insightface"])
+faceswap_path = get_abspath(paths["path_faceswap"])
 
 os.makedirs(temp_outputs_path, exist_ok=True)
 

@@ -21,6 +21,7 @@ from modules.path import (
     controlnet_path,
     vae_approx_path,
     upscaler_path,
+    faceswap_path,
 )
 
 REINSTALL_ALL = False
@@ -131,6 +132,12 @@ upscaler_filenames = [
     ),
 ]
 
+faceswap_filenames = [
+    (
+        "inswapper_128.onnx",
+        "https://huggingface.co/ezioruan/inswapper_128.onnx/resolve/main/inswapper_128.onnx",
+    ),
+]
 
 def download_models():
     for file_name, url in model_filenames:
@@ -143,6 +150,8 @@ def download_models():
         load_file_from_url(url=url, model_dir=vae_approx_path, file_name=file_name)
     for file_name, url in upscaler_filenames:
         load_file_from_url(url=url, model_dir=upscaler_path, file_name=file_name)
+    for file_name, url in faceswap_filenames:
+        load_file_from_url(url=url, model_dir=faceswap_path, file_name=file_name)
     return
 
 
