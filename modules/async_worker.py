@@ -36,7 +36,8 @@ def worker():
     pipeline = modules.pipelines.update(
         {"base_model_name": default_settings["base_model"]}
     )
-    pipeline.load_base_model(default_settings["base_model"])
+    if not pipeline == None:
+        pipeline.load_base_model(default_settings["base_model"])
 
     try:
         async_gradio_app = shared.gradio_root
@@ -79,6 +80,9 @@ def worker():
         gen_data = process_metadata(gen_data)
 
         pipeline = modules.pipelines.update(gen_data)
+        if pipeline == None:
+            print(f"ERROR: No pipeline")
+            return
 
         loras = []
         i = 1
