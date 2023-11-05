@@ -214,6 +214,7 @@ def worker():
                     n_txt,
                     gen_data["input_image"],
                     modules.controlnet.get_settings(gen_data),
+                    gen_data["progress_window"],
                     steps,
                     width,
                     height,
