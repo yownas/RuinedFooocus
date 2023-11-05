@@ -260,9 +260,12 @@ def worker():
                 metadata.add_text("parameters", json.dumps(prompt))
 
                 state["preview_count"] += 1
-                if not isinstance(x, Image.Image):
-                    x = Image.fromarray(x)
-                x.save(local_temp_filename, pnginfo=metadata)
+                if isinstance(x, str):
+                    local_temp_filename = x
+                else:
+                    if not isinstance(x, Image.Image):
+                        x = Image.fromarray(x)
+                    x.save(local_temp_filename, pnginfo=metadata)
                 results.append(local_temp_filename)
                 metadatastrings.append(json.dumps(prompt))
 

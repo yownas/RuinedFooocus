@@ -3,12 +3,15 @@ import sys
 import cv2
 import modules.path
 import modules.async_worker as worker
+from tqdm import tqdm
+import tempfile
 
 from modules.settings import default_settings
-from modules.util import suppress_stdout
+from modules.util import suppress_stdout, generate_temp_filename
 
 import warnings
 from PIL import Image
+import imageio.v3 as iio
 import numpy as np
 import insightface
 import onnxruntime
@@ -88,21 +91,53 @@ class pipeline():
         warnings.filterwarnings('ignore', category=UserWarning, module='torchvision')
 
         input_image = cv2.cvtColor(np.asarray(input_image), cv2.COLOR_RGB2BGR)
-        output_image = cv2.imread(progress_window)
-
         input_faces = sorted(self.analyser_model.get(input_image), key=lambda x: x.bbox[0])
-        output_faces = sorted(self.analyser_model.get(output_image), key=lambda x: x.bbox[0])
 
-        frame = output_image
-        idx = 0
-        for output_face in output_faces:
-            frame = self.swapper_model.get(frame, output_face, input_faces[idx%len(input_faces)], paste_back=True)
-            idx+=1
+        positive_prompt = positive_prompt.strip()
+        if positive_prompt.startswith("https://") and positive_prompt.endswith(".gif"):
+            x = iio.immeta(positive_prompt)
+            duration = x['duration']
+            loop = x['loop']
+            gif = cv2.VideoCapture(positive_prompt) 
 
-        images = Image.fromarray(cv2.cvtColor(frame,cv2.COLOR_BGR2RGB))
+            # Swap
+            in_imgs = []
+            out_imgs = []
+            while(True):
+                ret, frame = gif.read()
+                if not ret:
+                    break
+                in_imgs.append(frame)
 
-        # Return finished image to preview
-        if callback is not None:
-            callback(steps, 0, 0, steps, images)
+            with tqdm(total=len(in_imgs), desc="Groop", unit="frames") as progress:
+                for frame in in_imgs:
+                    ##out_faces = select_faces(frame, None, det_thresh)
+                    out_faces = sorted(self.analyser_model.get(frame), key=lambda x: x.bbox[0])
+
+                    idx = 0
+                    for out_face in out_faces:
+                        ##if sim_thresh == 0 or tgt is not None and cosDist(tgt, out_face) <= sim_thresh:
+                        frame = self.swapper_model.get(frame, out_face, input_faces[idx%len(input_faces)], paste_back=True)
+                        ##if restore:
+                        ##    frame = face_restoration.restore_faces(np.asarray(frame))
+                        idx+=1
+                    out_imgs.append(Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)))
+                    progress.update(1)
+
+            images = generate_temp_filename(
+                    folder=modules.path.temp_outputs_path, extension="gif"
+                )
+            out_imgs[0].save(images, save_all=True, append_images=out_imgs[1:], optimize=True, duration=duration, loop=loop)
+
+        else:
+            output_image = cv2.imread(progress_window)
+            output_faces = sorted(self.analyser_model.get(output_image), key=lambda x: x.bbox[0])
+
+            frame = output_image
+            idx = 0
+            for output_face in output_faces:
+                frame = self.swapper_model.get(frame, output_face, input_faces[idx%len(input_faces)], paste_back=True)
+                idx+=1
+            images = Image.fromarray(cv2.cvtColor(frame,cv2.COLOR_BGR2RGB))
 
         return [images]
