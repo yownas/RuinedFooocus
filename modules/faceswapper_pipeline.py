@@ -1,6 +1,7 @@
 import os
 import sys
 import cv2
+import re
 import modules.path
 import modules.async_worker as worker
 from tqdm import tqdm
@@ -95,7 +96,7 @@ class pipeline():
         input_faces = sorted(self.analyser_model.get(input_image), key=lambda x: x.bbox[0])
 
         prompt = gen_data["prompt"].strip()
-        if prompt.startswith("https://") and prompt.endswith(".gif"):
+        if re.fullmatch("https?://.*\.gif", prompt, re.IGNORECASE) is not None:
             x = iio.immeta(prompt)
             duration = x['duration']
             loop = x['loop']
