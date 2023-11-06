@@ -19,7 +19,7 @@ import onnxruntime
 
 
 class pipeline():
-    pipeline_type = ["faceswapper"]
+    pipeline_type = ["faceswap"]
 
     analyser_model = None
     analyser_hash = ""
@@ -49,9 +49,9 @@ class pipeline():
             print(f"Loading analyser model: {model_name}")
             try:
                 with open(os.devnull, 'w') as sys.stdout:
-                    self.analyser_model = insightface.app.FaceAnalysis(name='buffalo_l')
+                    self.analyser_model = insightface.app.FaceAnalysis(name=model_name)
                     self.analyser_model.prepare(ctx_id=0, det_thresh=det_thresh, det_size=(640, 640))
-                    self.model_hash = model_name
+                    self.analyser_hash = model_name
                 sys.stdout = sys.__stdout__
             except:
                 print(f"Failed loading model! {model_name}")
