@@ -243,6 +243,7 @@ class pipeline():
         sampler_name,
         scheduler,
         callback,
+        gen_data=None,
     ):
         worker.outputs.append(["preview", (-1, f"Processing text encoding ...", None)])
         img2img_mode = False

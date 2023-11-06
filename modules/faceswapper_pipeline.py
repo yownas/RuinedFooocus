@@ -84,6 +84,7 @@ class pipeline():
         sampler_name,
         scheduler,
         callback,
+        gen_data=None,
     ):
         worker.outputs.append(["preview", (-1, f"Generating ...", None)])
 
@@ -93,12 +94,12 @@ class pipeline():
         input_image = cv2.cvtColor(np.asarray(input_image), cv2.COLOR_RGB2BGR)
         input_faces = sorted(self.analyser_model.get(input_image), key=lambda x: x.bbox[0])
 
-        positive_prompt = positive_prompt.strip()
-        if positive_prompt.startswith("https://") and positive_prompt.endswith(".gif"):
-            x = iio.immeta(positive_prompt)
+        prompt = gen_data["prompt"].strip()
+        if prompt.startswith("https://") and prompt.endswith(".gif"):
+            x = iio.immeta(prompt)
             duration = x['duration']
             loop = x['loop']
-            gif = cv2.VideoCapture(positive_prompt) 
+            gif = cv2.VideoCapture(prompt) 
 
             # Swap
             in_imgs = []

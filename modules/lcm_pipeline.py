@@ -111,6 +111,7 @@ class pipeline():
         sampler_name,
         scheduler,
         callback,
+        gen_data=None,
     ):
         worker.outputs.append(["preview", (-1, f"Generating ...", None)])
         
