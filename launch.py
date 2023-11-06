@@ -35,6 +35,10 @@ def prepare_environment():
         "TORCH_COMMAND",
         f"pip install torch==2.0.1 torchvision==0.15.2 --extra-index-url {torch_index_url}",
     )
+    insightface_package = os.environ.get(
+        "INSIGHTFACE_PACKAGE",
+        f"https://github.com/Gourieff/sd-webui-reactor/raw/main/example/insightface-0.7.3-cp310-cp310-win_amd64.whl",
+    )
     requirements_file = os.environ.get("REQS_FILE", "requirements_versions.txt")
 
     xformers_package = os.environ.get("XFORMERS_PACKAGE", "xformers==0.0.21")
@@ -60,6 +64,12 @@ def prepare_environment():
             "Couldn't install torch",
             live=True,
         )
+
+    if REINSTALL_ALL or not is_installed("insightface"):
+        if platform.system() == "Windows":
+            run_pip(
+                f"install {insightface_package}", "insightace", live=True
+            )
 
     if REINSTALL_ALL or not is_installed("xformers"):
         if platform.system() == "Windows":
