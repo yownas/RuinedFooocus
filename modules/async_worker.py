@@ -225,6 +225,7 @@ def worker():
                     gen_data["sampler_name"],
                     gen_data["scheduler"],
                     callback=callback,
+                    gen_data=gen_data,
                 )
             except InterruptProcessingException as iex:
                 stop_batch = True

@@ -1,6 +1,7 @@
 import os
 import sys
 import cv2
+import re
 import modules.path
 import modules.async_worker as worker
 from tqdm import tqdm
@@ -18,7 +19,7 @@ import onnxruntime
 
 
 class pipeline():
-    pipeline_type = ["faceswapper"]
+    pipeline_type = ["faceswap"]
 
     analyser_model = None
     analyser_hash = ""
@@ -48,9 +49,9 @@ class pipeline():
             print(f"Loading analyser model: {model_name}")
             try:
                 with open(os.devnull, 'w') as sys.stdout:
-                    self.analyser_model = insightface.app.FaceAnalysis(name='buffalo_l')
+                    self.analyser_model = insightface.app.FaceAnalysis(name=model_name)
                     self.analyser_model.prepare(ctx_id=0, det_thresh=det_thresh, det_size=(640, 640))
-                    self.model_hash = model_name
+                    self.analyser_hash = model_name
                 sys.stdout = sys.__stdout__
             except:
                 print(f"Failed loading model! {model_name}")
@@ -84,6 +85,7 @@ class pipeline():
         sampler_name,
         scheduler,
         callback,
+        gen_data=None,
     ):
         worker.outputs.append(["preview", (-1, f"Generating ...", None)])
 
@@ -93,12 +95,12 @@ class pipeline():
         input_image = cv2.cvtColor(np.asarray(input_image), cv2.COLOR_RGB2BGR)
         input_faces = sorted(self.analyser_model.get(input_image), key=lambda x: x.bbox[0])
 
-        positive_prompt = positive_prompt.strip()
-        if positive_prompt.startswith("https://") and positive_prompt.endswith(".gif"):
-            x = iio.immeta(positive_prompt)
+        prompt = gen_data["prompt"].strip()
+        if re.fullmatch("https?://.*\.gif", prompt, re.IGNORECASE) is not None:
+            x = iio.immeta(prompt)
             duration = x['duration']
             loop = x['loop']
-            gif = cv2.VideoCapture(positive_prompt) 
+            gif = cv2.VideoCapture(prompt) 
 
             # Swap
             in_imgs = []
