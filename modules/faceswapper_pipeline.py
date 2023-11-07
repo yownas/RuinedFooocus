@@ -129,6 +129,7 @@ class pipeline():
             images = generate_temp_filename(
                     folder=modules.path.temp_outputs_path, extension="gif"
                 )
+            os.makedirs(os.path.dirname(images), exist_ok=True)
             out_imgs[0].save(images, save_all=True, append_images=out_imgs[1:], optimize=True, duration=duration, loop=loop)
 
         else:
