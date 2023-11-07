@@ -45,18 +45,14 @@ class pipeline():
             def or_nice(image, device, dtype):
                 return image, None
 
+
             self.pipe = DiffusionPipeline.from_pretrained(
                 model_id,
                 local_files_only=False,
                 use_safetensors=True,
-                custom_pipeline="latent_consistency_txt2img",
-                custom_revision="main",
             )
-            
-            #scheduler = LCMScheduler.from_pretrained(
-            #    "SimianLuo/LCM_Dreamshaper_v7", subfolder="scheduler")
-            #self.pipe = LatentConsistencyModelPipeline.from_pretrained(
-            #    "SimianLuo/LCM_Dreamshaper_v7", scheduler = scheduler, safety_checker = None)
+            #    custom_pipeline="latent_consistency_txt2img",
+            #    custom_revision="main",
 
             self.pipe.to(torch_device="cuda", torch_dtype=torch.float32)
             self.pipe.run_safety_checker = or_nice
