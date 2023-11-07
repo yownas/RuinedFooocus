@@ -12,7 +12,7 @@ from modules.settings import default_settings
 from modules.util import suppress_stdout
 
 import warnings
-from diffusers import DiffusionPipeline
+from diffusers import DiffusionPipeline, AutoencoderTiny
 #from diffusers import LCMScheduler, LatentConsistencyModelPipeline
 import torch
 
@@ -40,8 +40,7 @@ class pipeline():
 
         print(f"Loading model: {model_id}")
 
-        #try:
-        if True:
+        try:
             def or_nice(image, device, dtype):
                 return image, None
 
@@ -54,16 +53,25 @@ class pipeline():
             #    custom_pipeline="latent_consistency_txt2img",
             #    custom_revision="main",
 
-            self.pipe.to(torch_device="cuda", torch_dtype=torch.float32)
+            self.pipe.vae = AutoencoderTiny.from_pretrained(
+                "madebyollin/taesd", torch_dtype=torch.float32, use_safetensors=True
+            )
+            self.pipe.to(device="cuda", dtype=torch.float32).to("cuda")
+            #self.pipe.unet.to(memory_format=torch.channels_last)
             self.pipe.run_safety_checker = or_nice
+            #self.pipe.enable_attention_slicing()
+
+            if torch.cuda.get_device_capability()[0] >= 7:
+                self.pipe.unet = torch.compile(self.pipe.unet, mode="reduce-overhead", fullgraph=True)
+                self.pipe(prompt="warmup", num_inference_steps=1, guidance_scale=8.0)
 
             if self.pipe is not None:
                 self.model_hash = name
                 print(f"Base model loaded: {self.model_hash}")
 
-        #except:
-        #    print(f"Failed to load {name}")
-        #    exit
+        except:
+            print(f"Failed to load {name}")
+            exit
 
         return
 
