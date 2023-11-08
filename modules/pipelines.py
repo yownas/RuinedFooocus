@@ -1,3 +1,5 @@
+import os
+
 import modules.faceswapper_pipeline as faceswapper_pipeline
 import modules.lcm_pipeline as lcm_pipeline
 import modules.sdxl_pipeline as sdxl_pipeline
@@ -19,7 +21,7 @@ def update(gen_data):
             if state["pipeline"] is None or "faceswap" not in state["pipeline"].pipeline_type:
                 state["pipeline"] = faceswapper_pipeline.pipeline()
 
-        elif gen_data["base_model_name"].startswith("lcm/"):
+        elif os.path.split(os.path.split(gen_data["base_model_name"])[0])[1].lower() == "lcm":
             if state["pipeline"] is None or "lcm" not in state["pipeline"].pipeline_type:
                 state["pipeline"] = lcm_pipeline.pipeline()
 
