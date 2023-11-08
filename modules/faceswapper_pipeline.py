@@ -14,9 +14,11 @@ import warnings
 from PIL import Image
 import imageio.v3 as iio
 import numpy as np
+import torch
 import insightface
 import onnxruntime
 import gfpgan 
+from facexlib.utils.face_restoration_helper import FaceRestoreHelper
 
 class pipeline():
     pipeline_type = ["faceswap"]
@@ -56,6 +58,54 @@ class pipeline():
                 sys.stdout = sys.__stdout__
             except:
                 print(f"Failed loading model! {model_name}")
+    
+    def load_gfpgan_model(self):
+        if self.gfpgan_model is None:
+            model_rootpath = modules.path.faceswap_path
+            channel_multiplier = 2
+
+            model_name = "GFPGANv1.4.pth"
+            model_path = os.path.join(model_rootpath, model_name)
+            
+            # https://github.com/TencentARC/GFPGAN/blob/master/inference_gfpgan.py
+            self.gfpgan_model = gfpgan.GFPGANer
+            self.gfpgan_model.bg_upsampler = None
+            # initialize model
+            self.gfpgan_model.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+            upscale = 2
+            self.gfpgan_model.face_helper = FaceRestoreHelper(
+                upscale,
+                det_model='retinaface_resnet50',
+                model_rootpath=model_rootpath,
+            )
+            #face_size=512,
+            #crop_ratio=(1, 1),
+            #save_ext='png',
+            #use_parse=True,
+            #device=self.device,
+
+            self.gfpgan_model.gfpgan = gfpgan.GFPGANv1Clean(
+                out_size=512,
+                num_style_feat=512,
+                channel_multiplier=channel_multiplier,
+                decoder_load_path=None,
+                fix_decoder=False,
+                num_mlp=8,
+                input_is_latent=True,
+                different_w=True,
+                narrow=1,
+                sft_half=True,
+            )
+
+            loadnet = torch.load(model_path)
+            if 'params_ema' in loadnet:
+                keyname = 'params_ema'
+            else:
+                keyname = 'params'
+            self.gfpgan_model.gfpgan.load_state_dict(loadnet[keyname], strict=True)
+            self.gfpgan_model.gfpgan.eval()
+            self.gfpgan_model.gfpgan = self.gfpgan_model.gfpgan.to(self.gfpgan_model.device)
 
     def load_keywords(self, lora):
         return ""
@@ -82,24 +132,16 @@ class pipeline():
         return original_image
     
     def restore_faces(self, image):
-        if self.gfpgan_model is None:
-            model_name = "GFPGANv1.4.pth"
-            model_path = os.path.join(modules.path.faceswap_path, model_name)
-            
-            # https://github.com/TencentARC/GFPGAN/blob/master/inference_gfpgan.py
-            self.gfpgan_model = gfpgan.GFPGANer(
-                model_path=model_path,
-                arch="clean",
-                channel_multiplier=2,
-                bg_upsampler=None
-            )
+        self.load_gfpgan_model()
 
         image_bgr = image[:, :, ::-1]
         _cropped_faces, _restored_faces, gfpgan_output_bgr = self.gfpgan_model.enhance(
+            self.gfpgan_model,
             image_bgr,
             has_aligned=False,
             only_center_face=False,
-            paste_back=True
+            paste_back=True,
+            weight=0.5,
         )
         image = gfpgan_output_bgr[:, :, ::-1]
 
