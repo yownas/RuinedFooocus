@@ -53,9 +53,11 @@ class pipeline():
             #    custom_pipeline="latent_consistency_txt2img",
             #    custom_revision="main",
 
+            self.pipe.enable_xformers_memory_efficient_attention()
             self.pipe.vae = AutoencoderTiny.from_pretrained(
                 "madebyollin/taesd", torch_dtype=torch.float32, use_safetensors=True
             )
+            self.pipe.vae = self.pipe.vae.cuda()
             self.pipe.to(device="cuda", dtype=torch.float32).to("cuda")
             #self.pipe.unet.to(memory_format=torch.channels_last)
             self.pipe.run_safety_checker = or_nice
