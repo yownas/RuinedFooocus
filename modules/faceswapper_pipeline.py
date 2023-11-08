@@ -16,7 +16,7 @@ import imageio.v3 as iio
 import numpy as np
 import insightface
 import onnxruntime
-
+import gfpgan 
 
 class pipeline():
     pipeline_type = ["faceswap"]
@@ -25,6 +25,7 @@ class pipeline():
     analyser_hash = ""
     swapper_model = None
     swapper_hash = ""
+    gfpgan_model = None
 
     def load_base_model(self, name):
         model_name = "inswapper_128.onnx"
@@ -67,6 +68,42 @@ class pipeline():
 
     def clean_prompt_cond_caches(self):
         return
+
+    def swap_faces(self, original_image, input_faces, out_faces):
+        idx = 0
+        for out_face in out_faces:
+            original_image = self.swapper_model.get(
+                original_image,
+                out_face,
+                input_faces[idx%len(input_faces)],
+                paste_back=True
+            )
+            idx+=1
+        return original_image
+    
+    def restore_faces(self, image):
+        if self.gfpgan_model is None:
+            model_name = "GFPGANv1.4.pth"
+            model_path = os.path.join(modules.path.faceswap_path, model_name)
+            
+            # https://github.com/TencentARC/GFPGAN/blob/master/inference_gfpgan.py
+            self.gfpgan_model = gfpgan.GFPGANer(
+                model_path=model_path,
+                arch="clean",
+                channel_multiplier=2,
+                bg_upsampler=None
+            )
+
+        image_bgr = image[:, :, ::-1]
+        _cropped_faces, _restored_faces, gfpgan_output_bgr = self.gfpgan_model.enhance(
+            image_bgr,
+            has_aligned=False,
+            only_center_face=False,
+            paste_back=True
+        )
+        image = gfpgan_output_bgr[:, :, ::-1]
+
+        return image
 
     def process(
         self,
@@ -115,32 +152,19 @@ class pipeline():
                 for frame in in_imgs:
                     ##out_faces = select_faces(frame, None, det_thresh)
                     out_faces = sorted(self.analyser_model.get(frame), key=lambda x: x.bbox[0])
-
-                    idx = 0
-                    for out_face in out_faces:
-                        ##if sim_thresh == 0 or tgt is not None and cosDist(tgt, out_face) <= sim_thresh:
-                        frame = self.swapper_model.get(frame, out_face, input_faces[idx%len(input_faces)], paste_back=True)
-                        ##if restore:
-                        ##    frame = face_restoration.restore_faces(np.asarray(frame))
-                        idx+=1
+                    frame = self.swap_faces(frame, input_faces, out_faces)
                     out_imgs.append(Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)))
                     progress.update(1)
-
             images = generate_temp_filename(
                     folder=modules.path.temp_outputs_path, extension="gif"
                 )
             os.makedirs(os.path.dirname(images), exist_ok=True)
             out_imgs[0].save(images, save_all=True, append_images=out_imgs[1:], optimize=True, duration=duration, loop=loop)
-
         else:
             output_image = cv2.imread(progress_window)
             output_faces = sorted(self.analyser_model.get(output_image), key=lambda x: x.bbox[0])
-
-            frame = output_image
-            idx = 0
-            for output_face in output_faces:
-                frame = self.swapper_model.get(frame, output_face, input_faces[idx%len(input_faces)], paste_back=True)
-                idx+=1
-            images = Image.fromarray(cv2.cvtColor(frame,cv2.COLOR_BGR2RGB))
+            result_image = self.swap_faces(output_image, input_faces, output_faces)
+            result_image = self.restore_faces(result_image)
+            images = Image.fromarray(cv2.cvtColor(result_image ,cv2.COLOR_BGR2RGB))
 
         return [images]

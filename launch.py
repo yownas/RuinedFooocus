@@ -147,6 +147,10 @@ faceswap_filenames = [
         "inswapper_128.onnx",
         "https://huggingface.co/ezioruan/inswapper_128.onnx/resolve/main/inswapper_128.onnx",
     ),
+    (
+        "GFPGANv1.4.pth",
+        "https://github.com/TencentARC/GFPGAN/releases/download/v1.3.0/GFPGANv1.4.pth",
+    ),
 ]
 
 def download_models():
