@@ -63,9 +63,10 @@ class pipeline():
             self.pipe.run_safety_checker = or_nice
             #self.pipe.enable_attention_slicing()
 
-            if torch.cuda.get_device_capability()[0] >= 7:
-                self.pipe.unet = torch.compile(self.pipe.unet, mode="reduce-overhead", fullgraph=True)
-                self.pipe(prompt="warmup", num_inference_steps=1, guidance_scale=8.0)
+            # Doesn't seem to work
+            #if torch.cuda.get_device_capability()[0] >= 7:
+            #    self.pipe.unet = torch.compile(self.pipe.unet, mode="reduce-overhead", fullgraph=True)
+            #    self.pipe(prompt="warmup", num_inference_steps=1, guidance_scale=8.0)
 
             if self.pipe is not None:
                 self.model_hash = name
