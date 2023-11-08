@@ -35,7 +35,6 @@ class pipeline():
         #    self.xl_base.to_meta()
         #    self.xl_base = None
 
-        # This is the only supported model at the moment
         model_id = "SimianLuo/LCM_Dreamshaper_v7"
 
         print(f"Loading model: {model_id}")
@@ -72,8 +71,9 @@ class pipeline():
                 self.model_hash = name
                 print(f"Base model loaded: {self.model_hash}")
 
-        except:
+        except Exception as e:
             print(f"Failed to load {name}")
+            print(e)
             exit
 
         return
