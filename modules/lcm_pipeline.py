@@ -35,7 +35,6 @@ class pipeline():
         #    self.xl_base.to_meta()
         #    self.xl_base = None
 
-        # This is the only supported model at the moment
         model_id = "SimianLuo/LCM_Dreamshaper_v7"
 
         print(f"Loading model: {model_id}")
@@ -63,16 +62,18 @@ class pipeline():
             self.pipe.run_safety_checker = or_nice
             #self.pipe.enable_attention_slicing()
 
-            if torch.cuda.get_device_capability()[0] >= 7:
-                self.pipe.unet = torch.compile(self.pipe.unet, mode="reduce-overhead", fullgraph=True)
-                self.pipe(prompt="warmup", num_inference_steps=1, guidance_scale=8.0)
+            # Doesn't seem to work
+            #if torch.cuda.get_device_capability()[0] >= 7:
+            #    self.pipe.unet = torch.compile(self.pipe.unet, mode="reduce-overhead", fullgraph=True)
+            #    self.pipe(prompt="warmup", num_inference_steps=1, guidance_scale=8.0)
 
             if self.pipe is not None:
                 self.model_hash = name
                 print(f"Base model loaded: {self.model_hash}")
 
-        except:
+        except Exception as e:
             print(f"Failed to load {name}")
+            print(e)
             exit
 
         return
