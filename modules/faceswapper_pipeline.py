@@ -19,6 +19,11 @@ import onnxruntime
 import gfpgan
 from facexlib.utils.face_restoration_helper import FaceRestoreHelper
 
+# Requirements:
+# insightface==0.7.3
+# onnxruntime-gpu==1.16.1
+# imageio==2.31.6
+# gfpgan==1.3.8
 
 class pipeline:
     pipeline_type = ["faceswap"]
