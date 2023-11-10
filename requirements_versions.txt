@@ -16,5 +16,3 @@ pygit2==1.12.2
 aiohttp==3.8.5
 playsound2==1.3.0
 diffusers==0.23.0
-imageio==2.31.6
-gfpgan==1.3.8
