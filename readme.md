@@ -91,6 +91,7 @@ Coming soon ...
 28. Automatically read triggerwords from <lora_filename>.txt just place a `.txt` file of the same name (minus the .safetensors) and it will read the triggerwords from the file
 29. Upscaling using whatever upscaler you prefer `4xUltrasharp` by default. Look for the new option in the powerup tab
 30. Metadata Viewer now available in the `Info` tab
+31. Now supports the [SDXL LCM LORA](https://huggingface.co/latent-consistency/lcm-lora-sdxl/tree/main)
 
 ## Thanks
 
