@@ -183,8 +183,8 @@ def download_models():
         load_file_from_url(url=url, model_dir=vae_approx_path, file_name=file_name)
     for file_name, url in upscaler_filenames:
         load_file_from_url(url=url, model_dir=upscaler_path, file_name=file_name)
-    for file_name, url in faceswap_filenames:
-        load_file_from_url(url=url, model_dir=faceswap_path, file_name=file_name)
+#    for file_name, url in faceswap_filenames:
+#        load_file_from_url(url=url, model_dir=faceswap_path, file_name=file_name)
     return
 
 
