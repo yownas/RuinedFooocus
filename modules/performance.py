@@ -10,13 +10,21 @@ NEWPERF = "Custom..."
 def load_performance():
     perf_options = {}
 
+    with open(DEFAULT_PERFORMANCE_FILE) as f:
+        default_data = json.load(f)
+
     if not os.path.isfile(PERFORMANCE_FILE):
         shutil.copy(DEFAULT_PERFORMANCE_FILE, PERFORMANCE_FILE)
+    else:
+        with open(PERFORMANCE_FILE) as f:
+            data = json.load(f)
+            for name, settings in default_data.items():
+                if name not in data:
+                    data[name] = settings
+            perf_options = data
 
-    with open(PERFORMANCE_FILE) as f:
-        data = json.load(f)
-        for name, settings in data.items():
-            perf_options[name] = settings
+        with open(PERFORMANCE_FILE, "w") as f:
+            json.dump(perf_options, f, indent=2)
 
     return perf_options
 

@@ -6,9 +6,13 @@ import warnings
 
 warnings.filterwarnings("ignore", category=FutureWarning, module="insightface")
 warnings.filterwarnings("ignore", category=UserWarning, module="torchvision")
+warnings.filterwarnings("ignore", category=UserWarning, module="gradio")
 
 warnings.filterwarnings(
     "ignore", category=UserWarning, module="torchvision.transforms.functional_tensor"
+)
+warnings.filterwarnings(
+    "ignore", category=UserWarning, message="TypedStorage is deprecated"
 )
 
 from modules.launch_util import (
