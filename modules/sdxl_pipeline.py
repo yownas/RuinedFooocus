@@ -2,7 +2,6 @@ import gc
 import numpy as np
 import os
 import torch
-import warnings
 
 import modules.path
 import modules.controlnet
@@ -14,7 +13,6 @@ from comfy.model_base import SDXL
 from modules.settings import default_settings
 from modules.util import suppress_stdout
 
-import warnings
 import time
 import random
 
@@ -42,10 +40,9 @@ from comfy_extras.nodes_canny import Canny
 from comfy_extras.nodes_upscale_model import ImageUpscaleWithModel
 
 
-class pipeline():
+class pipeline:
     pipeline_type = ["sdxl", "ssd"]
 
-    warnings.filterwarnings("ignore", category=UserWarning)
     comfy.model_management.DISABLE_SMART_MEMORY = True
 
     class StableDiffusionModel:
@@ -62,7 +59,6 @@ class pipeline():
                 self.clip.cond_stage_model.to("meta")
             if self.vae is not None:
                 self.vae.first_stage_model.to("meta")
-
 
     def get_previewer(self, device, latent_format):
         from latent_preview import TAESD, TAESDPreviewerImpl
@@ -98,7 +94,6 @@ class pipeline():
 
         return taesd
 
-
     xl_base: StableDiffusionModel = None
     xl_base_hash = ""
 
@@ -108,7 +103,6 @@ class pipeline():
     xl_controlnet: StableDiffusionModel = None
     xl_controlnet_hash = ""
 
-
     def load_upscaler_model(self, model_name):
         model_path = os.path.join(modules.path.upscaler_path, model_name)
         sd = comfy.utils.load_torch_file(model_path, safe_load=True)
@@ -116,7 +110,6 @@ class pipeline():
             sd = comfy.utils.state_dict_prefix_replace(sd, {"module.": ""})
         out = model_loading.load_state_dict(sd).eval()
         return out
-
 
     def load_base_model(self, name):
         if self.xl_base_hash == name:
@@ -154,7 +147,6 @@ class pipeline():
 
         return
 
-
     def load_keywords(self, lora):
         filename = lora.replace(".safetensors", ".txt")
         try:
@@ -163,7 +155,6 @@ class pipeline():
             return data
         except FileNotFoundError:
             return " "
-
 
     def load_loras(self, loras):
         if self.xl_base_patched_hash == str(loras):
@@ -186,18 +177,22 @@ class pipeline():
                         model.unet, model.clip, lora, weight, weight
                     )
                     model = self.StableDiffusionModel(
-                        unet=unet, clip=clip, vae=model.vae, clip_vision=model.clip_vision
+                        unet=unet,
+                        clip=clip,
+                        vae=model.vae,
+                        clip_vision=model.clip_vision,
                     )
                     loaded_loras += [(name, weight)]
                 except:
                     pass
-                lora_prompt_addition = f"{lora_prompt_addition}, {self.load_keywords(filename)}"
+                lora_prompt_addition = (
+                    f"{lora_prompt_addition}, {self.load_keywords(filename)}"
+                )
         self.xl_base_patched = model
         self.xl_base_patched_hash = str(loras)
         print(f"LoRAs loaded: {loaded_loras}")
 
         return lora_prompt_addition
-
 
     def refresh_controlnet(self, name=None):
         if self.xl_controlnet_hash == str(self.xl_controlnet):
@@ -212,18 +207,15 @@ class pipeline():
             print(f"ControlNet model loaded: {self.xl_controlnet_hash}")
         return
 
-
-#load_base_model(default_settings["base_model"])
+    # load_base_model(default_settings["base_model"])
 
     positive_conditions_cache = None
     negative_conditions_cache = None
-
 
     def clean_prompt_cond_caches(self):
         self.positive_conditions_cache = None
         self.negative_conditions_cache = None
         return
-
 
     @torch.inference_mode()
     def process(
@@ -250,12 +242,16 @@ class pipeline():
 
         with suppress_stdout():
             self.positive_conditions_cache = (
-                CLIPTextEncode().encode(clip=self.xl_base_patched.clip, text=positive_prompt)[0]
+                CLIPTextEncode().encode(
+                    clip=self.xl_base_patched.clip, text=positive_prompt
+                )[0]
                 if self.positive_conditions_cache is None
                 else self.positive_conditions_cache
             )
             self.negative_conditions_cache = (
-                CLIPTextEncode().encode(clip=self.xl_base_patched.clip, text=negative_prompt)[0]
+                CLIPTextEncode().encode(
+                    clip=self.xl_base_patched.clip, text=negative_prompt
+                )[0]
                 if self.negative_conditions_cache is None
                 else self.negative_conditions_cache
             )
@@ -291,7 +287,9 @@ class pipeline():
                 )
 
             if controlnet["type"].lower() == "img2img":
-                latent = VAEEncode().encode(vae=self.xl_base_patched.vae, pixels=input_image)[0]
+                latent = VAEEncode().encode(
+                    vae=self.xl_base_patched.vae, pixels=input_image
+                )[0]
                 force_full_denoise = False
                 denoise = float(controlnet.get("denoise", controlnet.get("strength")))
                 img2img_mode = True
@@ -309,9 +307,9 @@ class pipeline():
                 return images
 
         if not img2img_mode:
-            latent = EmptyLatentImage().generate(width=width, height=height, batch_size=1)[
-                0
-            ]
+            latent = EmptyLatentImage().generate(
+                width=width, height=height, batch_size=1
+            )[0]
             force_full_denoise = True
             denoise = None
 
@@ -337,7 +335,9 @@ class pipeline():
         if "noise_mask" in latent:
             noise_mask = latent["noise_mask"]
 
-        previewer = self.get_previewer(device, self.xl_base_patched.unet.model.latent_format)
+        previewer = self.get_previewer(
+            device, self.xl_base_patched.unet.model.latent_format
+        )
 
         pbar = comfy.utils.ProgressBar(steps)
 

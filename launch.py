@@ -2,6 +2,14 @@ import os
 import sys
 import platform
 import version
+import warnings
+
+warnings.filterwarnings("ignore", category=FutureWarning, module="insightface")
+warnings.filterwarnings("ignore", category=UserWarning, module="torchvision")
+
+warnings.filterwarnings(
+    "ignore", category=UserWarning, module="torchvision.transforms.functional_tensor"
+)
 
 from modules.launch_util import (
     is_installed,
@@ -33,7 +41,7 @@ def prepare_environment():
     )
     torch_command = os.environ.get(
         "TORCH_COMMAND",
-        f"pip install torch==2.0.1 torchvision==0.15.2 --extra-index-url {torch_index_url}",
+        f"pip install torch==2.0.1 torchvision==0.17.0 --extra-index-url {torch_index_url}",
     )
     insightface_package = os.environ.get(
         "INSIGHTFACE_PACKAGE",

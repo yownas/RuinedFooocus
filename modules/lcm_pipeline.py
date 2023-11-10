@@ -1,7 +1,6 @@
 import gc
 import numpy as np
 import os
-import warnings
 from pathlib import Path
 
 import modules.path
@@ -11,18 +10,17 @@ import modules.async_worker as worker
 from modules.settings import default_settings
 from modules.util import suppress_stdout
 
-import warnings
 from diffusers import DiffusionPipeline, AutoencoderTiny
-#from diffusers import LCMScheduler, LatentConsistencyModelPipeline
+
+# from diffusers import LCMScheduler, LatentConsistencyModelPipeline
 import torch
 
-class pipeline():
+
+class pipeline:
     pipeline_type = ["lcm"]
 
     model_hash = ""
     pipe = None
-
-    warnings.filterwarnings("ignore", category=UserWarning)
 
     def load_base_model(self, name):
         if self.model_hash == name:
@@ -31,7 +29,7 @@ class pipeline():
         filename = os.path.join(modules.path.modelfile_path, name)
 
         # ?
-        #if self.xl_base is not None:
+        # if self.xl_base is not None:
         #    self.xl_base.to_meta()
         #    self.xl_base = None
 
@@ -40,9 +38,9 @@ class pipeline():
         print(f"Loading model: {model_id}")
 
         try:
+
             def or_nice(image, device, dtype):
                 return image, None
-
 
             self.pipe = DiffusionPipeline.from_pretrained(
                 model_id,
@@ -58,12 +56,12 @@ class pipeline():
             )
             self.pipe.vae = self.pipe.vae.cuda()
             self.pipe.to(device="cuda", dtype=torch.float32).to("cuda")
-            #self.pipe.unet.to(memory_format=torch.channels_last)
+            # self.pipe.unet.to(memory_format=torch.channels_last)
             self.pipe.run_safety_checker = or_nice
-            #self.pipe.enable_attention_slicing()
+            # self.pipe.enable_attention_slicing()
 
             # Doesn't seem to work
-            #if torch.cuda.get_device_capability()[0] >= 7:
+            # if torch.cuda.get_device_capability()[0] >= 7:
             #    self.pipe.unet = torch.compile(self.pipe.unet, mode="reduce-overhead", fullgraph=True)
             #    self.pipe(prompt="warmup", num_inference_steps=1, guidance_scale=8.0)
 
@@ -78,7 +76,6 @@ class pipeline():
 
         return
 
-
     def load_keywords(self, lora):
         filename = lora.replace(".safetensors", ".txt")
         try:
@@ -88,17 +85,14 @@ class pipeline():
         except FileNotFoundError:
             return " "
 
-
     def load_loras(self, loras):
         return
 
     def refresh_controlnet(self, name=None):
         return
 
-
     def clean_prompt_cond_caches(self):
         return
-
 
     @torch.inference_mode()
     def process(
@@ -121,7 +115,7 @@ class pipeline():
         gen_data=None,
     ):
         worker.outputs.append(["preview", (-1, f"Generating ...", None)])
-        
+
         torch.manual_seed(image_seed)
 
         images = self.pipe(
