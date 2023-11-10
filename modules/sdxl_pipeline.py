@@ -207,8 +207,6 @@ class pipeline:
             print(f"ControlNet model loaded: {self.xl_controlnet_hash}")
         return
 
-    # load_base_model(default_settings["base_model"])
-
     positive_conditions_cache = None
     negative_conditions_cache = None
 
@@ -239,6 +237,7 @@ class pipeline:
     ):
         worker.outputs.append(["preview", (-1, f"Processing text encoding ...", None)])
         img2img_mode = False
+        seed = image_seed if isinstance(image_seed, int) else random.randint(1, 2**64)
 
         with suppress_stdout():
             self.positive_conditions_cache = (
@@ -313,23 +312,10 @@ class pipeline:
             force_full_denoise = True
             denoise = None
 
-        worker.outputs.append(["preview", (-1, f"Start sampling ...", None)])
-
-        seed = image_seed if isinstance(image_seed, int) else random.randint(1, 2**64)
-
         device = comfy.model_management.get_torch_device()
         latent_image = latent["samples"]
-        # if disable_noise:
-        #    noise = torch.zeros(
-        #        latent_image.size(),
-        #        dtype=latent_image.dtype,
-        #        layout=latent_image.layout,
-        #        device="cpu",
-        #    )
-        # else:
-        if True:
-            batch_inds = latent["batch_index"] if "batch_index" in latent else None
-            noise = comfy.sample.prepare_noise(latent_image, seed, batch_inds)
+        batch_inds = latent["batch_index"] if "batch_index" in latent else None
+        noise = comfy.sample.prepare_noise(latent_image, seed, batch_inds)
 
         noise_mask = None
         if "noise_mask" in latent:
@@ -349,12 +335,10 @@ class pipeline:
                 callback(step, x0, x, total_steps, y)
             pbar.update_absolute(step + 1, total_steps, None)
 
-        sigmas = None
-        disable_pbar = False
-
         if noise_mask is not None:
             noise_mask = prepare_mask(noise_mask, noise.shape, device)
 
+        worker.outputs.append(["preview", (-1, f"Prepare models ...", None)])
         models, inference_memory = get_additional_models(
             self.positive_conditions_cache,
             self.negative_conditions_cache,
@@ -368,7 +352,6 @@ class pipeline:
                 )
                 + inference_memory,
             )
-        real_model = self.xl_base_patched.unet.model
 
         noise = noise.to(device)
         latent_image = latent_image.to(device)
@@ -382,12 +365,12 @@ class pipeline:
             "last_step": steps,
             "force_full_denoise": force_full_denoise,
             "denoise_mask": noise_mask,
-            "sigmas": sigmas,
-            "disable_pbar": disable_pbar,
+            "sigmas": None,
+            "disable_pbar": False,
             "seed": seed,
         }
         sampler = KSampler(
-            real_model,
+            self.xl_base_patched.unet.model,
             steps=steps,
             device=device,
             sampler=sampler_name,
@@ -400,6 +383,7 @@ class pipeline:
         }
         kwargs.update(extra_kwargs)
 
+        worker.outputs.append(["preview", (-1, f"Start sampling ...", None)])
         samples = sampler.sample(noise, positive_copy, negative_copy, **kwargs)
 
         samples = samples.cpu()
