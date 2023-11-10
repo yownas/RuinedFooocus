@@ -7,6 +7,8 @@ import warnings
 warnings.filterwarnings("ignore", category=FutureWarning, module="insightface")
 warnings.filterwarnings("ignore", category=UserWarning, module="torchvision")
 warnings.filterwarnings("ignore", category=UserWarning, module="gradio")
+warnings.filterwarnings("ignore", category=UserWarning, module="torchsde")
+warnings.filterwarnings("ignore", category=UserWarning)
 
 warnings.filterwarnings(
     "ignore", category=UserWarning, module="torchvision.transforms.functional_tensor"
@@ -183,8 +185,8 @@ def download_models():
         load_file_from_url(url=url, model_dir=vae_approx_path, file_name=file_name)
     for file_name, url in upscaler_filenames:
         load_file_from_url(url=url, model_dir=upscaler_path, file_name=file_name)
-#    for file_name, url in faceswap_filenames:
-#        load_file_from_url(url=url, model_dir=faceswap_path, file_name=file_name)
+    #    for file_name, url in faceswap_filenames:
+    #        load_file_from_url(url=url, model_dir=faceswap_path, file_name=file_name)
     return
 
 
