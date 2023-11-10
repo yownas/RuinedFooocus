@@ -47,7 +47,7 @@ def prepare_environment():
         "COMFY_REPO", "https://github.com/comfyanonymous/ComfyUI"
     )
     comfy_commit_hash = os.environ.get(
-        "COMFY_COMMIT_HASH", "1ffa8858e7e50cbe84180e0c455621e7db0fe7c0"
+        "COMFY_COMMIT_HASH", "002aefa382585d171aef13c7bd21f64b8664fe28"
     )
 
     print(f"Python {sys.version}")
@@ -67,9 +67,7 @@ def prepare_environment():
 
     if REINSTALL_ALL or not is_installed("insightface"):
         if platform.system() == "Windows":
-            run_pip(
-                f"install {insightface_package}", "insightace", live=True
-            )
+            run_pip(f"install {insightface_package}", "insightace", live=True)
 
     if REINSTALL_ALL or not is_installed("xformers"):
         if platform.system() == "Windows":
@@ -160,6 +158,7 @@ faceswap_filenames = [
         "https://github.com/xinntao/facexlib/releases/download/v0.2.2/parsing_parsenet.pth",
     ),
 ]
+
 
 def download_models():
     for file_name, url in model_filenames:

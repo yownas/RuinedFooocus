@@ -106,7 +106,9 @@ def update_results(product):
         progress_window: gr.update(value=product[0])
         if len(product) > 0
         else gr.update(),
-        gallery: gr.update(visible=True, allow_preview=True, preview=True, value=product),
+        gallery: gr.update(
+            visible=True, allow_preview=True, preview=True, value=product
+        ),
         metadata_json: gr.update(value=metadata),
     }
 
@@ -278,7 +280,7 @@ with shared.gradio_root as block:
 
                 cfg = gr.Slider(
                     label="CFG",
-                    minimum=1.0,
+                    minimum=0.0,
                     maximum=20.0,
                     step=0.1,
                     value=8,

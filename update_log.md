@@ -1,3 +1,9 @@
+### 1.17.0
+* Changed minimum cfg scale to 0
+* Updated to latest comfy and diffusers (Now supports LCM Loras)
+* You NEEED to set the custom settings to use lcm and sgm_sampler, steps of 4 and REALLY low config (between 0 and 1.5)
+
+
 ### 1.16.0
 * Facewapping
 * Groop
