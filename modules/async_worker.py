@@ -112,7 +112,6 @@ def worker():
         lora_keywords = pipeline.load_loras(loras)
         if lora_keywords is None:
             lora_keywords = " "
-        pipeline.clean_prompt_cond_caches()
 
         if gen_data["performance_selection"] == NEWPERF:
             steps = gen_data["custom_steps"]
@@ -207,7 +206,6 @@ def worker():
             start_step = 0
             denoise = None
             start_time = time.time()
-            pipeline.clean_prompt_cond_caches()
             try:
                 imgs = pipeline.process(
                     p_txt,

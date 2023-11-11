@@ -103,6 +103,9 @@ class pipeline:
     xl_controlnet: StableDiffusionModel = None
     xl_controlnet_hash = ""
 
+    models = []
+    inference_memory = None
+
     def load_upscaler_model(self, model_name):
         model_path = os.path.join(modules.path.upscaler_path, model_name)
         sd = comfy.utils.load_torch_file(model_path, safe_load=True)
@@ -139,6 +142,7 @@ class pipeline:
                 self.xl_base_hash = name
                 self.xl_base_patched = self.xl_base
                 self.xl_base_patched_hash = ""
+                #self.xl_base_patched.unet.model.to("cuda")
                 print(f"Base model loaded: {self.xl_base_hash}")
 
         except:
@@ -207,13 +211,30 @@ class pipeline:
             print(f"ControlNet model loaded: {self.xl_controlnet_hash}")
         return
 
-    positive_conditions_cache = None
-    negative_conditions_cache = None
+    conditions = None
 
     def clean_prompt_cond_caches(self):
-        self.positive_conditions_cache = None
-        self.negative_conditions_cache = None
-        return
+        self.conditions = {}
+        self.conditions['+'] = {}
+        self.conditions['-'] = {}
+        self.conditions['+']['text'] = None
+        self.conditions['+']['cache'] = None
+        self.conditions['-']['text'] = None
+        self.conditions['-']['cache'] = None
+
+    def textencode(self, id, text):
+        update = False
+        if text != self.conditions[id]['text']:
+            with suppress_stdout():
+                self.conditions[id]['cache'] = (
+                    CLIPTextEncode().encode(
+                        clip=self.xl_base_patched.clip, text=text
+                    )[0]
+                )
+            self.conditions[id]['text'] = text
+            update = True
+        return update
+
 
     @torch.inference_mode()
     def process(
@@ -235,27 +256,20 @@ class pipeline:
         callback,
         gen_data=None,
     ):
-        worker.outputs.append(["preview", (-1, f"Processing text encoding ...", None)])
         img2img_mode = False
         seed = image_seed if isinstance(image_seed, int) else random.randint(1, 2**64)
 
-        with suppress_stdout():
-            self.positive_conditions_cache = (
-                CLIPTextEncode().encode(
-                    clip=self.xl_base_patched.clip, text=positive_prompt
-                )[0]
-                if self.positive_conditions_cache is None
-                else self.positive_conditions_cache
-            )
-            self.negative_conditions_cache = (
-                CLIPTextEncode().encode(
-                    clip=self.xl_base_patched.clip, text=negative_prompt
-                )[0]
-                if self.negative_conditions_cache is None
-                else self.negative_conditions_cache
-            )
+        worker.outputs.append(["preview", (-1, f"Processing text encoding ...", None)])
+        updated_conditions = False
+        if self.conditions is None:
+            self.clean_prompt_cond_caches()
+        if self.textencode('+', positive_prompt):
+            updated_conditions = True
+        if self.textencode('-', negative_prompt):
+            updated_conditions = True
 
         if controlnet is not None and input_image is not None:
+            worker.outputs.append(["preview", (-1, f"Powering up ...", None)])
             input_image = input_image.convert("RGB")
             input_image = np.array(input_image).astype(np.float32) / 255.0
             input_image = torch.from_numpy(input_image)[None,]
@@ -271,19 +285,23 @@ class pipeline:
                             low_threshold=float(controlnet["edge_low"]),
                             high_threshold=float(controlnet["edge_high"]),
                         )[0]
-                    # case "depth": (no preprocessing?)
+                        updated_conditions = True
+                    case "depth":
+                        updated_conditions = True
                 (
-                    self.positive_conditions_cache,
-                    self.negative_conditions_cache,
+                    self.conditions['+']['cache'],
+                    self.conditions['-']['cache'],
                 ) = ControlNetApplyAdvanced().apply_controlnet(
-                    positive=self.positive_conditions_cache,
-                    negative=self.negative_conditions_cache,
+                    positive=self.conditions['+']['cache'],
+                    negative=self.conditions['-']['cache'],
                     control_net=self.xl_controlnet,
                     image=input_image,
                     strength=float(controlnet["strength"]),
                     start_percent=float(controlnet["start"]),
                     end_percent=float(controlnet["stop"]),
                 )
+                self.conditions['+']['text'] = None
+                self.conditions['-']['text'] = None
 
             if controlnet["type"].lower() == "img2img":
                 latent = VAEEncode().encode(
@@ -313,6 +331,7 @@ class pipeline:
             denoise = None
 
         device = comfy.model_management.get_torch_device()
+
         latent_image = latent["samples"]
         batch_inds = latent["batch_index"] if "batch_index" in latent else None
         noise = comfy.sample.prepare_noise(latent_image, seed, batch_inds)
@@ -339,25 +358,28 @@ class pipeline:
             noise_mask = prepare_mask(noise_mask, noise.shape, device)
 
         worker.outputs.append(["preview", (-1, f"Prepare models ...", None)])
-        models, inference_memory = get_additional_models(
-            self.positive_conditions_cache,
-            self.negative_conditions_cache,
-            self.xl_base_patched.unet.model_dtype(),
-        )
+        if updated_conditions:
+            cleanup_additional_models(self.models)
+            self.models, self.inference_memory = get_additional_models(
+                self.conditions['+']['cache'],
+                self.conditions['-']['cache'],
+                self.xl_base_patched.unet.model_dtype(),
+            )
+
         with suppress_stdout():
             comfy.model_management.load_models_gpu(
-                [self.xl_base_patched.unet] + models,
+                [self.xl_base_patched.unet] + self.models,
                 comfy.model_management.batch_area_memory(
                     noise.shape[0] * noise.shape[2] * noise.shape[3]
                 )
-                + inference_memory,
+                + self.inference_memory,
             )
 
         noise = noise.to(device)
         latent_image = latent_image.to(device)
 
-        positive_copy = convert_cond(self.positive_conditions_cache)
-        negative_copy = convert_cond(self.negative_conditions_cache)
+        positive_copy = convert_cond(self.conditions['+']['cache'])
+        negative_copy = convert_cond(self.conditions['-']['cache'])
         kwargs = {
             "cfg": cfg,
             "latent_image": latent_image,
@@ -387,8 +409,6 @@ class pipeline:
         samples = sampler.sample(noise, positive_copy, negative_copy, **kwargs)
 
         samples = samples.cpu()
-
-        cleanup_additional_models(models)
 
         sampled_latent = latent.copy()
         sampled_latent["samples"] = samples
