@@ -410,6 +410,8 @@ class pipeline:
 
         samples = samples.cpu()
 
+        cleanup_additional_models(self.models)
+
         sampled_latent = latent.copy()
         sampled_latent["samples"] = samples
 
