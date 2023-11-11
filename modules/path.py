@@ -83,7 +83,7 @@ def get_model_filenames(folder_path):
                 path = os.path.join(relative_path, filename)
                 filenames.append(path)
 
-    return sorted(filenames, key=lambda x: -1 if os.sep in x else 1)
+    return sorted(filenames, key=lambda x: f"0{x}" if os.sep in x else f"1{x}")
 
 
 def update_all_model_names():
