@@ -129,7 +129,7 @@ def worker():
 
         seed = gen_data["seed"]
 
-        max_seed = 0xFFFFFFFFFFFFFFFF
+        max_seed = 2**32
         if not isinstance(seed, int) or seed < 0:
             seed = random.randint(0, max_seed)
         seed = seed % max_seed

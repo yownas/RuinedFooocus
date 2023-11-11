@@ -257,7 +257,7 @@ class pipeline:
         gen_data=None,
     ):
         img2img_mode = False
-        seed = image_seed if isinstance(image_seed, int) else random.randint(1, 2**64)
+        seed = image_seed if isinstance(image_seed, int) else random.randint(1, 2**32)
 
         worker.outputs.append(["preview", (-1, f"Processing text encoding ...", None)])
         updated_conditions = False
@@ -359,7 +359,6 @@ class pipeline:
 
         worker.outputs.append(["preview", (-1, f"Prepare models ...", None)])
         if updated_conditions:
-            cleanup_additional_models(self.models)
             self.models, self.inference_memory = get_additional_models(
                 self.conditions['+']['cache'],
                 self.conditions['-']['cache'],
@@ -368,7 +367,10 @@ class pipeline:
 
         with suppress_stdout():
             comfy.model_management.load_models_gpu(
-                [self.xl_base_patched.unet] + self.models,
+                [self.xl_base_patched.unet]
+            )
+            comfy.model_management.load_models_gpu(
+                self.models,
                 comfy.model_management.batch_area_memory(
                     noise.shape[0] * noise.shape[2] * noise.shape[3]
                 )
