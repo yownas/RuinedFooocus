@@ -1,3 +1,8 @@
+### 1.17.2
+* Limit seeds to 32 bits
+* Sort model dropdowns
+* Use caches better
+
 ### 1.17.1
 * removed groop and faceswap as it was causing dependency issues on some systems
 
