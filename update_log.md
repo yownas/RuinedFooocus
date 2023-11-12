@@ -1,3 +1,9 @@
+### 1.18.0
+* New Random Style Selection
+* Adding one button prompt overrides in wildcards now
+* Added wildcards official
+* Other stuff i'll have to get arljen to explain
+
 ### 1.17.2
 * Limit seeds to 32 bits
 * Sort model dropdowns
