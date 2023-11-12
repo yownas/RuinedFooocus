@@ -4,6 +4,7 @@ import random
 import json
 
 from modules.sdxl_styles import apply_style, allstyles
+from random_prompt.build_dynamic_prompt import build_dynamic_prompt
 
 
 def process_metadata(gen_data):
@@ -31,11 +32,43 @@ def get_promptlist(gen_data):
 
 
 def process_wildcards(wildcard_text, directory="wildcards"):
-    placeholders = re.findall(r"__(\w+)__", wildcard_text)
+    placeholders = re.findall(r"__([\w:]+(?:[\w\s]+)?)__", wildcard_text)
     placeholder_choices = {}  # Store random choices for each placeholder
 
+
+
     for placeholder in placeholders:
-        if placeholder not in placeholder_choices:
+
+        # Some one button prompt specials
+        if placeholder.startswith("onebutton"):
+            subjectoverride = ""
+            placeholdersplit = placeholder.split(":",1)
+            if len(placeholdersplit) > 1:
+                subjectoverride = placeholdersplit[1]
+
+            insertprompt = []
+            if placeholder.startswith("onebuttonprompt"):
+                insertprompt.append(build_dynamic_prompt(insanitylevel=5, givensubject=subjectoverride))
+            elif placeholder.startswith("onebuttonsubject"):
+                insertprompt.append(build_dynamic_prompt(insanitylevel=7, imagetype="subject only mode", givensubject=subjectoverride))
+            elif placeholder.startswith("onebuttonhumanoid"):
+                insertprompt.append(build_dynamic_prompt(insanitylevel=7, imagetype="subject only mode", givensubject=subjectoverride, forcesubject="humanoid"))
+            elif placeholder.startswith("onebuttonmale"):
+                insertprompt.append(build_dynamic_prompt(insanitylevel=7, imagetype="subject only mode", givensubject=subjectoverride, forcesubject="humanoid", gender = "male"))
+            elif placeholder.startswith("onebuttonfemale"):
+                insertprompt.append(build_dynamic_prompt(insanitylevel=7, imagetype="subject only mode", givensubject=subjectoverride, forcesubject="humanoid", gender = "female"))
+            elif placeholder.startswith("onebuttonanimal"):
+                insertprompt.append(build_dynamic_prompt(insanitylevel=7, imagetype="subject only mode", givensubject=subjectoverride, forcesubject="animal"))
+            elif placeholder.startswith("onebuttonobject"):
+                insertprompt.append(build_dynamic_prompt(insanitylevel=7, imagetype="subject only mode", givensubject=subjectoverride, forcesubject="object"))
+            elif placeholder.startswith("onebuttonlandscape"):
+                insertprompt.append(build_dynamic_prompt(insanitylevel=7, imagetype="subject only mode", givensubject=subjectoverride, forcesubject="landscape"))
+            elif placeholder.startswith("onebuttonconcept"):
+                insertprompt.append(build_dynamic_prompt(insanitylevel=7, imagetype="subject only mode", givensubject=subjectoverride, forcesubject="concept"))
+            placeholder_choices[placeholder] = insertprompt
+
+            
+        elif placeholder not in placeholder_choices:
             found = False
             for root, dirs, files in os.walk(directory):
                 if f"{placeholder}.txt" in files:
