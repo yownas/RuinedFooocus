@@ -1,3 +1,10 @@
+-charactertype- character;both
+-element- Mage;both
+-element- Wizard;male
+-element- Witch;female
+-element- diety;both
+-element- god;male
+-element- goddess;female
 -musicgenre-mancer;both
 Abbot;both
 Abjurer;both
@@ -9,10 +16,10 @@ Adventurer;both
 Air traffic controller;both
 Airbender;both
 Alchemist;both
-Alchemist;both
-Alchemist;both
 Amazone;female
 Android;both
+Angel;both
+Angel of -conceptsuffix- and -conceptsuffix-;both
 Anthropologist;both
 Apothecary;both
 Arcane trickster;both
@@ -56,6 +63,7 @@ Bladesinger;both
 Blood mage;both
 Bohemian;both
 Bollywood Dancer;both
+Bond Girl;female
 Boss;both
 Bookbinder;both
 Botanist;both
@@ -82,6 +90,7 @@ Chancellor;both
 Chaos mage;both
 Chaplain;both
 Chauffeur;both
+Cheerleader;female
 Chef;both
 Chemist;both
 Chimney Sweep;both
@@ -93,6 +102,7 @@ Clerk;both
 Cloaked figure;both
 Clockmaker;both
 Clown;both
+College student;both
 Colonel;both
 Command Sergeant Major;both
 Commander;both
@@ -130,6 +140,7 @@ Demon Hunter;both
 Designer;both
 Detective;both
 Diplomat;both
+Disney Princess;female
 DJ;both
 Dockworker;both
 Doctor;both
@@ -166,11 +177,11 @@ Explorer;both
 Falconer;both
 Fallen Paladin;both
 Farmer;both
-Farmer;both
 Farrier;both
 Fashion designer;both
 Fashion model;both
 Fashionista;female
+Fast Food Employee;both
 femme fatale;female
 Fencer;both
 Feudal lord;both
@@ -193,13 +204,12 @@ Frost mage;both
 Gallery owner;both
 Gangster;both
 Gardener;both
-Gardener;both
 Geek;both
-Geisha;both
+Geek Squad Employee;both
 Geisha;female
 General;both
+Gentleman;male
 Geographer;both
-Geologist;both
 Geologist;both
 Geomancer;both
 Ghost hunter;both
@@ -209,14 +219,15 @@ Glassblower;both
 Goldsmith;both
 Gondolier;both
 Grave robber;both
-Groom;both
 Groom;male
 Guardian;both
 Gunner;both
 Gunnery Sergeant;both
 Guru;both
 Gypsy;both
+Hacker;both
 Harbinger;both
+Harajuku Girl;female
 Harpist;both
 Healer;both
 Henchman;both
@@ -231,7 +242,6 @@ Hillbilly;both
 Hooded figure;both
 Humanitarian;both
 hunk;male
-Hunter;both
 Hunter;both
 Ice Cream Vendor;both
 Ice king;male
@@ -254,6 +264,7 @@ Jeweler;both
 Jock;both
 Journalist;both
 Judge;both
+Junkie;both
 K-pop star;both
 Khan;both
 King;male
@@ -276,11 +287,10 @@ Lifeguard;both
 Lord;male
 Loremaster;both
 Lumberjack;both
-Lumberjack;both
+Machinint;both
 Maffiosi;both
 Mage slayer;both
 Mage;both
-Magician;both
 Magician;both
 Maid;female
 Maiden;female
@@ -398,7 +408,6 @@ Royalty;both
 Rune mage;both
 Safari Guide;both
 Sailor;both
-Sailor;both
 Salaryman;male
 Salesperson;both
 Salsa Dancer;both
@@ -410,6 +419,7 @@ Scribe;both
 Scuba diver;both
 Sculptor;both
 Second Lieutenant;both
+Secret Agent;both
 Secret lover;both
 Secretary;both
 Sentinel;both
@@ -422,6 +432,7 @@ Shadowmage;both
 Shady figure;both
 Shaolinn Monk;both
 Shepherd;both
+Shieldmaiden;female
 Ship captain;both
 Shipbuilder;both
 Shoemaker;both
@@ -433,6 +444,7 @@ Sith lord;both
 Sith;both
 Skateboarder;both
 Skydiver;both
+Spy;both
 Socialite;both
 Sociologist;both
 Soldier;both
@@ -441,6 +453,7 @@ Soul reaver;both
 Sound engineer;both
 Southern Belle;female
 Space Alien;both
+Spartan;both
 Spellblade;both
 Spice merchant;both
 Spinner;both
@@ -450,6 +463,7 @@ Staff Sergeant;both
 Star mage;both
 Starfleet captain;both
 Steeplejack;both
+Stormtrooper;both
 Student;both
 Sultan;both
 Summoner;both
@@ -465,7 +479,6 @@ Tailor;both
 Tanner;both
 Tax collector;both
 Taxi driver;both
-Teacher;both
 Teacher;both
 Technomancer;both
 Templar;both
@@ -489,6 +502,7 @@ Tribal Chief;both
 Trickster;both
 Troubadour;both
 Vagabond;both
+Valedictorian;both
 Valet;both
 Valkyrie;both
 Vampire hunter;both

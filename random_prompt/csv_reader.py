@@ -19,14 +19,18 @@ def add_from_csv(completeprompt, csvfilename, addcomma, prefix, suffix):
                 return ", ".join([completeprompt,addtoprompt])
         return " ".join([completeprompt,addtoprompt])
 
-def csv_to_list(csvfilename, antilist=[], directory="./csvfiles/", lowerandstrip=0, delimiter=";", listoflistmode = False, skipheader = False, gender = "all"):
+def csv_to_list(csvfilename, antilist=[], directory="./csvfiles/", lowerandstrip=0, delimiter=";", listoflistmode = False, skipheader = False, gender = "all", insanitylevel = -1):
+        replacing = False
         userfilesdirectory = "./userfiles/"
         userfileaddonname = csvfilename + "_addon.csv"
         userfilereplacename = csvfilename + "_replace.csv"
+        lightfilename = csvfilename + "_light.csv"
+        mediumfilename = csvfilename + "_medium.csv"
         csvlist = []
         script_dir = os.path.dirname(os.path.abspath(__file__))
         full_path = os.path.join(script_dir, directory )
         userfilesfolder = os.path.join(script_dir, userfilesdirectory )
+        directoryfilesfolder = os.path.join(script_dir, directory )
         # check if there is a replace file
         if(directory=="./csvfiles/" or directory=="./csvfiles/special_lists/" or directory=="./csvfiles/templates/"):      
                 for filename in os.listdir(userfilesfolder):
@@ -34,6 +38,27 @@ def csv_to_list(csvfilename, antilist=[], directory="./csvfiles/", lowerandstrip
                                 # Just override the parameters, and let it run normally
                                 full_path = os.path.join(script_dir, userfilesdirectory )
                                 csvfilename = csvfilename + "_replace"
+                                replacing = True
+
+
+                # Go check for light or medium files if there is no override and there is an insanitylevel
+                if(replacing == False and insanitylevel > 0):
+                        if(insanitylevel < 4):   
+                                for filename in os.listdir(directoryfilesfolder):
+                                        if(filename == mediumfilename):
+                                                # Just override the parameters, and let it run normally
+                                                full_path = os.path.join(script_dir, directory )
+                                                csvfilename = csvfilename + "_light"
+                                                replacing = True
+                        # under 7, than only SOMETIMES take the full list
+                        if(insanitylevel < 7 and random.randint(0,13) < 12 and replacing == False):   
+                                for filename in os.listdir(directoryfilesfolder):
+                                        if(filename == lightfilename):
+                                                # Just override the parameters, and let it run normally
+                                                full_path = os.path.join(script_dir, directory )
+                                                csvfilename = csvfilename + "_medium"
+                                                replacing = True
+                        
                         
 
         # return empty list if we can't find the file. Build for antilist.csv
@@ -48,7 +73,7 @@ def csv_to_list(csvfilename, antilist=[], directory="./csvfiles/", lowerandstrip
                                 for row in reader:
                                         value = row[0]
                                         if( 
-                                                (gender != "all" and row[1] == gender)
+                                                gender != "all" and (row[1] == gender or row[1] == "genderless" or row[1] == "both")
                                                 or gender == "all"
                                                 ):
                                                 if(value.lower().strip() not in antilist):
@@ -61,7 +86,7 @@ def csv_to_list(csvfilename, antilist=[], directory="./csvfiles/", lowerandstrip
         if(directory=="./csvfiles/" or directory=="./csvfiles/special_lists/"):
                 if(os.path.isfile(userfilesfolder + csvfilename + "_addon" + ".csv")):
                         with open(userfilesfolder + csvfilename + "_addon" + ".csv", "r", newline="",encoding="utf8") as file:
-                                reader = csv.reader(file, delimiter=",")
+                                reader = csv.reader(file, delimiter=delimiter)
                                 if(skipheader==True):
                                         next(reader)
                                 if(listoflistmode==True):
@@ -70,7 +95,7 @@ def csv_to_list(csvfilename, antilist=[], directory="./csvfiles/", lowerandstrip
                                         for row in reader:
                                                 value = row[0]
                                                 if( 
-                                                (gender != "all" and row[1] == gender)
+                                                gender != "all" and (row[1] == gender or row[1] == "genderless" or row[1] == "both")
                                                 or gender == "all"
                                                 ):
                                                         if(value.lower().strip() not in antilist):
@@ -94,17 +119,6 @@ def csv_to_list(csvfilename, antilist=[], directory="./csvfiles/", lowerandstrip
         
         return deduplicated_list
 
-def artist_category_csv_to_list(csvfilename,category):
-        csvlist = []
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        full_path = os.path.join(script_dir, "./csvfiles/" )
-        with open(full_path + csvfilename + ".csv", "r", newline="",encoding="utf8") as file:
-                reader = csv.DictReader(file, delimiter=",")
-                for row in reader:
-                        if(row[category] == "1"):
-                                csvlist.append(row["Artist"])
-        return csvlist
-
 def artist_category_by_category_csv_to_list(csvfilename,artist):
         csvlist = []
         script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -114,6 +128,17 @@ def artist_category_by_category_csv_to_list(csvfilename,artist):
                 for row in reader:
                         if(row["Artist"] == artist):
                                 csvlist.append(row["Tags"])
+        return csvlist
+
+def artist_category_csv_to_list(csvfilename,category):
+        csvlist = []
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        full_path = os.path.join(script_dir, "./csvfiles/" )
+        with open(full_path + csvfilename + ".csv", "r", newline="",encoding="utf8") as file:
+                reader = csv.DictReader(file, delimiter=",")
+                for row in reader:
+                        if(row[category] == "1"):
+                                csvlist.append(row["Artist"])
         return csvlist
 
 def load_config_csv():

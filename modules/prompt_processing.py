@@ -3,7 +3,7 @@ import re
 import random
 import json
 
-from modules.sdxl_styles import apply_style
+from modules.sdxl_styles import apply_style, allstyles
 
 
 def process_metadata(gen_data):
@@ -62,6 +62,9 @@ def process_wildcards(wildcard_text, directory="wildcards"):
 
 
 def process_prompt(style, prompt, negative):
+    while "Style: Pick Random" in style:
+        style[style.index("Style: Pick Random")] = random.choice(allstyles)
+    
     pattern = re.compile(r"<style:([^>]+)>")
     styles = [] if style is None else style.copy()
     for match in re.finditer(pattern, prompt):

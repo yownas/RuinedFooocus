@@ -1,6 +1,7 @@
 import os
 import shutil
 import json
+import random
 from csv import DictReader, reader
 
 DEFAULT_STYLES_FILE = "settings/styles.default"
@@ -20,6 +21,8 @@ def load_styles():
         styles = list(reader)
 
     default_style = {"name": "None", "prompt": "{prompt}", "negative_prompt": ""}
+    random_style = {"name": "Style: Pick Random", "prompt": "{prompt}", "negative_prompt": ""}
+    styles.insert(0, random_style)
     styles.insert(0, default_style)
 
     return {s["name"]: (s["prompt"], s["negative_prompt"]) for s in styles}
@@ -43,6 +46,10 @@ def apply_style(style, prompt, negative_prompt):
     output_prompt = ""
     output_negative_prompt = ""
 
+    
+    while "Style: Pick Random" in style:
+        style[style.index("Style: Pick Random")] = random.choice(allstyles)
+
     if not style:
         return prompt, negative_prompt
 
@@ -59,6 +66,8 @@ def apply_style(style, prompt, negative_prompt):
 
 styles = load_styles()
 default_style = styles["None"]
+allstyles = [x for x in load_styles() if x.startswith('Style')]
+allstyles.remove("Style: Pick Random")
 
 
 SD_XL_BASE_RATIOS = load_resolutions()
