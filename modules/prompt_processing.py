@@ -34,7 +34,10 @@ def get_promptlist(gen_data):
 def process_wildcards(wildcard_text, directory="wildcards"):
     placeholders = re.findall(r"__([\w:]+(?:[\w\s]+)?)__", wildcard_text)
     placeholder_choices = {}  # Store random choices for each placeholder
-
+    official_directory = "wildcards_official"
+    directories = []
+    directories.append(directory)
+    directories.append(official_directory)
 
 
     for placeholder in placeholders:
@@ -70,14 +73,18 @@ def process_wildcards(wildcard_text, directory="wildcards"):
             
         elif placeholder not in placeholder_choices:
             found = False
-            for root, dirs, files in os.walk(directory):
-                if f"{placeholder}.txt" in files:
-                    file_path = os.path.join(root, f"{placeholder}.txt")
-                    with open(file_path, encoding="utf-8") as f:
-                        words = f.read().splitlines()
-                    placeholder_choices[placeholder] = words
-                    found = True
+            for dir in directories:
+                for root, dirs, files in os.walk(dir):
+                    if f"{placeholder}.txt" in files:
+                        file_path = os.path.join(root, f"{placeholder}.txt")
+                        with open(file_path, encoding="utf-8") as f:
+                            words = f.read().splitlines()
+                        placeholder_choices[placeholder] = words
+                        found = True
+                        break
+                if found == True:
                     break
+                
 
             if not found:
                 placeholder_choices[placeholder] = [placeholder]
