@@ -2,6 +2,7 @@ import datetime
 import random
 import os
 import sys
+import time
 
 from contextlib import contextmanager
 from typing import Optional
@@ -51,3 +52,17 @@ def load_file_from_url(
 
         download_url_to_file(url, cached_file, progress=progress)
     return cached_file
+
+
+class TimeIt:
+    def __init__(self, text=""):
+        self.text = text
+
+    def __enter__(self):
+        self.start = time.time()
+        return self
+
+    def __exit__(self, *args):
+        self.end = time.time()
+        self.interval = self.end - self.start
+        print(f"\033[91mTime taken: {self.interval:0.2f} seconds {self.text}\033[0m")

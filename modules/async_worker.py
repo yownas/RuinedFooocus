@@ -14,6 +14,7 @@ metadatastrings = []
 
 interrupt_ruined_processing = False
 
+
 def worker():
     global buffer, outputs
 
@@ -29,7 +30,7 @@ def worker():
     from PIL import Image
     from PIL.PngImagePlugin import PngInfo
     from modules.sdxl_styles import aspect_ratios
-    from modules.util import generate_temp_filename
+    from modules.util import generate_temp_filename, TimeIt
     import modules.pipelines
     from modules.settings import default_settings
 
@@ -151,8 +152,10 @@ def worker():
                 raise InterruptProcessingException()
 
             done_steps = i * steps + step
-            try: status
-            except NameError: status = None
+            try:
+                status
+            except NameError:
+                status = None
             if step % 10 == 0 or status == None:
                 status = random.choice(lines)
 
@@ -179,7 +182,9 @@ def worker():
                 state["preview_grid"].paste(image, (grid_xpos, grid_ypos))
 
             state["preview_grid"].save(
-                modules.path.temp_preview_path, optimize=True, quality=35 if step < total_steps else 70
+                modules.path.temp_preview_path,
+                optimize=True,
+                quality=35 if step < total_steps else 70,
             )
 
             outputs.append(
@@ -205,32 +210,29 @@ def worker():
             p_txt += lora_keywords
             start_step = 0
             denoise = None
-            start_time = time.time()
-            try:
-                imgs = pipeline.process(
-                    p_txt,
-                    n_txt,
-                    gen_data["input_image"],
-                    modules.controlnet.get_settings(gen_data),
-                    gen_data["progress_window"],
-                    steps,
-                    width,
-                    height,
-                    seed,
-                    start_step,
-                    denoise,
-                    gen_data["cfg"],
-                    gen_data["sampler_name"],
-                    gen_data["scheduler"],
-                    callback=callback,
-                    gen_data=gen_data,
-                )
-            except InterruptProcessingException as iex:
-                stop_batch = True
-                imgs = []
-            end_time = time.time()
-            elapsed_time = end_time - start_time
-            print(f"\033[91mTime taken: {elapsed_time:0.2f} seconds\033[0m")
+            with TimeIt("Pipeline process"):
+                try:
+                    imgs = pipeline.process(
+                        p_txt,
+                        n_txt,
+                        gen_data["input_image"],
+                        modules.controlnet.get_settings(gen_data),
+                        gen_data["progress_window"],
+                        steps,
+                        width,
+                        height,
+                        seed,
+                        start_step,
+                        denoise,
+                        gen_data["cfg"],
+                        gen_data["sampler_name"],
+                        gen_data["scheduler"],
+                        callback=callback,
+                        gen_data=gen_data,
+                    )
+                except InterruptProcessingException as iex:
+                    stop_batch = True
+                    imgs = []
 
             for x in imgs:
                 local_temp_filename = generate_temp_filename(
