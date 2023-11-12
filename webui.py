@@ -4,6 +4,7 @@ from shared import state, add_ctrl
 import time
 
 import gradio as gr
+import random
 
 import version
 import modules.async_worker as worker
@@ -13,7 +14,7 @@ import ui_onebutton
 import ui_controlnet
 
 from comfy.samplers import KSampler
-from modules.sdxl_styles import load_styles, aspect_ratios, styles
+from modules.sdxl_styles import load_styles, aspect_ratios, styles, allstyles
 from modules.performance import (
     performance_options,
     load_performance,
@@ -402,6 +403,8 @@ with shared.gradio_root as block:
                 def apply_style(prompt_test, inputs):
                     pr = ""
                     ne = ""
+                    while "Style: Pick Random" in inputs:
+                        inputs[inputs.index("Style: Pick Random")] = random.choice(allstyles)
                     for item in inputs:
                         p, n = styles.get(item)
                         pr += p + ", "
