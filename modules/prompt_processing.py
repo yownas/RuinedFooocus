@@ -32,7 +32,9 @@ def get_promptlist(gen_data):
 
 
 def process_wildcards(wildcard_text, directory="wildcards"):
-    placeholders = re.findall(r"__([\w:]+(?:[\w\s]+)?)__", wildcard_text)
+    placeholders = re.findall(r"__([\w:]+)__", wildcard_text)
+    placeholders_onebutton = re.findall(r"__([\w]+:[^\s_]+(?:[^\s_]+|\s(?=[\w:]+))*)__", wildcard_text)
+    placeholders += placeholders_onebutton
     placeholder_choices = {}  # Store random choices for each placeholder
     official_directory = "wildcards_official"
     directories = []
@@ -123,6 +125,15 @@ def process_wildcards(wildcard_text, directory="wildcards"):
                         imagetype="subject only mode",
                         givensubject=subjectoverride,
                         forcesubject="concept",
+                    )
+                )
+            #failover
+            else:
+                insertprompt.append(
+                    build_dynamic_prompt(
+                        insanitylevel=3,
+                        imagetype="subject only mode",
+                        givensubject=subjectoverride
                     )
                 )
             placeholder_choices[placeholder] = insertprompt
