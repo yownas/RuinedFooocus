@@ -13,7 +13,7 @@ def process_metadata(gen_data):
         meta = dict((k.lower(), v) for k, v in meta.items())
         gen_data.update(meta)
         if "prompt" in meta:
-            gen_data["style_selection"] = None
+            gen_data["style_selection"] = []
 
         if "loras" in meta:
             idx = 1
@@ -39,38 +39,94 @@ def process_wildcards(wildcard_text, directory="wildcards"):
     directories.append(directory)
     directories.append(official_directory)
 
-
     for placeholder in placeholders:
-
         # Some one button prompt specials
         if placeholder.startswith("onebutton"):
             subjectoverride = ""
-            placeholdersplit = placeholder.split(":",1)
+            placeholdersplit = placeholder.split(":", 1)
             if len(placeholdersplit) > 1:
                 subjectoverride = placeholdersplit[1]
 
             insertprompt = []
             if placeholder.startswith("onebuttonprompt"):
-                insertprompt.append(build_dynamic_prompt(insanitylevel=5, givensubject=subjectoverride))
+                insertprompt.append(
+                    build_dynamic_prompt(insanitylevel=5, givensubject=subjectoverride)
+                )
             elif placeholder.startswith("onebuttonsubject"):
-                insertprompt.append(build_dynamic_prompt(insanitylevel=7, imagetype="subject only mode", givensubject=subjectoverride))
+                insertprompt.append(
+                    build_dynamic_prompt(
+                        insanitylevel=7,
+                        imagetype="subject only mode",
+                        givensubject=subjectoverride,
+                    )
+                )
             elif placeholder.startswith("onebuttonhumanoid"):
-                insertprompt.append(build_dynamic_prompt(insanitylevel=7, imagetype="subject only mode", givensubject=subjectoverride, forcesubject="humanoid"))
+                insertprompt.append(
+                    build_dynamic_prompt(
+                        insanitylevel=7,
+                        imagetype="subject only mode",
+                        givensubject=subjectoverride,
+                        forcesubject="humanoid",
+                    )
+                )
             elif placeholder.startswith("onebuttonmale"):
-                insertprompt.append(build_dynamic_prompt(insanitylevel=7, imagetype="subject only mode", givensubject=subjectoverride, forcesubject="humanoid", gender = "male"))
+                insertprompt.append(
+                    build_dynamic_prompt(
+                        insanitylevel=7,
+                        imagetype="subject only mode",
+                        givensubject=subjectoverride,
+                        forcesubject="humanoid",
+                        gender="male",
+                    )
+                )
             elif placeholder.startswith("onebuttonfemale"):
-                insertprompt.append(build_dynamic_prompt(insanitylevel=7, imagetype="subject only mode", givensubject=subjectoverride, forcesubject="humanoid", gender = "female"))
+                insertprompt.append(
+                    build_dynamic_prompt(
+                        insanitylevel=7,
+                        imagetype="subject only mode",
+                        givensubject=subjectoverride,
+                        forcesubject="humanoid",
+                        gender="female",
+                    )
+                )
             elif placeholder.startswith("onebuttonanimal"):
-                insertprompt.append(build_dynamic_prompt(insanitylevel=7, imagetype="subject only mode", givensubject=subjectoverride, forcesubject="animal"))
+                insertprompt.append(
+                    build_dynamic_prompt(
+                        insanitylevel=7,
+                        imagetype="subject only mode",
+                        givensubject=subjectoverride,
+                        forcesubject="animal",
+                    )
+                )
             elif placeholder.startswith("onebuttonobject"):
-                insertprompt.append(build_dynamic_prompt(insanitylevel=7, imagetype="subject only mode", givensubject=subjectoverride, forcesubject="object"))
+                insertprompt.append(
+                    build_dynamic_prompt(
+                        insanitylevel=7,
+                        imagetype="subject only mode",
+                        givensubject=subjectoverride,
+                        forcesubject="object",
+                    )
+                )
             elif placeholder.startswith("onebuttonlandscape"):
-                insertprompt.append(build_dynamic_prompt(insanitylevel=7, imagetype="subject only mode", givensubject=subjectoverride, forcesubject="landscape"))
+                insertprompt.append(
+                    build_dynamic_prompt(
+                        insanitylevel=7,
+                        imagetype="subject only mode",
+                        givensubject=subjectoverride,
+                        forcesubject="landscape",
+                    )
+                )
             elif placeholder.startswith("onebuttonconcept"):
-                insertprompt.append(build_dynamic_prompt(insanitylevel=7, imagetype="subject only mode", givensubject=subjectoverride, forcesubject="concept"))
+                insertprompt.append(
+                    build_dynamic_prompt(
+                        insanitylevel=7,
+                        imagetype="subject only mode",
+                        givensubject=subjectoverride,
+                        forcesubject="concept",
+                    )
+                )
             placeholder_choices[placeholder] = insertprompt
 
-            
         elif placeholder not in placeholder_choices:
             found = False
             for dir in directories:
@@ -84,7 +140,6 @@ def process_wildcards(wildcard_text, directory="wildcards"):
                         break
                 if found == True:
                     break
-                
 
             if not found:
                 placeholder_choices[placeholder] = [placeholder]
@@ -104,7 +159,7 @@ def process_wildcards(wildcard_text, directory="wildcards"):
 def process_prompt(style, prompt, negative):
     while "Style: Pick Random" in style:
         style[style.index("Style: Pick Random")] = random.choice(allstyles)
-    
+
     pattern = re.compile(r"<style:([^>]+)>")
     styles = [] if style is None else style.copy()
     for match in re.finditer(pattern, prompt):
