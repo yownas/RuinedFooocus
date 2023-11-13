@@ -56,7 +56,6 @@ def parse_args():
 def launch_app(args):
     inbrowser = not args.nobrowser
     favicon_path = "logo.ico"
-    shared.gradio_root.queue(concurrency_count=4)
     shared.gradio_root.launch(
         inbrowser=inbrowser,
         server_name=args.listen,
@@ -166,21 +165,22 @@ shared.gradio_root = gr.Blocks(
     title="RuinedFooocus " + version.version,
     theme=theme,
     css=modules.html.css,
+    js=modules.html.scripts,
     analytics_enabled=False,
 ).queue()
 
 with shared.gradio_root as block:
-    block.load(_js=modules.html.scripts)
     with gr.Row():
         with gr.Column(scale=5):
             progress_window = gr.Image(
                 value="init_image.png",
                 height=680,
                 type="filepath",
+                sources=["upload"],
                 visible=True,
                 show_label=False,
                 image_mode="RGBA",
-                show_share_button=True,
+                show_download_button=False,
             )
             add_ctrl("progress_window", progress_window)
             progress_html = gr.HTML(
@@ -202,18 +202,17 @@ with shared.gradio_root as block:
             )
 
             @gallery.select(
-                inputs=[gallery],
                 outputs=[progress_window, metadata_json],
                 show_progress="hidden",
             )
-            def gallery_change(files, sd: gr.SelectData):
-                names = files[sd.index]["name"]
-                with Image.open(files[sd.index]["name"]) as im:
+            def gallery_change(evt: gr.SelectData):
+                name = evt.value["image"]["path"]
+                with Image.open(name) as im:
                     if im.info.get("parameters"):
                         metadata = im.info["parameters"]
                     else:
                         metadata = {"Data": "Preview Grid"}
-                return [names] + [gr.update(value=metadata)]
+                return [name] + [gr.update(value=metadata)]
 
             with gr.Row(elem_classes="type_row"):
                 with gr.Column(scale=5):
@@ -229,11 +228,9 @@ with shared.gradio_root as block:
                     add_ctrl("prompt", prompt)
 
                 with gr.Column(scale=1, min_width=0):
-                    run_button = gr.Button(
-                        label="Generate", value="Generate", elem_id="generate"
-                    )
+                    run_button = gr.Button(value="Generate", elem_id="generate")
                     stop_button = gr.Button(
-                        label="Stop", value="Stop", interactive=False, visible=False
+                        value="Stop", interactive=False, visible=False
                     )
 
                     @progress_window.upload(
@@ -404,7 +401,9 @@ with shared.gradio_root as block:
                     pr = ""
                     ne = ""
                     while "Style: Pick Random" in inputs:
-                        inputs[inputs.index("Style: Pick Random")] = random.choice(allstyles)
+                        inputs[inputs.index("Style: Pick Random")] = random.choice(
+                            allstyles
+                        )
                     for item in inputs:
                         p, n = styles.get(item)
                         pr += p + ", "
@@ -493,7 +492,6 @@ with shared.gradio_root as block:
 
                 with gr.Row():
                     model_refresh = gr.Button(
-                        label="Refresh",
                         value="\U0001f504 Refresh All Files",
                         variant="secondary",
                         elem_classes="refresh_button",

@@ -1,3 +1,6 @@
+### 1.19.0
+* Gradio update to V4
+
 ### 1.18.0
 * New Random Style Selection
 * Adding one button prompt overrides in wildcards now
