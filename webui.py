@@ -56,6 +56,7 @@ def parse_args():
 def launch_app(args):
     inbrowser = not args.nobrowser
     favicon_path = "logo.ico"
+    shared.gradio_root.queue(concurrency_count=4)
     shared.gradio_root.launch(
         inbrowser=inbrowser,
         server_name=args.listen,
@@ -163,22 +164,21 @@ shared.gradio_root = gr.Blocks(
     title="RuinedFooocus " + version.version,
     theme=theme,
     css=modules.html.css,
-    js=modules.html.scripts,
     analytics_enabled=False,
+    concurrency_count=4,
 ).queue()
 
 with shared.gradio_root as block:
+    block.load(_js=modules.html.scripts)
     with gr.Row():
         with gr.Column(scale=5):
             main_view = gr.Image(
                 value="init_image.png",
                 height=680,
                 type="filepath",
-                sources=["upload"],
                 visible=True,
                 show_label=False,
                 image_mode="RGBA",
-                show_download_button=False,
             )
             add_ctrl("main_view", main_view)
             progress_html = gr.HTML(
@@ -200,17 +200,18 @@ with shared.gradio_root as block:
             )
 
             @gallery.select(
+                inputs=[gallery],
                 outputs=[main_view, metadata_json],
                 show_progress="hidden",
             )
-            def gallery_change(evt: gr.SelectData):
-                name = evt.value["image"]["path"]
-                with Image.open(name) as im:
+            def gallery_change(files, sd: gr.SelectData):
+                names = files[sd.index]["name"]
+                with Image.open(files[sd.index]["name"]) as im:
                     if im.info.get("parameters"):
                         metadata = im.info["parameters"]
                     else:
                         metadata = {"Data": "Preview Grid"}
-                return [name] + [gr.update(value=metadata)]
+                return [names] + [gr.update(value=metadata)]
 
             with gr.Row(elem_classes="type_row"):
                 with gr.Column(scale=5):

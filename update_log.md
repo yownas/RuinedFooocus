@@ -1,3 +1,6 @@
+### 1.19.2
+* Gradio Rollback to v3 until v4 is fixed
+
 ### 1.19.1
 * WildCard Fixes
 * Automatcially downloads LCM Models
