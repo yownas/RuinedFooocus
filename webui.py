@@ -74,7 +74,7 @@ def update_clicked():
             value=modules.html.make_progress_html(0, "Please wait ..."),
         ),
         gallery: gr.update(visible=False),
-        main_vew: gr.update(visible=True, value="init_image.png"),
+        main_view: gr.update(visible=True, value="init_image.png"),
     }
 
 
@@ -86,7 +86,7 @@ def update_preview(product):
         progress_html: gr.update(
             visible=True, value=modules.html.make_progress_html(percentage, title)
         ),
-        main_vew: gr.update(visible=True, value=image)
+        main_view: gr.update(visible=True, value=image)
         if image is not None
         else gr.update(),
     }
@@ -103,7 +103,7 @@ def update_results(product):
         run_button: gr.update(interactive=True, visible=True),
         stop_button: gr.update(interactive=False, visible=False),
         progress_html: gr.update(visible=False),
-        main_vew: gr.update(value=product[0]) if len(product) > 0 else gr.update(),
+        main_view: gr.update(value=product[0]) if len(product) > 0 else gr.update(),
         gallery: gr.update(
             visible=True, allow_preview=True, preview=True, value=product
         ),
@@ -170,7 +170,7 @@ shared.gradio_root = gr.Blocks(
 with shared.gradio_root as block:
     with gr.Row():
         with gr.Column(scale=5):
-            main_vew = gr.Image(
+            main_view = gr.Image(
                 value="init_image.png",
                 height=680,
                 type="filepath",
@@ -180,7 +180,7 @@ with shared.gradio_root as block:
                 image_mode="RGBA",
                 show_download_button=False,
             )
-            add_ctrl("main_vew", main_vew)
+            add_ctrl("main_view", main_view)
             progress_html = gr.HTML(
                 value=modules.html.make_progress_html(32, "Progress 32%"),
                 visible=False,
@@ -200,7 +200,7 @@ with shared.gradio_root as block:
             )
 
             @gallery.select(
-                outputs=[main_vew, metadata_json],
+                outputs=[main_view, metadata_json],
                 show_progress="hidden",
             )
             def gallery_change(evt: gr.SelectData):
@@ -231,7 +231,7 @@ with shared.gradio_root as block:
                         value="Stop", interactive=False, visible=False
                     )
 
-                    @main_vew.upload(inputs=[main_vew], outputs=[prompt, gallery])
+                    @main_view.upload(inputs=[main_view], outputs=[prompt, gallery])
                     def load_images_handler(file):
                         image = Image.open(file)
                         info = image.info
@@ -530,7 +530,7 @@ with shared.gradio_root as block:
                 run_button,
                 stop_button,
                 progress_html,
-                main_vew,
+                main_view,
                 gallery,
                 metadata_json,
             ],

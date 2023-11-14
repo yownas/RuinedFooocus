@@ -217,7 +217,7 @@ def worker():
                         n_txt,
                         gen_data["input_image"],
                         modules.controlnet.get_settings(gen_data),
-                        gen_data["main_vew"],
+                        gen_data["main_view"],
                         steps,
                         width,
                         height,

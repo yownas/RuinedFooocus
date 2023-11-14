@@ -240,7 +240,7 @@ class pipeline:
         negative_prompt,
         input_image,
         controlnet,
-        main_vew,
+        main_view,
         steps,
         width,
         height,

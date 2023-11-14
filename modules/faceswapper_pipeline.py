@@ -165,7 +165,7 @@ class pipeline:
         negative_prompt,
         input_image,
         controlnet,
-        main_vew,
+        main_view,
         steps,
         width,
         height,
@@ -225,7 +225,7 @@ class pipeline:
                 loop=loop,
             )
         else:
-            output_image = cv2.imread(main_vew)
+            output_image = cv2.imread(main_view)
             output_faces = sorted(
                 self.analyser_model.get(output_image), key=lambda x: x.bbox[0]
             )
