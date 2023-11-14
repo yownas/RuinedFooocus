@@ -118,7 +118,15 @@ lora_filenames = [
     (
         "sd_xl_offset_example-lora_1.0.safetensors",
         "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_offset_example-lora_1.0.safetensors",
-    )
+    ),
+    (
+        "lcm-lora-sdxl.safetensors",
+        "https://huggingface.co/latent-consistency/lcm-lora-sdxl/resolve/main/pytorch_lora_weights.safetensors",
+    ),
+    (
+        "lcm-lora-ssd-1b.safetensors",
+        "https://huggingface.co/latent-consistency/lcm-lora-ssd-1b/resolve/main/pytorch_lora_weights.safetensors",
+    ),
 ]
 
 vae_approx_filenames = [

@@ -44,3 +44,4 @@ notification.mp3
 resolutions.json
 powerup.json
 performance.json
+*.old
