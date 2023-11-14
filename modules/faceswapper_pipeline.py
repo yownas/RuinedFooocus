@@ -25,6 +25,7 @@ from facexlib.utils.face_restoration_helper import FaceRestoreHelper
 # imageio==2.31.6
 # gfpgan==1.3.8
 
+
 class pipeline:
     pipeline_type = ["faceswap"]
 
@@ -164,7 +165,7 @@ class pipeline:
         negative_prompt,
         input_image,
         controlnet,
-        progress_window,
+        main_vew,
         steps,
         width,
         height,
@@ -224,7 +225,7 @@ class pipeline:
                 loop=loop,
             )
         else:
-            output_image = cv2.imread(progress_window)
+            output_image = cv2.imread(main_vew)
             output_faces = sorted(
                 self.analyser_model.get(output_image), key=lambda x: x.bbox[0]
             )

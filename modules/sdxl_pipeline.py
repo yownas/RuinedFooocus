@@ -142,7 +142,7 @@ class pipeline:
                 self.xl_base_hash = name
                 self.xl_base_patched = self.xl_base
                 self.xl_base_patched_hash = ""
-                #self.xl_base_patched.unet.model.to("cuda")
+                # self.xl_base_patched.unet.model.to("cuda")
                 print(f"Base model loaded: {self.xl_base_hash}")
 
         except:
@@ -215,26 +215,23 @@ class pipeline:
 
     def clean_prompt_cond_caches(self):
         self.conditions = {}
-        self.conditions['+'] = {}
-        self.conditions['-'] = {}
-        self.conditions['+']['text'] = None
-        self.conditions['+']['cache'] = None
-        self.conditions['-']['text'] = None
-        self.conditions['-']['cache'] = None
+        self.conditions["+"] = {}
+        self.conditions["-"] = {}
+        self.conditions["+"]["text"] = None
+        self.conditions["+"]["cache"] = None
+        self.conditions["-"]["text"] = None
+        self.conditions["-"]["cache"] = None
 
     def textencode(self, id, text):
         update = False
-        if text != self.conditions[id]['text']:
+        if text != self.conditions[id]["text"]:
             with suppress_stdout():
-                self.conditions[id]['cache'] = (
-                    CLIPTextEncode().encode(
-                        clip=self.xl_base_patched.clip, text=text
-                    )[0]
-                )
-            self.conditions[id]['text'] = text
+                self.conditions[id]["cache"] = CLIPTextEncode().encode(
+                    clip=self.xl_base_patched.clip, text=text
+                )[0]
+            self.conditions[id]["text"] = text
             update = True
         return update
-
 
     @torch.inference_mode()
     def process(
@@ -243,7 +240,7 @@ class pipeline:
         negative_prompt,
         input_image,
         controlnet,
-        progress_window,
+        main_vew,
         steps,
         width,
         height,
@@ -263,9 +260,9 @@ class pipeline:
         updated_conditions = False
         if self.conditions is None:
             self.clean_prompt_cond_caches()
-        if self.textencode('+', positive_prompt):
+        if self.textencode("+", positive_prompt):
             updated_conditions = True
-        if self.textencode('-', negative_prompt):
+        if self.textencode("-", negative_prompt):
             updated_conditions = True
 
         if controlnet is not None and input_image is not None:
@@ -289,19 +286,19 @@ class pipeline:
                     case "depth":
                         updated_conditions = True
                 (
-                    self.conditions['+']['cache'],
-                    self.conditions['-']['cache'],
+                    self.conditions["+"]["cache"],
+                    self.conditions["-"]["cache"],
                 ) = ControlNetApplyAdvanced().apply_controlnet(
-                    positive=self.conditions['+']['cache'],
-                    negative=self.conditions['-']['cache'],
+                    positive=self.conditions["+"]["cache"],
+                    negative=self.conditions["-"]["cache"],
                     control_net=self.xl_controlnet,
                     image=input_image,
                     strength=float(controlnet["strength"]),
                     start_percent=float(controlnet["start"]),
                     end_percent=float(controlnet["stop"]),
                 )
-                self.conditions['+']['text'] = None
-                self.conditions['-']['text'] = None
+                self.conditions["+"]["text"] = None
+                self.conditions["-"]["text"] = None
 
             if controlnet["type"].lower() == "img2img":
                 latent = VAEEncode().encode(
@@ -360,15 +357,13 @@ class pipeline:
         worker.outputs.append(["preview", (-1, f"Prepare models ...", None)])
         if updated_conditions:
             self.models, self.inference_memory = get_additional_models(
-                self.conditions['+']['cache'],
-                self.conditions['-']['cache'],
+                self.conditions["+"]["cache"],
+                self.conditions["-"]["cache"],
                 self.xl_base_patched.unet.model_dtype(),
             )
 
         with suppress_stdout():
-            comfy.model_management.load_models_gpu(
-                [self.xl_base_patched.unet]
-            )
+            comfy.model_management.load_models_gpu([self.xl_base_patched.unet])
             comfy.model_management.load_models_gpu(
                 self.models,
                 comfy.model_management.batch_area_memory(
@@ -380,8 +375,8 @@ class pipeline:
         noise = noise.to(device)
         latent_image = latent_image.to(device)
 
-        positive_copy = convert_cond(self.conditions['+']['cache'])
-        negative_copy = convert_cond(self.conditions['-']['cache'])
+        positive_copy = convert_cond(self.conditions["+"]["cache"])
+        negative_copy = convert_cond(self.conditions["-"]["cache"])
         kwargs = {
             "cfg": cfg,
             "latent_image": latent_image,

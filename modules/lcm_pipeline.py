@@ -101,7 +101,7 @@ class pipeline:
         negative_prompt,
         input_image,
         controlnet,
-        progress_window,
+        main_vew,
         steps,
         width,
         height,

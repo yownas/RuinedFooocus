@@ -8,7 +8,8 @@ from PIL import Image
 
 # Copy this file, add suitable code and add logic to modules/pipelines.py to select it
 
-class pipeline():
+
+class pipeline:
     pipeline_type = ["template"]
 
     model_hash = ""
@@ -45,7 +46,7 @@ class pipeline():
         negative_prompt,
         input_image,
         controlnet,
-        progress_window,
+        main_vew,
         steps,
         width,
         height,
@@ -59,7 +60,7 @@ class pipeline():
         gen_data=None,
     ):
         worker.outputs.append(["preview", (-1, f"Generating ...", None)])
-        
+
         images = Image.open("logo.png")
 
         # Return finished image to preview
