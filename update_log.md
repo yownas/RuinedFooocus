@@ -1,3 +1,6 @@
+### 1.19.4
+* Nested wildcards now supported
+
 ### 1.19.3
 * Random styles now correctly applying to each image
 
