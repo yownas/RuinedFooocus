@@ -1,3 +1,8 @@
+### 1.19.1
+* WildCard Fixes
+* Automatcially downloads LCM Models
+* Now checks subdirectories for models
+
 ### 1.19.0
 * Gradio update to V4
 
