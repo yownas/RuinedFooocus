@@ -1,3 +1,6 @@
+### 1.19.3
+* Random styles now correctly applying to each image
+
 ### 1.19.2
 * Gradio Rollback to v3 until v4 is fixed
 
