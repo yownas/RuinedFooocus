@@ -1,6 +1,7 @@
 ### 1.19.4
 * Old experimental lcm-pipeline removed
 * Generate forever if Image Number is set to 0
+* Updated comfy version to latest
 
 ### 1.19.3
 * Random styles now correctly applying to each image
