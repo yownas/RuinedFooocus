@@ -113,19 +113,20 @@ def update_results(product):
 
 
 def append_work(gen_data):
-    prompts = get_promptlist(gen_data)
+    tmp_data = gen_data.copy()
+    prompts = get_promptlist(tmp_data)
     idx = 0
 
     worker.buffer.append(
-        {"task_type": "start", "image_total": len(prompts) * gen_data["image_number"]}
+        {"task_type": "start", "image_total": len(prompts) * tmp_data["image_number"]}
     )
 
     for prompt in prompts:
-        gen_data["task_type"] = "process"
-        gen_data["prompt"] = prompt
-        gen_data["index"] = (idx, len(prompts))
+        tmp_data["task_type"] = "process"
+        tmp_data["prompt"] = prompt
+        tmp_data["index"] = (idx, len(prompts))
         idx += 1
-        worker.buffer.append(gen_data.copy())
+        worker.buffer.append(tmp_data.copy())
 
 
 def generate_clicked(*args):
