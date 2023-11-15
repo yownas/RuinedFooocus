@@ -1,3 +1,6 @@
+### 1.19.4
+* Old experimental lcm-pipeline removed
+
 ### 1.19.3
 * Random styles now correctly applying to each image
 
