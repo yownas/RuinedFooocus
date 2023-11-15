@@ -112,12 +112,7 @@ def update_results(product):
     }
 
 
-def generate_clicked(*args):
-    yield update_clicked()
-    gen_data = {}
-    for key, val in zip(state["ctrls_name"], args):
-        gen_data[key] = val
-
+def append_work(gen_data):
     prompts = get_promptlist(gen_data)
     idx = 0
 
@@ -132,6 +127,22 @@ def generate_clicked(*args):
         idx += 1
         worker.buffer.append(gen_data.copy())
 
+
+def generate_clicked(*args):
+    global status
+    yield update_clicked()
+    gen_data = {}
+    for key, val in zip(state["ctrls_name"], args):
+        gen_data[key] = val
+
+    generate_forever = False
+    if int(gen_data["image_number"]) == 0:
+        generate_forever = True
+        gen_data["image_number"] = 1
+
+    append_work(gen_data)
+
+    shared.state["interrupted"] = False
     finished = False
     while not finished:
         time.sleep(0.1)
@@ -145,10 +156,15 @@ def generate_clicked(*args):
             yield update_preview(product)
 
         elif flag == "results":
-            yield update_results(product)
-            finished = True
+            worker.buffer.append({"task_type": "stop"})
 
-    worker.buffer.append({"task_type": "stop"})
+            if generate_forever and shared.state["interrupted"] == False:
+                append_work(gen_data)
+            else:
+                yield update_results(product)
+                finished = True
+
+    shared.state["interrupted"] = False
 
 
 settings = default_settings
@@ -366,7 +382,7 @@ with shared.gradio_root as block:
                 style_button = gr.Button(value="⬅️ Send Style to prompt", size="sm")
                 image_number = gr.Slider(
                     label="Image Number",
-                    minimum=1,
+                    minimum=0,
                     maximum=50,
                     step=1,
                     value=settings["image_number"],

@@ -148,6 +148,7 @@ def worker():
             from shared import state
 
             if interrupt_ruined_processing:
+                shared.state["interrupted"] = True
                 interrupt_ruined_processing = False
                 raise InterruptProcessingException()
 
