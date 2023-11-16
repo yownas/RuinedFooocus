@@ -21,8 +21,19 @@ def get_wildcard_files():
                     name, ext = os.path.splitext(file)
                     if name not in files:
                         files.append(name)
-
-    return files
+    onebutton = [
+        "onebuttonprompt",
+        "onebuttonsubject",
+        "onebuttonhumanoid",
+        "onebuttonmale",
+        "onebuttonfemale",
+        "onebuttonanimal",
+        "onebuttonobject",
+        "onebuttonlandscape",
+        "onebuttonconcept",
+    ]
+    both = files + onebutton
+    return both
 
 
 def model_hash(filename):
