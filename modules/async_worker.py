@@ -30,7 +30,7 @@ def worker():
     from PIL import Image
     from PIL.PngImagePlugin import PngInfo
     from modules.sdxl_styles import aspect_ratios
-    from modules.util import generate_temp_filename, TimeIt
+    from modules.util import generate_temp_filename, TimeIt, model_hash
     import modules.pipelines
     from modules.settings import default_settings
 
@@ -108,7 +108,7 @@ def worker():
                 (-1, f"Loading base model: {gen_data['base_model_name']}", None),
             ]
         )
-        pipeline.load_base_model(gen_data["base_model_name"])
+        gen_data["modelhash"] = pipeline.load_base_model(gen_data["base_model_name"])
         outputs.append(["preview", (-1, f"Loading LoRA models ...", None)])
         lora_keywords = pipeline.load_loras(loras)
         if lora_keywords is None:
@@ -252,6 +252,11 @@ def worker():
                     "sampler_name": gen_data["sampler_name"],
                     "scheduler": gen_data["scheduler"],
                     "base_model_name": gen_data["base_model_name"],
+                    "base_model_hash": model_hash(
+                        os.path.join(
+                            modules.path.modelfile_path, gen_data["base_model_name"]
+                        )
+                    ),
                     "loras": "Loras:"
                     + ",".join([f"<{lora[0]}:{lora[1]}>" for lora in loras]),
                     "start_step": start_step,
