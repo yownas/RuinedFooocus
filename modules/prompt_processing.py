@@ -145,7 +145,7 @@ def process_wildcards(wildcard_text, directory="wildcards"):
                     if f"{placeholder}.txt" in files:
                         file_path = os.path.join(root, f"{placeholder}.txt")
                         with open(file_path, encoding="utf-8") as f:
-                            words = f.read().splitlines()
+                            words = [word.strip() for word in f.read().splitlines() if not word.startswith("#")]
                         placeholder_choices[placeholder] = words
                         found = True
                         break
@@ -153,10 +153,10 @@ def process_wildcards(wildcard_text, directory="wildcards"):
                     break
 
             if not found:
-                placeholder_choices[placeholder] = [placeholder]
                 print(
                     f"Error: Could not find file {placeholder}.txt in {directory} or its subdirectories."
                 )
+                placeholder_choices[placeholder] = [f"{placeholder}"]
 
     for placeholder in placeholders:
         random_choice = random.choice(placeholder_choices[placeholder])
@@ -175,7 +175,10 @@ def process_prompt(style, prompt, negative):
         styles += [f"Style: {match.group(1)}"]
     prompt = re.sub(pattern, "", prompt)
     p_txt, n_txt = apply_style(styles, prompt, negative)
-    p_txt = process_wildcards(p_txt)
+    wildcard_pattern = r"__([\w:]+)__"
+    wildcard_pattern_onebutton = r"__([\w]+:[^\s_]+(?:[^\s_]+|\s(?=[\w:]+))*)__"
+    while ((match := re.search(wildcard_pattern, p_txt)) or (match := re.search(wildcard_pattern_onebutton, p_txt))) is not None:
+        p_txt = process_wildcards(p_txt)
     return p_txt, n_txt
 
 
