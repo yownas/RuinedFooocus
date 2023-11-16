@@ -5,6 +5,7 @@ import time
 
 import gradio as gr
 import random
+import re
 
 import version
 import modules.async_worker as worker
@@ -23,8 +24,17 @@ from modules.performance import (
 )
 from modules.settings import default_settings
 from modules.prompt_processing import get_promptlist
+from modules.util import get_wildcard_files
 
 from PIL import Image
+
+
+def find_unclosed_markers(s):
+    markers = re.findall(r"__", s)
+    for marker in markers:
+        if s.count(marker) % 2 != 0:
+            return s.split(marker)[-1]
+    return None
 
 
 def get_parser():
@@ -177,6 +187,8 @@ else:
 
 metadata_json = gr.Json()
 
+shared.wildcards = get_wildcard_files()
+
 shared.gradio_root = gr.Blocks(
     title="RuinedFooocus " + version.version,
     theme=theme,
@@ -230,6 +242,13 @@ with shared.gradio_root as block:
                         metadata = {"Data": "Preview Grid"}
                 return [names] + [gr.update(value=metadata)]
 
+            spellcheck = gr.Dropdown(
+                label="Spellcheck",
+                visible=False,
+                choices=[],
+                value="",
+            )
+
             with gr.Row(elem_classes="type_row"):
                 with gr.Column(scale=5):
                     prompt = gr.Textbox(
@@ -242,6 +261,27 @@ with shared.gradio_root as block:
                         value=settings["prompt"],
                     )
                     add_ctrl("prompt", prompt)
+
+                    @prompt.input(inputs=prompt, outputs=spellcheck)
+                    def checkforwildcards(text):
+                        test = find_unclosed_markers(text)
+                        if test:
+                            filtered = [s for s in shared.wildcards if test in s]
+                            return {
+                                spellcheck: gr.update(
+                                    interactive=True, visible=True, choices=filtered
+                                )
+                            }
+                        else:
+                            return {
+                                spellcheck: gr.update(interactive=False, visible=False)
+                            }
+
+                    @spellcheck.select(inputs=[prompt, spellcheck], outputs=prompt)
+                    def select_spellcheck(text, selection):
+                        last_idx = text.rindex("__")
+                        newtext = f"{text[:last_idx]}__{selection}__"
+                        return {prompt: gr.update(value=newtext)}
 
                 with gr.Column(scale=1, min_width=0):
                     run_button = gr.Button(value="Generate", elem_id="generate")

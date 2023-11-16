@@ -9,6 +9,22 @@ from typing import Optional
 from urllib.parse import urlparse
 
 
+def get_wildcard_files():
+    directories = ["wildcards", "wildcards_official"]
+    files = []
+
+    for directory in directories:
+        for root, dirs, inner_files in os.walk(directory):
+            for file in inner_files:
+                if file.endswith(".txt"):
+                    path = os.path.join(root, file)
+                    name, ext = os.path.splitext(file)
+                    if name not in files:
+                        files.append(name)
+
+    return files
+
+
 def model_hash(filename):
     """old hash that only looks at a small part of the file and is prone to collisions"""
     try:
