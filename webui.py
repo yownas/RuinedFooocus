@@ -258,7 +258,7 @@ with shared.gradio_root as block:
                         add_ctrl("prompt", prompt)
 
                         spellcheck = gr.Dropdown(
-                            label="Spellcheck",
+                            label="Wildcards",
                             visible=False,
                             choices=[],
                             value="",
@@ -270,9 +270,13 @@ with shared.gradio_root as block:
                         test = find_unclosed_markers(text)
                         if test is not None:
                             filtered = [s for s in shared.wildcards if test in s]
+                            filtered.append(" ")
                             return {
                                 spellcheck: gr.update(
-                                    interactive=True, visible=True, choices=filtered
+                                    interactive=True,
+                                    visible=True,
+                                    choices=filtered,
+                                    value=" ",
                                 )
                             }
                         else:
