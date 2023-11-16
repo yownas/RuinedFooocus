@@ -120,10 +120,6 @@ class pipeline:
 
         filename = os.path.join(modules.path.modelfile_path, name)
 
-        if self.xl_base is not None:
-            self.xl_base.to_meta()
-            self.xl_base = None
-
         print(f"Loading base model: {name}")
 
         try:

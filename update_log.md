@@ -1,3 +1,6 @@
+### 1.19.5
+* Fixed old bug of switching models when the stop button is pressed (old code from OG-F)
+
 ### 1.19.4
 * Old experimental lcm-pipeline removed
 * Generate forever if Image Number is set to 0
