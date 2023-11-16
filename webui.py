@@ -268,7 +268,7 @@ with shared.gradio_root as block:
                     @prompt.input(inputs=prompt, outputs=spellcheck)
                     def checkforwildcards(text):
                         test = find_unclosed_markers(text)
-                        if test:
+                        if test is not None:
                             filtered = [s for s in shared.wildcards if test in s]
                             return {
                                 spellcheck: gr.update(
