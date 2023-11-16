@@ -242,25 +242,28 @@ with shared.gradio_root as block:
                         metadata = {"Data": "Preview Grid"}
                 return [names] + [gr.update(value=metadata)]
 
-            spellcheck = gr.Dropdown(
-                label="Spellcheck",
-                visible=False,
-                choices=[],
-                value="",
-            )
-
             with gr.Row(elem_classes="type_row"):
                 with gr.Column(scale=5):
-                    prompt = gr.Textbox(
-                        show_label=False,
-                        placeholder="Type prompt here.",
-                        container=False,
-                        autofocus=True,
-                        elem_classes="type_row",
-                        lines=1024,
-                        value=settings["prompt"],
-                    )
-                    add_ctrl("prompt", prompt)
+                    with gr.Group(), gr.Row():
+                        prompt = gr.Textbox(
+                            show_label=False,
+                            placeholder="Type prompt here.",
+                            container=False,
+                            autofocus=True,
+                            elem_classes="type_row",
+                            lines=1024,
+                            value=settings["prompt"],
+                            scale=4,
+                        )
+                        add_ctrl("prompt", prompt)
+
+                        spellcheck = gr.Dropdown(
+                            label="Spellcheck",
+                            visible=False,
+                            choices=[],
+                            value="",
+                            scale=1,
+                        )
 
                     @prompt.input(inputs=prompt, outputs=spellcheck)
                     def checkforwildcards(text):
