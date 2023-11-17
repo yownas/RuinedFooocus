@@ -1,5 +1,6 @@
 ### 1.20.0
 * Added wildcard helper, just start typing __ and your wildcards will display
+* Added slideshow
 
 ### 1.19.5
 * Fixed old bug of switching models when the stop button is pressed (old code from OG-F)
