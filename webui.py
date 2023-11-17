@@ -607,5 +607,20 @@ with shared.gradio_root as block:
 
         stop_button.click(fn=stop_clicked, queue=False)
 
+    with gr.Row():
+        gr.HTML(
+            value='<a href="file=html/slideshow.html" style="color: gray; text-decoration: none" target="_blank">&pi;</a>',
+            scale=1,
+        )
+
+    def get_last_image():
+        global state
+        if "last_image" in state:
+            return(state["last_image"])
+        else:
+            return("logo.png")
+    last_image = gr.Button(visible=visible)
+    last_image.click(get_last_image, outputs=[last_image], api_name="last_image")
+
 args = parse_args()
 launch_app(args)

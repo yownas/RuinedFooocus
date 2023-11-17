@@ -275,6 +275,7 @@ def worker():
                     x.save(local_temp_filename, pnginfo=metadata)
                 results.append(local_temp_filename)
                 metadatastrings.append(json.dumps(prompt))
+                state["last_image"] = local_temp_filename
 
             seed += 1
             if stop_batch:
