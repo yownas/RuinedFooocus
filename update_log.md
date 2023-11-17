@@ -1,3 +1,7 @@
+### 1.21.0
+* Π Time - Click the small Π symbol to get a fullscreen image of your last generation great for slideshows
+* updated comfy version, NEW SAMPLER TIME
+
 ### 1.20.0
 * Added wildcard helper, just start typing __ and your wildcards will display
 * Added slideshow
