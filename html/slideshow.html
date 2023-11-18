@@ -25,14 +25,14 @@
         }
     </style>
     <head>
-        <script type="module" src="https://cdn.jsdelivr.net/npm/@gradio/client@0.1.4/dist/index.min.js"></script>
         <script type="module">
             import { client } from "https://cdn.jsdelivr.net/npm/@gradio/client@0.1.4/dist/index.min.js";
-            const app = await client(document.URL);
             async function getimage() {
                 try {
-                    const result = await app.predict("/last_image");    
+                    const app = await client(document.URL);
+                    var result = await app.predict("/last_image");    
                     document.getElementById("slideshow").src = "/file=" + result.data;
+                    result = null;
                     setTimeout(getimage, 3000);
                 } catch (error) {
                     // Error... Wait a while
