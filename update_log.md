@@ -1,3 +1,6 @@
+### 1.22.0
+* Now comes with a built in clip interrogator, just drag your image onto the main image to generate the prompt
+
 ### 1.21.0
 * Π Time - Click the small Π symbol to get a fullscreen image of your last generation great for slideshows
 * updated comfy version, NEW SAMPLER TIME

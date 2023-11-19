@@ -6,7 +6,7 @@ from shared import state
 from modules.path import clip_path
 
 
-def look(image):
+def look(image, gr):
     try:
         info = image.info
         params = info.get("parameters", "")
@@ -16,6 +16,7 @@ def look(image):
 
         # Unload models, if needed?
         # state["pipeline"] = None
+        gr.Info("Creating Your Prompt")
 
         conf = ci.Config(
             device=torch.device("cuda"),

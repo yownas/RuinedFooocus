@@ -93,6 +93,8 @@ Coming soon ...
 30. Metadata Viewer now available in the `Info` tab
 31. Now supports the [SDXL LCM LORA](https://huggingface.co/latent-consistency/lcm-lora-sdxl/tree/main)
 32. Generate Forever if Image Number is set to 0.
+33. Clip Interrogator, just drag your image onto the main image to generate the prompt
+
 
 ## Thanks
 

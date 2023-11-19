@@ -300,7 +300,7 @@ with shared.gradio_root as block:
                     @main_view.upload(inputs=[main_view], outputs=[prompt, gallery])
                     def load_images_handler(file):
                         image = Image.open(file)
-                        params = look(image)
+                        params = look(image, gr)
                         return params, [file]
 
             with gr.Row():
@@ -616,9 +616,10 @@ with shared.gradio_root as block:
     def get_last_image():
         global state
         if "last_image" in state:
-            return(state["last_image"])
+            return state["last_image"]
         else:
-            return("logo.png")
+            return "logo.png"
+
     last_image = gr.Button(visible=visible)
     last_image.click(get_last_image, outputs=[last_image], api_name="last_image")
 
