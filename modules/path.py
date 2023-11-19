@@ -14,6 +14,7 @@ DEFAULT_PATHS = {
     "path_upscalers": "../models/upscale_models",
     "path_faceswap": "../models/faceswap",
     "path_outputs": "../outputs/",
+    "path_clip": "../models/clip/",
 }
 
 
@@ -53,6 +54,7 @@ temp_outputs_path = get_abspath(paths["path_outputs"])
 temp_preview_path = get_abspath(paths["path_preview"])
 upscaler_path = get_abspath(paths["path_upscalers"])
 faceswap_path = get_abspath(paths["path_faceswap"])
+clip_path = get_abspath(paths["path_clip"])
 
 os.makedirs(temp_outputs_path, exist_ok=True)
 
