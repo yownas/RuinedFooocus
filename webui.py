@@ -13,6 +13,7 @@ import modules.html
 import modules.path
 import ui_onebutton
 import ui_controlnet
+from modules.interrogate import look
 
 from comfy.samplers import KSampler
 from modules.sdxl_styles import load_styles, aspect_ratios, styles, allstyles
@@ -299,8 +300,7 @@ with shared.gradio_root as block:
                     @main_view.upload(inputs=[main_view], outputs=[prompt, gallery])
                     def load_images_handler(file):
                         image = Image.open(file)
-                        info = image.info
-                        params = info.get("parameters", "")
+                        params = look(image)
                         return params, [file]
 
             with gr.Row():
