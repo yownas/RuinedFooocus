@@ -14,6 +14,7 @@ import modules.path
 import ui_onebutton
 import ui_controlnet
 from modules.interrogate import look
+from transformers import CLIPTokenizer
 
 from comfy.samplers import KSampler
 from modules.sdxl_styles import load_styles, aspect_ratios, styles, allstyles
@@ -28,6 +29,8 @@ from modules.prompt_processing import get_promptlist
 from modules.util import get_wildcard_files
 
 from PIL import Image
+
+tokenizer = CLIPTokenizer.from_pretrained("openai/clip-vit-large-patch14")
 
 
 def find_unclosed_markers(s):
@@ -257,7 +260,6 @@ with shared.gradio_root as block:
                             scale=4,
                         )
                         add_ctrl("prompt", prompt)
-
                         spellcheck = gr.Dropdown(
                             label="Wildcards",
                             visible=False,
@@ -269,6 +271,7 @@ with shared.gradio_root as block:
                     @prompt.input(inputs=prompt, outputs=spellcheck)
                     def checkforwildcards(text):
                         test = find_unclosed_markers(text)
+                        tokencount = len(tokenizer.tokenize(prompt))
                         if test is not None:
                             filtered = [s for s in shared.wildcards if test in s]
                             filtered.append(" ")
