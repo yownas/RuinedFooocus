@@ -271,7 +271,7 @@ with shared.gradio_root as block:
                     @prompt.input(inputs=prompt, outputs=spellcheck)
                     def checkforwildcards(text):
                         test = find_unclosed_markers(text)
-                        tokencount = len(tokenizer.tokenize(prompt))
+                        tokencount = len(tokenizer.tokenize(text))
                         if test is not None:
                             filtered = [s for s in shared.wildcards if test in s]
                             filtered.append(" ")
