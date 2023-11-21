@@ -42,101 +42,9 @@ def process_wildcards(wildcard_text, directory="wildcards"):
     directories.append(official_directory)
 
     for placeholder in placeholders:
-        # Some one button prompt specials
+        # Skip onebuttonprompt wildcards for now; handled below
         if placeholder.startswith("onebutton"):
-            subjectoverride = ""
-            placeholdersplit = placeholder.split(":", 1)
-            if len(placeholdersplit) > 1:
-                subjectoverride = placeholdersplit[1]
-
-            insertprompt = []
-            if placeholder.startswith("onebuttonprompt"):
-                insertprompt.append(
-                    build_dynamic_prompt(insanitylevel=5, givensubject=subjectoverride)
-                )
-            elif placeholder.startswith("onebuttonsubject"):
-                insertprompt.append(
-                    build_dynamic_prompt(
-                        insanitylevel=7,
-                        imagetype="subject only mode",
-                        givensubject=subjectoverride,
-                    )
-                )
-            elif placeholder.startswith("onebuttonhumanoid"):
-                insertprompt.append(
-                    build_dynamic_prompt(
-                        insanitylevel=7,
-                        imagetype="subject only mode",
-                        givensubject=subjectoverride,
-                        forcesubject="humanoid",
-                    )
-                )
-            elif placeholder.startswith("onebuttonmale"):
-                insertprompt.append(
-                    build_dynamic_prompt(
-                        insanitylevel=7,
-                        imagetype="subject only mode",
-                        givensubject=subjectoverride,
-                        forcesubject="humanoid",
-                        gender="male",
-                    )
-                )
-            elif placeholder.startswith("onebuttonfemale"):
-                insertprompt.append(
-                    build_dynamic_prompt(
-                        insanitylevel=7,
-                        imagetype="subject only mode",
-                        givensubject=subjectoverride,
-                        forcesubject="humanoid",
-                        gender="female",
-                    )
-                )
-            elif placeholder.startswith("onebuttonanimal"):
-                insertprompt.append(
-                    build_dynamic_prompt(
-                        insanitylevel=7,
-                        imagetype="subject only mode",
-                        givensubject=subjectoverride,
-                        forcesubject="animal",
-                    )
-                )
-            elif placeholder.startswith("onebuttonobject"):
-                insertprompt.append(
-                    build_dynamic_prompt(
-                        insanitylevel=7,
-                        imagetype="subject only mode",
-                        givensubject=subjectoverride,
-                        forcesubject="object",
-                    )
-                )
-            elif placeholder.startswith("onebuttonlandscape"):
-                insertprompt.append(
-                    build_dynamic_prompt(
-                        insanitylevel=7,
-                        imagetype="subject only mode",
-                        givensubject=subjectoverride,
-                        forcesubject="landscape",
-                    )
-                )
-            elif placeholder.startswith("onebuttonconcept"):
-                insertprompt.append(
-                    build_dynamic_prompt(
-                        insanitylevel=7,
-                        imagetype="subject only mode",
-                        givensubject=subjectoverride,
-                        forcesubject="concept",
-                    )
-                )
-            #failover
-            else:
-                insertprompt.append(
-                    build_dynamic_prompt(
-                        insanitylevel=3,
-                        imagetype="subject only mode",
-                        givensubject=subjectoverride
-                    )
-                )
-            placeholder_choices[placeholder] = insertprompt
+            continue
 
         elif placeholder not in placeholder_choices:
             found = False
@@ -159,7 +67,86 @@ def process_wildcards(wildcard_text, directory="wildcards"):
                 placeholder_choices[placeholder] = [f"{placeholder}"]
 
     for placeholder in placeholders:
-        random_choice = random.choice(placeholder_choices[placeholder])
+        random_choice = ""
+
+        # Some one button prompt specials
+        if placeholder.startswith("onebutton"):
+            subjectoverride = ""
+            placeholdersplit = placeholder.split(":", 1)
+            if len(placeholdersplit) > 1:
+                subjectoverride = placeholdersplit[1]
+
+            if placeholder.startswith("onebuttonprompt"):
+                random_choice = build_dynamic_prompt(insanitylevel=5, givensubject=subjectoverride)
+            elif placeholder.startswith("onebuttonsubject"):
+                random_choice = build_dynamic_prompt(
+                        insanitylevel=7,
+                        imagetype="subject only mode",
+                        givensubject=subjectoverride,
+                    )
+            elif placeholder.startswith("onebuttonhumanoid"):
+                random_choice = build_dynamic_prompt(
+                        insanitylevel=7,
+                        imagetype="subject only mode",
+                        givensubject=subjectoverride,
+                        forcesubject="humanoid",
+                    )
+            elif placeholder.startswith("onebuttonmale"):
+                random_choice = build_dynamic_prompt(
+                        insanitylevel=7,
+                        imagetype="subject only mode",
+                        givensubject=subjectoverride,
+                        forcesubject="humanoid",
+                        gender="male",
+                    )
+            elif placeholder.startswith("onebuttonfemale"):
+                random_choice = build_dynamic_prompt(
+                        insanitylevel=7,
+                        imagetype="subject only mode",
+                        givensubject=subjectoverride,
+                        forcesubject="humanoid",
+                        gender="female",
+                    )
+            elif placeholder.startswith("onebuttonanimal"):
+                random_choice = build_dynamic_prompt(
+                        insanitylevel=7,
+                        imagetype="subject only mode",
+                        givensubject=subjectoverride,
+                        forcesubject="animal",
+                    )
+            elif placeholder.startswith("onebuttonobject"):
+                random_choice = build_dynamic_prompt(
+                        insanitylevel=7,
+                        imagetype="subject only mode",
+                        givensubject=subjectoverride,
+                        forcesubject="object",
+                    )
+            elif placeholder.startswith("onebuttonlandscape"):
+                random_choice = build_dynamic_prompt(
+                        insanitylevel=7,
+                        imagetype="subject only mode",
+                        givensubject=subjectoverride,
+                        forcesubject="landscape",
+                    )
+            elif placeholder.startswith("onebuttonconcept"):
+                random_choice = build_dynamic_prompt(
+                        insanitylevel=7,
+                        imagetype="subject only mode",
+                        givensubject=subjectoverride,
+                        forcesubject="concept",
+                    )
+            #failover
+            else:
+                random_choice = build_dynamic_prompt(
+                        insanitylevel=3,
+                        imagetype="subject only mode",
+                        givensubject=subjectoverride
+                    )
+
+        # Regular wildcards
+        else:
+            random_choice = random.choice(placeholder_choices[placeholder])
+
         wildcard_text = re.sub(
             rf"__{placeholder}__", random_choice, wildcard_text, count=1
         )
