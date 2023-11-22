@@ -81,7 +81,7 @@ class pipeline:
             global cv2_is_top
             with torch.no_grad():
                 x_sample = (
-                    taesd.decoder(
+                    taesd.taesd_decoder(
                         torch.nn.functional.avg_pool2d(x0, kernel_size=(2, 2))
                     ).detach()
                     * 255.0
