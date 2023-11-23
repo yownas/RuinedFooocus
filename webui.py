@@ -214,6 +214,16 @@ with shared.gradio_root as block:
                 image_mode="RGBA",
             )
             add_ctrl("main_view", main_view)
+            inpaint_view = gr.Image(
+                height=680,
+                type="numpy",
+                tool="sketch",
+                visible=False,
+                show_label=False,
+                image_mode="RGBA",
+            )
+            add_ctrl("inpaint_view", inpaint_view)
+
             progress_html = gr.HTML(
                 value=modules.html.make_progress_html(32, "Progress 32%"),
                 visible=False,
@@ -580,7 +590,7 @@ with shared.gradio_root as block:
 
             ui_onebutton.ui_onebutton(prompt)
 
-            ui_controlnet.add_controlnet_tab()
+            ui_controlnet.add_controlnet_tab(main_view, inpaint_view)
 
             with gr.Tab(label="Info"):
                 metadata_json.render()

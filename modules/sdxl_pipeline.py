@@ -27,6 +27,7 @@ from nodes import (
     EmptyLatentImage,
     VAEDecode,
     VAEEncode,
+    VAEEncodeForInpaint,
 )
 from comfy.sample import (
     cleanup_additional_models,
@@ -322,6 +323,19 @@ class pipeline:
             )[0]
             force_full_denoise = True
             denoise = None
+
+        if gen_data["inpaint_toggle"]:
+            mask = gen_data["inpaint_view"]["mask"]
+            # mask = np.array(mask).astype(np.float32) / 255.0
+            mask = torch.from_numpy(mask)[None,]
+            image = gen_data["inpaint_view"]["image"]
+            # image = np.array(image).astype(np.float32) / 255.0
+            image = torch.from_numpy(image)[None,]
+            latent = VAEEncodeForInpaint().encode(
+                vae=self.xl_base_patched.vae,
+                pixels=image,
+                mask=mask,
+            )[0]
 
         device = comfy.model_management.get_torch_device()
 

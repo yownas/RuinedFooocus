@@ -10,7 +10,7 @@ import gradio as gr
 from shared import add_ctrl
 
 
-def add_controlnet_tab():
+def add_controlnet_tab(main_view, inpaint_view):
     with gr.Tab(label="PowerUp"):
         with gr.Row():
             cn_selection = gr.Dropdown(
@@ -192,3 +192,21 @@ def add_controlnet_tab():
             visible=True,
         )
         add_ctrl("input_image", input_image)
+        inpaint_toggle = gr.Checkbox(label="Inpainting", value=False)
+
+        add_ctrl("inpaint_toggle", inpaint_toggle)
+
+        @inpaint_toggle.change(
+            inputs=[inpaint_toggle], outputs=[main_view, inpaint_view]
+        )
+        def inpaint_checked(r):
+            if r:
+                return {
+                    main_view: gr.update(visible=False),
+                    inpaint_view: gr.update(visible=True),
+                }
+            else:
+                return {
+                    main_view: gr.update(visible=True),
+                    inpaint_view: gr.update(visible=False),
+                }
