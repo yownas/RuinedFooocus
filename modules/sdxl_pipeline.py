@@ -2,6 +2,7 @@ import gc
 import numpy as np
 import os
 import torch
+import cv2
 
 import modules.path
 import modules.controlnet
@@ -324,20 +325,22 @@ class pipeline:
             force_full_denoise = True
             denoise = None
 
+        device = comfy.model_management.get_torch_device()
+
         if gen_data["inpaint_toggle"]:
             mask = gen_data["inpaint_view"]["mask"]
-            # mask = np.array(mask).astype(np.float32) / 255.0
-            mask = torch.from_numpy(mask)[None,]
+            mask = mask[:, :, 0]
+            mask = torch.from_numpy(mask)[None,] / 255.
+
             image = gen_data["inpaint_view"]["image"]
-            # image = np.array(image).astype(np.float32) / 255.0
-            image = torch.from_numpy(image)[None,]
+            image = image[..., :-1]
+            image = torch.from_numpy(image)[None,] / 255.
+
             latent = VAEEncodeForInpaint().encode(
                 vae=self.xl_base_patched.vae,
                 pixels=image,
                 mask=mask,
             )[0]
-
-        device = comfy.model_management.get_torch_device()
 
         latent_image = latent["samples"]
         batch_inds = latent["batch_index"] if "batch_index" in latent else None
