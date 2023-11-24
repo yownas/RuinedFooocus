@@ -330,16 +330,17 @@ class pipeline:
         if gen_data["inpaint_toggle"]:
             mask = gen_data["inpaint_view"]["mask"]
             mask = mask[:, :, 0]
-            mask = torch.from_numpy(mask)[None,] / 255.
+            mask = torch.from_numpy(mask)[None,] / 255.0
 
             image = gen_data["inpaint_view"]["image"]
             image = image[..., :-1]
-            image = torch.from_numpy(image)[None,] / 255.
+            image = torch.from_numpy(image)[None,] / 255.0
 
             latent = VAEEncodeForInpaint().encode(
                 vae=self.xl_base_patched.vae,
                 pixels=image,
                 mask=mask,
+                grow_mask_by=20,
             )[0]
 
         latent_image = latent["samples"]

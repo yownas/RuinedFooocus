@@ -90,6 +90,7 @@ def update_clicked():
         ),
         gallery: gr.update(visible=False),
         main_view: gr.update(visible=True, value="init_image.png"),
+        inpaint_view: gr.update(visible=False),
     }
 
 
@@ -119,6 +120,7 @@ def update_results(product):
         stop_button: gr.update(interactive=False, visible=False),
         progress_html: gr.update(visible=False),
         main_view: gr.update(value=product[0]) if len(product) > 0 else gr.update(),
+        inpaint_view: gr.update(value=product[0]) if len(product) > 0 else gr.update(),
         gallery: gr.update(
             visible=True, allow_preview=True, preview=True, value=product
         ),
@@ -244,7 +246,7 @@ with shared.gradio_root as block:
 
             @gallery.select(
                 inputs=[gallery],
-                outputs=[main_view, metadata_json],
+                outputs=[main_view, inpaint_view, metadata_json],
                 show_progress="hidden",
             )
             def gallery_change(files, sd: gr.SelectData):
@@ -254,7 +256,7 @@ with shared.gradio_root as block:
                         metadata = im.info["parameters"]
                     else:
                         metadata = {"Data": "Preview Grid"}
-                return [names] + [gr.update(value=metadata)]
+                return [names] + [names] + [gr.update(value=metadata)]
 
             with gr.Row(elem_classes="type_row"):
                 with gr.Column(scale=5):
@@ -609,6 +611,7 @@ with shared.gradio_root as block:
                 stop_button,
                 progress_html,
                 main_view,
+                inpaint_view,
                 gallery,
                 metadata_json,
             ],
