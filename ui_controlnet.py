@@ -210,3 +210,5 @@ def add_controlnet_tab(main_view, inpaint_view):
                     main_view: gr.update(visible=True),
                     inpaint_view: gr.update(visible=False),
                 }
+
+    return inpaint_toggle

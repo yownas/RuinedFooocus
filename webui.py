@@ -32,6 +32,8 @@ from PIL import Image
 
 tokenizer = CLIPTokenizer.from_pretrained("openai/clip-vit-large-patch14")
 
+inpaint_toggle = None
+
 
 def find_unclosed_markers(s):
     markers = re.findall(r"__", s)
@@ -121,6 +123,7 @@ def update_results(product):
         progress_html: gr.update(visible=False),
         main_view: gr.update(value=product[0]) if len(product) > 0 else gr.update(),
         inpaint_view: gr.update(value=product[0]) if len(product) > 0 else gr.update(),
+        inpaint_toggle: gr.update(value=False),
         gallery: gr.update(
             visible=True, allow_preview=True, preview=True, value=product
         ),
@@ -592,7 +595,7 @@ with shared.gradio_root as block:
 
             ui_onebutton.ui_onebutton(prompt)
 
-            ui_controlnet.add_controlnet_tab(main_view, inpaint_view)
+            inpaint_toggle = ui_controlnet.add_controlnet_tab(main_view, inpaint_view)
 
             with gr.Tab(label="Info"):
                 metadata_json.render()
@@ -612,6 +615,7 @@ with shared.gradio_root as block:
                 progress_html,
                 main_view,
                 inpaint_view,
+                inpaint_toggle,
                 gallery,
                 metadata_json,
             ],
