@@ -1,3 +1,6 @@
+### 1.23.0
+* Inpainting Update: Adds inpainting to the powerup tab
+
 ### 1.22.0
 * Now comes with a built in clip interrogator, just drag your image onto the main image to generate the prompt
 
