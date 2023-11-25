@@ -94,7 +94,7 @@ progress::after {
 .element1 {
   opacity: 0.01;
 }
-
+#inpaint_sketch { overflow: overlay !important; resize: auto; background: var(--panel-background-fill); z-index: 5; }
 """
 progress_html = """
 <div class="loader-container">
@@ -124,6 +124,7 @@ function generate_shortcut(){
 """
 
 from shared import state
+
 
 def make_progress_html(number, text):
     if number == -1:

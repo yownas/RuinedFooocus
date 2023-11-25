@@ -221,6 +221,7 @@ with shared.gradio_root as block:
             inpaint_view = gr.Image(
                 height=680,
                 type="numpy",
+                elem_id="inpaint_sketch",
                 tool="sketch",
                 visible=False,
                 image_mode="RGBA",
