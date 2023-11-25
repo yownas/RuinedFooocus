@@ -72,7 +72,6 @@ def parse_args():
 def launch_app(args):
     inbrowser = not args.nobrowser
     favicon_path = "logo.ico"
-    shared.gradio_root.queue(concurrency_count=4)
     shared.gradio_root.launch(
         inbrowser=inbrowser,
         server_name=args.listen,
@@ -201,12 +200,11 @@ shared.gradio_root = gr.Blocks(
     title="RuinedFooocus " + version.version,
     theme=theme,
     css=modules.html.css,
+    js=modules.html.scripts,
     analytics_enabled=True,
-    concurrency_count=4,
 ).queue()
 
 with shared.gradio_root as block:
-    block.load(_js=modules.html.scripts)
     with gr.Row():
         with gr.Column(scale=5):
             main_view = gr.Image(
@@ -216,13 +214,14 @@ with shared.gradio_root as block:
                 visible=True,
                 show_label=False,
                 image_mode="RGBA",
+                show_download_button=False,
             )
             add_ctrl("main_view", main_view)
             inpaint_view = gr.Image(
                 height=680,
                 type="numpy",
                 elem_id="inpaint_sketch",
-                tool="sketch",
+                # tool="sketch",
                 visible=False,
                 image_mode="RGBA",
             )
@@ -247,13 +246,12 @@ with shared.gradio_root as block:
             )
 
             @gallery.select(
-                inputs=[gallery],
                 outputs=[main_view, metadata_json],
                 show_progress="hidden",
             )
-            def gallery_change(files, sd: gr.SelectData):
-                names = files[sd.index]["name"]
-                with Image.open(files[sd.index]["name"]) as im:
+            def gallery_change(evt: gr.SelectData):
+                names = evt.value["image"]["path"]
+                with Image.open(names) as im:
                     if im.info.get("parameters"):
                         metadata = im.info["parameters"]
                     else:
@@ -629,7 +627,6 @@ with shared.gradio_root as block:
     with gr.Row():
         gr.HTML(
             value='<a href="file=html/slideshow.html" style="color: gray; text-decoration: none" target="_blank">&pi;</a>',
-            scale=1,
         )
 
     def get_last_image():
