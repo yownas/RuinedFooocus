@@ -1,3 +1,6 @@
+### 1.23.1
+* Use OneButtonPrompt with infinite mode, simply put a tick in `BYPASS SAFETY PROTOCOLS`
+
 ### 1.23.0
 * Inpainting Update: Adds inpainting to the powerup tab
 
