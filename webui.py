@@ -122,7 +122,6 @@ def update_results(product):
         stop_button: gr.update(interactive=False, visible=False),
         progress_html: gr.update(visible=False),
         main_view: gr.update(value=product[0]) if len(product) > 0 else gr.update(),
-        inpaint_view: gr.update(value=product[0]) if len(product) > 0 else gr.update(),
         inpaint_toggle: gr.update(value=False),
         gallery: gr.update(
             visible=True, allow_preview=True, preview=True, value=product
@@ -202,7 +201,7 @@ shared.gradio_root = gr.Blocks(
     title="RuinedFooocus " + version.version,
     theme=theme,
     css=modules.html.css,
-    analytics_enabled=False,
+    analytics_enabled=True,
     concurrency_count=4,
 ).queue()
 
@@ -224,7 +223,6 @@ with shared.gradio_root as block:
                 type="numpy",
                 tool="sketch",
                 visible=False,
-                show_label=False,
                 image_mode="RGBA",
             )
             add_ctrl("inpaint_view", inpaint_view)
@@ -249,7 +247,7 @@ with shared.gradio_root as block:
 
             @gallery.select(
                 inputs=[gallery],
-                outputs=[main_view, inpaint_view, metadata_json],
+                outputs=[main_view, metadata_json],
                 show_progress="hidden",
             )
             def gallery_change(files, sd: gr.SelectData):
@@ -259,7 +257,7 @@ with shared.gradio_root as block:
                         metadata = im.info["parameters"]
                     else:
                         metadata = {"Data": "Preview Grid"}
-                return [names] + [names] + [gr.update(value=metadata)]
+                return [names] + [gr.update(value=metadata)]
 
             with gr.Row(elem_classes="type_row"):
                 with gr.Column(scale=5):

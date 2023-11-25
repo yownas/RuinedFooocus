@@ -197,13 +197,13 @@ def add_controlnet_tab(main_view, inpaint_view):
         add_ctrl("inpaint_toggle", inpaint_toggle)
 
         @inpaint_toggle.change(
-            inputs=[inpaint_toggle], outputs=[main_view, inpaint_view]
+            inputs=[inpaint_toggle, main_view], outputs=[main_view, inpaint_view]
         )
-        def inpaint_checked(r):
+        def inpaint_checked(r, test):
             if r:
                 return {
                     main_view: gr.update(visible=False),
-                    inpaint_view: gr.update(visible=True),
+                    inpaint_view: gr.update(visible=True, value=test),
                 }
             else:
                 return {
