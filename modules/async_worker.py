@@ -206,7 +206,7 @@ def worker():
         stop_batch = False
         for i in range(gen_data["image_number"]):
             p_txt, n_txt = process_prompt(
-                gen_data["style_selection"], pos_stripped, neg_stripped
+                gen_data["style_selection"], pos_stripped, neg_stripped, gen_data
             )
             p_txt += lora_keywords
             start_step = 0

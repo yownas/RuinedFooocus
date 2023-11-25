@@ -80,67 +80,76 @@ def process_wildcards(wildcard_text, directory="wildcards"):
                 random_choice = build_dynamic_prompt(insanitylevel=5, givensubject=subjectoverride)
             elif placeholder.startswith("onebuttonsubject"):
                 random_choice = build_dynamic_prompt(
-                        insanitylevel=7,
+                        insanitylevel=5,
                         imagetype="subject only mode",
                         givensubject=subjectoverride,
+                        advancedprompting=False,
                     )
             elif placeholder.startswith("onebuttonhumanoid"):
                 random_choice = build_dynamic_prompt(
-                        insanitylevel=7,
+                        insanitylevel=5,
                         imagetype="subject only mode",
                         givensubject=subjectoverride,
                         forcesubject="humanoid",
+                        advancedprompting=False,
                     )
             elif placeholder.startswith("onebuttonmale"):
                 random_choice = build_dynamic_prompt(
-                        insanitylevel=7,
+                        insanitylevel=5,
                         imagetype="subject only mode",
                         givensubject=subjectoverride,
                         forcesubject="humanoid",
                         gender="male",
+                        advancedprompting=False,
                     )
             elif placeholder.startswith("onebuttonfemale"):
                 random_choice = build_dynamic_prompt(
-                        insanitylevel=7,
+                        insanitylevel=5,
                         imagetype="subject only mode",
                         givensubject=subjectoverride,
                         forcesubject="humanoid",
                         gender="female",
+                        advancedprompting=False,
                     )
             elif placeholder.startswith("onebuttonanimal"):
                 random_choice = build_dynamic_prompt(
-                        insanitylevel=7,
+                        insanitylevel=5,
                         imagetype="subject only mode",
                         givensubject=subjectoverride,
                         forcesubject="animal",
+                        advancedprompting=False,
                     )
             elif placeholder.startswith("onebuttonobject"):
                 random_choice = build_dynamic_prompt(
-                        insanitylevel=7,
+                        insanitylevel=5,
                         imagetype="subject only mode",
                         givensubject=subjectoverride,
                         forcesubject="object",
+                        advancedprompting=False,
                     )
             elif placeholder.startswith("onebuttonlandscape"):
                 random_choice = build_dynamic_prompt(
-                        insanitylevel=7,
+                        insanitylevel=5,
                         imagetype="subject only mode",
                         givensubject=subjectoverride,
                         forcesubject="landscape",
+                        advancedprompting=False,
                     )
             elif placeholder.startswith("onebuttonconcept"):
                 random_choice = build_dynamic_prompt(
-                        insanitylevel=7,
+                        insanitylevel=5,
                         imagetype="subject only mode",
                         givensubject=subjectoverride,
                         forcesubject="concept",
+                        advancedprompting=False,
                     )
             #failover
             else:
                 random_choice = build_dynamic_prompt(
                         insanitylevel=3,
                         imagetype="subject only mode",
-                        givensubject=subjectoverride
+                        givensubject=subjectoverride,
+                        advancedprompting=False,
                     )
 
         # Regular wildcards
@@ -154,8 +163,27 @@ def process_wildcards(wildcard_text, directory="wildcards"):
     return wildcard_text
 
 
-def process_prompt(style, prompt, negative):
-
+def process_prompt(style, prompt, negative, gen_data=[]):
+    if(gen_data["obp_assume_direct_control"]):
+                prompt = build_dynamic_prompt(
+                    insanitylevel=gen_data["obp_insanitylevel"],
+                    forcesubject=gen_data["obp_subject"],
+                    artists=gen_data["obp_artist"],
+                    subtypeobject=gen_data["obp_chosensubjectsubtypeobject"],
+                    subtypehumanoid=gen_data["obp_chosensubjectsubtypehumanoid"],
+                    subtypeconcept=gen_data["obp_chosensubjectsubtypeconcept"],
+                    gender=gen_data["obp_chosengender"],
+                    imagetype=gen_data["obp_imagetype"],
+                    imagemodechance=gen_data["obp_imagemodechance"],
+                    givensubject=gen_data["obp_givensubject"],
+                    smartsubject=gen_data["obp_smartsubject"],
+                    overrideoutfit=gen_data["obp_givenoutfit"],
+                    prefixprompt=gen_data["obp_prefixprompt"],
+                    suffixprompt=gen_data["obp_suffixprompt"],
+                    giventypeofimage=gen_data["obp_giventypeofimage"],
+                    antivalues=gen_data["obp_antistring"],
+                    advancedprompting=False,
+                )
     pattern = re.compile(r"<style:([^>]+)>")
     styles = [] if style is None else style.copy()
     for match in re.finditer(pattern, prompt):

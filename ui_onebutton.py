@@ -1,8 +1,11 @@
 import gradio as gr
 
+from shared import add_ctrl
+
 from random_prompt.build_dynamic_prompt import build_dynamic_prompt
 
 from random_prompt.csv_reader import load_config_csv
+
 
 insanitylevel = 5
 subjects = ["all"]
@@ -194,8 +197,8 @@ for item in config:
         generatesongline = False
     if item[0] == "subject_cardname" and item[1] != "on":
         generatecardname = False
-    if item[0] == 'subject_episodetitle' and item[1] != 'on':
-            generateepisodetitle = False
+    if item[0] == "subject_episodetitle" and item[1] != "on":
+        generateepisodetitle = False
 
 # build up all subjects we can choose based on the loaded config file
 if (
@@ -219,7 +222,14 @@ if (
     subjects.append("humanoid")
 if generatelandscape:
     subjects.append("landscape")
-if generateevent or generateconcepts or generatepoemline or generatesongline or generatecardname or generateepisodetitle:
+if (
+    generateevent
+    or generateconcepts
+    or generatepoemline
+    or generatesongline
+    or generatecardname
+    or generateepisodetitle
+):
     subjects.append("concept")
 
 
@@ -272,7 +282,7 @@ if generatesongline:
 if generatecardname:
     subjectsubtypesconcept.append("names from card based games")
 if generateepisodetitle:
-     subjectsubtypesconcept.append("episode titles from tv shows")
+    subjectsubtypesconcept.append("episode titles from tv shows")
 
 
 def ui_onebutton(prompt):
@@ -313,7 +323,7 @@ def ui_onebutton(prompt):
             chosensubjectsubtypeobject,
             chosensubjectsubtypehumanoid,
             chosensubjectsubtypeconcept,
-            True,
+            False,
             False,
             0,
             givenoutfit,
@@ -362,7 +372,7 @@ def ui_onebutton(prompt):
                 chosensubjectsubtypeobject,
                 chosensubjectsubtypehumanoid,
                 chosensubjectsubtypeconcept,
-                True,
+                False,
                 False,
                 0,
                 givenoutfit,
@@ -377,6 +387,12 @@ def ui_onebutton(prompt):
             add_random_button = gr.Button(value="Add To Prompt", size="sm")
 
         with gr.Row():
+            assumedirectcontrol = gr.Checkbox(
+                label="BYPASS SAFETY PROTOCOLS", value=False
+            )
+            add_ctrl("obp_assume_direct_control", assumedirectcontrol)
+
+        with gr.Row():
             insanitylevel = gr.Slider(
                 1,
                 10,
@@ -384,11 +400,14 @@ def ui_onebutton(prompt):
                 step=1,
                 label="Higher levels increases complexity and randomness of generated prompt",
             )
+            add_ctrl("obp_insanitylevel", insanitylevel)
         with gr.Row():
             with gr.Column(scale=1, variant="compact"):
                 subject = gr.Dropdown(subjects, label="Subject Types", value="all")
+                add_ctrl("obp_subject", subject)
             with gr.Column(scale=1, variant="compact"):
                 artist = gr.Dropdown(artists, label="Artists", value="all")
+                add_ctrl("obp_artist", artist)
 
         with gr.Row():
             chosensubjectsubtypeobject = gr.Dropdown(
@@ -397,24 +416,29 @@ def ui_onebutton(prompt):
                 value="all",
                 visible=False,
             )
+            add_ctrl("obp_chosensubjectsubtypeobject", chosensubjectsubtypeobject)
             chosensubjectsubtypehumanoid = gr.Dropdown(
                 subjectsubtypeshumanoid,
                 label="Type of humanoids",
                 value="all",
                 visible=False,
             )
+            add_ctrl("obp_chosensubjectsubtypehumanoid", chosensubjectsubtypehumanoid)
             chosensubjectsubtypeconcept = gr.Dropdown(
                 subjectsubtypesconcept,
                 label="Type of concept",
                 value="all",
                 visible=False,
             )
+            add_ctrl("obp_chosensubjectsubtypeconcept", chosensubjectsubtypeconcept)
             chosengender = gr.Dropdown(
                 genders, label="gender", value="all", visible=False
             )
+            add_ctrl("obp_chosengender", chosengender)
         with gr.Row():
             with gr.Column(scale=2, variant="compact"):
                 imagetype = gr.Dropdown(imagetypes, label="type of image", value="all")
+                add_ctrl("obp_imagetype", imagetype)
             with gr.Column(scale=2, variant="compact"):
                 imagemodechance = gr.Slider(
                     1,
@@ -423,6 +447,7 @@ def ui_onebutton(prompt):
                     step=1,
                     label="One in X chance to use special image type mode",
                 )
+                add_ctrl("obp_imagemodechance", imagemodechance)
         with gr.Row():
             gr.Markdown(
                 """
@@ -433,8 +458,11 @@ def ui_onebutton(prompt):
             )
         with gr.Row():
             givensubject = gr.Textbox(label="Overwrite subject: ", value="")
+            add_ctrl("obp_givensubject", givensubject)
             smartsubject = gr.Checkbox(label="Smart subject", value=True)
+            add_ctrl("obp_smartsubject", smartsubject)
             givenoutfit = gr.Textbox(label="Overwrite outfit: ", value="")
+            add_ctrl("obp_givenoutfit", givenoutfit)
         with gr.Row():
             gr.Markdown(
                 """
@@ -448,9 +476,11 @@ def ui_onebutton(prompt):
                 prefixprompt = gr.Textbox(
                     label="Place this in front of generated prompt (prefix)", value=""
                 )
+                add_ctrl("obp_prefixprompt", prefixprompt)
                 suffixprompt = gr.Textbox(
                     label="Place this at back of generated prompt (suffix)", value=""
                 )
+                add_ctrl("obp_suffixprompt", suffixprompt)
         with gr.Row():
             gr.Markdown(
                 """
@@ -461,6 +491,7 @@ def ui_onebutton(prompt):
             )
         with gr.Row():
             giventypeofimage = gr.Textbox(label="Overwrite type of image: ", value="")
+            add_ctrl("obp_giventypeofimage", giventypeofimage)
         with gr.Row():
             with gr.Column():
                 antistring = gr.Textbox(
@@ -468,6 +499,7 @@ def ui_onebutton(prompt):
                     "film grain, purple, cat"
                     " "
                 )
+                add_ctrl("obp_antistring", antistring)
         with gr.Row():
             gr.Markdown(
                 """
@@ -515,6 +547,20 @@ def ui_onebutton(prompt):
 
         subject.change(
             subjectsvalueforsubtypeconcept, [subject], [chosensubjectsubtypeconcept]
+        )
+
+        # turn things on and off for ASSUME DIRECT CONTROL
+        def assumedirectcontrolflip(assumedirectcontrol):
+            enable = not assumedirectcontrol
+            return {
+                random_button: gr.update(visible=enable),
+                add_random_button: gr.update(visible=enable),
+            }
+
+        assumedirectcontrol.change(
+            assumedirectcontrolflip,
+            [assumedirectcontrol],
+            [random_button, add_random_button],
         )
 
         random_button.click(

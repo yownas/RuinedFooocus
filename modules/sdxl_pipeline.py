@@ -2,6 +2,7 @@ import gc
 import numpy as np
 import os
 import torch
+import cv2
 
 import modules.path
 import modules.controlnet
@@ -27,6 +28,7 @@ from nodes import (
     EmptyLatentImage,
     VAEDecode,
     VAEEncode,
+    VAEEncodeForInpaint,
 )
 from comfy.sample import (
     cleanup_additional_models,
@@ -81,7 +83,7 @@ class pipeline:
             global cv2_is_top
             with torch.no_grad():
                 x_sample = (
-                    taesd.decoder(
+                    taesd.taesd_decoder(
                         torch.nn.functional.avg_pool2d(x0, kernel_size=(2, 2))
                     ).detach()
                     * 255.0
@@ -324,6 +326,22 @@ class pipeline:
             denoise = None
 
         device = comfy.model_management.get_torch_device()
+
+        if gen_data["inpaint_toggle"]:
+            mask = gen_data["inpaint_view"]["mask"]
+            mask = mask[:, :, 0]
+            mask = torch.from_numpy(mask)[None,] / 255.0
+
+            image = gen_data["inpaint_view"]["image"]
+            image = image[..., :-1]
+            image = torch.from_numpy(image)[None,] / 255.0
+
+            latent = VAEEncodeForInpaint().encode(
+                vae=self.xl_base_patched.vae,
+                pixels=image,
+                mask=mask,
+                grow_mask_by=20,
+            )[0]
 
         latent_image = latent["samples"]
         batch_inds = latent["batch_index"] if "batch_index" in latent else None

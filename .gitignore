@@ -39,6 +39,7 @@ notification.mp3
 models/vae/config.json
 settings.json
 styles.csv
+!/random_prompt/csvfiles/templates/styles.csv
 paths.json
 notification.mp3
 resolutions.json

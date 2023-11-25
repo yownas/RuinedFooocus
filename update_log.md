@@ -1,3 +1,9 @@
+### 1.23.1
+* Use OneButtonPrompt with infinite mode, simply put a tick in `BYPASS SAFETY PROTOCOLS`
+
+### 1.23.0
+* Inpainting Update: Adds inpainting to the powerup tab
+
 ### 1.22.0
 * Now comes with a built in clip interrogator, just drag your image onto the main image to generate the prompt
 

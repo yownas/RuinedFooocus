@@ -27,10 +27,13 @@ from modules.performance import (
 from modules.settings import default_settings
 from modules.prompt_processing import get_promptlist
 from modules.util import get_wildcard_files
+from random_prompt.build_dynamic_prompt import build_dynamic_prompt
 
 from PIL import Image
 
 tokenizer = CLIPTokenizer.from_pretrained("openai/clip-vit-large-patch14")
+
+inpaint_toggle = None
 
 
 def find_unclosed_markers(s):
@@ -90,6 +93,7 @@ def update_clicked():
         ),
         gallery: gr.update(visible=False),
         main_view: gr.update(visible=True, value="init_image.png"),
+        inpaint_view: gr.update(visible=False),
     }
 
 
@@ -119,6 +123,7 @@ def update_results(product):
         stop_button: gr.update(interactive=False, visible=False),
         progress_html: gr.update(visible=False),
         main_view: gr.update(value=product[0]) if len(product) > 0 else gr.update(),
+        inpaint_toggle: gr.update(value=False),
         gallery: gr.update(
             visible=True, allow_preview=True, preview=True, value=product
         ),
@@ -128,7 +133,11 @@ def update_results(product):
 
 def append_work(gen_data):
     tmp_data = gen_data.copy()
-    prompts = get_promptlist(tmp_data)
+    if(tmp_data["obp_assume_direct_control"]):
+        prompts = []
+        prompts.append("")
+    else:
+        prompts = get_promptlist(tmp_data)
     idx = 0
 
     worker.buffer.append(
@@ -202,7 +211,7 @@ shared.gradio_root = gr.Blocks(
     title="RuinedFooocus " + version.version,
     theme=theme,
     css=modules.html.css,
-    analytics_enabled=False,
+    analytics_enabled=True,
     concurrency_count=4,
 ).queue()
 
@@ -219,6 +228,16 @@ with shared.gradio_root as block:
                 image_mode="RGBA",
             )
             add_ctrl("main_view", main_view)
+            inpaint_view = gr.Image(
+                height=680,
+                type="numpy",
+                elem_id="inpaint_sketch",
+                tool="sketch",
+                visible=False,
+                image_mode="RGBA",
+            )
+            add_ctrl("inpaint_view", inpaint_view)
+
             progress_html = gr.HTML(
                 value=modules.html.make_progress_html(32, "Progress 32%"),
                 visible=False,
@@ -595,7 +614,7 @@ with shared.gradio_root as block:
 
             ui_onebutton.ui_onebutton(prompt)
 
-            ui_controlnet.add_controlnet_tab()
+            inpaint_toggle = ui_controlnet.add_controlnet_tab(main_view, inpaint_view)
 
             with gr.Tab(label="Info"):
                 metadata_json.render()
@@ -614,6 +633,8 @@ with shared.gradio_root as block:
                 stop_button,
                 progress_html,
                 main_view,
+                inpaint_view,
+                inpaint_toggle,
                 gallery,
                 metadata_json,
             ],
