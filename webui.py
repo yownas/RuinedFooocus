@@ -27,6 +27,7 @@ from modules.performance import (
 from modules.settings import default_settings
 from modules.prompt_processing import get_promptlist
 from modules.util import get_wildcard_files
+from random_prompt.build_dynamic_prompt import build_dynamic_prompt
 
 from PIL import Image
 
@@ -128,7 +129,11 @@ def update_results(product):
 
 def append_work(gen_data):
     tmp_data = gen_data.copy()
-    prompts = get_promptlist(tmp_data)
+    if(tmp_data["obp_assume_direct_control"]):
+        prompts = []
+        prompts.append("")
+    else:
+        prompts = get_promptlist(tmp_data)
     idx = 0
 
     worker.buffer.append(
