@@ -197,8 +197,8 @@ for item in config:
         generatesongline = False
     if item[0] == "subject_cardname" and item[1] != "on":
         generatecardname = False
-    if item[0] == 'subject_episodetitle' and item[1] != 'on':
-            generateepisodetitle = False
+    if item[0] == "subject_episodetitle" and item[1] != "on":
+        generateepisodetitle = False
 
 # build up all subjects we can choose based on the loaded config file
 if (
@@ -222,7 +222,14 @@ if (
     subjects.append("humanoid")
 if generatelandscape:
     subjects.append("landscape")
-if generateevent or generateconcepts or generatepoemline or generatesongline or generatecardname or generateepisodetitle:
+if (
+    generateevent
+    or generateconcepts
+    or generatepoemline
+    or generatesongline
+    or generatecardname
+    or generateepisodetitle
+):
     subjects.append("concept")
 
 
@@ -275,7 +282,7 @@ if generatesongline:
 if generatecardname:
     subjectsubtypesconcept.append("names from card based games")
 if generateepisodetitle:
-     subjectsubtypesconcept.append("episode titles from tv shows")
+    subjectsubtypesconcept.append("episode titles from tv shows")
 
 
 def ui_onebutton(prompt):
@@ -376,11 +383,13 @@ def ui_onebutton(prompt):
 
     with gr.Tab(label="One Button"):
         with gr.Row():
-                random_button = gr.Button(value="Create Random Prompt", size="sm")
-                add_random_button = gr.Button(value="Add To Prompt", size="sm")
-        
+            random_button = gr.Button(value="Create Random Prompt", size="sm")
+            add_random_button = gr.Button(value="Add To Prompt", size="sm")
+
         with gr.Row():
-            assumedirectcontrol = gr.Checkbox(label="ASSUME DIRECT CONTROL", value=False)
+            assumedirectcontrol = gr.Checkbox(
+                label="BYPASS SAFETY PROTOCOLS", value=False
+            )
             add_ctrl("obp_assume_direct_control", assumedirectcontrol)
 
         with gr.Row():
@@ -549,7 +558,9 @@ def ui_onebutton(prompt):
             }
 
         assumedirectcontrol.change(
-            assumedirectcontrolflip, [assumedirectcontrol], [random_button, add_random_button]
+            assumedirectcontrolflip,
+            [assumedirectcontrol],
+            [random_button, add_random_button],
         )
 
         random_button.click(
