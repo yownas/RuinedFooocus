@@ -181,6 +181,11 @@ def generate_clicked(*args):
 
     shared.state["interrupted"] = False
 
+def calculateTokenCounter(text):
+    if len(text) < 1:
+        return 0
+    return len(tokenizer.tokenize(text))
+
 
 settings = default_settings
 
@@ -249,17 +254,23 @@ with shared.gradio_root as block:
             with gr.Row(elem_classes="type_row"):
                 with gr.Column(scale=5):
                     with gr.Group(), gr.Row():
-                        prompt = gr.Textbox(
-                            show_label=False,
-                            placeholder="Type prompt here.",
-                            container=False,
-                            autofocus=True,
-                            elem_classes="type_row",
-                            lines=1024,
-                            value=settings["prompt"],
-                            scale=4,
-                        )
-                        add_ctrl("prompt", prompt)
+                        with gr.Group():
+                            prompt = gr.Textbox(
+                                show_label=False,
+                                placeholder="Type prompt here.",
+                                container=False,
+                                autofocus=True,
+                                elem_classes="type_row",
+                                lines=1024,
+                                value=settings["prompt"],
+                                scale=4,
+                            )
+                            add_ctrl("prompt", prompt)
+                            prompt_token_counter = gr.HTML(
+                                visible=settings["advanced_mode"],
+                                value=str(calculateTokenCounter(settings["prompt"])), # start with token count for default prompt
+                                elem_classes=["tokenCounter"]
+                            )
                         spellcheck = gr.Dropdown(
                             label="Wildcards",
                             visible=False,
@@ -267,6 +278,10 @@ with shared.gradio_root as block:
                             value="",
                             scale=1,
                         )
+
+                    @prompt.change(inputs=prompt, outputs=prompt_token_counter)
+                    def updatePromptTokenCount(text):
+                        return calculateTokenCounter(text)
 
                     @prompt.input(inputs=prompt, outputs=spellcheck)
                     def checkforwildcards(text):
@@ -585,9 +600,9 @@ with shared.gradio_root as block:
             with gr.Tab(label="Info"):
                 metadata_json.render()
 
-        advanced_checkbox.change(
-            lambda x: gr.update(visible=x), advanced_checkbox, right_col
-        )
+        def update_token_visibility(x):
+            return [gr.update(visible=x), gr.update(visible=x)]
+        advanced_checkbox.change(update_token_visibility, inputs=advanced_checkbox, outputs=[right_col, prompt_token_counter])
 
         run_button.click(
             fn=refresh_seed, inputs=[seed_random, image_seed], outputs=image_seed
