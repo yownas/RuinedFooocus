@@ -12,6 +12,7 @@ import modules.async_worker as worker
 import modules.html
 import modules.path
 import ui_onebutton
+import ui_evolve
 import ui_controlnet
 from modules.interrogate import look
 from transformers import CLIPTokenizer
@@ -613,6 +614,8 @@ with shared.gradio_root as block:
                 return results
 
             ui_onebutton.ui_onebutton(prompt)
+
+            ui_evolve.add_evolve_tab(prompt)
 
             inpaint_toggle = ui_controlnet.add_controlnet_tab(main_view, inpaint_view)
 
