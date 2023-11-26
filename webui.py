@@ -12,6 +12,7 @@ import modules.async_worker as worker
 import modules.html
 import modules.path
 import ui_onebutton
+import ui_evolve
 import ui_controlnet
 from modules.interrogate import look
 from transformers import CLIPTokenizer
