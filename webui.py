@@ -273,8 +273,8 @@ with shared.gradio_root as block:
 
             with gr.Row(elem_classes="type_row"):
                 with gr.Column(scale=5):
-                    with gr.Group(), gr.Row():
-                        with gr.Group():
+                    with gr.Group():
+                        with gr.Group(), gr.Row():
                             prompt = gr.Textbox(
                                 show_label=False,
                                 placeholder="Type prompt here.",
@@ -286,17 +286,19 @@ with shared.gradio_root as block:
                                 scale=4,
                             )
                             add_ctrl("prompt", prompt)
-                            prompt_token_counter = gr.HTML(
-                                visible=settings["advanced_mode"],
-                                value=str(calculateTokenCounter(settings["prompt"])), # start with token count for default prompt
-                                elem_classes=["tokenCounter"]
+
+                            spellcheck = gr.Dropdown(
+                                label="Wildcards",
+                                visible=False,
+                                choices=[],
+                                value="",
+                                scale=1,
                             )
-                        spellcheck = gr.Dropdown(
-                            label="Wildcards",
-                            visible=False,
-                            choices=[],
-                            value="",
-                            scale=1,
+
+                        prompt_token_counter = gr.HTML(
+                            visible=settings["advanced_mode"],
+                            value=str(calculateTokenCounter(settings["prompt"])), # start with token count for default prompt
+                            elem_classes=["tokenCounter"]
                         )
 
                     @prompt.change(inputs=prompt, outputs=prompt_token_counter)
