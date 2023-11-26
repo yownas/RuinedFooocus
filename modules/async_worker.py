@@ -128,6 +128,10 @@ def worker():
         if "height" in gen_data:
             height = gen_data["height"]
 
+        if gen_data["cn_selection"] == "Img2Img" or gen_data["cn_type"] == "Img2img":
+            width = gen_data["input_image"].width
+            height = gen_data["input_image"].height
+
         seed = gen_data["seed"]
 
         max_seed = 2**32
