@@ -7,12 +7,15 @@ from random_prompt.csv_reader import (
     artist_category_by_category_csv_to_list,
 )
 from random_prompt.random_functions import (
-    rare_dist,
-    normal_dist,
     common_dist,
-    chance_roll,
+    normal_dist,
     uncommon_dist,
+    rare_dist,
+    legendary_dist,
     unique_dist,
+    extraordinary_dist,
+    novel_dist,
+    chance_roll,
 )
 
 
