@@ -158,11 +158,23 @@ class pipeline:
         except FileNotFoundError:
             return " "
 
-    def load_loras(self, loras):
-        if self.xl_base_patched_hash == str(loras):
-            return
-
+    def load_all_keywords(self, loras):
         lora_prompt_addition = ""
+        for name, weight in loras:
+            if name == "None" or weight == 0:
+                continue
+
+            filename = os.path.join(modules.path.lorafile_path, name)
+            lora_prompt_addition = (
+                f"{lora_prompt_addition}, {self.load_keywords(filename)}"
+            )
+        return lora_prompt_addition
+
+    def load_loras(self, loras):
+        lora_prompt_addition = self.load_all_keywords(loras)
+        if self.xl_base_patched_hash == str(loras):
+            return lora_prompt_addition
+
         loaded_loras = []
 
         model = self.xl_base
@@ -187,9 +199,6 @@ class pipeline:
                     loaded_loras += [(name, weight)]
                 except:
                     pass
-                lora_prompt_addition = (
-                    f"{lora_prompt_addition}, {self.load_keywords(filename)}"
-                )
         self.xl_base_patched = model
         self.xl_base_patched_hash = str(loras)
         print(f"LoRAs loaded: {loaded_loras}")

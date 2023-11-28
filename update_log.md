@@ -1,3 +1,7 @@
+### 1.23.2
+* Adds token count (thanks Lavorther)
+* Fixed lora keywords only working the first time the lora is loaded
+
 ### 1.23.1
 * Use OneButtonPrompt with infinite mode, simply put a tick in `BYPASS SAFETY PROTOCOLS`
 
