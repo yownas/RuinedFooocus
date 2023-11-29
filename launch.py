@@ -204,3 +204,17 @@ def clear_comfy_args():
     import comfy.cli_args
 
     sys.argv = argv
+
+
+def cuda_malloc():
+    import cuda_malloc
+
+
+prepare_environment()
+
+clear_comfy_args()
+# cuda_malloc()
+
+download_models()
+
+from webui import *
