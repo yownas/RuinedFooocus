@@ -1,5 +1,5 @@
 import torch
-import clip_interrogator as ci
+from clip_interrogator import Config, Interrogator
 from PIL import Image
 import json
 from shared import state
@@ -18,14 +18,14 @@ def look(image, gr):
         # state["pipeline"] = None
         gr.Info("Creating Your Prompt")
 
-        conf = ci.Config(
+        conf = Config(
             device=torch.device("cuda"),
             clip_model_name="ViT-L-14/openai",
             cache_path=clip_path,
         )
         conf.apply_low_vram_defaults()
 
-        i = ci.Interrogator(conf)
+        i = Interrogator(conf)
         text = i.interrogate(image)
 
     return text

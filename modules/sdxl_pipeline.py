@@ -385,9 +385,8 @@ class pipeline:
                 self.xl_base_patched.unet.model_dtype(),
             )
 
-        with suppress_stdout():
-            comfy.model_management.load_models_gpu([self.xl_base_patched.unet])
-            comfy.model_management.load_models_gpu(self.models)
+        comfy.model_management.load_models_gpu([self.xl_base_patched.unet])
+        comfy.model_management.load_models_gpu(self.models)
 
         noise = noise.to(device)
         latent_image = latent_image.to(device)
