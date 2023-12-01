@@ -95,6 +95,7 @@ Coming soon ...
 32. Generate Forever if Image Number is set to 0.
 33. Clip Interrogator, just drag your image onto the main image to generate the prompt
 34. Inpainting, Available in the `PowerUp` tab, simple check the box and it will either take a new image or the selected image in your gallery
+35. Evolve, takes your current generation and evolves it into different variations, best used with a fixed seed!
 
 
 ## Thanks

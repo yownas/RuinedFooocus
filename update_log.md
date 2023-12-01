@@ -1,3 +1,11 @@
+### 1.24.0
+* Added Evolve which generates variations on your generated picture.
+* Fixed wild imports
+* Added instant One Button Prompt
+* Added keybind of `ctrl+shift` to toggle `hurt me plenty`` mode
+* Code Cleanup
+* Fixed Issue with dropdown box's being case sensitive when sorting
+
 ### 1.23.2
 * Adds token count (thanks Lavorther)
 * Fixed lora keywords only working the first time the lora is loaded
