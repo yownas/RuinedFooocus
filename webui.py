@@ -349,6 +349,7 @@ with shared.gradio_root as block:
                     label="Hurt me plenty",
                     value=settings["advanced_mode"],
                     container=False,
+                    elem_id="hurtme",
                 )
         with gr.Column(scale=2, visible=settings["advanced_mode"]) as right_col:
             with gr.Tab(label="Setting"):

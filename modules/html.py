@@ -128,15 +128,25 @@ progress_html = """
 scripts = """
 function generate_shortcut(){
   document.addEventListener('keydown', (e) => {
-    let handled = false;
+    let handle = 'none';
     if (e.key !== undefined) {
-      if ((e.key === 'Enter' && (e.metaKey || e.ctrlKey || e.altKey))) handled = true;
+      if ((e.key === 'Enter' && (e.metaKey || e.ctrlKey || e.altKey))) handle = 'run';
     } else if (e.keyCode !== undefined) {
-      if ((e.keyCode === 13 && (e.metaKey || e.ctrlKey || e.altKey))) handled = true;
+      if ((e.keyCode === 13 && (e.metaKey || e.ctrlKey || e.altKey))) handle = 'run';
     }
-    if (handled) {
+    if (e.key !== undefined) {
+      if ((e.key === 'Shift' && (e.metaKey || e.ctrlKey || e.altKey))) handle = 'hurtme';
+    } else if (e.keyCode !== undefined) {
+      if ((e.keyCode === 16 && (e.metaKey || e.ctrlKey || e.altKey))) handle = 'hurtme';
+    }
+    if (handle == 'run') {
       const button = document.getElementById('generate');
       if (button) button.click();
+      e.preventDefault();
+    }
+    if (handle == 'hurtme') {
+      const ctrl = document.getElementById('hurtme').getElementsByTagName('INPUT')[0];
+      if (ctrl) ctrl.click();
       e.preventDefault();
     }
   });
