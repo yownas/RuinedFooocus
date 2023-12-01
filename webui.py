@@ -620,6 +620,8 @@ with shared.gradio_root as block:
 
             ui_onebutton.ui_onebutton(prompt)
 
+            ui_evolve.add_evolve_tab(prompt)
+
             inpaint_toggle = ui_controlnet.add_controlnet_tab(main_view, inpaint_view)
 
             with gr.Tab(label="Info"):
