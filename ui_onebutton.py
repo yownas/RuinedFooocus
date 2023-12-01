@@ -285,7 +285,7 @@ if generateepisodetitle:
     subjectsubtypesconcept.append("episode titles from tv shows")
 
 
-def ui_onebutton(prompt):
+def ui_onebutton(prompt, run_event):
     def gen_prompt(
         insanitylevel,
         subject,
@@ -329,7 +329,53 @@ def ui_onebutton(prompt):
             givenoutfit,
         )
 
-        return prompt
+        return prompt 
+
+    def instant_gen_prompt(
+        insanitylevel,
+        subject,
+        artist,
+        imagetype,
+        antistring,
+        prefixprompt,
+        suffixprompt,
+        givensubject,
+        smartsubject,
+        giventypeofimage,
+        imagemodechance,
+        chosengender,
+        chosensubjectsubtypeobject,
+        chosensubjectsubtypehumanoid,
+        chosensubjectsubtypeconcept,
+        givenoutfit,
+        run_event,
+    ):
+        prompt = build_dynamic_prompt(
+            insanitylevel,
+            subject,
+            artist,
+            imagetype,
+            False,
+            antistring,
+            prefixprompt,
+            suffixprompt,
+            1,
+            "comma",
+            givensubject,
+            smartsubject,
+            giventypeofimage,
+            imagemodechance,
+            chosengender,
+            chosensubjectsubtypeobject,
+            chosensubjectsubtypehumanoid,
+            chosensubjectsubtypeconcept,
+            False,
+            False,
+            0,
+            givenoutfit,
+        )
+
+        return prompt, run_event+1
 
     def add_prompt(
         prompt,
@@ -383,8 +429,9 @@ def ui_onebutton(prompt):
 
     with gr.Tab(label="OBP"):
         with gr.Row():
-            random_button = gr.Button(value="Create Random Prompt", size="sm")
-            add_random_button = gr.Button(value="Add To Prompt", size="sm")
+            instant_obp = gr.Button(value="Instant OBP", size="sm", min_width = 1)
+            random_button = gr.Button(value="Random Prompt", size="sm", min_width = 1)
+            add_random_button = gr.Button(value="+", size="sm", min_width=1)
 
         with gr.Row():
             assumedirectcontrol = gr.Checkbox(
@@ -563,6 +610,29 @@ def ui_onebutton(prompt):
             [random_button, add_random_button],
         )
 
+        instant_obp.click(
+            instant_gen_prompt,
+            inputs=[
+                insanitylevel,
+                subject,
+                artist,
+                imagetype,
+                antistring,
+                prefixprompt,
+                suffixprompt,
+                givensubject,
+                smartsubject,
+                giventypeofimage,
+                imagemodechance,
+                chosengender,
+                chosensubjectsubtypeobject,
+                chosensubjectsubtypehumanoid,
+                chosensubjectsubtypeconcept,
+                givenoutfit,
+                run_event,
+            ],
+            outputs=[prompt, run_event],
+        )
         random_button.click(
             gen_prompt,
             inputs=[

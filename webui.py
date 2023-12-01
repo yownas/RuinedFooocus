@@ -15,7 +15,6 @@ import ui_onebutton
 import ui_evolve
 import ui_controlnet
 from modules.interrogate import look
-from transformers import CLIPTokenizer
 
 from comfy.samplers import KSampler
 from modules.sdxl_styles import load_styles, aspect_ratios, styles, allstyles
@@ -31,8 +30,6 @@ from modules.util import get_wildcard_files
 from random_prompt.build_dynamic_prompt import build_dynamic_prompt
 
 from PIL import Image
-
-shared.tokenizer = CLIPTokenizer.from_pretrained("openai/clip-vit-large-patch14")
 
 inpaint_toggle = None
 
@@ -619,7 +616,7 @@ with shared.gradio_root as block:
                 results += [gr.update(choices=list(load_styles().keys()))]
                 return results
 
-            ui_onebutton.ui_onebutton(prompt)
+            ui_onebutton.ui_onebutton(prompt, run_event)
 
             ui_evolve.add_evolve_tab(prompt, run_event)
 
