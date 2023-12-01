@@ -3,8 +3,6 @@ from shared import tokenizer
 import random
 
 def add_evolve_tab(prompt, run_event):
-    #evolve_tokenizer = CLIPTokenizer.from_pretrained("openai/clip-vit-large-patch14")
-
     with gr.Tab(label="Evo"):
         with gr.Row():
             evolve_1_btn = gr.Button(
@@ -56,7 +54,7 @@ def add_evolve_tab(prompt, run_event):
         with gr.Row():
             evo_help = gr.HTML(value='''
                 Start with any prompt.<br>
-                For best result, set a non-random seed.<br>
+                For best result, set a static seed.<br>
                 Click on the number the correspond to the image you like best.
             ''')
 
