@@ -219,6 +219,7 @@ shared.gradio_root = gr.Blocks(
 
 with shared.gradio_root as block:
     block.load(_js=modules.html.scripts)
+    run_event = gr.Number(visible=False, value=0)
     with gr.Row():
         with gr.Column(scale=5):
             main_view = gr.Image(
@@ -620,7 +621,7 @@ with shared.gradio_root as block:
 
             ui_onebutton.ui_onebutton(prompt)
 
-            ui_evolve.add_evolve_tab(prompt)
+            ui_evolve.add_evolve_tab(prompt, run_event)
 
             inpaint_toggle = ui_controlnet.add_controlnet_tab(main_view, inpaint_view)
 
@@ -647,7 +648,7 @@ with shared.gradio_root as block:
             outputs=[right_col, prompt_token_counter],
         )
 
-        run_button.click(
+        run_event.change(
             fn=refresh_seed, inputs=[seed_random, image_seed], outputs=image_seed
         ).then(
             fn=generate_clicked,
@@ -663,6 +664,9 @@ with shared.gradio_root as block:
                 metadata_json,
             ],
         )
+        def poke(number):
+            return number+1
+        run_button.click(fn=poke, inputs=run_event, outputs=run_event)
 
         def stop_clicked():
             worker.buffer = []
@@ -677,7 +681,7 @@ with shared.gradio_root as block:
         else:
             return "logo.png"
 
-    last_image = gr.Button(visible=visible)
+    last_image = gr.Button(visible=False)
     last_image.click(get_last_image, outputs=[last_image], api_name="last_image")
 
 args = parse_args()

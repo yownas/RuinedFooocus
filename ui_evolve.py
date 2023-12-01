@@ -7,10 +7,10 @@ import random
 #global tokenizer
 #evolve_tokenizer = tokenizer
 
-def add_evolve_tab(prompt):
+def add_evolve_tab(prompt, run_event):
     evolve_tokenizer = CLIPTokenizer.from_pretrained("openai/clip-vit-large-patch14")
 
-    with gr.Tab(label="Evolve"):
+    with gr.Tab(label="Evo"):
         with gr.Row():
             evolve_1_btn = gr.Button(
                 value="1",
@@ -58,6 +58,12 @@ def add_evolve_tab(prompt):
                 step=1,
                 label="Evolve chance %:"
             )
+        with gr.Row():
+            evo_help = gr.HTML(value='''
+                Start with any prompt.<br>
+                For best result, set a non-random seed.<br>
+                Click on the number the correspond to the image you like best.
+            ''')
 
         def tokenize_and_randomize(prompt, strength):
             all_tokens = list(evolve_tokenizer.get_vocab().keys())
@@ -80,18 +86,19 @@ def add_evolve_tab(prompt):
             button,
             strength,
             prompt,
+            run_event,
         ):
             prompts = prompt.split("---")
             in_txt = prompts[min(int(button), len(prompts)) - 1]
             res = four_evolved_prompts(in_txt, strength) + [in_txt] + four_evolved_prompts(in_txt, strength)
-            return gr.update(value='\n---\n'.join(res))
+            return gr.update(value='\n---\n'.join(res)), run_event+1
 
-        evolve_1_btn.click(evolve, inputs=[evolve_1_btn, evolve_strength, prompt], outputs=[prompt])
-        evolve_2_btn.click(evolve, inputs=[evolve_2_btn, evolve_strength, prompt], outputs=[prompt])
-        evolve_3_btn.click(evolve, inputs=[evolve_3_btn, evolve_strength, prompt], outputs=[prompt])
-        evolve_4_btn.click(evolve, inputs=[evolve_4_btn, evolve_strength, prompt], outputs=[prompt])
-        evolve_5_btn.click(evolve, inputs=[evolve_5_btn, evolve_strength, prompt], outputs=[prompt])
-        evolve_6_btn.click(evolve, inputs=[evolve_6_btn, evolve_strength, prompt], outputs=[prompt])
-        evolve_7_btn.click(evolve, inputs=[evolve_7_btn, evolve_strength, prompt], outputs=[prompt])
-        evolve_8_btn.click(evolve, inputs=[evolve_8_btn, evolve_strength, prompt], outputs=[prompt])
-        evolve_9_btn.click(evolve, inputs=[evolve_9_btn, evolve_strength, prompt], outputs=[prompt])
+        evolve_1_btn.click(evolve, inputs=[evolve_1_btn, evolve_strength, prompt, run_event], outputs=[prompt, run_event])
+        evolve_2_btn.click(evolve, inputs=[evolve_2_btn, evolve_strength, prompt, run_event], outputs=[prompt, run_event])
+        evolve_3_btn.click(evolve, inputs=[evolve_3_btn, evolve_strength, prompt, run_event], outputs=[prompt, run_event])
+        evolve_4_btn.click(evolve, inputs=[evolve_4_btn, evolve_strength, prompt, run_event], outputs=[prompt, run_event])
+        evolve_5_btn.click(evolve, inputs=[evolve_5_btn, evolve_strength, prompt, run_event], outputs=[prompt, run_event])
+        evolve_6_btn.click(evolve, inputs=[evolve_6_btn, evolve_strength, prompt, run_event], outputs=[prompt, run_event])
+        evolve_7_btn.click(evolve, inputs=[evolve_7_btn, evolve_strength, prompt, run_event], outputs=[prompt, run_event])
+        evolve_8_btn.click(evolve, inputs=[evolve_8_btn, evolve_strength, prompt, run_event], outputs=[prompt, run_event])
+        evolve_9_btn.click(evolve, inputs=[evolve_9_btn, evolve_strength, prompt, run_event], outputs=[prompt, run_event])
