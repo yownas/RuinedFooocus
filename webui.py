@@ -32,7 +32,7 @@ from random_prompt.build_dynamic_prompt import build_dynamic_prompt
 
 from PIL import Image
 
-tokenizer = CLIPTokenizer.from_pretrained("openai/clip-vit-large-patch14")
+shared.tokenizer = CLIPTokenizer.from_pretrained("openai/clip-vit-large-patch14")
 
 inpaint_toggle = None
 
@@ -195,7 +195,7 @@ def generate_clicked(*args):
 def calculateTokenCounter(text):
     if len(text) < 1:
         return 0
-    return len(tokenizer.tokenize(text))
+    return len(shared.tokenizer.tokenize(text))
 
 
 settings = default_settings
@@ -312,7 +312,7 @@ with shared.gradio_root as block:
                     @prompt.input(inputs=prompt, outputs=spellcheck)
                     def checkforwildcards(text):
                         test = find_unclosed_markers(text)
-                        tokencount = len(tokenizer.tokenize(text))
+                        tokencount = len(shared.tokenizer.tokenize(text))
                         if test is not None:
                             filtered = [s for s in shared.wildcards if test in s]
                             filtered.append(" ")

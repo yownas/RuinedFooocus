@@ -1,14 +1,9 @@
 import gradio as gr
-from transformers import CLIPTokenizer
-from shared import add_ctrl
+from shared import tokenizer
 import random
 
-# FIXME use global tokenizer?
-#global tokenizer
-#evolve_tokenizer = tokenizer
-
 def add_evolve_tab(prompt, run_event):
-    evolve_tokenizer = CLIPTokenizer.from_pretrained("openai/clip-vit-large-patch14")
+    #evolve_tokenizer = CLIPTokenizer.from_pretrained("openai/clip-vit-large-patch14")
 
     with gr.Tab(label="Evo"):
         with gr.Row():
@@ -66,15 +61,15 @@ def add_evolve_tab(prompt, run_event):
             ''')
 
         def tokenize_and_randomize(prompt, strength):
-            all_tokens = list(evolve_tokenizer.get_vocab().keys())
-            tokens = evolve_tokenizer.tokenize(prompt)
+            all_tokens = list(tokenizer.get_vocab().keys())
+            tokens = tokenizer.tokenize(prompt)
             res = []
             for token in tokens:
                 if random.random() < float(strength / 100.0):
                     res += [all_tokens[random.randint(0, len(all_tokens) - 3)]] # Skip <|startoftext> & <|endoftext|>
                 else:
                     res += [token]
-            return evolve_tokenizer.convert_tokens_to_string(res)
+            return tokenizer.convert_tokens_to_string(res)
 
         def four_evolved_prompts(prompt, strength):
             res = []
