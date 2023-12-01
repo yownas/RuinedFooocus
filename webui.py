@@ -134,7 +134,7 @@ def update_results(product):
 
 def append_work(gen_data):
     tmp_data = gen_data.copy()
-    if(tmp_data["obp_assume_direct_control"]):
+    if tmp_data["obp_assume_direct_control"]:
         prompts = []
         prompts.append("")
     else:
@@ -190,6 +190,7 @@ def generate_clicked(*args):
                 finished = True
 
     shared.state["interrupted"] = False
+
 
 def calculateTokenCounter(text):
     if len(text) < 1:
@@ -297,8 +298,10 @@ with shared.gradio_root as block:
 
                         prompt_token_counter = gr.HTML(
                             visible=settings["advanced_mode"],
-                            value=str(calculateTokenCounter(settings["prompt"])), # start with token count for default prompt
-                            elem_classes=["tokenCounter"]
+                            value=str(
+                                calculateTokenCounter(settings["prompt"])
+                            ),  # start with token count for default prompt
+                            elem_classes=["tokenCounter"],
                         )
 
                     @prompt.change(inputs=prompt, outputs=prompt_token_counter)
@@ -620,11 +623,27 @@ with shared.gradio_root as block:
             inpaint_toggle = ui_controlnet.add_controlnet_tab(main_view, inpaint_view)
 
             with gr.Tab(label="Info"):
-                metadata_json.render()
+                with gr.Row():
+                    metadata_json.render()
+                with gr.Row():
+                    gr.HTML(
+                        value='<a href="file=html/slideshow.html" style="color: gray; text-decoration: none" target="_blank">&pi;</a>',
+                        scale=1,
+                    )
+                with gr.Row():
+                    gr.HTML(
+                        value='<a href="https://discord.gg/CvpAFya9Rr">Discord</a> <a href="https://github.com/runew0lf/RuinedFooocus">Github</a>',
+                        scale=1,
+                    )
 
         def update_token_visibility(x):
             return [gr.update(visible=x), gr.update(visible=x)]
-        advanced_checkbox.change(update_token_visibility, inputs=advanced_checkbox, outputs=[right_col, prompt_token_counter])
+
+        advanced_checkbox.change(
+            update_token_visibility,
+            inputs=advanced_checkbox,
+            outputs=[right_col, prompt_token_counter],
+        )
 
         run_button.click(
             fn=refresh_seed, inputs=[seed_random, image_seed], outputs=image_seed
@@ -648,12 +667,6 @@ with shared.gradio_root as block:
             worker.interrupt_ruined_processing = True
 
         stop_button.click(fn=stop_clicked, queue=False)
-
-    with gr.Row():
-        gr.HTML(
-            value='<a href="file=html/slideshow.html" style="color: gray; text-decoration: none" target="_blank">&pi;</a>',
-            scale=1,
-        )
 
     def get_last_image():
         global state
