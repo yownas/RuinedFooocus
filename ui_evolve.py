@@ -21,7 +21,7 @@ def add_evolve_tab(prompt, run_event):
         words = re.split(r'\b', prompt)
         res = []
         for word in words:
-            if word.lower() in word_list and random.random() < float(strength / 100.0):
+            if not word.isdigit() and word.lower() in word_list and random.random() < float(strength / 100.0):
                 res += [word_list[random.randint(0, len(word_list) - 1)]]
             else:
                 res += [word]
