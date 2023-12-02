@@ -53,9 +53,10 @@ def add_evolve_tab(prompt, run_event):
             )
         with gr.Row():
             evo_help = gr.HTML(value='''
-                Start with any prompt.<br>
+                Start with any prompt. Random chunk of letters works great.<br>
+                Click on the number that correspond to the image you like best.<br>
+                Repeat.<br>
                 For best result, set a static seed.<br>
-                Click on the number the correspond to the image you like best.
             ''')
 
         def tokenize_and_randomize(prompt, strength):
