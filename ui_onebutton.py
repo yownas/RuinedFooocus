@@ -600,6 +600,7 @@ def ui_onebutton(prompt, run_event):
         def assumedirectcontrolflip(assumedirectcontrol):
             enable = not assumedirectcontrol
             return {
+                instant_obp: gr.update(visible=enable),
                 random_button: gr.update(visible=enable),
                 add_random_button: gr.update(visible=enable),
             }
@@ -607,7 +608,7 @@ def ui_onebutton(prompt, run_event):
         assumedirectcontrol.change(
             assumedirectcontrolflip,
             [assumedirectcontrol],
-            [random_button, add_random_button],
+            [instant_obp, random_button, add_random_button],
         )
 
         instant_obp.click(
