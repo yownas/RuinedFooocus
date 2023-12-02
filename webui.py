@@ -412,20 +412,6 @@ with shared.gradio_root as block:
                     custom_steps,
                 ]
 
-                @performance_selection.change(
-                    inputs=[performance_selection],
-                    outputs=[perf_name] + performance_outputs,
-                )
-                def performance_changed(selection):
-                    if selection != NEWPERF:
-                        return [gr.update(visible=False)] + [
-                            gr.update(visible=False)
-                        ] * len(performance_outputs)
-                    else:
-                        return [gr.update(value="")] + [gr.update(visible=True)] * len(
-                            performance_outputs
-                        )
-
                 @perf_save.click(
                     inputs=performance_outputs,
                     outputs=[performance_selection],
@@ -633,6 +619,17 @@ with shared.gradio_root as block:
                         <a href="file=html/slideshow.html" style="color: gray; text-decoration: none" target="_blank">&pi;</a>
                         """,
                     )
+
+            @sampler_name.change(
+                inputs=[sampler_name], outputs=[lora_ctrls[0]] + [lora_ctrls[1]]
+            )
+            def sampler_changed(sampler_name):
+                if sampler_name == "lcm":
+                    return [gr.update(value=modules.path.find_lcm_lora())] + [
+                        gr.update(value=1.0)
+                    ]
+                else:
+                    return [gr.update()] + [gr.update()]
 
             @performance_selection.change(
                 inputs=[performance_selection],
