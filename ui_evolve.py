@@ -17,7 +17,7 @@ def add_evolve_tab(prompt, run_event):
 
     def randomize_words(prompt, strength):
         with open('wildcards_official/words.txt') as f:
-            word_list = f.read().splitlines()
+            word_list = f.read().lower().splitlines()
         words = re.split(r'\b', prompt)
         res = []
         for word in words:
