@@ -12,7 +12,9 @@ pygit2.option(pygit2.GIT_OPT_SET_OWNER_VALIDATION, 0)
 
 
 logging.getLogger("torch.distributed.nn").setLevel(logging.ERROR)  # sshh...
-logging.getLogger("xformers").addFilter(lambda record: "A matching Triton is not available" not in record.getMessage())
+logging.getLogger("xformers").addFilter(
+    lambda record: "A matching Triton is not available" not in record.getMessage()
+)
 
 python = sys.executable
 default_command_live = os.environ.get("LAUNCH_LIVE_OUTPUT") == "1"
@@ -41,7 +43,7 @@ def git_clone(url, dir, name, hash=None):
         commit = repo.get(hash)
 
         repo.checkout_tree(commit, strategy=pygit2.GIT_CHECKOUT_FORCE)
-        print(f"{name} checkout finished.")
+        print(f"{name} update finished.")
     except Exception as e:
         print(f"Git clone failed for {name}: {str(e)}")
 
@@ -59,7 +61,9 @@ def is_installed(package):
     return spec is not None
 
 
-def run(command, desc=None, errdesc=None, custom_env=None, live: bool = default_command_live) -> str:
+def run(
+    command, desc=None, errdesc=None, custom_env=None, live: bool = default_command_live
+) -> str:
     if desc is not None:
         print(desc)
 
@@ -133,7 +137,9 @@ def requirements_met(requirements_file):
             except Exception:
                 return False
 
-            if packaging.version.parse(version_required) != packaging.version.parse(version_installed):
+            if packaging.version.parse(version_required) != packaging.version.parse(
+                version_installed
+            ):
                 return False
 
     return True

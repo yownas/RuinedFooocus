@@ -6,7 +6,7 @@ root = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(root)
 os.chdir(root)
 
-
+bupdated = False
 try:
     import pygit2
 
@@ -30,18 +30,19 @@ try:
     merge_result, _ = repo.merge_analysis(remote_commit.id)
 
     if merge_result & pygit2.GIT_MERGE_ANALYSIS_UP_TO_DATE:
-        print("Already up-to-date")
+        print("You have the latest version")
     elif merge_result & pygit2.GIT_MERGE_ANALYSIS_FASTFORWARD:
         local_branch.set_target(remote_commit.id)
         repo.head.set_target(remote_commit.id)
         repo.checkout_tree(repo.get(remote_commit.id))
         repo.reset(local_branch.target, pygit2.GIT_RESET_HARD)
         print("Updating Files")
+        bupdated = True
     elif merge_result & pygit2.GIT_MERGE_ANALYSIS_NORMAL:
-        print("Update failed Did you modify any files?")
+        print("Update failed,  Did you modify any files?")
 except Exception as e:
-    print("Update failed.")
+    print("Update failed...")
     print(str(e))
-
-print("Update succeeded.")
+if bupdated:
+    print("Update succeeded!!")
 from launch import *
