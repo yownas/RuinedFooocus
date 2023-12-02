@@ -627,11 +627,43 @@ with shared.gradio_root as block:
                     metadata_json.render()
                 with gr.Row():
                     gr.HTML(
-                        value='''
+                        value="""
                         <a href="https://discord.gg/CvpAFya9Rr"><img src="file=html/icon_clyde_white_RGB.svg" height="16" width="16" style="display:inline-block;">&nbsp;Discord</a><br>
                         <a href="https://github.com/runew0lf/RuinedFooocus"><img src="file=html/github-mark-white.svg" height="16" width="16" style="display:inline-block;">&nbsp;Github</a><br>
                         <a href="file=html/slideshow.html" style="color: gray; text-decoration: none" target="_blank">&pi;</a>
-                        ''',
+                        """,
+                    )
+
+            @performance_selection.change(
+                inputs=[performance_selection],
+                outputs=[perf_name]
+                + performance_outputs
+                + [lora_ctrls[0]]
+                + [lora_ctrls[1]],
+            )
+            def performance_changed(selection):
+                if selection == NEWPERF:
+                    return (
+                        [gr.update(value="")]
+                        + [gr.update(visible=True)] * len(performance_outputs)
+                        + [gr.update()]
+                        + [gr.update()]
+                    )
+                elif selection == "Lcm":
+                    print("GOT HERE")
+                    return (
+                        [gr.update(visible=False)]
+                        + [gr.update(visible=False)] * len(performance_outputs)
+                        + [gr.update(value=modules.path.find_lcm_lora())]
+                        + [gr.update(value=1.0)]
+                    )
+
+                else:
+                    return (
+                        [gr.update(visible=False)]
+                        + [gr.update(visible=False)] * len(performance_outputs)
+                        + [gr.update()]
+                        + [gr.update()]
                     )
 
         def update_token_visibility(x):
@@ -659,8 +691,10 @@ with shared.gradio_root as block:
                 metadata_json,
             ],
         )
+
         def poke(number):
-            return number+1
+            return number + 1
+
         run_button.click(fn=poke, inputs=run_event, outputs=run_event)
 
         def stop_clicked():
