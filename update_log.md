@@ -1,3 +1,6 @@
+### 1.24.1
+* Code Tidying and tweaks
+
 ### 1.24.0
 * Added Evolve which generates variations on your generated picture.
 * Fixed wild imports
