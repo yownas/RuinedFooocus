@@ -618,7 +618,6 @@ with shared.gradio_root as block:
                 return results
 
             ui_onebutton.ui_onebutton(prompt, run_event)
-
             ui_evolve.add_evolve_tab(prompt, run_event)
 
             inpaint_toggle = ui_controlnet.add_controlnet_tab(main_view, inpaint_view)
