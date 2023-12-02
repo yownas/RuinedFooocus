@@ -1,3 +1,7 @@
+### 1.24.2
+* More Tidying and tweaks
+* Autoselect LCM lora if Lcm is selected from the quality or sampler dropdowns
+
 ### 1.24.1
 * Code Tidying and tweaks
 
