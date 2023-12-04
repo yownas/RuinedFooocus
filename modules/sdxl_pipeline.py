@@ -3,6 +3,7 @@ import numpy as np
 import os
 import torch
 import cv2
+import re
 
 import modules.path
 import modules.controlnet
@@ -224,10 +225,14 @@ class pipeline:
         self.conditions = {}
         self.conditions["+"] = {}
         self.conditions["-"] = {}
+        self.conditions["switch"] = {}
         self.conditions["+"]["text"] = None
         self.conditions["+"]["cache"] = None
         self.conditions["-"]["text"] = None
         self.conditions["-"]["cache"] = None
+        self.conditions["switch"]["text"] = None
+        self.conditions["switch"]["cache"] = None
+        
 
     def textencode(self, id, text):
         update = False
@@ -239,6 +244,40 @@ class pipeline:
             self.conditions[id]["text"] = text
             update = True
         return update
+    
+    def set_timestep_range(self, conditioning, start, end):
+        c = []
+        for t in conditioning:
+            if 'pooled_output' in t:
+                t['start_percent'] = start
+                t['end_percent'] = end
+        
+        return conditioning
+    
+   
+    def prompt_switch_per_step(self, prompt, steps):
+        # Find all occurrences of [option1|option2|...] in the input string
+        options_pattern = r'\[([^|\]]+(?:\|[^|\]]+)*)\]'
+        matches = re.finditer(options_pattern, prompt)
+        options_list = []
+        exact_matches = []
+
+        for match in matches:
+            options = match.group(1).split('|') if '|' in match.group(1) else [match.group(1)]
+            options_list.append(options)
+            exact_matches.append(match.group(0))
+
+        prompt_per_step = []
+        for i in range(0,steps):
+            prompt_to_append = prompt
+            
+            for options, exact_match in zip(options_list, exact_matches):
+                    replacement = options[i % len(options)]  # Use modulo to cycle through options
+                    prompt_to_append = prompt_to_append.replace(exact_match, replacement, 1)
+
+            prompt_per_step.append(prompt_to_append)
+            
+        return prompt_per_step
 
     @torch.inference_mode()
     def process(
@@ -267,10 +306,36 @@ class pipeline:
         updated_conditions = False
         if self.conditions is None:
             self.clean_prompt_cond_caches()
+
+
+        
         if self.textencode("+", positive_prompt):
             updated_conditions = True
         if self.textencode("-", negative_prompt):
             updated_conditions = True
+
+        prompt_switch_mode = False
+        if("|" in positive_prompt):
+            prompt_switch_mode = True
+            prompt_per_step = self.prompt_switch_per_step(positive_prompt, steps)
+            
+            perc_per_step = round(100/steps,2)
+            positive_complete = []
+            for i in range(len(prompt_per_step)):
+                if self.textencode("switch", prompt_per_step[i]):
+                    updated_conditions = True
+                positive_switch = convert_cond(self.conditions["switch"]["cache"])
+                start_perc = round((perc_per_step*i)/100,2)
+                end_perc = round((perc_per_step*(i+1))/100,2)
+                if end_perc >= 0.99:
+                    end_perc = 1
+                positive_switch = self.set_timestep_range(positive_switch,start_perc, end_perc)
+                
+                positive_complete += positive_switch
+                
+                
+            positive_switch = convert_cond(self.conditions["switch"]["cache"])
+
 
         if controlnet is not None and input_image is not None:
             worker.outputs.append(["preview", (-1, f"Powering up ...", None)])
@@ -282,30 +347,56 @@ class pipeline:
             )[0]
             self.refresh_controlnet(name=controlnet["type"])
             if self.xl_controlnet:
-                match controlnet["type"].lower():
-                    case "canny":
-                        input_image = Canny().detect_edge(
-                            image=input_image,
-                            low_threshold=float(controlnet["edge_low"]),
-                            high_threshold=float(controlnet["edge_high"]),
-                        )[0]
-                        updated_conditions = True
-                    case "depth":
-                        updated_conditions = True
-                (
-                    self.conditions["+"]["cache"],
-                    self.conditions["-"]["cache"],
-                ) = ControlNetApplyAdvanced().apply_controlnet(
-                    positive=self.conditions["+"]["cache"],
-                    negative=self.conditions["-"]["cache"],
-                    control_net=self.xl_controlnet,
-                    image=input_image,
-                    strength=float(controlnet["strength"]),
-                    start_percent=float(controlnet["start"]),
-                    end_percent=float(controlnet["stop"]),
-                )
-                self.conditions["+"]["text"] = None
-                self.conditions["-"]["text"] = None
+                if(prompt_switch_mode):
+                    match controlnet["type"].lower():
+                        case "canny":
+                            input_image = Canny().detect_edge(
+                                image=input_image,
+                                low_threshold=float(controlnet["edge_low"]),
+                                high_threshold=float(controlnet["edge_high"]),
+                            )[0]
+                            updated_conditions = True
+                        case "depth":
+                            updated_conditions = True
+                    (
+                        self.conditions["+"]["cache"],
+                        self.conditions["-"]["cache"],
+                    ) = ControlNetApplyAdvanced().apply_controlnet(
+                        positive=positive_complete,
+                        negative=self.conditions["-"]["cache"],
+                        control_net=self.xl_controlnet,
+                        image=input_image,
+                        strength=float(controlnet["strength"]),
+                        start_percent=float(controlnet["start"]),
+                        end_percent=float(controlnet["stop"]),
+                    )
+                    self.conditions["+"]["text"] = None
+                    self.conditions["-"]["text"] = None
+                else:
+                    match controlnet["type"].lower():
+                        case "canny":
+                            input_image = Canny().detect_edge(
+                                image=input_image,
+                                low_threshold=float(controlnet["edge_low"]),
+                                high_threshold=float(controlnet["edge_high"]),
+                            )[0]
+                            updated_conditions = True
+                        case "depth":
+                            updated_conditions = True
+                    (
+                        self.conditions["+"]["cache"],
+                        self.conditions["-"]["cache"],
+                    ) = ControlNetApplyAdvanced().apply_controlnet(
+                        positive=self.conditions["+"]["cache"],
+                        negative=self.conditions["-"]["cache"],
+                        control_net=self.xl_controlnet,
+                        image=input_image,
+                        strength=float(controlnet["strength"]),
+                        start_percent=float(controlnet["start"]),
+                        end_percent=float(controlnet["stop"]),
+                    )
+                    self.conditions["+"]["text"] = None
+                    self.conditions["-"]["text"] = None
 
             if controlnet["type"].lower() == "img2img":
                 latent = VAEEncode().encode(
@@ -391,7 +482,10 @@ class pipeline:
         noise = noise.to(device)
         latent_image = latent_image.to(device)
 
-        positive_copy = convert_cond(self.conditions["+"]["cache"])
+        if prompt_switch_mode:
+            positive_copy = positive_complete
+        else:
+            positive_copy = convert_cond(self.conditions["+"]["cache"])
         negative_copy = convert_cond(self.conditions["-"]["cache"])
         kwargs = {
             "cfg": cfg,
