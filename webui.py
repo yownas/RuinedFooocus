@@ -647,7 +647,6 @@ with shared.gradio_root as block:
                         + [gr.update()]
                     )
                 elif selection == "Lcm":
-                    print("GOT HERE")
                     return (
                         [gr.update(visible=False)]
                         + [gr.update(visible=False)] * len(performance_outputs)
