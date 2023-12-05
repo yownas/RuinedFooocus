@@ -1,3 +1,7 @@
+### 1.25.0
+* Prompt Bracketing Now works ie `[cat|dog]`
+* Updated comfy version
+
 ### 1.24.2
 * More Tidying and tweaks
 * Autoselect LCM lora if Lcm is selected from the quality or sampler dropdowns
