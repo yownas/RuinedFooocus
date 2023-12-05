@@ -1,3 +1,6 @@
+### 1.25.1
+* Now displays 🗒️ at the end of the loraname if it has a keyword .txt file
+
 ### 1.25.0
 * Prompt Bracketing Now works ie `[cat|dog]`
 * Updated comfy version

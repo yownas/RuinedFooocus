@@ -69,7 +69,7 @@ upscaler_filenames = []
 extensions = [".pth", ".ckpt", ".bin", ".safetensors"]
 
 
-def get_model_filenames(folder_path):
+def get_model_filenames(folder_path, isLora=False):
     if not os.path.isdir(folder_path):
         raise ValueError("Folder path is not a valid directory.")
 
@@ -83,6 +83,11 @@ def get_model_filenames(folder_path):
             _, ext = os.path.splitext(filename)
             if ext.lower() in [".pth", ".ckpt", ".bin", ".safetensors"]:
                 path = os.path.join(relative_path, filename)
+                if isLora:
+                    txtcheck = path.replace(".safetensors", ".txt")
+                    if os.path.isfile(f"{folder_path}{txtcheck}"):
+                        path = path + " 🗒️"
+
                 filenames.append(path)
 
     return sorted(
@@ -94,7 +99,7 @@ def get_model_filenames(folder_path):
 def update_all_model_names():
     global model_filenames, lora_filenames, upscaler_filenames
     model_filenames = get_model_filenames(modelfile_path)
-    lora_filenames = get_model_filenames(lorafile_path)
+    lora_filenames = get_model_filenames(lorafile_path, True)
     upscaler_filenames = get_model_filenames(upscaler_path)
     return
 

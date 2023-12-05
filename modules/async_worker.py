@@ -112,7 +112,7 @@ def worker():
         outputs.append(["preview", (-1, f"Loading LoRA models ...", None)])
         lora_keywords = pipeline.load_loras(loras)
         if lora_keywords is None:
-            lora_keywords = " "
+            lora_keywords = ""
 
         if gen_data["performance_selection"] == NEWPERF:
             steps = gen_data["custom_steps"]
@@ -212,7 +212,7 @@ def worker():
             p_txt, n_txt = process_prompt(
                 gen_data["style_selection"], pos_stripped, neg_stripped, gen_data
             )
-            p_txt += lora_keywords
+            p_txt = lora_keywords + p_txt
             start_step = 0
             denoise = None
             with TimeIt("Pipeline process"):

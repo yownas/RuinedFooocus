@@ -164,13 +164,14 @@ class pipeline:
         for name, weight in loras:
             if name == "None" or weight == 0:
                 continue
-
+            name = name.strip(" 🗒️")
             filename = os.path.join(modules.path.lorafile_path, name)
             lora_prompt_addition = (
-                f"{lora_prompt_addition}, {self.load_keywords(filename)}"
+                f"{lora_prompt_addition} {self.load_keywords(filename)}, "
             )
         return lora_prompt_addition
 
+    #   name = name.strip(" 🗒️")
     def load_loras(self, loras):
         lora_prompt_addition = self.load_all_keywords(loras)
         if self.xl_base_patched_hash == str(loras):
@@ -182,7 +183,7 @@ class pipeline:
         for name, weight in loras:
             if name == "None" or weight == 0:
                 continue
-
+            name = name.strip(" 🗒️")
             filename = os.path.join(modules.path.lorafile_path, name)
             print(f"Loading LoRAs: {name}")
             with suppress_stdout():
@@ -232,7 +233,6 @@ class pipeline:
         self.conditions["-"]["cache"] = None
         self.conditions["switch"]["text"] = None
         self.conditions["switch"]["cache"] = None
-        
 
     def textencode(self, id, text):
         update = False
@@ -244,39 +244,42 @@ class pipeline:
             self.conditions[id]["text"] = text
             update = True
         return update
-    
+
     def set_timestep_range(self, conditioning, start, end):
         c = []
         for t in conditioning:
-            if 'pooled_output' in t:
-                t['start_percent'] = start
-                t['end_percent'] = end
-        
+            if "pooled_output" in t:
+                t["start_percent"] = start
+                t["end_percent"] = end
+
         return conditioning
-    
-   
+
     def prompt_switch_per_step(self, prompt, steps):
         # Find all occurrences of [option1|option2|...] in the input string
-        options_pattern = r'\[([^|\]]+(?:\|[^|\]]+)*)\]'
+        options_pattern = r"\[([^|\]]+(?:\|[^|\]]+)*)\]"
         matches = re.finditer(options_pattern, prompt)
         options_list = []
         exact_matches = []
 
         for match in matches:
-            options = match.group(1).split('|') if '|' in match.group(1) else [match.group(1)]
+            options = (
+                match.group(1).split("|") if "|" in match.group(1) else [match.group(1)]
+            )
             options_list.append(options)
             exact_matches.append(match.group(0))
 
         prompt_per_step = []
-        for i in range(0,steps):
+        for i in range(0, steps):
             prompt_to_append = prompt
-            
+
             for options, exact_match in zip(options_list, exact_matches):
-                    replacement = options[i % len(options)]  # Use modulo to cycle through options
-                    prompt_to_append = prompt_to_append.replace(exact_match, replacement, 1)
+                replacement = options[
+                    i % len(options)
+                ]  # Use modulo to cycle through options
+                prompt_to_append = prompt_to_append.replace(exact_match, replacement, 1)
 
             prompt_per_step.append(prompt_to_append)
-            
+
         return prompt_per_step
 
     @torch.inference_mode()
@@ -307,35 +310,33 @@ class pipeline:
         if self.conditions is None:
             self.clean_prompt_cond_caches()
 
-
-        
         if self.textencode("+", positive_prompt):
             updated_conditions = True
         if self.textencode("-", negative_prompt):
             updated_conditions = True
 
         prompt_switch_mode = False
-        if("|" in positive_prompt):
+        if "|" in positive_prompt:
             prompt_switch_mode = True
             prompt_per_step = self.prompt_switch_per_step(positive_prompt, steps)
-            
-            perc_per_step = round(100/steps,2)
+
+            perc_per_step = round(100 / steps, 2)
             positive_complete = []
             for i in range(len(prompt_per_step)):
                 if self.textencode("switch", prompt_per_step[i]):
                     updated_conditions = True
                 positive_switch = convert_cond(self.conditions["switch"]["cache"])
-                start_perc = round((perc_per_step*i)/100,2)
-                end_perc = round((perc_per_step*(i+1))/100,2)
+                start_perc = round((perc_per_step * i) / 100, 2)
+                end_perc = round((perc_per_step * (i + 1)) / 100, 2)
                 if end_perc >= 0.99:
                     end_perc = 1
-                positive_switch = self.set_timestep_range(positive_switch,start_perc, end_perc)
-                
-                positive_complete += positive_switch
-                
-                
-            positive_switch = convert_cond(self.conditions["switch"]["cache"])
+                positive_switch = self.set_timestep_range(
+                    positive_switch, start_perc, end_perc
+                )
 
+                positive_complete += positive_switch
+
+            positive_switch = convert_cond(self.conditions["switch"]["cache"])
 
         if controlnet is not None and input_image is not None:
             worker.outputs.append(["preview", (-1, f"Powering up ...", None)])
@@ -347,7 +348,7 @@ class pipeline:
             )[0]
             self.refresh_controlnet(name=controlnet["type"])
             if self.xl_controlnet:
-                if(prompt_switch_mode):
+                if prompt_switch_mode:
                     match controlnet["type"].lower():
                         case "canny":
                             input_image = Canny().detect_edge(
