@@ -130,14 +130,14 @@ function generate_shortcut(){
   document.addEventListener('keydown', (e) => {
     let handle = 'none';
     if (e.key !== undefined) {
-      if ((e.key === 'Enter' && (e.metaKey || e.ctrlKey || e.altKey))) handle = 'run';
+      if ((e.key === 'Enter' && e.ctrlKey)) handle = 'run';
     } else if (e.keyCode !== undefined) {
-      if ((e.keyCode === 13 && (e.metaKey || e.ctrlKey || e.altKey))) handle = 'run';
+      if ((e.keyCode === 13 && e.ctrlKey)) handle = 'run';
     }
     if (e.key !== undefined) {
-      if ((e.key === 'Shift' && (e.metaKey || e.ctrlKey || e.altKey))) handle = 'hurtme';
+      if ((e.key === 'Shift' && e.ctrlKey)) handle = 'hurtme';
     } else if (e.keyCode !== undefined) {
-      if ((e.keyCode === 16 && (e.metaKey || e.ctrlKey || e.altKey))) handle = 'hurtme';
+      if ((e.keyCode === 16 && e.ctrlKey)) handle = 'hurtme';
     }
     if (handle == 'run') {
       const button = document.getElementById('generate');
