@@ -79,9 +79,9 @@ def prepare_environment():
             live=True,
         )
 
-    if REINSTALL_ALL or not is_installed("insightface"):
-        if platform.system() == "Windows":
-            run_pip(f"install {insightface_package}", "insightace", live=True)
+    #if REINSTALL_ALL or not is_installed("insightface"):
+    #    if platform.system() == "Windows":
+    #        run_pip(f"install {insightface_package}", "insightace", live=True)
 
     if REINSTALL_ALL or not is_installed("xformers"):
         if platform.system() == "Windows":
