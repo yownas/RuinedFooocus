@@ -1,5 +1,5 @@
 import os
-
+from pathlib import Path
 import json
 
 from os.path import exists
@@ -70,29 +70,24 @@ extensions = [".pth", ".ckpt", ".bin", ".safetensors"]
 
 
 def get_model_filenames(folder_path, isLora=False):
-    if not os.path.isdir(folder_path):
+    folder_path = Path(folder_path)
+    if not folder_path.is_dir():
         raise ValueError("Folder path is not a valid directory.")
 
     filenames = []
 
-    for root, dirs, files in os.walk(folder_path):
-        relative_path = os.path.relpath(root, folder_path)
-        if relative_path == ".":
-            relative_path = ""
-        for filename in files:
-            _, ext = os.path.splitext(filename)
-            if ext.lower() in [".pth", ".ckpt", ".bin", ".safetensors"]:
-                path = os.path.join(relative_path, filename)
-                if isLora:
-                    txtcheck = path.replace(".safetensors", ".txt")
-                    if os.path.isfile(f"{folder_path}{txtcheck}"):
-                        path = path + " 🗒️"
+    for path in folder_path.rglob("*"):
+        if path.suffix.lower() in [".pth", ".ckpt", ".bin", ".safetensors"]:
+            if isLora:
+                txtcheck = path.with_suffix(".txt")
+                if txtcheck.exists():
+                    path = path.with_suffix(f"{path.suffix} 🗒️")
 
-                filenames.append(path)
+            filenames.append(str(path.relative_to(folder_path)))
 
     return sorted(
         filenames,
-        key=lambda x: f"0{x.casefold()}" if os.sep in x else f"1{x.casefold()}",
+        key=lambda x: f"0{x.casefold()}" if Path(x).suffix in x else f"1{x.casefold()}",
     )
 
 

@@ -1,3 +1,6 @@
+### 1.25.2
+* Fixed an os.path issue by replaceing with pathlib
+
 ### 1.25.1
 * Now displays 🗒️ at the end of the loraname if it has a keyword .txt file
 
