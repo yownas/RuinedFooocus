@@ -61,7 +61,7 @@ def prepare_environment():
         "COMFY_REPO", "https://github.com/comfyanonymous/ComfyUI"
     )
     comfy_commit_hash = os.environ.get(
-        "COMFY_COMMIT_HASH", "9b655d4fd72903d33af101177b0cb9576c5babd3"
+        "COMFY_COMMIT_HASH", "97015b6b383718bdc65cb617e3050069a156679d"
     )
 
     print(f"Python {sys.version}")
@@ -79,7 +79,7 @@ def prepare_environment():
             live=True,
         )
 
-    #if REINSTALL_ALL or not is_installed("insightface"):
+    # if REINSTALL_ALL or not is_installed("insightface"):
     #    if platform.system() == "Windows":
     #        run_pip(f"install {insightface_package}", "insightace", live=True)
 

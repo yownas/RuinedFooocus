@@ -1,8 +1,5 @@
-import os
 from pathlib import Path
 import json
-
-from os.path import exists
 
 
 DEFAULT_PATHS = {
@@ -21,15 +18,16 @@ DEFAULT_PATHS = {
 def load_paths():
     paths = DEFAULT_PATHS.copy()
 
-    if exists("settings/paths.json"):
-        with open("settings/paths.json") as f:
+    settings_path = Path("settings/paths.json")
+    if settings_path.exists():
+        with settings_path.open() as f:
             paths.update(json.load(f))
 
     for key in DEFAULT_PATHS:
         if key not in paths:
             paths[key] = DEFAULT_PATHS[key]
 
-    with open("settings/paths.json", "w") as f:
+    with settings_path.open("w") as f:
         json.dump(paths, f, indent=2)
 
     return paths
@@ -39,11 +37,7 @@ paths = load_paths()
 
 
 def get_abspath(path):
-    return (
-        path
-        if os.path.isabs(path)
-        else os.path.abspath(os.path.join(os.path.dirname(__file__), path))
-    )
+    return path if Path(path).is_absolute() else Path(__file__).parent / path
 
 
 modelfile_path = get_abspath(paths["path_checkpoints"])
@@ -56,7 +50,8 @@ upscaler_path = get_abspath(paths["path_upscalers"])
 faceswap_path = get_abspath(paths["path_faceswap"])
 clip_path = get_abspath(paths["path_clip"])
 
-os.makedirs(temp_outputs_path, exist_ok=True)
+Path(temp_outputs_path).mkdir(parents=True, exist_ok=True)
+
 
 default_base_model_name = "sd_xl_base_1.0_0.9vae.safetensors"
 default_lora_name = "sd_xl_offset_example-lora_1.0.safetensors"
@@ -100,11 +95,11 @@ def update_all_model_names():
 
 
 def find_lcm_lora():
-    path = lorafile_path
+    path = Path(lorafile_path)
     filename = "lcm-lora-sdxl.safetensors"
-    for root, dirs, files in os.walk(path):
-        if filename in files:
-            return os.path.relpath(os.path.join(root, filename), path)
+    for child in path.rglob(filename):
+        if child.name == filename:
+            return child.relative_to(path)
 
 
 update_all_model_names()
