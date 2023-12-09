@@ -347,18 +347,21 @@ class pipeline:
                 image=input_image, upscale_method="bicubic", megapixels=1.0
             )[0]
             self.refresh_controlnet(name=controlnet["type"])
+            match controlnet["type"].lower():
+                case "canny":
+                    input_image = Canny().detect_edge(
+                        image=input_image,
+                        low_threshold=float(controlnet["edge_low"]),
+                        high_threshold=float(controlnet["edge_high"]),
+                    )[0]
+                    updated_conditions = True
+                case "depth":
+                    updated_conditions = True
+                case _:
+                    self.xl_controlnet = None
+                    self.xl_controlnet_hash = None
             if self.xl_controlnet:
                 if prompt_switch_mode:
-                    match controlnet["type"].lower():
-                        case "canny":
-                            input_image = Canny().detect_edge(
-                                image=input_image,
-                                low_threshold=float(controlnet["edge_low"]),
-                                high_threshold=float(controlnet["edge_high"]),
-                            )[0]
-                            updated_conditions = True
-                        case "depth":
-                            updated_conditions = True
                     (
                         self.conditions["+"]["cache"],
                         self.conditions["-"]["cache"],
@@ -374,16 +377,6 @@ class pipeline:
                     self.conditions["+"]["text"] = None
                     self.conditions["-"]["text"] = None
                 else:
-                    match controlnet["type"].lower():
-                        case "canny":
-                            input_image = Canny().detect_edge(
-                                image=input_image,
-                                low_threshold=float(controlnet["edge_low"]),
-                                high_threshold=float(controlnet["edge_high"]),
-                            )[0]
-                            updated_conditions = True
-                        case "depth":
-                            updated_conditions = True
                     (
                         self.conditions["+"]["cache"],
                         self.conditions["-"]["cache"],
