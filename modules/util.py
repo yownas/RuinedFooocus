@@ -3,6 +3,7 @@ import random
 import os
 import sys
 import time
+from pathlib import Path
 
 from contextlib import contextmanager
 from typing import Optional
@@ -14,13 +15,11 @@ def get_wildcard_files():
     files = []
 
     for directory in directories:
-        for root, dirs, inner_files in os.walk(directory):
-            for file in inner_files:
-                if file.endswith(".txt"):
-                    path = os.path.join(root, file)
-                    name, ext = os.path.splitext(file)
-                    if name not in files:
-                        files.append(name)
+        for file in Path(directory).rglob("*.txt"):
+            name = file.stem
+            if name not in files:
+                files.append(name)
+
     onebutton = [
         "onebuttonprompt",
         "onebuttonsubject",
@@ -59,8 +58,8 @@ def generate_temp_filename(folder="./outputs/", extension="png"):
     time_string = current_time.strftime("%Y-%m-%d_%H-%M-%S")
     random_number = random.randint(1000, 9999)
     filename = f"{time_string}_{random_number}.{extension}"
-    result = os.path.join(folder, date_string, filename)
-    return os.path.abspath(os.path.realpath(result))
+    result = Path(folder) / date_string / filename
+    return result.absolute()
 
 
 @contextmanager
@@ -85,23 +84,23 @@ def load_file_from_url(
 
     Returns the path to the downloaded file.
     """
-    os.makedirs(model_dir, exist_ok=True)
+    Path(model_dir).mkdir(parents=True, exist_ok=True)
     if not file_name:
         parts = urlparse(url)
-        file_name = os.path.basename(parts.path)
+        file_name = Path(parts.path).stem
 
-    for root, dirs, files in os.walk(model_dir):
-        if file_name in files:
-            cached_file = os.path.join(root, file_name)
-            return cached_file
+    for file in Path(model_dir).glob("**/*"):
+        if file.name == file_name:
+            cached_file = file
+            return str(cached_file)
 
-    cached_file = os.path.abspath(os.path.join(model_dir, file_name))
-    if not os.path.exists(cached_file):
+    cached_file = Path(model_dir) / file_name
+    if not cached_file.exists():
         print(f'Downloading: "{url}" to {cached_file}\n')
         from torch.hub import download_url_to_file
 
         download_url_to_file(url, cached_file, progress=progress)
-    return cached_file
+    return str(cached_file)
 
 
 class TimeIt:

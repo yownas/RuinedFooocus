@@ -3,9 +3,9 @@ import gc
 import torch
 import math
 from playsound import playsound
-from os.path import exists
 from modules.performance import get_perf_options, NEWPERF
 import modules.controlnet
+from pathlib import Path
 
 buffer = []
 outputs = []
@@ -243,7 +243,8 @@ def worker():
                 local_temp_filename = generate_temp_filename(
                     folder=modules.path.temp_outputs_path, extension="png"
                 )
-                os.makedirs(os.path.dirname(local_temp_filename), exist_ok=True)
+                dir_path = Path(local_temp_filename).parent
+                dir_path.mkdir(parents=True, exist_ok=True)
                 metadata = None
                 prompt = {
                     "Prompt": p_txt,
@@ -257,9 +258,7 @@ def worker():
                     "scheduler": gen_data["scheduler"],
                     "base_model_name": gen_data["base_model_name"],
                     "base_model_hash": model_hash(
-                        os.path.join(
-                            modules.path.modelfile_path, gen_data["base_model_name"]
-                        )
+                        Path(modules.path.modelfile_path) / gen_data["base_model_name"]
                     ),
                     "loras": "Loras:"
                     + ",".join([f"<{lora[0]}:{lora[1]}>" for lora in loras]),
@@ -302,7 +301,7 @@ def worker():
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
                 torch.cuda.ipc_collect()
-            if exists("notification.mp3"):
+            if Path("notification.mp3").exists():
                 playsound("notification.mp3")
 
 

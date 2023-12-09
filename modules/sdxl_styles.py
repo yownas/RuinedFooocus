@@ -1,27 +1,30 @@
-import os
-import shutil
 import json
 import random
-from csv import DictReader, reader
+from csv import DictReader
+from pathlib import Path
 
-DEFAULT_STYLES_FILE = "settings/styles.default"
-STYLES_FILE = "settings/styles.csv"
-DEFAULT_RESOLUTIONS_FILE = "settings/resolutions.default"
-RESOLUTIONS_FILE = "settings/resolutions.json"
+DEFAULT_STYLES_FILE = Path("settings/styles.default")
+STYLES_FILE = Path("settings/styles.csv")
+DEFAULT_RESOLUTIONS_FILE = Path("settings/resolutions.default")
+RESOLUTIONS_FILE = Path("settings/resolutions.json")
 
 
 def load_styles():
     styles = []
 
-    if not os.path.isfile(STYLES_FILE):
-        shutil.copy(DEFAULT_STYLES_FILE, STYLES_FILE)
+    if not STYLES_FILE.is_file():
+        DEFAULT_STYLES_FILE.copy(STYLES_FILE)
 
-    with open(STYLES_FILE, "r") as f:
+    with STYLES_FILE.open("r") as f:
         reader = DictReader(f)
         styles = list(reader)
 
     default_style = {"name": "None", "prompt": "{prompt}", "negative_prompt": ""}
-    random_style = {"name": "Style: Pick Random", "prompt": "{prompt}", "negative_prompt": ""}
+    random_style = {
+        "name": "Style: Pick Random",
+        "prompt": "{prompt}",
+        "negative_prompt": "",
+    }
     styles.insert(0, random_style)
     styles.insert(0, default_style)
 
@@ -31,10 +34,10 @@ def load_styles():
 def load_resolutions():
     ratios = {}
 
-    if not os.path.isfile(RESOLUTIONS_FILE):
-        shutil.copy(DEFAULT_RESOLUTIONS_FILE, RESOLUTIONS_FILE)
+    if not RESOLUTIONS_FILE.is_file():
+        DEFAULT_RESOLUTIONS_FILE.copy(RESOLUTIONS_FILE)
 
-    with open(RESOLUTIONS_FILE) as f:
+    with RESOLUTIONS_FILE.open() as f:
         data = json.load(f)
         for ratio, res in data.items():
             ratios[ratio] = (res["width"], res["height"])
@@ -46,7 +49,6 @@ def apply_style(style, prompt, negative_prompt):
     output_prompt = ""
     output_negative_prompt = ""
 
-    
     while "Style: Pick Random" in style:
         style[style.index("Style: Pick Random")] = random.choice(allstyles)
 
@@ -66,7 +68,7 @@ def apply_style(style, prompt, negative_prompt):
 
 styles = load_styles()
 default_style = styles["None"]
-allstyles = [x for x in load_styles() if x.startswith('Style')]
+allstyles = [x for x in load_styles() if x.startswith("Style")]
 allstyles.remove("Style: Pick Random")
 
 
