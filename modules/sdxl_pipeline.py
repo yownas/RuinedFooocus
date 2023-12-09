@@ -218,7 +218,11 @@ class pipeline:
             self.xl_controlnet = comfy.controlnet.load_controlnet(filename)
             self.xl_controlnet_hash = name
             print(f"ControlNet model loaded: {self.xl_controlnet_hash}")
-        return
+            return True
+        else:
+            self.xl_controlnet = None
+            self.xl_controlnet_hash = None
+            return False
 
     conditions = None
 
@@ -357,9 +361,6 @@ class pipeline:
                     updated_conditions = True
                 case "depth":
                     updated_conditions = True
-                case _:
-                    self.xl_controlnet = None
-                    self.xl_controlnet_hash = None
             if self.xl_controlnet:
                 if prompt_switch_mode:
                     (
