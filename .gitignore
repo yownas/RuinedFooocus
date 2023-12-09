@@ -46,3 +46,4 @@ resolutions.json
 powerup.json
 performance.json
 *.old
+/models/loras/*.txt
