@@ -24,7 +24,6 @@ DEFAULT_SETTINGS = {
     "lora_4_weight": modules.path.default_lora_weight,
     "lora_5_model": "None",
     "lora_5_weight": modules.path.default_lora_weight,
-    "save_metadata": True,
     "theme": "None",
 }
 
