@@ -71,8 +71,8 @@ def launch_app(args):
         inbrowser=inbrowser,
         server_name=args.listen,
         server_port=args.port,
-        share=args.share if "/" in args.auth else False, 
-        auth=args.auth.split("/", 1) if "/" in args.auth else None,
+        share=args.share, 
+        auth=args.auth.split("/", 1) if isinstance(args.auth, str) and "/" in args.auth else None,
         favicon_path=favicon_path,
     )
 
@@ -709,7 +709,7 @@ with shared.gradio_root as block:
     last_image.click(get_last_image, outputs=[last_image], api_name="last_image")
 
 args = parse_args()
-if not "/" in args.auth:
+if isinstance(args.auth, str) and not "/" in args.auth:
     if len(args.auth):
         print(f"\nERROR! --auth need be in the form of \"username/password\" not \"{args.auth}\"\n")
     if args.share:
