@@ -1,3 +1,6 @@
+### 1.25.3
+* Changed a lot of os.path to pathlibs
+* Worked on backend code for future extensibility
 * Added support for --auth
 
 ### 1.25.2
