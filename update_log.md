@@ -1,3 +1,5 @@
+* Added support for --auth
+
 ### 1.25.2
 * Fixed an os.path issue by replaceing with pathlib
 
