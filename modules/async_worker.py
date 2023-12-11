@@ -3,7 +3,7 @@ import gc
 import torch
 import math
 from playsound import playsound
-from modules.performance import get_perf_options, NEWPERF
+from modules.performance import PerformanceSettings
 import modules.controlnet
 from pathlib import Path
 
@@ -13,6 +13,8 @@ results = []
 metadatastrings = []
 
 interrupt_ruined_processing = False
+
+performance_options = PerformanceSettings()
 
 
 def worker():
@@ -114,10 +116,12 @@ def worker():
         if lora_keywords is None:
             lora_keywords = ""
 
-        if gen_data["performance_selection"] == NEWPERF:
+        if gen_data["performance_selection"] == performance_options.CUSTOM_PERFORMANCE:
             steps = gen_data["custom_steps"]
         else:
-            perf_options = get_perf_options(gen_data["performance_selection"])
+            perf_options = performance_options.get_perf_options(
+                gen_data["performance_selection"]
+            )
             gen_data.update(perf_options)
 
         steps = gen_data["custom_steps"]

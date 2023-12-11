@@ -18,20 +18,15 @@ from modules.interrogate import look
 
 from comfy.samplers import KSampler
 from modules.sdxl_styles import load_styles, aspect_ratios, styles, allstyles
-from modules.performance import (
-    performance_options,
-    load_performance,
-    save_performance,
-    NEWPERF,
-)
+from modules.performance import PerformanceSettings
 from modules.settings import default_settings
 from modules.prompt_processing import get_promptlist
 from modules.util import get_wildcard_files
-from random_prompt.build_dynamic_prompt import build_dynamic_prompt
 
 from PIL import Image
 
 inpaint_toggle = None
+performance_settings = PerformanceSettings()
 
 
 def find_unclosed_markers(s):
@@ -355,7 +350,8 @@ with shared.gradio_root as block:
             with gr.Tab(label="Setting"):
                 performance_selection = gr.Dropdown(
                     label="Performance",
-                    choices=list(performance_options.keys()) + [NEWPERF],
+                    choices=list(performance_settings.performance_options.keys())
+                    + [performance_settings.CUSTOM_PERFORMANCE],
                     value=settings["performance"],
                 )
                 add_ctrl("performance_selection", performance_selection)
@@ -425,7 +421,7 @@ with shared.gradio_root as block:
                     custom_steps,
                 ):
                     if perf_name != "":
-                        perf_options = load_performance()
+                        perf_options = performance_settings.load_performance()
                         opts = {
                             "custom_steps": custom_steps,
                             "cfg": cfg,
@@ -433,8 +429,10 @@ with shared.gradio_root as block:
                             "scheduler": scheduler,
                         }
                         perf_options[perf_name] = opts
-                        save_performance(perf_options)
-                        choices = list(perf_options.keys()) + [NEWPERF]
+                        performance_settings.save_performance(perf_options)
+                        choices = list(perf_options.keys()) + [
+                            performance_settings.CUSTOM_PERFORMANCE
+                        ]
                         return gr.update(choices=choices, value=perf_name)
                     else:
                         return gr.update()
@@ -639,7 +637,7 @@ with shared.gradio_root as block:
                 + [lora_ctrls[1]],
             )
             def performance_changed(selection):
-                if selection == NEWPERF:
+                if selection == performance_settings.CUSTOM_PERFORMANCE:
                     return (
                         [gr.update(value="")]
                         + [gr.update(visible=True)] * len(performance_outputs)
