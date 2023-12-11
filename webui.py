@@ -41,6 +41,9 @@ def get_parser():
         "--share", action="store_true", help="Set whether to share on Gradio."
     )
     parser.add_argument(
+        "--auth", type=str, help="Set credentials username/password."
+    )
+    parser.add_argument(
         "--listen",
         type=str,
         default=None,
@@ -68,7 +71,8 @@ def launch_app(args):
         inbrowser=inbrowser,
         server_name=args.listen,
         server_port=args.port,
-        share=args.share,
+        share=args.share if "/" in args.auth else False, 
+        auth=args.auth.split("/", 1) if "/" in args.auth else None,
         favicon_path=favicon_path,
     )
 
@@ -705,4 +709,10 @@ with shared.gradio_root as block:
     last_image.click(get_last_image, outputs=[last_image], api_name="last_image")
 
 args = parse_args()
+if not "/" in args.auth:
+    if len(args.auth):
+        print(f"\nERROR! --auth need be in the form of \"username/password\" not \"{args.auth}\"\n")
+    if args.share:
+        print(f"\nWARNING! Will not enable --share without proper --auth=username/password\n")
+        args.share = False
 launch_app(args)
