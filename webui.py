@@ -1,6 +1,6 @@
 import argparse
 import shared
-from shared import state, add_ctrl
+from shared import state, add_ctrl, performance_settings, path_manager
 import time
 
 import gradio as gr
@@ -10,7 +10,6 @@ import re
 import version
 import modules.async_worker as worker
 import modules.html
-import modules.path
 import ui_onebutton
 import ui_evolve
 import ui_controlnet
@@ -18,16 +17,9 @@ from modules.interrogate import look
 
 from comfy.samplers import KSampler
 from modules.sdxl_styles import load_styles, aspect_ratios, styles, allstyles
-from modules.performance import (
-    performance_options,
-    load_performance,
-    save_performance,
-    NEWPERF,
-)
 from modules.settings import default_settings
 from modules.prompt_processing import get_promptlist
 from modules.util import get_wildcard_files
-from random_prompt.build_dynamic_prompt import build_dynamic_prompt
 
 from PIL import Image
 
@@ -47,6 +39,9 @@ def get_parser():
     parser.add_argument("--port", type=int, default=None, help="Set the listen port.")
     parser.add_argument(
         "--share", action="store_true", help="Set whether to share on Gradio."
+    )
+    parser.add_argument(
+        "--auth", type=str, help="Set credentials username/password."
     )
     parser.add_argument(
         "--listen",
@@ -76,7 +71,8 @@ def launch_app(args):
         inbrowser=inbrowser,
         server_name=args.listen,
         server_port=args.port,
-        share=args.share,
+        share=args.share, 
+        auth=args.auth.split("/", 1) if isinstance(args.auth, str) and "/" in args.auth else None,
         favicon_path=favicon_path,
     )
 
@@ -355,7 +351,8 @@ with shared.gradio_root as block:
             with gr.Tab(label="Setting"):
                 performance_selection = gr.Dropdown(
                     label="Performance",
-                    choices=list(performance_options.keys()) + [NEWPERF],
+                    choices=list(performance_settings.performance_options.keys())
+                    + [performance_settings.CUSTOM_PERFORMANCE],
                     value=settings["performance"],
                 )
                 add_ctrl("performance_selection", performance_selection)
@@ -425,7 +422,7 @@ with shared.gradio_root as block:
                     custom_steps,
                 ):
                     if perf_name != "":
-                        perf_options = load_performance()
+                        perf_options = performance_settings.load_performance()
                         opts = {
                             "custom_steps": custom_steps,
                             "cfg": cfg,
@@ -433,8 +430,10 @@ with shared.gradio_root as block:
                             "scheduler": scheduler,
                         }
                         perf_options[perf_name] = opts
-                        save_performance(perf_options)
-                        choices = list(perf_options.keys()) + [NEWPERF]
+                        performance_settings.save_performance(perf_options)
+                        choices = list(perf_options.keys()) + [
+                            performance_settings.CUSTOM_PERFORMANCE
+                        ]
                         return gr.update(choices=choices, value=perf_name)
                     else:
                         return gr.update()
@@ -515,10 +514,10 @@ with shared.gradio_root as block:
                 with gr.Row():
                     base_model = gr.Dropdown(
                         label="SDXL Base Model",
-                        choices=modules.path.model_filenames,
+                        choices=path_manager.model_filenames,
                         value=settings["base_model"]
-                        if settings["base_model"] in modules.path.model_filenames
-                        else [modules.path.model_filenames[0]],
+                        if settings["base_model"] in path_manager.model_filenames
+                        else [path_manager.model_filenames[0]],
                         show_label=True,
                     )
                     add_ctrl("base_model_name", base_model)
@@ -535,7 +534,7 @@ with shared.gradio_root as block:
                             lora_model = gr.Dropdown(
                                 label=f"SDXL LoRA {i+1}",
                                 show_label=False,
-                                choices=["None"] + modules.path.lora_filenames,
+                                choices=["None"] + path_manager.lora_filenames,
                                 value=settings[f"lora_{i+1}_model"],
                                 visible=visible,
                             )
@@ -590,14 +589,14 @@ with shared.gradio_root as block:
                 inputs=[], outputs=[base_model] + lora_ctrls + [style_selection]
             )
             def model_refresh_clicked():
-                modules.path.update_all_model_names()
+                path_manager.update_all_model_names()
                 results = []
                 results += [
-                    gr.update(choices=modules.path.model_filenames),
+                    gr.update(choices=path_manager.model_filenames),
                 ]
                 for i in range(5):
                     results += [
-                        gr.update(choices=["None"] + modules.path.lora_filenames),
+                        gr.update(choices=["None"] + path_manager.lora_filenames),
                         gr.update(),
                     ]
                 results += [gr.update(choices=list(load_styles().keys()))]
@@ -625,7 +624,7 @@ with shared.gradio_root as block:
             )
             def sampler_changed(sampler_name):
                 if sampler_name == "lcm":
-                    return [gr.update(value=modules.path.find_lcm_lora())] + [
+                    return [gr.update(value=path_manager.find_lcm_lora())] + [
                         gr.update(value=1.0)
                     ]
                 else:
@@ -639,7 +638,7 @@ with shared.gradio_root as block:
                 + [lora_ctrls[1]],
             )
             def performance_changed(selection):
-                if selection == NEWPERF:
+                if selection == performance_settings.CUSTOM_PERFORMANCE:
                     return (
                         [gr.update(value="")]
                         + [gr.update(visible=True)] * len(performance_outputs)
@@ -650,7 +649,7 @@ with shared.gradio_root as block:
                     return (
                         [gr.update(visible=False)]
                         + [gr.update(visible=False)] * len(performance_outputs)
-                        + [gr.update(value=modules.path.find_lcm_lora())]
+                        + [gr.update(value=path_manager.find_lcm_lora())]
                         + [gr.update(value=1.0)]
                     )
 
@@ -710,4 +709,10 @@ with shared.gradio_root as block:
     last_image.click(get_last_image, outputs=[last_image], api_name="last_image")
 
 args = parse_args()
+if isinstance(args.auth, str) and not "/" in args.auth:
+    if len(args.auth):
+        print(f"\nERROR! --auth need be in the form of \"username/password\" not \"{args.auth}\"\n")
+    if args.share:
+        print(f"\nWARNING! Will not enable --share without proper --auth=username/password\n")
+        args.share = False
 launch_app(args)

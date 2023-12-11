@@ -5,9 +5,8 @@ from modules.controlnet import (
     save_cnsettings,
     NEWCN,
 )
-import modules.path
 import gradio as gr
-from shared import add_ctrl
+from shared import add_ctrl, path_manager
 
 
 def add_controlnet_tab(main_view, inpaint_view):
@@ -92,7 +91,7 @@ def add_controlnet_tab(main_view, inpaint_view):
         cn_upscaler = gr.Dropdown(
             label=f"Upscaler",
             show_label=False,
-            choices=["None"] + modules.path.upscaler_filenames,
+            choices=["None"] + path_manager.upscaler_filenames,
             value="None",
             visible=False,
         )

@@ -3,6 +3,7 @@ import sys
 import platform
 import version
 import warnings
+from pathlib import Path
 
 warnings.filterwarnings("ignore", category=FutureWarning, module="insightface")
 warnings.filterwarnings("ignore", category=UserWarning, module="torchvision")
@@ -29,14 +30,7 @@ from modules.launch_util import (
     dir_repos,
 )
 from modules.util import load_file_from_url
-from modules.path import (
-    modelfile_path,
-    lorafile_path,
-    controlnet_path,
-    vae_approx_path,
-    upscaler_path,
-    faceswap_path,
-)
+from shared import path_manager
 
 REINSTALL_ALL = False
 
@@ -61,7 +55,7 @@ def prepare_environment():
         "COMFY_REPO", "https://github.com/comfyanonymous/ComfyUI"
     )
     comfy_commit_hash = os.environ.get(
-        "COMFY_COMMIT_HASH", "9b655d4fd72903d33af101177b0cb9576c5babd3"
+        "COMFY_COMMIT_HASH", "97015b6b383718bdc65cb617e3050069a156679d"
     )
 
     print(f"Python {sys.version}")
@@ -69,7 +63,8 @@ def prepare_environment():
 
     comfyui_name = "ComfyUI-from-StabilityAI-Official"
     git_clone(comfy_repo, repo_dir(comfyui_name), "Comfy Backend", comfy_commit_hash)
-    sys.path.append(os.path.join(script_path, dir_repos, comfyui_name))
+    path = Path(script_path) / dir_repos / comfyui_name
+    sys.path.append(str(path))
 
     if REINSTALL_ALL or not is_installed("torch") or not is_installed("torchvision"):
         run(
@@ -78,10 +73,6 @@ def prepare_environment():
             "Couldn't install torch",
             live=True,
         )
-
-    #if REINSTALL_ALL or not is_installed("insightface"):
-    #    if platform.system() == "Windows":
-    #        run_pip(f"install {insightface_package}", "insightace", live=True)
 
     if REINSTALL_ALL or not is_installed("xformers"):
         if platform.system() == "Windows":
@@ -162,39 +153,38 @@ upscaler_filenames = [
     ),
 ]
 
-faceswap_filenames = [
-    (
-        "inswapper_128.onnx",
-        "https://huggingface.co/ezioruan/inswapper_128.onnx/resolve/main/inswapper_128.onnx",
-    ),
-    (
-        "GFPGANv1.4.pth",
-        "https://github.com/TencentARC/GFPGAN/releases/download/v1.3.0/GFPGANv1.4.pth",
-    ),
-    (
-        "detection_Resnet50_Final.pth",
-        "https://github.com/xinntao/facexlib/releases/download/v0.1.0/detection_Resnet50_Final.pth",
-    ),
-    (
-        "parsing_parsenet.pth",
-        "https://github.com/xinntao/facexlib/releases/download/v0.2.2/parsing_parsenet.pth",
-    ),
-]
-
 
 def download_models():
     for file_name, url in model_filenames:
-        load_file_from_url(url=url, model_dir=modelfile_path, file_name=file_name)
+        load_file_from_url(
+            url=url,
+            model_dir=path_manager.model_paths["modelfile_path"],
+            file_name=file_name,
+        )
     for file_name, url in lora_filenames:
-        load_file_from_url(url=url, model_dir=lorafile_path, file_name=file_name)
+        load_file_from_url(
+            url=url,
+            model_dir=path_manager.model_paths["lorafile_path"],
+            file_name=file_name,
+        )
     for file_name, url in controlnet_filenames:
-        load_file_from_url(url=url, model_dir=controlnet_path, file_name=file_name)
+        load_file_from_url(
+            url=url,
+            model_dir=path_manager.model_paths["controlnet_path"],
+            file_name=file_name,
+        )
     for file_name, url in vae_approx_filenames:
-        load_file_from_url(url=url, model_dir=vae_approx_path, file_name=file_name)
+        load_file_from_url(
+            url=url,
+            model_dir=path_manager.model_paths["vae_approx_path"],
+            file_name=file_name,
+        )
     for file_name, url in upscaler_filenames:
-        load_file_from_url(url=url, model_dir=upscaler_path, file_name=file_name)
-    #    for file_name, url in faceswap_filenames:
-    #        load_file_from_url(url=url, model_dir=faceswap_path, file_name=file_name)
+        load_file_from_url(
+            url=url,
+            model_dir=path_manager.model_paths["upscaler_path"],
+            file_name=file_name,
+        )
     return
 
 

@@ -2,8 +2,7 @@ import torch
 from clip_interrogator import Config, Interrogator
 from PIL import Image
 import json
-from shared import state
-from modules.path import clip_path
+from shared import state, path_manager
 
 
 def look(image, gr):
@@ -21,7 +20,7 @@ def look(image, gr):
         conf = Config(
             device=torch.device("cuda"),
             clip_model_name="ViT-L-14/openai",
-            cache_path=clip_path,
+            cache_path=path_manager.clip_path,
         )
         conf.apply_low_vram_defaults()
 

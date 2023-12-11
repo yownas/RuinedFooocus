@@ -7,6 +7,7 @@ import sys
 import re
 import logging
 import pygit2
+from pathlib import Path
 
 pygit2.option(pygit2.GIT_OPT_SET_OWNER_VALIDATION, 0)
 
@@ -20,8 +21,8 @@ python = sys.executable
 default_command_live = os.environ.get("LAUNCH_LIVE_OUTPUT") == "1"
 index_url = os.environ.get("INDEX_URL", "")
 
-modules_path = os.path.dirname(os.path.realpath(__file__))
-script_path = os.path.dirname(modules_path)
+modules_path = Path(__file__).resolve().parent
+script_path = modules_path.parent
 dir_repos = "repositories"
 
 
@@ -31,10 +32,10 @@ def git_clone(url, dir, name, hash=None):
             repo = pygit2.Repository(dir)
             print(f"{name} exists.")
         except:
-            if os.path.exists(dir):
+            if dir.exists():
                 shutil.rmtree(dir, ignore_errors=True)
-            os.makedirs(dir, exist_ok=True)
-            repo = pygit2.clone_repository(url, dir)
+            dir.mkdir(exist_ok=True)
+            repo = pygit2.clone_repository(url, str(dir))
             print(f"{name} cloned.")
 
         remote = repo.remotes["origin"]
@@ -49,7 +50,7 @@ def git_clone(url, dir, name, hash=None):
 
 
 def repo_dir(name):
-    return os.path.join(script_path, dir_repos, name)
+    return script_path / dir_repos / name
 
 
 def is_installed(package):

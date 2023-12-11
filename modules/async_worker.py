@@ -3,9 +3,8 @@ import gc
 import torch
 import math
 from playsound import playsound
-from os.path import exists
-from modules.performance import get_perf_options, NEWPERF
 import modules.controlnet
+from pathlib import Path
 
 buffer = []
 outputs = []
@@ -24,7 +23,6 @@ def worker():
     import shared
     import random
 
-    import modules.path
     from modules.prompt_processing import process_metadata, process_prompt, parse_loras
 
     from PIL import Image
@@ -61,22 +59,17 @@ def worker():
                 print(f"WARN: Unknown task_type: {gen_data['task_type']}")
 
     def job_start(gen_data):
-        from shared import state
-
-        state["preview_grid"] = None
-        state["preview_total"] = gen_data["image_total"]
-        state["preview_count"] = 0
+        shared.state["preview_grid"] = None
+        shared.state["preview_total"] = gen_data["image_total"]
+        shared.state["preview_count"] = 0
 
     def job_stop():
-        from shared import state
-
-        state["preview_grid"] = None
-        state["preview_total"] = 0
-        state["preview_count"] = 0
+        shared.state["preview_grid"] = None
+        shared.state["preview_total"] = 0
+        shared.state["preview_count"] = 0
 
     def process(gen_data):
         global results, metadatastrings
-        from shared import state
 
         gen_data = process_metadata(gen_data)
 
@@ -114,10 +107,15 @@ def worker():
         if lora_keywords is None:
             lora_keywords = ""
 
-        if gen_data["performance_selection"] == NEWPERF:
+        if (
+            gen_data["performance_selection"]
+            == shared.performance_settings.CUSTOM_PERFORMANCE
+        ):
             steps = gen_data["custom_steps"]
         else:
-            perf_options = get_perf_options(gen_data["performance_selection"])
+            perf_options = shared.performance_settings.get_perf_options(
+                gen_data["performance_selection"]
+            )
             gen_data.update(perf_options)
 
         steps = gen_data["custom_steps"]
@@ -149,7 +147,6 @@ def worker():
 
         def callback(step, x0, x, total_steps, y):
             global status, interrupt_ruined_processing
-            from shared import state
 
             if interrupt_ruined_processing:
                 shared.state["interrupted"] = True
@@ -164,30 +161,30 @@ def worker():
             if step % 10 == 0 or status == None:
                 status = random.choice(lines)
 
-            grid_xsize = math.ceil(math.sqrt(state["preview_total"]))
-            grid_ysize = math.ceil(state["preview_total"] / grid_xsize)
+            grid_xsize = math.ceil(math.sqrt(shared.state["preview_total"]))
+            grid_ysize = math.ceil(shared.state["preview_total"] / grid_xsize)
             grid_max = max(grid_xsize, grid_ysize)
             pwidth = int(width * grid_xsize / grid_max)
             pheight = int(height * grid_ysize / grid_max)
-            if state["preview_grid"] is None:
-                state["preview_grid"] = Image.new("RGB", (pwidth, pheight))
+            if shared.state["preview_grid"] is None:
+                shared.state["preview_grid"] = Image.new("RGB", (pwidth, pheight))
             if y is not None:
                 if isinstance(y, Image.Image):
                     image = y
                 else:
                     image = Image.fromarray(y)
                 grid_xpos = int(
-                    (state["preview_count"] % grid_xsize) * (pwidth / grid_xsize)
+                    (shared.state["preview_count"] % grid_xsize) * (pwidth / grid_xsize)
                 )
                 grid_ypos = int(
-                    math.floor(state["preview_count"] / grid_xsize)
+                    math.floor(shared.state["preview_count"] / grid_xsize)
                     * (pheight / grid_ysize)
                 )
                 image = image.resize((int(width / grid_max), int(height / grid_max)))
-                state["preview_grid"].paste(image, (grid_xpos, grid_ypos))
+                shared.state["preview_grid"].paste(image, (grid_xpos, grid_ypos))
 
-            state["preview_grid"].save(
-                modules.path.temp_preview_path,
+            shared.state["preview_grid"].save(
+                shared.path_manager.model_paths["temp_preview_path"],
                 optimize=True,
                 quality=35 if step < total_steps else 70,
             )
@@ -202,7 +199,7 @@ def worker():
                             / gen_data["index"][1]
                         ),
                         f"{status} - {step}/{total_steps}",
-                        modules.path.temp_preview_path,
+                        shared.path_manager.model_paths["temp_preview_path"],
                     ),
                 ]
             )
@@ -241,9 +238,11 @@ def worker():
 
             for x in imgs:
                 local_temp_filename = generate_temp_filename(
-                    folder=modules.path.temp_outputs_path, extension="png"
+                    folder=shared.path_manager.model_paths["temp_outputs_path"],
+                    extension="png",
                 )
-                os.makedirs(os.path.dirname(local_temp_filename), exist_ok=True)
+                dir_path = Path(local_temp_filename).parent
+                dir_path.mkdir(parents=True, exist_ok=True)
                 metadata = None
                 prompt = {
                     "Prompt": p_txt,
@@ -257,9 +256,8 @@ def worker():
                     "scheduler": gen_data["scheduler"],
                     "base_model_name": gen_data["base_model_name"],
                     "base_model_hash": model_hash(
-                        os.path.join(
-                            modules.path.modelfile_path, gen_data["base_model_name"]
-                        )
+                        Path(shared.path_manager.model_paths["modelfile_path"])
+                        / gen_data["base_model_name"]
                     ),
                     "loras": "Loras:"
                     + ",".join([f"<{lora[0]}:{lora[1]}>" for lora in loras]),
@@ -270,7 +268,7 @@ def worker():
                 metadata = PngInfo()
                 metadata.add_text("parameters", json.dumps(prompt))
 
-                state["preview_count"] += 1
+                shared.state["preview_count"] += 1
                 if isinstance(x, str):
                     local_temp_filename = x
                 else:
@@ -279,15 +277,20 @@ def worker():
                     x.save(local_temp_filename, pnginfo=metadata)
                 results.append(local_temp_filename)
                 metadatastrings.append(json.dumps(prompt))
-                state["last_image"] = local_temp_filename
+                shared.state["last_image"] = local_temp_filename
 
             seed += 1
             if stop_batch:
                 break
 
         if len(buffer) == 0:
-            if state["preview_grid"] is not None and state["preview_total"] > 1:
-                results = [modules.path.temp_preview_path] + results
+            if (
+                shared.state["preview_grid"] is not None
+                and shared.state["preview_total"] > 1
+            ):
+                results = [
+                    shared.path_manager.model_paths["temp_preview_path"]
+                ] + results
             outputs.append(["results", results])
             results = []
             metadatastrings = []
@@ -302,7 +305,7 @@ def worker():
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
                 torch.cuda.ipc_collect()
-            if exists("notification.mp3"):
+            if Path("notification.mp3").exists():
                 playsound("notification.mp3")
 
 

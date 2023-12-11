@@ -1,45 +1,38 @@
-import os
-import shutil
 import json
-
-DEFAULT_PERFORMANCE_FILE = "settings/performance.default"
-PERFORMANCE_FILE = "settings/performance.json"
-NEWPERF = "Custom..."
+from pathlib import Path
 
 
-def load_performance():
-    perf_options = {}
+class PerformanceSettings:
+    DEFAULT_PERFORMANCE_FILE = Path("settings/performance.default")
+    PERFORMANCE_FILE = Path("settings/performance.json")
+    CUSTOM_PERFORMANCE = "Custom..."
 
-    with open(DEFAULT_PERFORMANCE_FILE) as f:
-        default_data = json.load(f)
+    def __init__(self):
+        self.performance_options = self.load_performance()
 
-    if not os.path.isfile(PERFORMANCE_FILE):
-        shutil.copy(DEFAULT_PERFORMANCE_FILE, PERFORMANCE_FILE)
-    else:
-        with open(PERFORMANCE_FILE) as f:
-            data = json.load(f)
-            for name, settings in default_data.items():
-                if name not in data:
-                    data[name] = settings
-            perf_options = data
+    def load_performance(self):
+        default_data = self._load_data(self.DEFAULT_PERFORMANCE_FILE)
+        data = self._load_data(self.PERFORMANCE_FILE)
 
-        with open(PERFORMANCE_FILE, "w") as f:
+        for name, settings in default_data.items():
+            if name not in data:
+                data[name] = settings
+
+        self._save_data(self.PERFORMANCE_FILE, data)
+        return data
+
+    def _load_data(self, file_path):
+        if not file_path.exists():
+            self.DEFAULT_PERFORMANCE_FILE.copy(file_path)
+        return json.load(open(file_path))
+
+    def _save_data(self, file_path, data):
+        with open(file_path, "w") as f:
+            json.dump(data, f, indent=2)
+
+    def save_performance(self, perf_options):
+        with open(self.PERFORMANCE_FILE, "w") as f:
             json.dump(perf_options, f, indent=2)
 
-    return perf_options
-
-
-def save_performance(perf_options):
-    global PERFORMANCE, performance_options
-    with open(PERFORMANCE_FILE, "w") as f:
-        json.dump(perf_options, f, indent=2)
-    PERFORMANCE = perf_options
-    performance_options = {f"{k}": v for k, v in PERFORMANCE.items()}
-
-
-def get_perf_options(name):
-    return performance_options[name]
-
-
-PERFORMANCE = load_performance()
-performance_options = {f"{k}": v for k, v in PERFORMANCE.items()}
+    def get_perf_options(self, name):
+        return self.performance_options[name]

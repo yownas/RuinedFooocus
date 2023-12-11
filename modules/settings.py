@@ -1,7 +1,7 @@
 import json
 from os.path import exists
 
-import modules.path
+from shared import path_manager
 
 DEFAULT_SETTINGS = {
     "advanced_mode": False,
@@ -13,18 +13,17 @@ DEFAULT_SETTINGS = {
     "negative_prompt": "",
     "performance": "Speed",
     "resolution": "1152x896 (4:3)",
-    "base_model": modules.path.default_base_model_name,
-    "lora_1_model": modules.path.default_lora_name,
-    "lora_1_weight": modules.path.default_lora_weight,
+    "base_model": path_manager.default_model_names["default_base_model_name"],
+    "lora_1_model": path_manager.default_model_names["default_lora_name"],
+    "lora_1_weight": path_manager.default_model_names["default_lora_weight"],
     "lora_2_model": "None",
-    "lora_2_weight": modules.path.default_lora_weight,
+    "lora_2_weight": path_manager.default_model_names["default_lora_weight"],
     "lora_3_model": "None",
-    "lora_3_weight": modules.path.default_lora_weight,
+    "lora_3_weight": path_manager.default_model_names["default_lora_weight"],
     "lora_4_model": "None",
-    "lora_4_weight": modules.path.default_lora_weight,
+    "lora_4_weight": path_manager.default_model_names["default_lora_weight"],
     "lora_5_model": "None",
-    "lora_5_weight": modules.path.default_lora_weight,
-    "save_metadata": True,
+    "lora_5_weight": path_manager.default_model_names["default_lora_weight"],
     "theme": "None",
 }
 

@@ -1,9 +1,9 @@
 import os
 import sys
+from pathlib import Path
 
-
-root = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(root)
+root = Path(__file__).resolve().parent
+sys.path.append(str(root))
 os.chdir(root)
 
 bupdated = False
@@ -12,7 +12,8 @@ try:
 
     pygit2.option(pygit2.GIT_OPT_SET_OWNER_VALIDATION, 0)
 
-    repo = pygit2.Repository(os.path.abspath(os.path.dirname(__file__)))
+    repo_path = Path(__file__).resolve().parent
+    repo = pygit2.Repository(str(repo_path))
 
     branch_name = repo.head.shorthand
 
