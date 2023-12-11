@@ -1,6 +1,6 @@
 import argparse
 import shared
-from shared import state, add_ctrl
+from shared import state, add_ctrl, performance_settings
 import time
 
 import gradio as gr
@@ -18,7 +18,6 @@ from modules.interrogate import look
 
 from comfy.samplers import KSampler
 from modules.sdxl_styles import load_styles, aspect_ratios, styles, allstyles
-from modules.performance import PerformanceSettings
 from modules.settings import default_settings
 from modules.prompt_processing import get_promptlist
 from modules.util import get_wildcard_files
@@ -26,7 +25,6 @@ from modules.util import get_wildcard_files
 from PIL import Image
 
 inpaint_toggle = None
-performance_settings = PerformanceSettings()
 
 
 def find_unclosed_markers(s):

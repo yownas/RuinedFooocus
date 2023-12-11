@@ -3,7 +3,6 @@ import gc
 import torch
 import math
 from playsound import playsound
-from modules.performance import PerformanceSettings
 import modules.controlnet
 from pathlib import Path
 
@@ -13,8 +12,6 @@ results = []
 metadatastrings = []
 
 interrupt_ruined_processing = False
-
-performance_options = PerformanceSettings()
 
 
 def worker():
@@ -63,22 +60,17 @@ def worker():
                 print(f"WARN: Unknown task_type: {gen_data['task_type']}")
 
     def job_start(gen_data):
-        from shared import state
-
-        state["preview_grid"] = None
-        state["preview_total"] = gen_data["image_total"]
-        state["preview_count"] = 0
+        shared.state["preview_grid"] = None
+        shared.state["preview_total"] = gen_data["image_total"]
+        shared.state["preview_count"] = 0
 
     def job_stop():
-        from shared import state
-
-        state["preview_grid"] = None
-        state["preview_total"] = 0
-        state["preview_count"] = 0
+        shared.state["preview_grid"] = None
+        shared.state["preview_total"] = 0
+        shared.state["preview_count"] = 0
 
     def process(gen_data):
         global results, metadatastrings
-        from shared import state
 
         gen_data = process_metadata(gen_data)
 
@@ -116,10 +108,13 @@ def worker():
         if lora_keywords is None:
             lora_keywords = ""
 
-        if gen_data["performance_selection"] == performance_options.CUSTOM_PERFORMANCE:
+        if (
+            gen_data["performance_selection"]
+            == shared.performance_settings.CUSTOM_PERFORMANCE
+        ):
             steps = gen_data["custom_steps"]
         else:
-            perf_options = performance_options.get_perf_options(
+            perf_options = shared.performance_settings.get_perf_options(
                 gen_data["performance_selection"]
             )
             gen_data.update(perf_options)
@@ -153,7 +148,6 @@ def worker():
 
         def callback(step, x0, x, total_steps, y):
             global status, interrupt_ruined_processing
-            from shared import state
 
             if interrupt_ruined_processing:
                 shared.state["interrupted"] = True
@@ -168,29 +162,29 @@ def worker():
             if step % 10 == 0 or status == None:
                 status = random.choice(lines)
 
-            grid_xsize = math.ceil(math.sqrt(state["preview_total"]))
-            grid_ysize = math.ceil(state["preview_total"] / grid_xsize)
+            grid_xsize = math.ceil(math.sqrt(shared.state["preview_total"]))
+            grid_ysize = math.ceil(shared.state["preview_total"] / grid_xsize)
             grid_max = max(grid_xsize, grid_ysize)
             pwidth = int(width * grid_xsize / grid_max)
             pheight = int(height * grid_ysize / grid_max)
-            if state["preview_grid"] is None:
-                state["preview_grid"] = Image.new("RGB", (pwidth, pheight))
+            if shared.state["preview_grid"] is None:
+                shared.state["preview_grid"] = Image.new("RGB", (pwidth, pheight))
             if y is not None:
                 if isinstance(y, Image.Image):
                     image = y
                 else:
                     image = Image.fromarray(y)
                 grid_xpos = int(
-                    (state["preview_count"] % grid_xsize) * (pwidth / grid_xsize)
+                    (shared.state["preview_count"] % grid_xsize) * (pwidth / grid_xsize)
                 )
                 grid_ypos = int(
-                    math.floor(state["preview_count"] / grid_xsize)
+                    math.floor(shared.state["preview_count"] / grid_xsize)
                     * (pheight / grid_ysize)
                 )
                 image = image.resize((int(width / grid_max), int(height / grid_max)))
-                state["preview_grid"].paste(image, (grid_xpos, grid_ypos))
+                shared.state["preview_grid"].paste(image, (grid_xpos, grid_ypos))
 
-            state["preview_grid"].save(
+            shared.state["preview_grid"].save(
                 modules.path.temp_preview_path,
                 optimize=True,
                 quality=35 if step < total_steps else 70,
@@ -273,7 +267,7 @@ def worker():
                 metadata = PngInfo()
                 metadata.add_text("parameters", json.dumps(prompt))
 
-                state["preview_count"] += 1
+                shared.state["preview_count"] += 1
                 if isinstance(x, str):
                     local_temp_filename = x
                 else:
@@ -282,14 +276,17 @@ def worker():
                     x.save(local_temp_filename, pnginfo=metadata)
                 results.append(local_temp_filename)
                 metadatastrings.append(json.dumps(prompt))
-                state["last_image"] = local_temp_filename
+                shared.state["last_image"] = local_temp_filename
 
             seed += 1
             if stop_batch:
                 break
 
         if len(buffer) == 0:
-            if state["preview_grid"] is not None and state["preview_total"] > 1:
+            if (
+                shared.state["preview_grid"] is not None
+                and shared.state["preview_total"] > 1
+            ):
                 results = [modules.path.temp_preview_path] + results
             outputs.append(["results", results])
             results = []
