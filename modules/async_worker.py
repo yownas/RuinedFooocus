@@ -23,7 +23,6 @@ def worker():
     import shared
     import random
 
-    import modules.path
     from modules.prompt_processing import process_metadata, process_prompt, parse_loras
 
     from PIL import Image
@@ -185,7 +184,7 @@ def worker():
                 shared.state["preview_grid"].paste(image, (grid_xpos, grid_ypos))
 
             shared.state["preview_grid"].save(
-                modules.path.temp_preview_path,
+                shared.path_manager.model_paths["temp_preview_path"],
                 optimize=True,
                 quality=35 if step < total_steps else 70,
             )
@@ -200,7 +199,7 @@ def worker():
                             / gen_data["index"][1]
                         ),
                         f"{status} - {step}/{total_steps}",
-                        modules.path.temp_preview_path,
+                        shared.path_manager.model_paths["temp_preview_path"],
                     ),
                 ]
             )
@@ -239,7 +238,8 @@ def worker():
 
             for x in imgs:
                 local_temp_filename = generate_temp_filename(
-                    folder=modules.path.temp_outputs_path, extension="png"
+                    folder=shared.path_manager.model_paths["temp_outputs_path"],
+                    extension="png",
                 )
                 dir_path = Path(local_temp_filename).parent
                 dir_path.mkdir(parents=True, exist_ok=True)
@@ -256,7 +256,8 @@ def worker():
                     "scheduler": gen_data["scheduler"],
                     "base_model_name": gen_data["base_model_name"],
                     "base_model_hash": model_hash(
-                        Path(modules.path.modelfile_path) / gen_data["base_model_name"]
+                        Path(shared.path_manager.model_paths["modelfile_path"])
+                        / gen_data["base_model_name"]
                     ),
                     "loras": "Loras:"
                     + ",".join([f"<{lora[0]}:{lora[1]}>" for lora in loras]),
@@ -287,7 +288,9 @@ def worker():
                 shared.state["preview_grid"] is not None
                 and shared.state["preview_total"] > 1
             ):
-                results = [modules.path.temp_preview_path] + results
+                results = [
+                    shared.path_manager.model_paths["temp_preview_path"]
+                ] + results
             outputs.append(["results", results])
             results = []
             metadatastrings = []

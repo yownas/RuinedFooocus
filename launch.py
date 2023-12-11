@@ -30,14 +30,7 @@ from modules.launch_util import (
     dir_repos,
 )
 from modules.util import load_file_from_url
-from modules.path import (
-    modelfile_path,
-    lorafile_path,
-    controlnet_path,
-    vae_approx_path,
-    upscaler_path,
-    faceswap_path,
-)
+from shared import path_manager
 
 REINSTALL_ALL = False
 
@@ -80,10 +73,6 @@ def prepare_environment():
             "Couldn't install torch",
             live=True,
         )
-
-    # if REINSTALL_ALL or not is_installed("insightface"):
-    #    if platform.system() == "Windows":
-    #        run_pip(f"install {insightface_package}", "insightace", live=True)
 
     if REINSTALL_ALL or not is_installed("xformers"):
         if platform.system() == "Windows":
@@ -164,39 +153,38 @@ upscaler_filenames = [
     ),
 ]
 
-faceswap_filenames = [
-    (
-        "inswapper_128.onnx",
-        "https://huggingface.co/ezioruan/inswapper_128.onnx/resolve/main/inswapper_128.onnx",
-    ),
-    (
-        "GFPGANv1.4.pth",
-        "https://github.com/TencentARC/GFPGAN/releases/download/v1.3.0/GFPGANv1.4.pth",
-    ),
-    (
-        "detection_Resnet50_Final.pth",
-        "https://github.com/xinntao/facexlib/releases/download/v0.1.0/detection_Resnet50_Final.pth",
-    ),
-    (
-        "parsing_parsenet.pth",
-        "https://github.com/xinntao/facexlib/releases/download/v0.2.2/parsing_parsenet.pth",
-    ),
-]
-
 
 def download_models():
     for file_name, url in model_filenames:
-        load_file_from_url(url=url, model_dir=modelfile_path, file_name=file_name)
+        load_file_from_url(
+            url=url,
+            model_dir=path_manager.model_paths["modelfile_path"],
+            file_name=file_name,
+        )
     for file_name, url in lora_filenames:
-        load_file_from_url(url=url, model_dir=lorafile_path, file_name=file_name)
+        load_file_from_url(
+            url=url,
+            model_dir=path_manager.model_paths["lorafile_path"],
+            file_name=file_name,
+        )
     for file_name, url in controlnet_filenames:
-        load_file_from_url(url=url, model_dir=controlnet_path, file_name=file_name)
+        load_file_from_url(
+            url=url,
+            model_dir=path_manager.model_paths["controlnet_path"],
+            file_name=file_name,
+        )
     for file_name, url in vae_approx_filenames:
-        load_file_from_url(url=url, model_dir=vae_approx_path, file_name=file_name)
+        load_file_from_url(
+            url=url,
+            model_dir=path_manager.model_paths["vae_approx_path"],
+            file_name=file_name,
+        )
     for file_name, url in upscaler_filenames:
-        load_file_from_url(url=url, model_dir=upscaler_path, file_name=file_name)
-    #    for file_name, url in faceswap_filenames:
-    #        load_file_from_url(url=url, model_dir=faceswap_path, file_name=file_name)
+        load_file_from_url(
+            url=url,
+            model_dir=path_manager.model_paths["upscaler_path"],
+            file_name=file_name,
+        )
     return
 
 

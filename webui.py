@@ -1,6 +1,6 @@
 import argparse
 import shared
-from shared import state, add_ctrl, performance_settings
+from shared import state, add_ctrl, performance_settings, path_manager
 import time
 
 import gradio as gr
@@ -10,7 +10,6 @@ import re
 import version
 import modules.async_worker as worker
 import modules.html
-import modules.path
 import ui_onebutton
 import ui_evolve
 import ui_controlnet
@@ -511,10 +510,10 @@ with shared.gradio_root as block:
                 with gr.Row():
                     base_model = gr.Dropdown(
                         label="SDXL Base Model",
-                        choices=modules.path.model_filenames,
+                        choices=path_manager.model_filenames,
                         value=settings["base_model"]
-                        if settings["base_model"] in modules.path.model_filenames
-                        else [modules.path.model_filenames[0]],
+                        if settings["base_model"] in path_manager.model_filenames
+                        else [path_manager.model_filenames[0]],
                         show_label=True,
                     )
                     add_ctrl("base_model_name", base_model)
@@ -531,7 +530,7 @@ with shared.gradio_root as block:
                             lora_model = gr.Dropdown(
                                 label=f"SDXL LoRA {i+1}",
                                 show_label=False,
-                                choices=["None"] + modules.path.lora_filenames,
+                                choices=["None"] + path_manager.lora_filenames,
                                 value=settings[f"lora_{i+1}_model"],
                                 visible=visible,
                             )
@@ -586,14 +585,14 @@ with shared.gradio_root as block:
                 inputs=[], outputs=[base_model] + lora_ctrls + [style_selection]
             )
             def model_refresh_clicked():
-                modules.path.update_all_model_names()
+                path_manager.update_all_model_names()
                 results = []
                 results += [
-                    gr.update(choices=modules.path.model_filenames),
+                    gr.update(choices=path_manager.model_filenames),
                 ]
                 for i in range(5):
                     results += [
-                        gr.update(choices=["None"] + modules.path.lora_filenames),
+                        gr.update(choices=["None"] + path_manager.lora_filenames),
                         gr.update(),
                     ]
                 results += [gr.update(choices=list(load_styles().keys()))]
@@ -621,7 +620,7 @@ with shared.gradio_root as block:
             )
             def sampler_changed(sampler_name):
                 if sampler_name == "lcm":
-                    return [gr.update(value=modules.path.find_lcm_lora())] + [
+                    return [gr.update(value=path_manager.find_lcm_lora())] + [
                         gr.update(value=1.0)
                     ]
                 else:
@@ -646,7 +645,7 @@ with shared.gradio_root as block:
                     return (
                         [gr.update(visible=False)]
                         + [gr.update(visible=False)] * len(performance_outputs)
-                        + [gr.update(value=modules.path.find_lcm_lora())]
+                        + [gr.update(value=path_manager.find_lcm_lora())]
                         + [gr.update(value=1.0)]
                     )
 

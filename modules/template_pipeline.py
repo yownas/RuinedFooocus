@@ -1,4 +1,3 @@
-import modules.path
 import modules.async_worker as worker
 
 from modules.settings import default_settings

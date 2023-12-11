@@ -5,7 +5,6 @@ import torch
 import cv2
 import re
 
-import modules.path
 import modules.controlnet
 import modules.async_worker as worker
 
@@ -14,6 +13,7 @@ from PIL import Image, ImageOps
 from comfy.model_base import SDXL
 from modules.settings import default_settings
 from modules.util import suppress_stdout
+from shared import path_manager
 
 import time
 import random
@@ -110,7 +110,7 @@ class pipeline:
     inference_memory = None
 
     def load_upscaler_model(self, model_name):
-        model_path = os.path.join(modules.path.upscaler_path, model_name)
+        model_path = os.path.join(path_manager.upscaler_path, model_name)
         sd = comfy.utils.load_torch_file(model_path, safe_load=True)
         if "module.layers.0.residual_group.blocks.0.norm1.weight" in sd:
             sd = comfy.utils.state_dict_prefix_replace(sd, {"module.": ""})
@@ -121,7 +121,7 @@ class pipeline:
         if self.xl_base_hash == name:
             return
 
-        filename = os.path.join(modules.path.modelfile_path, name)
+        filename = os.path.join(path_manager.model_paths["modelfile_path"], name)
 
         print(f"Loading base model: {name}")
 
@@ -146,7 +146,7 @@ class pipeline:
 
         except:
             print(f"Failed to load {name}, loading default model instead")
-            load_base_model(modules.path.default_base_model_name)
+            load_base_model(path_manager.default_model_names["default_base_model_name"])
 
         return
 
@@ -165,7 +165,7 @@ class pipeline:
             if name == "None" or weight == 0:
                 continue
             name = name.strip(" 🗒️")
-            filename = os.path.join(modules.path.lorafile_path, name)
+            filename = os.path.join(path_manager.model_paths["lorafile_path"], name)
             lora_prompt_addition = (
                 f"{lora_prompt_addition} {self.load_keywords(filename)}, "
             )
@@ -184,7 +184,7 @@ class pipeline:
             if name == "None" or weight == 0:
                 continue
             name = name.strip(" 🗒️")
-            filename = os.path.join(modules.path.lorafile_path, name)
+            filename = os.path.join(path_manager.model_paths["lorafile_path"], name)
             print(f"Loading LoRAs: {name}")
             with suppress_stdout():
                 try:
@@ -214,7 +214,7 @@ class pipeline:
         name = modules.controlnet.get_model(name)
 
         if name is not None and self.xl_controlnet_hash != name:
-            filename = os.path.join(modules.path.controlnet_path, name)
+            filename = os.path.join(path_manager.model_paths["controlnet_path"], name)
             self.xl_controlnet = comfy.controlnet.load_controlnet(filename)
             self.xl_controlnet_hash = name
             print(f"ControlNet model loaded: {self.xl_controlnet_hash}")

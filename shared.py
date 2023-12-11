@@ -1,5 +1,6 @@
 from transformers import CLIPTokenizer
 from modules.performance import PerformanceSettings
+from modules.path import PathManager
 
 gradio_root = None
 
@@ -9,6 +10,8 @@ wildcards = None
 tokenizer = CLIPTokenizer.from_pretrained("openai/clip-vit-large-patch14")
 
 performance_settings = PerformanceSettings()
+
+path_manager = PathManager()
 
 
 def add_ctrl(name, obj):
