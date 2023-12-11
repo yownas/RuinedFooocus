@@ -22,6 +22,7 @@ import einops
 import comfy.utils
 import comfy.model_management
 from comfy.sd import load_checkpoint_guess_config
+
 from comfy_extras.chainner_models import model_loading
 from nodes import (
     CLIPTextEncode,
@@ -41,6 +42,7 @@ from comfy.samplers import KSampler
 from comfy_extras.nodes_post_processing import ImageScaleToTotalPixels
 from comfy_extras.nodes_canny import Canny
 from comfy_extras.nodes_upscale_model import ImageUpscaleWithModel
+from comfy_extras.nodes_freelunch import FreeU
 
 
 class pipeline:
@@ -172,6 +174,13 @@ class pipeline:
         return lora_prompt_addition
 
     #   name = name.strip(" 🗒️")
+    def freeu(self, model, b1, b2, s1, s2):
+        freeu_model = FreeU()
+        unet = freeu_model.patch(model=model.unet, b1=b1, b2=b2, s1=s1, s2=s2)[0]
+        return self.StableDiffusionModel(
+            unet=unet, clip=model.clip, vae=model.vae, clip_vision=model.clip_vision
+        )
+
     def load_loras(self, loras):
         lora_prompt_addition = self.load_all_keywords(loras)
         if self.xl_base_patched_hash == str(loras):
@@ -202,7 +211,11 @@ class pipeline:
                 except:
                     pass
         self.xl_base_patched = model
+        # Uncomment below to enable FreeU shit
+        # self.xl_base_patched = self.freeu(model, 1.01, 1.02, 0.99, 0.95)
+        # self.xl_base_patched_hash = str(loras + [1.01, 1.02, 0.99, 0.95])
         self.xl_base_patched_hash = str(loras)
+
         print(f"LoRAs loaded: {loaded_loras}")
 
         return lora_prompt_addition
