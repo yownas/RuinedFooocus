@@ -40,9 +40,7 @@ def get_parser():
     parser.add_argument(
         "--share", action="store_true", help="Set whether to share on Gradio."
     )
-    parser.add_argument(
-        "--auth", type=str, help="Set credentials username/password."
-    )
+    parser.add_argument("--auth", type=str, help="Set credentials username/password.")
     parser.add_argument(
         "--listen",
         type=str,
@@ -71,8 +69,10 @@ def launch_app(args):
         inbrowser=inbrowser,
         server_name=args.listen,
         server_port=args.port,
-        share=args.share, 
-        auth=args.auth.split("/", 1) if isinstance(args.auth, str) and "/" in args.auth else None,
+        share=args.share,
+        auth=args.auth.split("/", 1)
+        if isinstance(args.auth, str) and "/" in args.auth
+        else None,
         favicon_path=favicon_path,
     )
 
@@ -552,31 +552,28 @@ with shared.gradio_root as block:
                             add_ctrl(f"w{i+1}", lora_weight)
                             lora_ctrls += [lora_model, lora_weight]
 
-                    def update_loras(*lora_ctrls):
+                    def update_loras_visibility(*lora_controls):
+                        """Update the visibility of LoRa controls based on their values."""
                         hide = False
-                        ret = []
-                        for m, s in zip(lora_ctrls[::2], lora_ctrls[1::2]):
-                            if m == "None":
-                                if hide:
-                                    ret += [
-                                        gr.update(visible=False),
-                                        gr.update(visible=False),
-                                    ]
-                                else:
-                                    ret += [
-                                        gr.update(visible=True),
-                                        gr.update(visible=True),
-                                    ]
+                        updates = []
+                        for model, strength in zip(
+                            lora_controls[::2], lora_controls[1::2]
+                        ):
+                            visibility = False if model == "None" and hide else True
+                            updates += [
+                                gr.update(visible=visibility),
+                                gr.update(visible=visibility),
+                            ]
+                            if model == "None":
                                 hide = True
-                            else:
-                                ret += [
-                                    gr.update(visible=True),
-                                    gr.update(visible=True),
-                                ]
-                        return ret
+                        return updates
 
-                    for m, s in zip(lora_ctrls[::2], lora_ctrls[1::2]):
-                        m.change(fn=update_loras, inputs=lora_ctrls, outputs=lora_ctrls)
+                    for model, strength in zip(lora_ctrls[::2], lora_ctrls[1::2]):
+                        model.change(
+                            fn=update_loras_visibility,
+                            inputs=lora_ctrls,
+                            outputs=lora_ctrls,
+                        )
 
                 with gr.Row():
                     model_refresh = gr.Button(
@@ -711,8 +708,12 @@ with shared.gradio_root as block:
 args = parse_args()
 if isinstance(args.auth, str) and not "/" in args.auth:
     if len(args.auth):
-        print(f"\nERROR! --auth need be in the form of \"username/password\" not \"{args.auth}\"\n")
+        print(
+            f'\nERROR! --auth need be in the form of "username/password" not "{args.auth}"\n'
+        )
     if args.share:
-        print(f"\nWARNING! Will not enable --share without proper --auth=username/password\n")
+        print(
+            f"\nWARNING! Will not enable --share without proper --auth=username/password\n"
+        )
         args.share = False
 launch_app(args)
