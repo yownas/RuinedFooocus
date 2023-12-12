@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+import shutil
 
 
 class PerformanceSettings:
@@ -23,7 +24,7 @@ class PerformanceSettings:
 
     def _load_data(self, file_path):
         if not file_path.exists():
-            self.DEFAULT_PERFORMANCE_FILE.copy(file_path)
+            shutil.copy(self.DEFAULT_PERFORMANCE_FILE, file_path)
         return json.load(open(file_path))
 
     def _save_data(self, file_path, data):
