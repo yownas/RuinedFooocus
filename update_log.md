@@ -1,3 +1,6 @@
+### 1.25.4
+* Fixed an issue with wildcards and strengths getting stuck in Catastrophic backtracking
+
 ### 1.25.3
 * Changed a lot of os.path to pathlibs
 * Worked on backend code for future extensibility
