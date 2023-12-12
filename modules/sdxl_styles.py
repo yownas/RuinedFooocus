@@ -1,5 +1,6 @@
 import json
 import random
+import shutil
 from csv import DictReader
 from pathlib import Path
 
@@ -13,7 +14,7 @@ def load_styles():
     styles = []
 
     if not STYLES_FILE.is_file():
-        DEFAULT_STYLES_FILE.copy(STYLES_FILE)
+        shutil.copy(DEFAULT_STYLES_FILE, STYLES_FILE)
 
     with STYLES_FILE.open("r") as f:
         reader = DictReader(f)
@@ -35,7 +36,7 @@ def load_resolutions():
     ratios = {}
 
     if not RESOLUTIONS_FILE.is_file():
-        DEFAULT_RESOLUTIONS_FILE.copy(RESOLUTIONS_FILE)
+        shutil.copy(DEFAULT_RESOLUTIONS_FILE, RESOLUTIONS_FILE)
 
     with RESOLUTIONS_FILE.open() as f:
         data = json.load(f)
