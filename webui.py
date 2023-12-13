@@ -366,7 +366,9 @@ with shared.gradio_root as block:
                     value="Save",
                     visible=False,
                 )
-                custom_default_values = performance_settings.get_perf_options(settings["performance"])
+                custom_default_values = performance_settings.get_perf_options(
+                    settings["performance"]
+                )
                 custom_steps = gr.Slider(
                     label="Custom Steps",
                     minimum=1,
@@ -486,20 +488,22 @@ with shared.gradio_root as block:
                     inputs=[prompt, style_selection],
                     outputs=[prompt, negative_prompt, style_selection],
                 )
-                def apply_style(prompt_test, inputs):
-                    pr = ""
-                    ne = ""
-                    while "Style: Pick Random" in inputs:
-                        inputs[inputs.index("Style: Pick Random")] = random.choice(
-                            allstyles
-                        )
-                    for item in inputs:
-                        p, n = styles.get(item)
-                        pr += p + ", "
-                        ne += n + ", "
-                    if prompt_test:
-                        pr = pr.replace("{prompt}", prompt_test)
-                    return pr, ne, []
+                def apply_style(prompt_text, style_inputs):
+                    style_inputs = [
+                        random.choice(allstyles)
+                        if style == "Style: Pick Random"
+                        else style
+                        for style in style_inputs
+                    ]
+                    style_pairs = [styles.get(style) for style in style_inputs]
+
+                    prompt_styles = ", ".join(prompt for prompt, _ in style_pairs)
+                    negative_styles = ", ".join(negative for _, negative in style_pairs)
+
+                    if prompt_text:
+                        prompt_styles = prompt_styles.replace("{prompt}", prompt_text)
+
+                    return prompt_styles, negative_styles, []
 
                 @seed_random.change(inputs=[seed_random], outputs=[image_seed])
                 def random_checked(r):
@@ -661,20 +665,12 @@ with shared.gradio_root as block:
 
             @performance_selection.change(
                 inputs=[performance_selection],
-                outputs=[custom_steps]
-                + [cfg]
-                + [sampler_name]
-                + [scheduler]
+                outputs=[custom_steps] + [cfg] + [sampler_name] + [scheduler],
             )
             def performance_changed_update_custom(selection):
                 # Skip if Custom was selected
                 if selection == performance_settings.CUSTOM_PERFORMANCE:
-                    return (
-                        [gr.update()]
-                        + [gr.update()]
-                        + [gr.update()]
-                        + [gr.update()]
-                    )
+                    return [gr.update()] + [gr.update()] + [gr.update()] + [gr.update()]
 
                 # Update Custom values based on selected Performance mode
                 selected_perf_options = performance_settings.get_perf_options(selection)
