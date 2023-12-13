@@ -366,12 +366,13 @@ with shared.gradio_root as block:
                     value="Save",
                     visible=False,
                 )
+                custom_default_values = performance_settings.get_perf_options(settings["performance"])
                 custom_steps = gr.Slider(
                     label="Custom Steps",
                     minimum=1,
                     maximum=200,
                     step=1,
-                    value=30,
+                    value=custom_default_values["custom_steps"],
                     visible=False,
                 )
                 add_ctrl("custom_steps", custom_steps)
@@ -381,21 +382,21 @@ with shared.gradio_root as block:
                     minimum=0.0,
                     maximum=20.0,
                     step=0.1,
-                    value=8,
+                    value=custom_default_values["cfg"],
                     visible=False,
                 )
                 add_ctrl("cfg", cfg)
                 sampler_name = gr.Dropdown(
                     label="Sampler",
                     choices=KSampler.SAMPLERS,
-                    value="dpmpp_2m_sde_gpu",
+                    value=custom_default_values["sampler_name"],
                     visible=False,
                 )
                 add_ctrl("sampler_name", sampler_name)
                 scheduler = gr.Dropdown(
                     label="Scheduler",
                     choices=KSampler.SCHEDULERS,
-                    value="karras",
+                    value=custom_default_values["scheduler"],
                     visible=False,
                 )
                 add_ctrl("scheduler", scheduler)
@@ -657,6 +658,32 @@ with shared.gradio_root as block:
                         + [gr.update()]
                         + [gr.update()]
                     )
+
+            @performance_selection.change(
+                inputs=[performance_selection],
+                outputs=[custom_steps]
+                + [cfg]
+                + [sampler_name]
+                + [scheduler]
+            )
+            def performance_changed_update_custom(selection):
+                # Skip if Custom was selected
+                if selection == performance_settings.CUSTOM_PERFORMANCE:
+                    return (
+                        [gr.update()]
+                        + [gr.update()]
+                        + [gr.update()]
+                        + [gr.update()]
+                    )
+
+                # Update Custom values based on selected Performance mode
+                selected_perf_options = performance_settings.get_perf_options(selection)
+                return (
+                    [gr.update(value=selected_perf_options["custom_steps"])]
+                    + [gr.update(value=selected_perf_options["cfg"])]
+                    + [gr.update(value=selected_perf_options["sampler_name"])]
+                    + [gr.update(value=selected_perf_options["scheduler"])]
+                )
 
         def update_token_visibility(x):
             return [gr.update(visible=x), gr.update(visible=x)]
