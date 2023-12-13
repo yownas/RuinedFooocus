@@ -1,6 +1,6 @@
 import argparse
 import shared
-from shared import state, add_ctrl, performance_settings, path_manager
+from shared import state, add_ctrl, performance_settings, resolution_settings, path_manager
 import time
 
 import gradio as gr
@@ -444,10 +444,31 @@ with shared.gradio_root as block:
                 with gr.Group():
                     aspect_ratios_selection = gr.Dropdown(
                         label="Aspect Ratios (width x height)",
-                        choices=list(shared.resolution_settings.aspect_ratios.keys()),
+                        choices=list(resolution_settings.aspect_ratios.keys())
+                        + [resolution_settings.CUSTOM_RESOLUTION],
                         value=settings["resolution"],
                     )
                     add_ctrl("aspect_ratios_selection", aspect_ratios_selection)
+                    default_resolution = resolution_settings.get_aspect_ratios(settings["resolution"])
+                    custom_width = gr.Slider(
+                        label="Width",
+                        minimum=512,
+                        maximum=2048,
+                        step=2,
+                        visible=False,
+                        value=default_resolution[0]
+                    )
+                    add_ctrl("custom_width", custom_width)
+                    custom_height = gr.Slider(
+                        label="Height",
+                        minimum=512,
+                        maximum=2048,
+                        step=2,
+                        visible=False,
+                        value=default_resolution[1]
+                    )
+                    add_ctrl("custom_height", custom_height)
+                    # TODO: add custom elements for saving preset
 
                     style_selection = gr.Dropdown(
                         label="Style Selection",
@@ -679,6 +700,25 @@ with shared.gradio_root as block:
                     + [gr.update(value=selected_perf_options["cfg"])]
                     + [gr.update(value=selected_perf_options["sampler_name"])]
                     + [gr.update(value=selected_perf_options["scheduler"])]
+                )
+
+            @aspect_ratios_selection.change(
+                inputs=[aspect_ratios_selection],
+                outputs=[custom_width, custom_height]
+            )
+            def aspect_ratios_changed(selection):
+                # Show resolution controls when selecting Custom
+                if selection == resolution_settings.CUSTOM_RESOLUTION:
+                    return (
+                        [gr.update(visible=True)]
+                        + [gr.update(visible=True)]
+                    )
+
+                # Hide resolution controls and update with selected resolution
+                selected_width, selected_height = resolution_settings.get_aspect_ratios(selection)
+                return (
+                    [gr.update(visible=False, value=selected_width)]
+                    + [gr.update(visible=False, value=selected_height)]
                 )
 
         def update_token_visibility(x):

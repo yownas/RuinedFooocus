@@ -25,6 +25,5 @@ class ResolutionSettings:
 
         return ratios
 
-
-    def get_aspect_ratios(self):
-        return self.aspect_ratios
+    def get_aspect_ratios(self, name):
+        return self.aspect_ratios[name]
