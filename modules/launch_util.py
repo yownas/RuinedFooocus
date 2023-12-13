@@ -32,9 +32,7 @@ def git_clone(url, dir, name, hash=None):
             repo = pygit2.Repository(dir)
             print(f"{name} exists.")
         except:
-            if dir.exists():
-                shutil.rmtree(dir, ignore_errors=True)
-            dir.mkdir(exist_ok=True)
+            Path(dir).parent.mkdir(exist_ok=True)
             repo = pygit2.clone_repository(url, str(dir))
             print(f"{name} cloned.")
 
