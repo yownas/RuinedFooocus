@@ -1,3 +1,6 @@
+### 1.25.5
+* Make Custom option for Performance Mode copy last selected mode's setings (Lavorther)
+
 ### 1.25.4
 * Fixed an issue with wildcards and strengths getting stuck in Catastrophic backtracking
 
