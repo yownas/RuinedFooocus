@@ -27,7 +27,6 @@ def worker():
 
     from PIL import Image
     from PIL.PngImagePlugin import PngInfo
-    from modules.sdxl_styles import aspect_ratios
     from modules.util import generate_temp_filename, TimeIt, model_hash
     import modules.pipelines
     from modules.settings import default_settings
@@ -120,7 +119,7 @@ def worker():
 
         steps = gen_data["custom_steps"]
 
-        width, height = aspect_ratios[gen_data["aspect_ratios_selection"]]
+        width, height = shared.resolution_settings.aspect_ratios[gen_data["aspect_ratios_selection"]]
         if "width" in gen_data:
             width = gen_data["width"]
         if "height" in gen_data:

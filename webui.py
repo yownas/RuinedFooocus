@@ -16,7 +16,7 @@ import ui_controlnet
 from modules.interrogate import look
 
 from comfy.samplers import KSampler
-from modules.sdxl_styles import load_styles, aspect_ratios, styles, allstyles
+from modules.sdxl_styles import load_styles, styles, allstyles
 from modules.settings import default_settings
 from modules.prompt_processing import get_promptlist
 from modules.util import get_wildcard_files
@@ -442,7 +442,7 @@ with shared.gradio_root as block:
                 with gr.Group():
                     aspect_ratios_selection = gr.Dropdown(
                         label="Aspect Ratios (width x height)",
-                        choices=list(aspect_ratios.keys()),
+                        choices=list(shared.resolution_settings.aspect_ratios.keys()),
                         value=settings["resolution"],
                     )
                     add_ctrl("aspect_ratios_selection", aspect_ratios_selection)
