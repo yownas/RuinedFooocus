@@ -50,7 +50,7 @@ def git_clone(url, dir, name, hash=None):
 
 
 def repo_dir(name):
-    return script_path / dir_repos / name
+    return str(Path(script_path) / dir_repos / name)
 
 
 def is_installed(package):
