@@ -699,25 +699,25 @@ with shared.gradio_root as block:
             def performance_changed(selection):
                 if selection == performance_settings.CUSTOM_PERFORMANCE:
                     return (
-                        [gr.update(value="")]
+                        [perf_name.update(value="")]
                         + [gr.update(visible=True)] * len(performance_outputs)
-                        + [gr.update()]
-                        + [gr.update()]
+                        + [lora_ctrls[0].update()]
+                        + [lora_ctrls[1].update()]
                     )
                 elif selection == "Lcm":
                     return (
-                        [gr.update(visible=False)]
+                        [perf_name.update(visible=False)]
                         + [gr.update(visible=False)] * len(performance_outputs)
-                        + [gr.update(value=path_manager.find_lcm_lora())]
-                        + [gr.update(value=1.0)]
+                        + [lora_ctrls[0].update(value=path_manager.find_lcm_lora())]
+                        + [lora_ctrls[1].update(value=1.0)]
                     )
 
                 else:
                     return (
-                        [gr.update(visible=False)]
+                        [perf_name.update(visible=False)]
                         + [gr.update(visible=False)] * len(performance_outputs)
-                        + [gr.update()]
-                        + [gr.update()]
+                        + [lora_ctrls[0].update()]
+                        + [lora_ctrls[1].update()]
                     )
 
             @performance_selection.change(
@@ -727,16 +727,16 @@ with shared.gradio_root as block:
             def performance_changed_update_custom(selection):
                 # Skip if Custom was selected
                 if selection == performance_settings.CUSTOM_PERFORMANCE:
-                    return [gr.update()] + [gr.update()] + [gr.update()] + [gr.update()]
+                    return [gr.update()] * 4
 
                 # Update Custom values based on selected Performance mode
                 selected_perf_options = performance_settings.get_perf_options(selection)
-                return (
-                    [gr.update(value=selected_perf_options["custom_steps"])]
-                    + [gr.update(value=selected_perf_options["cfg"])]
-                    + [gr.update(value=selected_perf_options["sampler_name"])]
-                    + [gr.update(value=selected_perf_options["scheduler"])]
-                )
+                return [
+                    custom_steps.update(value=selected_perf_options["custom_steps"]),
+                    cfg.update(value=selected_perf_options["cfg"]),
+                    sampler_name.update(value=selected_perf_options["sampler_name"]),
+                    scheduler.update(value=selected_perf_options["scheduler"]),
+                ]
 
             @aspect_ratios_selection.change(
                 inputs=[aspect_ratios_selection],
@@ -751,12 +751,12 @@ with shared.gradio_root as block:
                 selected_width, selected_height = resolution_settings.get_aspect_ratios(
                     selection
                 )
-                return (
-                    [gr.update(visible=False)]
-                    + [gr.update(visible=False, value=selected_width)]
-                    + [gr.update(visible=False, value=selected_height)]
-                    + [gr.update(visible=False)]
-                )
+                return [
+                    ratio_name.update(visible=False),
+                    custom_width.update(visible=False, value=selected_width),
+                    custom_height.update(visible=False, value=selected_height),
+                    ratio_save.update(visible=False),
+                ]
 
         def update_token_visibility(x):
             return [gr.update(visible=x), gr.update(visible=x)]
