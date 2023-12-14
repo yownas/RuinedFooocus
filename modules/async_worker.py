@@ -119,10 +119,15 @@ def worker():
 
         steps = gen_data["custom_steps"]
 
-        if (gen_data["aspect_ratios_selection"] == shared.resolution_settings.CUSTOM_RESOLUTION):
+        if (
+            gen_data["aspect_ratios_selection"]
+            == shared.resolution_settings.CUSTOM_RESOLUTION
+        ):
             width, height = (gen_data["custom_width"], gen_data["custom_height"])
         else:
-            width, height = shared.resolution_settings.aspect_ratios[gen_data["aspect_ratios_selection"]]
+            width, height = shared.resolution_settings.aspect_ratios[
+                gen_data["aspect_ratios_selection"]
+            ]
 
         if "width" in gen_data:
             width = gen_data["width"]

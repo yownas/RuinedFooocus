@@ -22,7 +22,9 @@ class ResolutionSettings:
             for ratio, res in data.items():
                 self.base_ratios[ratio] = (res["width"], res["height"])
 
-        self.aspect_ratios = {f"{v[0]}x{v[1]} ({k})": v for k, v in self.base_ratios.items()}
+        self.aspect_ratios = {
+            f"{v[0]}x{v[1]} ({k})": v for k, v in self.base_ratios.items()
+        }
 
         return self.base_ratios
 
@@ -30,7 +32,7 @@ class ResolutionSettings:
         formatted_options = {}
         for k in res_options:
             formatted_options[k] = {
-                "width":  res_options[k][0],
+                "width": res_options[k][0],
                 "height": res_options[k][1],
             }
 

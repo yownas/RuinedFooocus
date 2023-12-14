@@ -1,6 +1,12 @@
 import argparse
 import shared
-from shared import state, add_ctrl, performance_settings, resolution_settings, path_manager
+from shared import (
+    state,
+    add_ctrl,
+    performance_settings,
+    resolution_settings,
+    path_manager,
+)
 import time
 
 import gradio as gr
@@ -455,14 +461,16 @@ with shared.gradio_root as block:
                         interactive=True,
                         visible=False,
                     )
-                    default_resolution = resolution_settings.get_aspect_ratios(settings["resolution"])
+                    default_resolution = resolution_settings.get_aspect_ratios(
+                        settings["resolution"]
+                    )
                     custom_width = gr.Slider(
                         label="Width",
                         minimum=256,
                         maximum=4096,
                         step=2,
                         visible=False,
-                        value=default_resolution[0]
+                        value=default_resolution[0],
                     )
                     add_ctrl("custom_width", custom_width)
                     custom_height = gr.Slider(
@@ -471,7 +479,7 @@ with shared.gradio_root as block:
                         maximum=4096,
                         step=2,
                         visible=False,
-                        value=default_resolution[1]
+                        value=default_resolution[1],
                     )
                     add_ctrl("custom_height", custom_height)
                     ratio_save = gr.Button(
@@ -491,7 +499,9 @@ with shared.gradio_root as block:
                             choices = list(resolution_settings.aspect_ratios.keys()) + [
                                 resolution_settings.CUSTOM_RESOLUTION
                             ]
-                            new_ratio_name = f"{custom_width}x{custom_height} ({ratio_name})"
+                            new_ratio_name = (
+                                f"{custom_width}x{custom_height} ({ratio_name})"
+                            )
                             return gr.update(choices=choices, value=new_ratio_name)
                         else:
                             return gr.update()
@@ -730,17 +740,17 @@ with shared.gradio_root as block:
 
             @aspect_ratios_selection.change(
                 inputs=[aspect_ratios_selection],
-                outputs=[ratio_name, custom_width, custom_height, ratio_save]
+                outputs=[ratio_name, custom_width, custom_height, ratio_save],
             )
             def aspect_ratios_changed(selection):
                 # Show resolution controls when selecting Custom
                 if selection == resolution_settings.CUSTOM_RESOLUTION:
-                    return (
-                        [gr.update(visible=True)] * 4
-                    )
+                    return [gr.update(visible=True)] * 4
 
                 # Hide resolution controls and update with selected resolution
-                selected_width, selected_height = resolution_settings.get_aspect_ratios(selection)
+                selected_width, selected_height = resolution_settings.get_aspect_ratios(
+                    selection
+                )
                 return (
                     [gr.update(visible=False)]
                     + [gr.update(visible=False, value=selected_width)]
