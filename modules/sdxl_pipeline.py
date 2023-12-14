@@ -12,7 +12,6 @@ from PIL import Image, ImageOps
 
 from comfy.model_base import SDXL
 from modules.settings import default_settings
-from modules.util import suppress_stdout
 from shared import path_manager
 
 import time
@@ -128,11 +127,10 @@ class pipeline:
         print(f"Loading base model: {name}")
 
         try:
-            with suppress_stdout():
-                unet, clip, vae, clip_vision = load_checkpoint_guess_config(filename)
-                self.xl_base = self.StableDiffusionModel(
-                    unet=unet, clip=clip, vae=vae, clip_vision=clip_vision
-                )
+            unet, clip, vae, clip_vision = load_checkpoint_guess_config(filename)
+            self.xl_base = self.StableDiffusionModel(
+                unet=unet, clip=clip, vae=vae, clip_vision=clip_vision
+            )
             if not isinstance(self.xl_base.unet.model, SDXL):
                 print(
                     "Model not supported. Fooocus only support SDXL model as the base model."
@@ -195,21 +193,20 @@ class pipeline:
             name = name.strip(" 🗒️")
             filename = os.path.join(path_manager.model_paths["lorafile_path"], name)
             print(f"Loading LoRAs: {name}")
-            with suppress_stdout():
-                try:
-                    lora = comfy.utils.load_torch_file(filename, safe_load=True)
-                    unet, clip = comfy.sd.load_lora_for_models(
-                        model.unet, model.clip, lora, weight, weight
-                    )
-                    model = self.StableDiffusionModel(
-                        unet=unet,
-                        clip=clip,
-                        vae=model.vae,
-                        clip_vision=model.clip_vision,
-                    )
-                    loaded_loras += [(name, weight)]
-                except:
-                    pass
+            try:
+                lora = comfy.utils.load_torch_file(filename, safe_load=True)
+                unet, clip = comfy.sd.load_lora_for_models(
+                    model.unet, model.clip, lora, weight, weight
+                )
+                model = self.StableDiffusionModel(
+                    unet=unet,
+                    clip=clip,
+                    vae=model.vae,
+                    clip_vision=model.clip_vision,
+                )
+                loaded_loras += [(name, weight)]
+            except:
+                pass
         self.xl_base_patched = model
         # Uncomment below to enable FreeU shit
         # self.xl_base_patched = self.freeu(model, 1.01, 1.02, 0.99, 0.95)
@@ -253,12 +250,11 @@ class pipeline:
     def textencode(self, id, text):
         update = False
         if text != self.conditions[id]["text"]:
-            with suppress_stdout():
-                self.conditions[id]["cache"] = CLIPTextEncode().encode(
-                    clip=self.xl_base_patched.clip, text=text
-                )[0]
-            self.conditions[id]["text"] = text
-            update = True
+            self.conditions[id]["cache"] = CLIPTextEncode().encode(
+                clip=self.xl_base_patched.clip, text=text
+            )[0]
+        self.conditions[id]["text"] = text
+        update = True
         return update
 
     def set_timestep_range(self, conditioning, start, end):

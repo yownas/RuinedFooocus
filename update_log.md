@@ -1,3 +1,8 @@
+### 1.26.0
+* Fixed issue with controlnet caching
+* Custom resolutions can now be saved directly, just select custom from the resolution dropdown (Lavorther)
+* re-enabled comfy messages
+
 ### 1.25.5
 * Make Custom option for Performance Mode copy last selected mode's setings (Lavorther)
 

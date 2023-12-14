@@ -8,7 +8,7 @@ from tqdm import tqdm
 import tempfile
 
 from modules.settings import default_settings
-from modules.util import suppress_stdout, generate_temp_filename
+from modules.util import generate_temp_filename
 
 from PIL import Image
 import imageio.v3 as iio

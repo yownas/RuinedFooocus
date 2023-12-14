@@ -1,7 +1,6 @@
 import modules.async_worker as worker
 
 from modules.settings import default_settings
-from modules.util import suppress_stdout
 
 from PIL import Image
 

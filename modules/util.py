@@ -62,17 +62,6 @@ def generate_temp_filename(folder="./outputs/", extension="png"):
     return result.absolute()
 
 
-@contextmanager
-def suppress_stdout():
-    with open(os.devnull, "w") as devnull:
-        old_stdout = sys.stdout
-        sys.stdout = devnull
-        try:
-            yield
-        finally:
-            sys.stdout = old_stdout
-
-
 def load_file_from_url(
     url: str,
     *,
