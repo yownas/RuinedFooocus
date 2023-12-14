@@ -231,11 +231,10 @@ class pipeline:
             self.xl_controlnet = comfy.controlnet.load_controlnet(filename)
             self.xl_controlnet_hash = name
             print(f"ControlNet model loaded: {self.xl_controlnet_hash}")
-            return True
-        else:
+        if self.xl_controlnet_hash != name:
             self.xl_controlnet = None
             self.xl_controlnet_hash = None
-            return False
+            print(f"Controlnet model unloaded")
 
     conditions = None
 
