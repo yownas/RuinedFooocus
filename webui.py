@@ -449,11 +449,17 @@ with shared.gradio_root as block:
                         value=settings["resolution"],
                     )
                     add_ctrl("aspect_ratios_selection", aspect_ratios_selection)
+                    ratio_name = gr.Textbox(
+                        show_label=False,
+                        placeholder="Name",
+                        interactive=True,
+                        visible=False,
+                    )
                     default_resolution = resolution_settings.get_aspect_ratios(settings["resolution"])
                     custom_width = gr.Slider(
                         label="Width",
-                        minimum=512,
-                        maximum=2048,
+                        minimum=256,
+                        maximum=4096,
                         step=2,
                         visible=False,
                         value=default_resolution[0]
@@ -461,14 +467,34 @@ with shared.gradio_root as block:
                     add_ctrl("custom_width", custom_width)
                     custom_height = gr.Slider(
                         label="Height",
-                        minimum=512,
-                        maximum=2048,
+                        minimum=256,
+                        maximum=4096,
                         step=2,
                         visible=False,
                         value=default_resolution[1]
                     )
                     add_ctrl("custom_height", custom_height)
-                    # TODO: add custom elements for saving preset
+                    ratio_save = gr.Button(
+                        value="Save",
+                        visible=False,
+                    )
+
+                    @ratio_save.click(
+                        inputs=[ratio_name, custom_width, custom_height],
+                        outputs=[aspect_ratios_selection],
+                    )
+                    def ratio_save_click(ratio_name, custom_width, custom_height):
+                        if ratio_name != "":
+                            ratio_options = resolution_settings.load_resolutions()
+                            ratio_options[ratio_name] = (custom_width, custom_height)
+                            resolution_settings.save_resolutions(ratio_options)
+                            choices = list(resolution_settings.aspect_ratios.keys()) + [
+                                resolution_settings.CUSTOM_RESOLUTION
+                            ]
+                            new_ratio_name = f"{custom_width}x{custom_height} ({ratio_name})"
+                            return gr.update(choices=choices, value=new_ratio_name)
+                        else:
+                            return gr.update()
 
                     style_selection = gr.Dropdown(
                         label="Style Selection",
@@ -704,21 +730,22 @@ with shared.gradio_root as block:
 
             @aspect_ratios_selection.change(
                 inputs=[aspect_ratios_selection],
-                outputs=[custom_width, custom_height]
+                outputs=[ratio_name, custom_width, custom_height, ratio_save]
             )
             def aspect_ratios_changed(selection):
                 # Show resolution controls when selecting Custom
                 if selection == resolution_settings.CUSTOM_RESOLUTION:
                     return (
-                        [gr.update(visible=True)]
-                        + [gr.update(visible=True)]
+                        [gr.update(visible=True)] * 4
                     )
 
                 # Hide resolution controls and update with selected resolution
                 selected_width, selected_height = resolution_settings.get_aspect_ratios(selection)
                 return (
-                    [gr.update(visible=False, value=selected_width)]
+                    [gr.update(visible=False)]
+                    + [gr.update(visible=False, value=selected_width)]
                     + [gr.update(visible=False, value=selected_height)]
+                    + [gr.update(visible=False)]
                 )
 
         def update_token_visibility(x):
