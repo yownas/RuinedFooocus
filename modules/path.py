@@ -37,14 +37,14 @@ class PathManager:
 
     def get_model_paths(self):
         return {
-            "modelfile_path": self.get_abspath(self.paths["path_checkpoints"]),
-            "lorafile_path": self.get_abspath(self.paths["path_loras"]),
-            "controlnet_path": self.get_abspath(self.paths["path_controlnet"]),
-            "vae_approx_path": self.get_abspath(self.paths["path_vae_approx"]),
-            "temp_outputs_path": self.get_abspath(self.paths["path_outputs"]),
+            "modelfile_path": self.get_abspath_folder(self.paths["path_checkpoints"]),
+            "lorafile_path": self.get_abspath_folder(self.paths["path_loras"]),
+            "controlnet_path": self.get_abspath_folder(self.paths["path_controlnet"]),
+            "vae_approx_path": self.get_abspath_folder(self.paths["path_vae_approx"]),
+            "temp_outputs_path": self.get_abspath_folder(self.paths["path_outputs"]),
             "temp_preview_path": self.get_abspath(self.paths["path_preview"]),
-            "upscaler_path": self.get_abspath(self.paths["path_upscalers"]),
-            "clip_path": self.get_abspath(self.paths["path_clip"]),
+            "upscaler_path": self.get_abspath_folder(self.paths["path_upscalers"]),
+            "clip_path": self.get_abspath_folder(self.paths["path_clip"]),
         }
 
     def get_default_model_names(self):
@@ -53,6 +53,12 @@ class PathManager:
             "default_lora_name": "sd_xl_offset_example-lora_1.0.safetensors",
             "default_lora_weight": 0.5,
         }
+
+    def get_abspath_folder(self, path):
+        folder = self.get_abspath(path)
+        if not folder.exists():
+            folder.mkdir(parents=True, exist_ok=True)
+        return folder
 
     def get_abspath(self, path):
         return path if Path(path).is_absolute() else Path(__file__).parent / path
