@@ -61,7 +61,7 @@ class PathManager:
         return folder
 
     def get_abspath(self, path):
-        return path if Path(path).is_absolute() else Path(__file__).parent / path
+        return Path(path) if Path(path).is_absolute() else Path(__file__).parent / path
 
     def get_model_filenames(self, folder_path, isLora=False):
         folder_path = Path(folder_path)
