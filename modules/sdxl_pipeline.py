@@ -146,7 +146,9 @@ class pipeline:
 
         except:
             print(f"Failed to load {name}, loading default model instead")
-            load_base_model(path_manager.default_model_names["default_base_model_name"])
+            self.load_base_model(
+                path_manager.default_model_names["default_base_model_name"]
+            )
 
         return
 
