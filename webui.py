@@ -1,5 +1,6 @@
 import argparse
 import shared
+import os
 from shared import (
     state,
     add_ctrl,
@@ -25,11 +26,13 @@ from comfy.samplers import KSampler
 from modules.sdxl_styles import load_styles, styles, allstyles
 from modules.settings import default_settings
 from modules.prompt_processing import get_promptlist
-from modules.util import get_wildcard_files
+from modules.util import get_wildcard_files, load_keywords
+from modules.path import PathManager
 
 from PIL import Image
 
 inpaint_toggle = None
+path_manager = PathManager()
 
 
 def find_unclosed_markers(s):
@@ -614,10 +617,16 @@ with shared.gradio_root as block:
                             add_ctrl(f"w{i+1}", lora_weight)
                             lora_ctrls += [lora_model, lora_weight]
 
+                    lora_keywords = gr.Textbox(
+                        label="LoRA Trigger Words", interactive=False
+                    )
+                    add_ctrl("lora_keywords", lora_keywords)
+
                     def update_loras_visibility(*lora_controls):
                         """Update the visibility of LoRa controls based on their values."""
                         hide = False
                         updates = []
+                        lora_prompt_addition = ""
                         for model, strength in zip(
                             lora_controls[::2], lora_controls[1::2]
                         ):
@@ -628,13 +637,24 @@ with shared.gradio_root as block:
                             ]
                             if model == "None":
                                 hide = True
+                            if model == "None" or strength == 0:
+                                continue
+                            model = model.strip(" 🗒️")
+                            filename = os.path.join(
+                                path_manager.model_paths["lorafile_path"], model
+                            )
+                            lora_prompt_addition = (
+                                f"{lora_prompt_addition} {load_keywords(filename)} "
+                            )
+
+                        updates += [lora_keywords.update(value=lora_prompt_addition)]
                         return updates
 
                     for model, strength in zip(lora_ctrls[::2], lora_ctrls[1::2]):
                         model.change(
                             fn=update_loras_visibility,
                             inputs=lora_ctrls,
-                            outputs=lora_ctrls,
+                            outputs=lora_ctrls + [lora_keywords],
                         )
 
                 with gr.Row():

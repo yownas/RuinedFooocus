@@ -274,6 +274,18 @@ def worker():
                     "software": "RuinedFooocus",
                 }
                 metadata = PngInfo()
+                # if True:
+                #     def handle_whitespace(string: str):
+                #         return (
+                #             string.strip()
+                #             .replace("\n", " ")
+                #             .replace("\r", " ")
+                #             .replace("\t", " ")
+                #         )
+
+                #     comment = f"{handle_whitespace(p_txt)}\nNegative prompt: {handle_whitespace(n_txt)}\nSteps: {round(steps, 1)}, Sampler: {gen_data['sampler_name']} {gen_data['scheduler']}, CFG Scale: {float(gen_data['cfg'])}, Seed: {seed}, Size: {width}x{height}, Model hash: {model_hash(Path(shared.path_manager.model_paths['modelfile_path']) / gen_data['base_model_name'])}, Model: {gen_data['base_model_name']}, Version: RuinedFooocus"
+                #     metadata.add_text("parameters", comment)
+                # else:
                 metadata.add_text("parameters", json.dumps(prompt))
 
                 shared.state["preview_count"] += 1

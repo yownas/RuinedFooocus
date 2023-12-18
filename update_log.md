@@ -1,3 +1,6 @@
+### 1.26.1
+* Changed so loras with triggerwords textfiles dont automatically get added, instead displays trigger words to add manually
+
 ### 1.26.0
 * Fixed issue with controlnet caching
 * Custom resolutions can now be saved directly, just select custom from the resolution dropdown (Lavorther)

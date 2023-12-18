@@ -62,6 +62,16 @@ def generate_temp_filename(folder="./outputs/", extension="png"):
     return result.absolute()
 
 
+def load_keywords(lora):
+    filename = lora.replace(".safetensors", ".txt")
+    try:
+        with open(filename, "r") as file:
+            data = file.read()
+        return data
+    except FileNotFoundError:
+        return " "
+
+
 def load_file_from_url(
     url: str,
     *,

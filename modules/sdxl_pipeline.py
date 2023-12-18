@@ -152,28 +152,10 @@ class pipeline:
 
         return
 
-    def load_keywords(self, lora):
-        filename = lora.replace(".safetensors", ".txt")
-        try:
-            with open(filename, "r") as file:
-                data = file.read()
-            return data
-        except FileNotFoundError:
-            return " "
-
     def load_all_keywords(self, loras):
         lora_prompt_addition = ""
-        for name, weight in loras:
-            if name == "None" or weight == 0:
-                continue
-            name = name.strip(" 🗒️")
-            filename = os.path.join(path_manager.model_paths["lorafile_path"], name)
-            lora_prompt_addition = (
-                f"{lora_prompt_addition} {self.load_keywords(filename)}, "
-            )
         return lora_prompt_addition
 
-    #   name = name.strip(" 🗒️")
     def freeu(self, model, b1, b2, s1, s2):
         freeu_model = FreeU()
         unet = freeu_model.patch(model=model.unet, b1=b1, b2=b2, s1=s1, s2=s2)[0]
