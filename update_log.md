@@ -1,3 +1,8 @@
+### 1.27.0
+* Advance prompt editing - See [Wiki](https://github.com/runew0lf/RuinedFooocus/wiki/Features#advanced-prompt-editing)
+* Moved Evolve to the `Powerup` tab to be cleaner
+* Bufixes
+
 ### 1.26.1
 * Changed so loras with triggerwords textfiles dont automatically get added, instead displays trigger words to add manually
 
