@@ -18,7 +18,6 @@ import version
 import modules.async_worker as worker
 import modules.html
 import ui_onebutton
-import ui_evolve
 import ui_controlnet
 from modules.interrogate import look
 
@@ -682,9 +681,8 @@ with shared.gradio_root as block:
                 return results
 
             ui_onebutton.ui_onebutton(prompt, run_event)
-            ui_evolve.add_evolve_tab(prompt, run_event)
 
-            inpaint_toggle = ui_controlnet.add_controlnet_tab(main_view, inpaint_view)
+            inpaint_toggle = ui_controlnet.add_controlnet_tab(main_view, inpaint_view, prompt, run_event)
 
             with gr.Tab(label="Info"):
                 with gr.Row():

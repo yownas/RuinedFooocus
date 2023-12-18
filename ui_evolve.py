@@ -49,7 +49,10 @@ def add_evolve_tab(prompt, run_event):
         res = four_evolved_prompts(in_txt, mode, strength) + [in_txt] + four_evolved_prompts(in_txt, mode, strength)
         return gr.update(value='\n---\n'.join(res)), run_event+1
 
-    with gr.Tab(label="Evo"):
+    with gr.Accordion(
+        label="Evolve",
+        open=False
+    ):
         evolve_btn = {}
         for x in range(0, 3):
             with gr.Row():
@@ -59,7 +62,7 @@ def add_evolve_tab(prompt, run_event):
                         min_width=1,
                     )
 
-        with gr.Row():
+        with gr.Group():
             evolve_modes = [
                 "Tokens",
                 "Words",
@@ -70,7 +73,6 @@ def add_evolve_tab(prompt, run_event):
                 label="Mode",
             )
 
-        with gr.Row():
             evolve_strength = gr.Slider(
                 minimum=0,
                 maximum=100,
@@ -78,13 +80,13 @@ def add_evolve_tab(prompt, run_event):
                 step=1,
                 label="Evolve chance %:"
             )
-        with gr.Row():
-            evo_help = gr.HTML(value='''
-                Start with any prompt or random chunk of letters.<br>
-                Click on the number of the image you like best.<br>
-                Repeat.<br>
-                For best result, set a static seed.<br>
-            ''')
+#        with gr.Row():
+#            evo_help = gr.HTML(value='''
+#                Start with any prompt or random chunk of letters.<br>
+#                Click on the number of the image you like best.<br>
+#                Repeat.<br>
+#                For best result, set a static seed.<br>
+#            ''')
 
         for i in range(1, 10):
             evolve_btn[i].click(

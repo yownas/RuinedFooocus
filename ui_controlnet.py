@@ -7,9 +7,10 @@ from modules.controlnet import (
 )
 import gradio as gr
 from shared import add_ctrl, path_manager
+import ui_evolve
 
 
-def add_controlnet_tab(main_view, inpaint_view):
+def add_controlnet_tab(main_view, inpaint_view, prompt, run_event):
     with gr.Tab(label="PowerUp"):
         with gr.Row():
             cn_selection = gr.Dropdown(
@@ -210,4 +211,7 @@ def add_controlnet_tab(main_view, inpaint_view):
                     inpaint_view: gr.update(visible=False),
                 }
 
+        ui_evolve.add_evolve_tab(prompt, run_event)
+
     return inpaint_toggle
+

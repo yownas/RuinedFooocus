@@ -427,7 +427,7 @@ def ui_onebutton(prompt, run_event):
 
         return prompt
 
-    with gr.Tab(label="OBP"):
+    with gr.Tab(label="One Button"):
         with gr.Row():
             instant_obp = gr.Button(value="Instant OBP", size="sm", min_width = 1)
             random_button = gr.Button(value="Random Prompt", size="sm", min_width = 1)
