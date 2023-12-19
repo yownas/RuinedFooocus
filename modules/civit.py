@@ -1,7 +1,6 @@
 import requests
 import hashlib
 from typing import Dict, Any
-import json
 
 
 class Civit:
