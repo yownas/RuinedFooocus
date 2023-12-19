@@ -1,6 +1,8 @@
 from pathlib import Path
 import json
 
+from modules.civit import Civit
+
 
 class PathManager:
     DEFAULT_PATHS = {
@@ -68,12 +70,19 @@ class PathManager:
         if not folder_path.is_dir():
             raise ValueError("Folder path is not a valid directory.")
         filenames = []
+        civit = Civit()
         for path in folder_path.rglob("*"):
             if path.suffix.lower() in self.EXTENSIONS:
                 if isLora:
                     txtcheck = path.with_suffix(".txt")
                     if txtcheck.exists():
                         path = path.with_suffix(f"{path.suffix} 🗒️")
+                    else:
+                        hash = civit.model_hash(str(path))
+                        models = civit.get_models_by_hash(hash)
+                        keywords = civit.get_keywords(models)
+                        with open(txtcheck, "w") as f:
+                            f.write(" ".join(keywords))
                 filenames.append(str(path.relative_to(folder_path)))
         return sorted(
             filenames,
