@@ -112,7 +112,7 @@ class pipeline:
     inference_memory = None
 
     def load_upscaler_model(self, model_name):
-        model_path = os.path.join(path_manager.upscaler_path, model_name)
+        model_path = os.path.join(path_manager.model_paths["upscaler_path"], model_name)
         sd = comfy.utils.load_torch_file(model_path, safe_load=True)
         if "module.layers.0.residual_group.blocks.0.norm1.weight" in sd:
             sd = comfy.utils.state_dict_prefix_replace(sd, {"module.": ""})
@@ -251,7 +251,6 @@ class pipeline:
 
         return conditioning
 
-
     @torch.inference_mode()
     def process(
         self,
@@ -290,7 +289,9 @@ class pipeline:
             prompt_switch_mode = True
 
         if prompt_switch_mode and controlnet is not None and input_image is not None:
-            print("ControlNet and [prompt|switching] do not work well together. ControlNet will be applied to the first prompt only.")
+            print(
+                "ControlNet and [prompt|switching] do not work well together. ControlNet will be applied to the first prompt only."
+            )
 
         if prompt_switch_mode:
             prompt_switch_mode = True
