@@ -1,6 +1,8 @@
+### 1.28.1
+* Added better error descriptions for the civit api
+
 ### 1.28.0
 * Automatically grabs lora keywords from civit on startup
-
 
 ### 1.27.0
 * Advance prompt editing - See [Wiki](https://github.com/runew0lf/RuinedFooocus/wiki/Features#advanced-prompt-editing)

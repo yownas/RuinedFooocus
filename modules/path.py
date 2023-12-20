@@ -79,10 +79,11 @@ class PathManager:
                         path = path.with_suffix(f"{path.suffix} 🗒️")
                     else:
                         hash = civit.model_hash(str(path))
+                        print(f"Downloading LoRA keywords for {path}")
                         models = civit.get_models_by_hash(hash)
                         keywords = civit.get_keywords(models)
                         with open(txtcheck, "w") as f:
-                            f.write(" ".join(keywords))
+                            f.write(", ".join(keywords))
                 filenames.append(str(path.relative_to(folder_path)))
         return sorted(
             filenames,
