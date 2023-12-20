@@ -30,7 +30,7 @@ from modules.path import PathManager
 
 from PIL import Image
 
-inpaint_toggle = None
+inpaint_strength = None
 path_manager = PathManager()
 
 
@@ -125,7 +125,7 @@ def update_results(product):
         stop_button: gr.update(interactive=False, visible=False),
         progress_html: gr.update(visible=False),
         main_view: gr.update(value=product[0]) if len(product) > 0 else gr.update(),
-        inpaint_toggle: gr.update(value=False),
+        inpaint_strength: gr.update(value=0.0),
         gallery: gr.update(
             visible=True, allow_preview=True, preview=True, value=product
         ),
@@ -682,7 +682,7 @@ with shared.gradio_root as block:
 
             ui_onebutton.ui_onebutton(prompt, run_event)
 
-            inpaint_toggle = ui_controlnet.add_controlnet_tab(main_view, inpaint_view, prompt, run_event)
+            inpaint_strength = ui_controlnet.add_controlnet_tab(main_view, inpaint_view, prompt, run_event)
 
             with gr.Tab(label="Info"):
                 with gr.Row():
@@ -796,7 +796,7 @@ with shared.gradio_root as block:
                 progress_html,
                 main_view,
                 inpaint_view,
-                inpaint_toggle,
+                inpaint_strength,
                 gallery,
                 metadata_json,
             ],

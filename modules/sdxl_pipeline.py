@@ -30,7 +30,7 @@ from nodes import (
     EmptyLatentImage,
     VAEDecode,
     VAEEncode,
-    VAEEncodeForInpaint,
+    SetLatentNoiseMask,
 )
 from comfy.sample import (
     cleanup_additional_models,
@@ -394,8 +394,11 @@ class pipeline:
             denoise = None
 
         device = comfy.model_management.get_torch_device()
+        latent_image = latent["samples"]
+        batch_inds = latent["batch_index"] if "batch_index" in latent else None
+        noise = comfy.sample.prepare_noise(latent_image, seed, batch_inds)
 
-        if gen_data["inpaint_toggle"]:
+        if float(gen_data["inpaint_strength"]) > 0:
             mask = gen_data["inpaint_view"]["mask"]
             mask = mask[:, :, 0]
             mask = torch.from_numpy(mask)[None,] / 255.0
@@ -404,16 +407,32 @@ class pipeline:
             image = image[..., :-1]
             image = torch.from_numpy(image)[None,] / 255.0
 
-            latent = VAEEncodeForInpaint().encode(
-                vae=self.xl_base_patched.vae,
-                pixels=image,
-                mask=mask,
-                grow_mask_by=20,
-            )[0]
+            lerp = float(gen_data["inpaint_strength"])
 
-        latent_image = latent["samples"]
-        batch_inds = latent["batch_index"] if "batch_index" in latent else None
-        noise = comfy.sample.prepare_noise(latent_image, seed, batch_inds)
+            print(f"DEBUG: noise: {noise.size()}")
+            noise = comfy.sample.prepare_noise(image, seed, batch_inds)
+            print(f"DEBUG: image: {image.size()}")
+            print(f"DEBUG: noise: {noise.size()}")
+            image = torch.lerp(noise, image, lerp)
+
+            samples = VAEEncode().encode(
+                vae=self.xl_base_patched.vae, pixels=image
+            )[0]
+            latent = SetLatentNoiseMask().set_mask(
+                samples=samples,
+                mask=mask,
+            )[0]
+            print(f"DEBUG: latent: {latent.size()}")
+
+#            latent = VAEEncodeForInpaint().encode(
+#                vae=self.xl_base_patched.vae,
+#                pixels=image,
+#                mask=mask,
+#                grow_mask_by=20,
+#            )[0]
+
+#            force_full_denoise = False
+#            denoise = float(gen_data["inpaint_strength"])
 
         noise_mask = None
         if "noise_mask" in latent:
