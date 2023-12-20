@@ -24,6 +24,8 @@ You can directly download Fooocus with:
 
 **[>>> Click here to download <<<](https://github.com/runew0lf/RuinedFooocus/releases/download/Release-1.25.2/RuinedFooocus_win64_1-25-2.7z)**
 
+## NOTE YOU WILL NEED TO EXTRACT USING THE LATEST [7ZIP](https://www.7-zip.org/download.html)
+
 After you download the file, please uncompress it, and then run the "run.bat".
 
 ![image](https://github.com/lllyasviel/Fooocus/assets/19834515/c49269c4-c274-4893-b368-047c401cc58c)
