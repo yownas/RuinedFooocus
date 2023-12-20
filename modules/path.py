@@ -76,7 +76,9 @@ class PathManager:
                 if isLora:
                     txtcheck = path.with_suffix(".txt")
                     if txtcheck.exists():
-                        path = path.with_suffix(f"{path.suffix} 🗒️")
+                        fstats = txtcheck.stat()
+                        if fstats.st_size > 0:
+                            path = path.with_suffix(f"{path.suffix} 🗒️")
                     else:
                         hash = civit.model_hash(str(path))
                         print(f"Downloading LoRA keywords for {path}")
