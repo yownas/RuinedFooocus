@@ -192,24 +192,15 @@ def add_controlnet_tab(main_view, inpaint_view, prompt, run_event):
             visible=True,
         )
         add_ctrl("input_image", input_image)
+        inpaint_toggle = gr.Checkbox(label="Inpainting", value=False)
 
-        with gr.Row():
-            inpaint_strength = gr.Slider(
-                label="Inpainting",
-                show_label=True,
-                value=0.0,
-                minimum=0.0,
-                maximum=1.0,
-                step=0.01,
-                container=True,
-            )
-            add_ctrl("inpaint_strength", inpaint_strength)
+        add_ctrl("inpaint_toggle", inpaint_toggle)
 
-        @inpaint_strength.change(
-            inputs=[inpaint_strength, main_view], outputs=[main_view, inpaint_view]
+        @inpaint_toggle.change(
+            inputs=[inpaint_toggle, main_view], outputs=[main_view, inpaint_view]
         )
         def inpaint_checked(r, test):
-            if r > 0:
+            if r:
                 return {
                     main_view: gr.update(visible=False),
                     inpaint_view: gr.update(visible=True, value=test),
@@ -222,5 +213,5 @@ def add_controlnet_tab(main_view, inpaint_view, prompt, run_event):
 
         ui_evolve.add_evolve_tab(prompt, run_event)
 
-    return inpaint_strength
+    return inpaint_toggle
 
