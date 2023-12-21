@@ -1,7 +1,8 @@
 from pathlib import Path
 import json
-
+import threading
 from modules.civit import Civit
+import time
 
 
 class PathManager:
@@ -17,6 +18,8 @@ class PathManager:
     }
 
     EXTENSIONS = [".pth", ".ckpt", ".bin", ".safetensors"]
+
+    civit_worker_folders = []
 
     def __init__(self):
         self.paths = self.load_paths()
@@ -65,12 +68,33 @@ class PathManager:
     def get_abspath(self, path):
         return Path(path) if Path(path).is_absolute() else Path(__file__).parent / path
 
+    def civit_update_worker(self, folder_path, isLora):
+        if folder_path in self.civit_worker_folders:
+            # Already working on this folder
+            return
+        self.civit_worker_folders.append(folder_path)
+        if not isLora: # We only do LoRAs at the moment
+            return
+        civit = Civit()
+        for path in folder_path.rglob("*"):
+            if path.suffix.lower() in self.EXTENSIONS:
+                txtcheck = path.with_suffix(".txt")
+                if not txtcheck.exists():
+                    hash = civit.model_hash(str(path))
+                    print(f"Downloading LoRA keywords for {path}")
+                    models = civit.get_models_by_hash(hash)
+                    keywords = civit.get_keywords(models)
+                    with open(txtcheck, "w") as f:
+                        f.write(", ".join(keywords))
+            time.sleep(1)
+        self.civit_worker_folders.remove(folder_path)
+
     def get_model_filenames(self, folder_path, isLora=False):
         folder_path = Path(folder_path)
         if not folder_path.is_dir():
             raise ValueError("Folder path is not a valid directory.")
+        threading.Thread(target=self.civit_update_worker, args=(folder_path, isLora,), daemon=True).start()
         filenames = []
-        civit = Civit()
         for path in folder_path.rglob("*"):
             if path.suffix.lower() in self.EXTENSIONS:
                 if isLora:
@@ -79,13 +103,6 @@ class PathManager:
                         fstats = txtcheck.stat()
                         if fstats.st_size > 0:
                             path = path.with_suffix(f"{path.suffix} 🗒️")
-                    else:
-                        hash = civit.model_hash(str(path))
-                        print(f"Downloading LoRA keywords for {path}")
-                        models = civit.get_models_by_hash(hash)
-                        keywords = civit.get_keywords(models)
-                        with open(txtcheck, "w") as f:
-                            f.write(", ".join(keywords))
                 filenames.append(str(path.relative_to(folder_path)))
         # Return a sorted list, prepend names with 0 if they are in a folder or 1
         # if it is a plain file. This will sort folders above files in the dropdown
