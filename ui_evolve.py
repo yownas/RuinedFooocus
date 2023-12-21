@@ -2,6 +2,7 @@ import gradio as gr
 from shared import tokenizer
 import random
 import re
+from random_prompt.build_dynamic_prompt import createpromptvariant
 
 def add_evolve_tab(prompt, run_event):
     def tokenize_and_randomize(prompt, strength):
@@ -33,6 +34,8 @@ def add_evolve_tab(prompt, run_event):
             match mode:
                 case "Words":
                     res.append(randomize_words(prompt, strength))
+                case "OBP Variant":
+                    res.append(createpromptvariant(prompt, max(int(strength/10),3),advancedprompting=False))
                 case _: # Use "Tokens" as default
                     res.append(tokenize_and_randomize(prompt, strength))
         return res
@@ -66,6 +69,7 @@ def add_evolve_tab(prompt, run_event):
             evolve_modes = [
                 "Tokens",
                 "Words",
+                "OBP Variant",
             ]
             evolve_mode = gr.Dropdown(
                 evolve_modes,
