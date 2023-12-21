@@ -47,5 +47,5 @@ class Civit:
             return {}
 
     def get_keywords(self, model):
-        keywords = model.get("trainedWords", "No Keywords for LoRA")
+        keywords = model.get("trainedWords", ["No Keywords for LoRA"])
         return keywords

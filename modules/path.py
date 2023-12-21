@@ -109,7 +109,7 @@ class PathManager:
                     if txtcheck.exists():
                         fstats = txtcheck.stat()
                         if fstats.st_size > 0:
-                            path = path.with_suffix(f"{path.suffix} 🗒️")
+                            path = path.with_suffix(f"{path.suffix}")
                 filenames.append(str(path.relative_to(folder_path)))
         # Return a sorted list, prepend names with 0 if they are in a folder or 1
         # if it is a plain file. This will sort folders above files in the dropdown
