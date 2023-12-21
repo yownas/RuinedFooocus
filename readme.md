@@ -24,6 +24,8 @@ You can directly download Fooocus with:
 
 **[>>> Click here to download <<<](https://github.com/runew0lf/RuinedFooocus/releases/download/Release-1.25.2/RuinedFooocus_win64_1-25-2.7z)**
 
+## NOTE YOU WILL NEED TO EXTRACT USING THE LATEST [7ZIP](https://www.7-zip.org/download.html)
+
 After you download the file, please uncompress it, and then run the "run.bat".
 
 ![image](https://github.com/lllyasviel/Fooocus/assets/19834515/c49269c4-c274-4893-b368-047c401cc58c)
@@ -43,7 +45,7 @@ The command lines are
     git clone https://github.com/runew0lf/RuinedFooocus.git
     cd RuinedFooocus
     conda env create -f environment.yaml
-    conda activate fooocus
+    conda activate ruinedfooocus
     pip install -r requirements_versions.txt
 
 Then download the models: download [sd_xl_base_1.0_0.9vae.safetensors from here](https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0_0.9vae.safetensors) as the file "Fooocus\models\checkpoints\sd_xl_base_1.0_0.9vae.safetensors", and download [sd_xl_refiner_1.0_0.9vae.safetensors from here](https://huggingface.co/stabilityai/stable-diffusion-xl-refiner-1.0/resolve/main/sd_xl_refiner_1.0_0.9vae.safetensors) as the file "Fooocus\models\checkpoints\sd_xl_refiner_1.0_0.9vae.safetensors". **Or let Fooocus automatically download the models** using the launcher:
