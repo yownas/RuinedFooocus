@@ -87,10 +87,12 @@ class PathManager:
                         with open(txtcheck, "w") as f:
                             f.write(", ".join(keywords))
                 filenames.append(str(path.relative_to(folder_path)))
+        # Return a sorted list, prepend names with 0 if they are in a folder or 1
+        # if it is a plain file. This will sort folders above files in the dropdown
         return sorted(
             filenames,
             key=lambda x: f"0{x.casefold()}"
-            if Path(x).suffix in x
+            if not str(Path(x).parent) == '.'
             else f"1{x.casefold()}",
         )
 
