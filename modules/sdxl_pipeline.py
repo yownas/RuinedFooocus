@@ -175,7 +175,6 @@ class pipeline:
         for name, weight in loras:
             if name == "None" or weight == 0:
                 continue
-            name = name.strip(" 🗒️")
             filename = os.path.join(path_manager.model_paths["lorafile_path"], name)
             print(f"Loading LoRAs: {name}")
             try:

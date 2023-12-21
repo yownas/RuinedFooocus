@@ -99,6 +99,7 @@ Coming soon ...
 34. Inpainting, Available in the `PowerUp` tab, simple check the box and it will either take a new image or the selected image in your gallery
 35. Evolve, takes your current generation and evolves it into different variations, best used with a fixed seed!
 36. Support --auth=username/password for rudimentary security (Forced when using --share)
+37. Automatically downloads your Lora triggerwords from civit and displays them for you
 
 
 ## Thanks

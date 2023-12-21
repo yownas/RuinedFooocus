@@ -75,11 +75,7 @@ class PathManager:
             if path.suffix.lower() in self.EXTENSIONS:
                 if isLora:
                     txtcheck = path.with_suffix(".txt")
-                    if txtcheck.exists():
-                        fstats = txtcheck.stat()
-                        if fstats.st_size > 0:
-                            path = path.with_suffix(f"{path.suffix} 🗒️")
-                    else:
+                    if not txtcheck.exists():
                         hash = civit.model_hash(str(path))
                         print(f"Downloading LoRA keywords for {path}")
                         models = civit.get_models_by_hash(hash)

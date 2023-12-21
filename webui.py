@@ -638,7 +638,6 @@ with shared.gradio_root as block:
                                 hide = True
                             if model == "None" or strength == 0:
                                 continue
-                            model = model.strip(" 🗒️")
                             filename = os.path.join(
                                 path_manager.model_paths["lorafile_path"], model
                             )
@@ -682,7 +681,9 @@ with shared.gradio_root as block:
 
             ui_onebutton.ui_onebutton(prompt, run_event)
 
-            inpaint_toggle = ui_controlnet.add_controlnet_tab(main_view, inpaint_view, prompt, run_event)
+            inpaint_toggle = ui_controlnet.add_controlnet_tab(
+                main_view, inpaint_view, prompt, run_event
+            )
 
             with gr.Tab(label="Info"):
                 with gr.Row():
