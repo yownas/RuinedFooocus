@@ -682,7 +682,7 @@ with shared.gradio_root as block:
             ui_onebutton.ui_onebutton(prompt, run_event)
 
             inpaint_toggle = ui_controlnet.add_controlnet_tab(
-                main_view, inpaint_view, prompt, run_event
+                main_view, inpaint_view, prompt, image_number, run_event
             )
 
             with gr.Tab(label="Info"):

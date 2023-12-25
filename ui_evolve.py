@@ -4,7 +4,7 @@ import random
 import re
 from random_prompt.build_dynamic_prompt import createpromptvariant
 
-def add_evolve_tab(prompt, run_event):
+def add_evolve_tab(prompt, image_number, run_event):
     def tokenize_and_randomize(prompt, strength):
         all_tokens = list(tokenizer.get_vocab().keys())
         tokens = tokenizer.tokenize(prompt)
@@ -50,7 +50,7 @@ def add_evolve_tab(prompt, run_event):
         prompts = prompt.split("---")
         in_txt = prompts[min(int(button), len(prompts)) - 1]
         res = four_evolved_prompts(in_txt, mode, strength) + [in_txt] + four_evolved_prompts(in_txt, mode, strength)
-        return gr.update(value='\n---\n'.join(res)), run_event+1
+        return gr.update(value='\n---\n'.join(res)), gr.update(value=1), run_event+1
 
     with gr.Accordion(
         label="Evolve",
@@ -101,5 +101,5 @@ def add_evolve_tab(prompt, run_event):
                     prompt,
                     run_event,
                 ],
-                outputs=[prompt, run_event]
+                outputs=[prompt, image_number, run_event]
             )

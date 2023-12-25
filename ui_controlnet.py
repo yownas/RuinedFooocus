@@ -10,7 +10,7 @@ from shared import add_ctrl, path_manager
 import ui_evolve
 
 
-def add_controlnet_tab(main_view, inpaint_view, prompt, run_event):
+def add_controlnet_tab(main_view, inpaint_view, prompt, image_number, run_event):
     with gr.Tab(label="PowerUp"):
         with gr.Row():
             cn_selection = gr.Dropdown(
@@ -211,7 +211,7 @@ def add_controlnet_tab(main_view, inpaint_view, prompt, run_event):
                     inpaint_view: gr.update(visible=False),
                 }
 
-        ui_evolve.add_evolve_tab(prompt, run_event)
+        ui_evolve.add_evolve_tab(prompt, image_number, run_event)
 
     return inpaint_toggle
 
