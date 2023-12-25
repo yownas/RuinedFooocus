@@ -313,6 +313,8 @@ def build_dynamic_prompt(
     ]
     humanactivitylist = humanactivitylist + humanactivitycheatinglist
     # build artists list
+    if artists == "wild":
+        artists = "all (wild)"
 
     # we want to create more cohorence, so we are adding all (wild) mode for the old logic
 
@@ -400,6 +402,7 @@ def build_dynamic_prompt(
     ]
     artiststyleselector = ""
     artiststyleselectormode = "normal"
+
     if artists == "all" and normal_dist(insanitylevel + 1):
         artiststyleselector = random.choice(artisttypes)
         artists = artiststyleselector
@@ -428,6 +431,7 @@ def build_dynamic_prompt(
         and artists != "none"
         and artists.startswith("personal_artists") == False
         and artists.startswith("personal artists") == False
+        and artists in artisttypes
     ):
         artistlist = artist_category_csv_to_list("artists_and_category", artists)
     elif (
