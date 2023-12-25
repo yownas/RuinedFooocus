@@ -30,6 +30,7 @@ def get_wildcard_files():
         "onebuttonobject",
         "onebuttonlandscape",
         "onebuttonconcept",
+        "onebuttonartist",
     ]
     both = files + onebutton
     return both

@@ -32,13 +32,13 @@ def get_promptlist(gen_data):
 
 
 def process_wildcards(wildcard_text, directory="wildcards"):
-    placeholders = re.findall(r"__([\w:]+)__", wildcard_text)
-    placeholders_onebutton = re.findall(
-        r"__([\w]+:[^\s_]+(\s(?=[\w:]+))?)__", wildcard_text
-    )
-    # A quick and filthy fix for onebutton wildcards
-    # placeholders_onebutton = []
-    placeholders += placeholders_onebutton
+    # removed regex method
+    placeholders = []
+    splitup = wildcard_text.split("__")
+    for i in range(len(splitup)):
+       if i % 2 != 0: # check if index is odd
+           placeholders.append(splitup[i])
+
     placeholder_choices = {}  # Store random choices for each placeholder
     official_directory = "wildcards_official"
     directories = []
@@ -151,6 +151,13 @@ def process_wildcards(wildcard_text, directory="wildcards"):
                     imagetype="subject only mode",
                     givensubject=subjectoverride,
                     forcesubject="concept",
+                    advancedprompting=False,
+                )
+            elif placeholder.startswith("onebuttonartist"):
+                random_choice = build_dynamic_prompt(
+                    insanitylevel=5,
+                    onlyartists=True,
+                    artists=subjectoverride or "all",
                     advancedprompting=False,
                 )
             # failover
