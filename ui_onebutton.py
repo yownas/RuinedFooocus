@@ -109,6 +109,7 @@ imagetypes = [
     "massive madness mode",
     "photo fantasy mode",
     "subject only mode",
+    "fixed styles mode",
 ]
 promptmode = ["at the back", "in the front"]
 promptcompounder = ["1", "2", "3", "4", "5"]
