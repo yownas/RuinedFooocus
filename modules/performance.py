@@ -34,6 +34,7 @@ class PerformanceSettings:
     def save_performance(self, perf_options):
         with open(self.PERFORMANCE_FILE, "w") as f:
             json.dump(perf_options, f, indent=2)
+        self.performance_options = self.load_performance()
 
     def get_perf_options(self, name):
         return self.performance_options[name]
