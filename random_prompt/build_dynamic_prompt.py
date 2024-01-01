@@ -5,6 +5,8 @@ from random_prompt.csv_reader import (
     csv_to_list,
     artist_category_csv_to_list,
     artist_category_by_category_csv_to_list,
+    load_negative_list,
+    load_all_artist_and_category,
 )
 from random_prompt.random_functions import (
     common_dist,
@@ -859,32 +861,9 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
         # Remove any list/logic with keywords, such as:
         # wearing, bodytype, pose, location, hair, background
 
-        # first get all the words
 
-        # Split the string by commas and spaces
-        words = re.split(r'[,\s]+', givensubject)
-        # Remove leading/trailing whitespaces from each word
-        words = [word.strip() for word in words]
-
-        # Filter out empty words
-        words = [word for word in words if word]
-
-        # Convert the list to a set to remove duplicates, then convert it back to a list
-        givensubjectlistsinglewords = list(set(words))
-
-        # now get all words clumped together by commas
-        if ',' in givensubject:
-            allwords = givensubject.split(',')
-        else:
-            allwords = [givensubject]
-        # Remove leading/trailing whitespaces from each word and convert to lowercase
-        words = [word.strip().lower() for word in allwords]
-
-        # Filter out empty words and duplicates
-        givensubjectlistwords = list(set(filter(None, words)))
-
-        givensubjectlist = givensubjectlistsinglewords + givensubjectlistwords
-
+        # use function to split up the words
+        givensubjectlist = split_prompt_to_words(givensubject)
 
         # Check only for the lists that make sense?
         
@@ -897,14 +876,18 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
         
         # bodytype
         foundinlist = any(word.lower() in [item.lower() for item in bodytypelist] for word in givensubjectlist)
-        keywordslist = ["bodytype","body type"]
+
+        keywordslist = ["bodytype","body type","model"]
+
         keywordsinstring = any(word.lower() in givensubject.lower() for word in keywordslist)
         if(foundinlist == True or keywordsinstring == True):
             generatebodytype = False
 
         # hair
         foundinlist = any(word.lower() in [item.lower() for item in hairstylelist] for word in givensubjectlist)
-        keywordslist = ["hair"]
+
+        keywordslist = ["hair","hairstyle"]
+
         keywordsinstring = any(word.lower() in givensubject.lower() for word in keywordslist)
         if(foundinlist == True or keywordsinstring == True):
             generatehairstyle = False
@@ -918,7 +901,9 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
         # background
         foundinlist = any(word.lower() in [item.lower() for item in locationlist] for word in givensubjectlist)
         foundinlist2 = any(word.lower() in [item.lower() for item in buildinglist] for word in givensubjectlist)
-        keywordslist = ["location","background", "inside"]
+
+        keywordslist = ["location","background", "inside", "at the", "in a"]
+
         keywordsinstring = any(word.lower() in givensubject.lower() for word in keywordslist)
         if(foundinlist == True or foundinlist2 == True or keywordsinstring == True):
             generatebackground = False
@@ -1244,9 +1229,6 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
                 hisherlist = ["one of their"]
                 himherlist = ["one of them"]
         
-
-
-
            
         
         # special modes        
@@ -2476,8 +2458,6 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
         if artistmode in ["enhancing"]:
             completeprompt += "::" + str(random.randint(1,17)) + "] "
 
-
-
         if(artists != "none" and artistsplacement == "back" and generateartist == True):
             completeprompt += ", "
             doartistnormal = True
@@ -2884,7 +2864,6 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
         for wildcard in allwildcardslistwithhybrid:
             attachedlist = allwildcardslistwithhybridlists[allwildcardslistwithhybrid.index(wildcard)]
             completeprompt = replacewildcard(completeprompt, insanitylevel, wildcard, attachedlist,True, advancedprompting, artiststyleselector)
-
 
       
     # prompt strenght stuff
@@ -3701,6 +3680,7 @@ def replacewildcard(completeprompt, insanitylevel, wildcard,listname, activatehy
                if(completeprompt.index(wildcard) < completeprompt.index("-samehumansubject-")):
                     completeprompt = completeprompt.replace("-samehumansubject-", "the " + replacementvalueforoverrides)
 
+
             if(wildcard in ["-animal-"                         
                             , "-object-"
                             , "-vehicle-"
@@ -3717,11 +3697,101 @@ def replacewildcard(completeprompt, insanitylevel, wildcard,listname, activatehy
 
 
             completeprompt = completeprompt.replace(wildcard, replacementvalue,1)
+        
             
             
 
 
     return completeprompt
+            
+            
+
+
+def build_dynamic_negative(positive_prompt = "", insanitylevel = 0, enhance = False, existing_negative_prompt = ""):
+
+
+    negative_primer = []
+    negative_result = []
+    all_negative_words_list = []
+    
+    # negavite_primer, all words that should trigger a negative result
+    # the negative words to put in the negative prompt
+    negative_primer, negative_result = load_negative_list()
+
+    # do a trick for artists, replace with their tags instead
+    artistlist, categorylist = load_all_artist_and_category()
+    # lower them
+    artist_names = [artist.strip().lower() for artist in artistlist]
+
+    # note, should we find a trick for some shorthands of artists??
+
+    for artist_name, category in zip(artist_names, categorylist):
+        positive_prompt = positive_prompt.lower().replace(artist_name, category)
+
+
+    allwords = split_prompt_to_words(positive_prompt)
+
+    
+    #lower all!
+    
+    for word in allwords:
+        if(word.lower() in negative_primer):
+            index_of_word = negative_primer.index(word.lower())
+            all_negative_words_list.append(negative_result[index_of_word])
+    
+    all_negative_words = ", ".join(all_negative_words_list)
+    all_negative_words_list = all_negative_words.split(",")
+    all_negative_words_list = [elem.strip().lower() for elem in all_negative_words_list]
+
+    
+
+            
+
+    if enhance == True:
+        enhancelist = ["worst quality", "low quality", "normal quality", "lowres", "low details", "oversaturated", "undersaturated", "overexposed", "underexposed", "grayscale", "bw", "bad photo", "bad photography", "bad art", "watermark", "signature", "text font", "username", "error", "logo", "words", "letters", "digits", "autograph", "trademark", "name", "blur", "blurry", "grainy", "ugly", "asymmetrical", "poorly lit", "bad shadow", "draft", "cropped", "out of frame", "cut off", "censored", "jpeg artifacts", "out of focus", "glitch", "duplicate"]
+        all_negative_words_list += enhancelist
+    
+
+    # new lets remove some based on the reverse insanitylevel
+    removalchance = int((insanitylevel) * 10)
+
+    for i in range(len(all_negative_words_list)):
+        if(random.randint(1, 100)<removalchance):
+            all_negative_words_list.pop(random.randint(0, len(all_negative_words_list)-1))
+
+    # remove anything that is in the prompt itself, so no conflict of words!
+            
+    all_negative_words_list = [word for word in all_negative_words_list if word not in allwords]
+    
+    # Now compound it, and use the (word:1.3) type syntax:
+    # Use a dictionary to count occurrences
+    word_count = {}
+    for word in all_negative_words_list:
+        if word in word_count:
+            word_count[word] += 1
+        else:
+            word_count[word] = 1
+
+    # Convert the list to unique values or (word:count) format
+    unique_words = []
+    for word, count in word_count.items():
+        if(count > 2):
+            #counttotal = int(count/2)
+            counttotal = count
+            if(counttotal > 3):
+                counttotal = 3
+            unique_words.append(f"({word}:1.{counttotal})")
+        else:
+            unique_words.append(word)
+
+    negative_result = ", ".join(unique_words)
+
+    negative_result += ", " + existing_negative_prompt
+
+    return negative_result
+
+
+
 
 def replace_match(match):
     # Extract the first word from the match
@@ -3922,3 +3992,37 @@ def parse_custom_functions(completeprompt, insanitylevel = 5):
     
 
     return completeprompt
+
+def split_prompt_to_words(text):
+        # first get all the words
+
+        # Use a regular expression to replace non-alphabetic characters with spaces
+        text = re.sub(r'[^a-zA-Z,-]', ' ', text)
+
+        # Split the string by commas and spaces
+        words = re.split(r'[,\s]+', text)
+        # Remove leading/trailing whitespaces from each word
+        words = [word.strip() for word in words]
+
+        # Filter out empty words
+        words = [word for word in words if word]
+
+        # Convert the list to a set to remove duplicates, then convert it back to a list
+        listsinglewords = list(set(words))
+
+        # now get all words clumped together by commas
+        if ',' in text:
+            allwords = text.split(',')
+        else:
+            allwords = [text]
+        # Remove leading/trailing whitespaces from each word and convert to lowercase
+        words = [word.strip().lower() for word in allwords]
+
+        # Filter out empty words and duplicates
+        listwords = list(set(filter(None, words)))
+
+        totallist = listsinglewords + listwords
+
+        totallist = list(set(filter(None, totallist)))
+
+        return totallist

@@ -525,6 +525,12 @@ with shared.gradio_root as block:
                     value=settings["image_number"],
                 )
                 add_ctrl("image_number", image_number)
+                auto_negative_prompt = gr.Checkbox(
+                    label="Auto Negative Prompt",
+                    show_label=True,
+                    value=settings["auto_negative_prompt"],
+                )
+                add_ctrl("auto_negative", auto_negative_prompt)
                 negative_prompt = gr.Textbox(
                     label="Negative Prompt",
                     show_label=True,
