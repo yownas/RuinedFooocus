@@ -4,7 +4,7 @@ import random
 import json
 
 from modules.sdxl_styles import apply_style, allstyles
-from random_prompt.build_dynamic_prompt import build_dynamic_prompt
+from random_prompt.build_dynamic_prompt import build_dynamic_prompt, build_dynamic_negative
 
 
 def process_metadata(gen_data):
@@ -214,6 +214,10 @@ def process_prompt(style, prompt, negative, gen_data=[]):
         or (match := re.search(wildcard_pattern_onebutton, p_txt))
     ) is not None:
         p_txt = process_wildcards(p_txt)
+
+    # apply auto negative prompt if enabled
+    if(gen_data["auto_negative"] == True):
+        n_txt = build_dynamic_negative(positive_prompt=p_txt,existing_negative_prompt=n_txt)
     return p_txt, n_txt
 
 
