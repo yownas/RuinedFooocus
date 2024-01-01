@@ -1,3 +1,6 @@
+### 1.28.2
+* Fixed some dodgy regex to support wildcards with `-` in the name
+
 ### 1.28.1
 * Added better error descriptions for the civit api
 

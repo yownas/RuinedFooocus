@@ -861,6 +861,7 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
         # Remove any list/logic with keywords, such as:
         # wearing, bodytype, pose, location, hair, background
 
+
         # use function to split up the words
         givensubjectlist = split_prompt_to_words(givensubject)
 
@@ -875,14 +876,18 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
         
         # bodytype
         foundinlist = any(word.lower() in [item.lower() for item in bodytypelist] for word in givensubjectlist)
+
         keywordslist = ["bodytype","body type","model"]
+
         keywordsinstring = any(word.lower() in givensubject.lower() for word in keywordslist)
         if(foundinlist == True or keywordsinstring == True):
             generatebodytype = False
 
         # hair
         foundinlist = any(word.lower() in [item.lower() for item in hairstylelist] for word in givensubjectlist)
+
         keywordslist = ["hair","hairstyle"]
+
         keywordsinstring = any(word.lower() in givensubject.lower() for word in keywordslist)
         if(foundinlist == True or keywordsinstring == True):
             generatehairstyle = False
@@ -896,7 +901,9 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
         # background
         foundinlist = any(word.lower() in [item.lower() for item in locationlist] for word in givensubjectlist)
         foundinlist2 = any(word.lower() in [item.lower() for item in buildinglist] for word in givensubjectlist)
+
         keywordslist = ["location","background", "inside", "at the", "in a"]
+
         keywordsinstring = any(word.lower() in givensubject.lower() for word in keywordslist)
         if(foundinlist == True or foundinlist2 == True or keywordsinstring == True):
             generatebackground = False
@@ -1222,9 +1229,6 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
                 hisherlist = ["one of their"]
                 himherlist = ["one of them"]
         
-
-
-
            
         
         # special modes        
@@ -2454,8 +2458,6 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
         if artistmode in ["enhancing"]:
             completeprompt += "::" + str(random.randint(1,17)) + "] "
 
-
-
         if(artists != "none" and artistsplacement == "back" and generateartist == True):
             completeprompt += ", "
             doartistnormal = True
@@ -2862,7 +2864,6 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
         for wildcard in allwildcardslistwithhybrid:
             attachedlist = allwildcardslistwithhybridlists[allwildcardslistwithhybrid.index(wildcard)]
             completeprompt = replacewildcard(completeprompt, insanitylevel, wildcard, attachedlist,True, advancedprompting, artiststyleselector)
-
 
       
     # prompt strenght stuff
@@ -3679,6 +3680,7 @@ def replacewildcard(completeprompt, insanitylevel, wildcard,listname, activatehy
                if(completeprompt.index(wildcard) < completeprompt.index("-samehumansubject-")):
                     completeprompt = completeprompt.replace("-samehumansubject-", "the " + replacementvalueforoverrides)
 
+
             if(wildcard in ["-animal-"                         
                             , "-object-"
                             , "-vehicle-"
@@ -3698,8 +3700,6 @@ def replacewildcard(completeprompt, insanitylevel, wildcard,listname, activatehy
             
             
 
-
-    return completeprompt
 
 def build_dynamic_negative(positive_prompt = "", insanitylevel = 0, enhance = False, existing_negative_prompt = ""):
 
@@ -3783,6 +3783,14 @@ def build_dynamic_negative(positive_prompt = "", insanitylevel = 0, enhance = Fa
     negative_result += ", " + existing_negative_prompt
 
     return negative_result
+
+
+            completeprompt = completeprompt.replace(wildcard, replacementvalue,1)
+            
+            
+
+
+    return completeprompt
 
 def replace_match(match):
     # Extract the first word from the match
