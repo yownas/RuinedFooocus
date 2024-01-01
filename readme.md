@@ -100,6 +100,7 @@ Coming soon ...
 35. Evolve, takes your current generation and evolves it into different variations, best used with a fixed seed!
 36. Support --auth=username/password for rudimentary security (Forced when using --share)
 37. Automatically downloads your Lora triggerwords from civit and displays them for you
+38. Automatic Negative prompt, save yourself the heartache and hassle of writing negative prompts!
 
 
 ## Thanks

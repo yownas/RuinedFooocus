@@ -1,3 +1,6 @@
+### 1.29.0
+* Automatic Negative prompt, save yourself the heartache and hassle of writing negative prompts!
+
 ### 1.28.2
 * Fixed some dodgy regex to support wildcards with `-` in the name
 
