@@ -3697,6 +3697,12 @@ def replacewildcard(completeprompt, insanitylevel, wildcard,listname, activatehy
 
 
             completeprompt = completeprompt.replace(wildcard, replacementvalue,1)
+        
+            
+            
+
+
+    return completeprompt
             
             
 
@@ -3785,12 +3791,7 @@ def build_dynamic_negative(positive_prompt = "", insanitylevel = 0, enhance = Fa
     return negative_result
 
 
-            completeprompt = completeprompt.replace(wildcard, replacementvalue,1)
-            
-            
 
-
-    return completeprompt
 
 def replace_match(match):
     # Extract the first word from the match
