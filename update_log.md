@@ -1,3 +1,17 @@
+### 1.30.0
+* The OBP Update
+* added "the tokinator" mode
+* Fintetunes on autonegative prompt: -- Landscape removed
+* Added list of artist shorthands (like van gogh)
+* Added secret sauce mode (mixing OBP + SDXL styles). Happens more on lower insanity levels
+* Added more consistency on lower insanity levels
+* EVO with OPB variant works better:
+* Small prompts now work
+* (almost) always changes something
+* Fix for line ends creeping into EVO + OPB Variant
+* Added loads of new styles into the lists
+* Added loads of more fictional characters into the lists (finally, harley quinn is in :p)
+
 ### 1.29.0
 * Automatic Negative prompt, save yourself the heartache and hassle of writing negative prompts!
 
