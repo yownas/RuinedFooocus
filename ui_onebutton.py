@@ -110,6 +110,7 @@ imagetypes = [
     "photo fantasy mode",
     "subject only mode",
     "fixed styles mode",
+    "the tokinator",
 ]
 promptmode = ["at the back", "in the front"]
 promptcompounder = ["1", "2", "3", "4", "5"]
