@@ -270,6 +270,9 @@ class pipeline:
         callback,
         gen_data=None,
     ):
+        if self.xl_base_patched == None or not isinstance(self.xl_base.unet.model, SDXL):
+            return ["error.png"]
+
         img2img_mode = False
         seed = image_seed if isinstance(image_seed, int) else random.randint(1, 2**32)
 
