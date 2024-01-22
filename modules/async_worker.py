@@ -267,8 +267,7 @@ def worker():
                         Path(shared.path_manager.model_paths["modelfile_path"])
                         / gen_data["base_model_name"]
                     ),
-                    "loras": "Loras:"
-                    + ",".join([f"<{lora[0]}:{lora[1]}>" for lora in loras]),
+                    "loras": ",".join([f"<{lora[0]}:{lora[1]}>" for lora in loras]),
                     "start_step": start_step,
                     "denoise": denoise,
                     "software": "RuinedFooocus",
