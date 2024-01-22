@@ -9,7 +9,7 @@ def look(image, gr):
     try:
         info = image.info
         params = info.get("parameters", "")
-        text = json.loads(params)
+        text = json.dumps(json.loads(params))
     except:
         text = "Lets interrogate"
 
