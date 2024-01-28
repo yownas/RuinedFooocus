@@ -127,6 +127,9 @@ class pipeline:
 
         print(f"Loading base model: {name}")
 
+        self.xl_base_patched = None
+        self.xl_base_patched_hash = ""
+
         try:
             unet, clip, vae, clip_vision = load_checkpoint_guess_config(filename)
             self.xl_base = self.StableDiffusionModel(
@@ -270,8 +273,18 @@ class pipeline:
         callback,
         gen_data=None,
     ):
-        if self.xl_base_patched == None or not isinstance(self.xl_base.unet.model, SDXL):
-            return ["error.png"]
+        try:
+            if self.xl_base_patched == None or not isinstance(self.xl_base_patched.unet.model, SDXL):
+                print(f"ERROR: Can not use old 1.5 model")
+                worker.interrupt_ruined_processing = True
+                worker.outputs.append(["preview", (-1, f"Can not use old 1.5 model ...", "error.png")])
+                return []
+        except Exception as e:
+            # Something went very wrong
+            print(f"ERROR: {e}")
+            worker.interrupt_ruined_processing = True
+            worker.outputs.append(["preview", (-1, f"Error when trying to use model ...", "error.png")])
+            return []
 
         img2img_mode = False
         seed = image_seed if isinstance(image_seed, int) else random.randint(1, 2**32)
