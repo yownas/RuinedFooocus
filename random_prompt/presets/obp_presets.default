@@ -1,0 +1,20 @@
+{
+    "Standard": {
+        "insanitylevel": 5,
+        "subject": "all",
+        "artist": "all",
+        "chosensubjectsubtypeobject": "all",
+        "chosensubjectsubtypehumanoid": "all",
+        "chosensubjectsubtypeconcept": "all",
+        "chosengender": "all",
+        "imagetype": "all",
+        "imagemodechance": 20,
+        "givensubject": "",
+        "smartsubject": true,
+        "givenoutfit": "",
+        "prefixprompt": "",
+        "suffixprompt": "",
+        "giventypeofimage": "",
+        "antistring": ""
+    }
+}
