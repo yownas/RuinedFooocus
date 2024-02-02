@@ -6,6 +6,13 @@ from random_prompt.build_dynamic_prompt import build_dynamic_prompt
 
 from random_prompt.csv_reader import load_config_csv
 
+from modules.settings import default_settings
+from random_prompt.one_button_presets import OneButtonPresets
+
+OBPresets = OneButtonPresets()
+settings = default_settings
+custom_obp_values = OBPresets.get_obp_preset(settings["OBP_preset"])
+
 
 insanitylevel = 5
 subjects = ["all"]
@@ -440,115 +447,142 @@ def ui_onebutton(prompt, run_event):
                 label="BYPASS SAFETY PROTOCOLS", value=False
             )
             add_ctrl("obp_assume_direct_control", assumedirectcontrol)
+        
+        # Part of presets
+        with gr.Row():
+                OBP_preset = gr.Dropdown(
+                    label="One Button Preset",
+                    choices=list(OBPresets.opb_presets.keys())
+                    + [OBPresets.CUSTOM_OBP],
+                    value=settings["OBP_preset"],
+                )
+                add_ctrl("OBP_preset", OBP_preset)
+        
 
-        with gr.Row():
-            insanitylevel = gr.Slider(
-                1,
-                10,
-                value=5,
-                step=1,
-                label="Higher levels increases complexity and randomness of generated prompt",
-            )
-            add_ctrl("obp_insanitylevel", insanitylevel)
-        with gr.Row():
-            with gr.Column(scale=1, variant="compact"):
-                subject = gr.Dropdown(subjects, label="Subject Types", value="all")
-                add_ctrl("obp_subject", subject)
-            with gr.Column(scale=1, variant="compact"):
-                artist = gr.Dropdown(artists, label="Artists", value="all")
-                add_ctrl("obp_artist", artist)
-
-        with gr.Row():
-            chosensubjectsubtypeobject = gr.Dropdown(
-                subjectsubtypesobject,
-                label="Type of object",
-                value="all",
-                visible=False,
-            )
-            add_ctrl("obp_chosensubjectsubtypeobject", chosensubjectsubtypeobject)
-            chosensubjectsubtypehumanoid = gr.Dropdown(
-                subjectsubtypeshumanoid,
-                label="Type of humanoids",
-                value="all",
-                visible=False,
-            )
-            add_ctrl("obp_chosensubjectsubtypehumanoid", chosensubjectsubtypehumanoid)
-            chosensubjectsubtypeconcept = gr.Dropdown(
-                subjectsubtypesconcept,
-                label="Type of concept",
-                value="all",
-                visible=False,
-            )
-            add_ctrl("obp_chosensubjectsubtypeconcept", chosensubjectsubtypeconcept)
-            chosengender = gr.Dropdown(
-                genders, label="gender", value="all", visible=False
-            )
-            add_ctrl("obp_chosengender", chosengender)
-        with gr.Row():
-            with gr.Column(scale=2, variant="compact"):
-                imagetype = gr.Dropdown(imagetypes, label="type of image", value="all")
-                add_ctrl("obp_imagetype", imagetype)
-            with gr.Column(scale=2, variant="compact"):
-                imagemodechance = gr.Slider(
+                
+        with gr.Group(visible=False) as maingroup:
+            with gr.Row():
+                    obp_preset_name = gr.Textbox(
+                        show_label=False,
+                        placeholder="Name of new preset",
+                        interactive=True,
+                        visible=True,
+                    )
+                    obp_preset_save = gr.Button(
+                        value="Save as preset",
+                        visible=True,
+                    )
+        
+        # End of this part of presets
+        
+            with gr.Row():
+                insanitylevel = gr.Slider(
                     1,
-                    100,
-                    value="20",
+                    10,
+                    value=custom_obp_values["insanitylevel"],
                     step=1,
-                    label="One in X chance to use special image type mode",
+                    label="Higher levels increases complexity and randomness of generated prompt",
                 )
-                add_ctrl("obp_imagemodechance", imagemodechance)
-        with gr.Row():
-            gr.Markdown(
-                """
-                        <font size="2">
-                        Override options (choose the related subject type first for better results)
-                        </font>
-                        """
-            )
-        with gr.Row():
-            givensubject = gr.Textbox(label="Overwrite subject: ", value="")
-            add_ctrl("obp_givensubject", givensubject)
-            smartsubject = gr.Checkbox(label="Smart subject", value=True)
-            add_ctrl("obp_smartsubject", smartsubject)
-            givenoutfit = gr.Textbox(label="Overwrite outfit: ", value="")
-            add_ctrl("obp_givenoutfit", givenoutfit)
-        with gr.Row():
-            gr.Markdown(
-                """
-                        <font size="2">
-                        Prompt fields
-                        </font>
-                        """
-            )
-        with gr.Row():
-            with gr.Column():
-                prefixprompt = gr.Textbox(
-                    label="Place this in front of generated prompt (prefix)", value=""
+                add_ctrl("obp_insanitylevel", insanitylevel)
+            with gr.Row():
+                with gr.Column(scale=1, variant="compact"):
+                    subject = gr.Dropdown(subjects, label="Subject Types", value=custom_obp_values["subject"])
+                    add_ctrl("obp_subject", subject)
+                with gr.Column(scale=1, variant="compact"):
+                    artist = gr.Dropdown(artists, label="Artists", value=custom_obp_values["artist"])
+                    add_ctrl("obp_artist", artist)
+
+            with gr.Row():
+                chosensubjectsubtypeobject = gr.Dropdown(
+                    subjectsubtypesobject,
+                    label="Type of object",
+                    value=custom_obp_values["chosensubjectsubtypeobject"],
+                    visible=False,
                 )
-                add_ctrl("obp_prefixprompt", prefixprompt)
-                suffixprompt = gr.Textbox(
-                    label="Place this at back of generated prompt (suffix)", value=""
+                add_ctrl("obp_chosensubjectsubtypeobject", chosensubjectsubtypeobject)
+                chosensubjectsubtypehumanoid = gr.Dropdown(
+                    subjectsubtypeshumanoid,
+                    label="Type of humanoids",
+                    value=custom_obp_values["chosensubjectsubtypehumanoid"],
+                    visible=False,
                 )
-                add_ctrl("obp_suffixprompt", suffixprompt)
-        with gr.Row():
-            gr.Markdown(
-                """
-                        <font size="2">
-                        Additional options
-                        </font>
-                        """
-            )
-        with gr.Row():
-            giventypeofimage = gr.Textbox(label="Overwrite type of image: ", value="")
-            add_ctrl("obp_giventypeofimage", giventypeofimage)
-        with gr.Row():
-            with gr.Column():
-                antistring = gr.Textbox(
-                    label="Filter out following properties (comma seperated). Example "
-                    "film grain, purple, cat"
-                    " "
+                add_ctrl("obp_chosensubjectsubtypehumanoid", chosensubjectsubtypehumanoid)
+                chosensubjectsubtypeconcept = gr.Dropdown(
+                    subjectsubtypesconcept,
+                    label="Type of concept",
+                    value=custom_obp_values["chosensubjectsubtypeconcept"],
+                    visible=False,
                 )
-                add_ctrl("obp_antistring", antistring)
+                add_ctrl("obp_chosensubjectsubtypeconcept", chosensubjectsubtypeconcept)
+                chosengender = gr.Dropdown(
+                    genders, label="gender", value=custom_obp_values["chosengender"], visible=False
+                )
+                add_ctrl("obp_chosengender", chosengender)
+            with gr.Row():
+                with gr.Column(scale=2, variant="compact"):
+                    imagetype = gr.Dropdown(imagetypes, label="type of image", value=custom_obp_values["imagetype"])
+                    add_ctrl("obp_imagetype", imagetype)
+                with gr.Column(scale=2, variant="compact"):
+                    imagemodechance = gr.Slider(
+                        1,
+                        100,
+                        value=custom_obp_values["imagemodechance"],
+                        step=1,
+                        label="One in X chance to use special image type mode",
+                    )
+                    add_ctrl("obp_imagemodechance", imagemodechance)
+            with gr.Row():
+                gr.Markdown(
+                    """
+                            <font size="2">
+                            Override options (choose the related subject type first for better results)
+                            </font>
+                            """
+                )
+            with gr.Row():
+                givensubject = gr.Textbox(label="Overwrite subject: ", value=custom_obp_values["givensubject"])
+                add_ctrl("obp_givensubject", givensubject)
+                smartsubject = gr.Checkbox(label="Smart subject", value=custom_obp_values["smartsubject"])
+                add_ctrl("obp_smartsubject", smartsubject)
+                givenoutfit = gr.Textbox(label="Overwrite outfit: ", value=custom_obp_values["givenoutfit"])
+                add_ctrl("obp_givenoutfit", givenoutfit)
+            with gr.Row():
+                gr.Markdown(
+                    """
+                            <font size="2">
+                            Prompt fields
+                            </font>
+                            """
+                )
+            with gr.Row():
+                with gr.Column():
+                    prefixprompt = gr.Textbox(
+                        label="Place this in front of generated prompt (prefix)", value=custom_obp_values["prefixprompt"]
+                    )
+                    add_ctrl("obp_prefixprompt", prefixprompt)
+                    suffixprompt = gr.Textbox(
+                        label="Place this at back of generated prompt (suffix)", value=custom_obp_values["suffixprompt"]
+                    )
+                    add_ctrl("obp_suffixprompt", suffixprompt)
+            with gr.Row():
+                gr.Markdown(
+                    """
+                            <font size="2">
+                            Additional options
+                            </font>
+                            """
+                )
+            with gr.Row():
+                giventypeofimage = gr.Textbox(label="Overwrite type of image: ", value=custom_obp_values["giventypeofimage"])
+                add_ctrl("obp_giventypeofimage", giventypeofimage)
+            with gr.Row():
+                with gr.Column():
+                    antistring = gr.Textbox(
+                        label="Filter out following properties (comma seperated). Example "
+                        "film grain, purple, cat"
+                        " ", value=custom_obp_values["antistring"]
+                    )
+                    add_ctrl("obp_antistring", antistring)
         with gr.Row():
             gr.Markdown(
                 """
@@ -556,6 +590,151 @@ def ui_onebutton(prompt, run_event):
                 """
             )
 
+        obp_outputs = [
+                    obp_preset_name,
+                    obp_preset_save,
+                    insanitylevel,
+                    subject,
+                    artist,
+                    chosensubjectsubtypeobject,
+                    chosensubjectsubtypehumanoid,
+                    chosensubjectsubtypeconcept,
+                    chosengender,
+                    imagetype,
+                    imagemodechance,
+                    givensubject,
+                    smartsubject,
+                    givenoutfit,
+                    prefixprompt,
+                    suffixprompt,
+                    giventypeofimage,
+                    antistring,
+                ]
+
+                
+        def act_obp_preset_save(
+                    obp_preset_name,
+                    obp_preset_save,
+                    insanitylevel,
+                    subject,
+                    artist,
+                    chosensubjectsubtypeobject,
+                    chosensubjectsubtypehumanoid,
+                    chosensubjectsubtypeconcept,
+                    chosengender,
+                    imagetype,
+                    imagemodechance,
+                    givensubject,
+                    smartsubject,
+                    givenoutfit,
+                    prefixprompt,
+                    suffixprompt,
+                    giventypeofimage,
+                    antistring,
+                ):
+                    if obp_preset_name != "":
+                        obp_options = OBPresets.load_obp_presets()
+                        opts = {
+                            "insanitylevel": insanitylevel,
+                            "subject": subject,
+                            "artist": artist,
+                            "chosensubjectsubtypeobject": chosensubjectsubtypeobject,
+                            "chosensubjectsubtypehumanoid": chosensubjectsubtypehumanoid,
+                            "chosensubjectsubtypeconcept": chosensubjectsubtypeconcept,
+                            "chosengender": chosengender,
+                            "imagetype": imagetype,
+                            "imagemodechance": imagemodechance,
+                            "givensubject": givensubject,
+                            "smartsubject": smartsubject,
+                            "givenoutfit": givenoutfit,
+                            "prefixprompt": prefixprompt,
+                            "suffixprompt": suffixprompt,
+                            "giventypeofimage": giventypeofimage,
+                            "antistring": antistring
+                        }
+                        obp_options[obp_preset_name] = opts
+                        OBPresets.save_obp_preset(obp_options)
+                        choices = list(obp_options.keys()) + [
+                            OBPresets.CUSTOM_OBP
+                        ]
+                        return gr.update(choices=choices, value=obp_preset_name)
+                    else:
+                        return gr.update()
+
+        obp_preset_save.click(act_obp_preset_save,
+                    inputs=obp_outputs,
+                    outputs=[OBP_preset],
+                )
+        
+        
+        
+        
+        def obppreset_changed(selection):
+                if selection == OBPresets.CUSTOM_OBP:
+                    return (
+                        [obp_preset_name.update(value="", visible=True)]
+                        + [maingroup.update(visible=True)]
+                    )
+    
+                else:
+                    return (
+                        [obp_preset_name.update(visible=False)]
+                        + [maingroup.update(visible=False)]
+                    )
+        OBP_preset.change(obppreset_changed,
+                inputs=[OBP_preset],
+                outputs=[obp_preset_name] + [maingroup]
+            )
+        
+        
+        
+        
+        def OBPPreset_changed_update_custom(selection):
+                # Skip if Custom was selected
+                if selection == OBPresets.CUSTOM_OBP:
+                    return [gr.update()] * 16
+
+                # Update Custom values based on selected One Button preset
+                selected_opb_preset = OBPresets.get_obp_preset(selection)
+                return [
+                    insanitylevel.update(value=selected_opb_preset["insanitylevel"]),
+                    subject.update(value=selected_opb_preset["subject"]),
+                    artist.update(value=selected_opb_preset["artist"]),
+                    chosensubjectsubtypeobject.update(value=selected_opb_preset["chosensubjectsubtypeobject"]),
+                    chosensubjectsubtypehumanoid.update(value=selected_opb_preset["chosensubjectsubtypehumanoid"]),
+                    chosensubjectsubtypeconcept.update(value=selected_opb_preset["chosensubjectsubtypeconcept"]),
+                    chosengender.update(value=selected_opb_preset["chosengender"]),
+                    imagetype.update(value=selected_opb_preset["imagetype"]),
+                    imagemodechance.update(value=selected_opb_preset["imagemodechance"]),
+                    givensubject.update(value=selected_opb_preset["givensubject"]),
+                    smartsubject.update(value=selected_opb_preset["smartsubject"]),
+                    givenoutfit.update(value=selected_opb_preset["givenoutfit"]),
+                    prefixprompt.update(value=selected_opb_preset["prefixprompt"]),
+                    suffixprompt.update(value=selected_opb_preset["suffixprompt"]),
+                    giventypeofimage.update(value=selected_opb_preset["giventypeofimage"]),
+                    antistring.update(value=selected_opb_preset["antistring"]),
+                ]
+        OBP_preset.change(OBPPreset_changed_update_custom,
+                inputs=[OBP_preset],
+                outputs=[insanitylevel] + 
+                [subject] + 
+                [artist] + 
+                [chosensubjectsubtypeobject] + 
+                [chosensubjectsubtypehumanoid] + 
+                [chosensubjectsubtypeconcept] + 
+                [chosengender] + 
+                [imagetype] + 
+                [imagemodechance] + 
+                [givensubject] + 
+                [smartsubject] + 
+                [givenoutfit] +
+                [prefixprompt] +
+                [suffixprompt] +
+                [giventypeofimage] +
+                [antistring], 
+        )
+        
+        
         # turn things on and off for gender
         def subjectsvalue(subject):
             enable = subject == "humanoid"
@@ -681,3 +860,4 @@ def ui_onebutton(prompt, run_event):
             ],
             outputs=[prompt],
         )
+
