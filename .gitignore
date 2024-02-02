@@ -47,3 +47,4 @@ powerup.json
 performance.json
 *.old
 /models/loras/*.txt
+obp_presets.json
