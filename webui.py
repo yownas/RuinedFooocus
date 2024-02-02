@@ -565,8 +565,10 @@ with shared.gradio_root as block:
                     prompt_styles = ", ".join(prompt for prompt, _ in style_pairs)
                     negative_styles = ", ".join(negative for _, negative in style_pairs)
 
-                    if prompt_text:
+                    if prompt_text and len(style_inputs) > 0:
                         prompt_styles = prompt_styles.replace("{prompt}", prompt_text)
+                    else:
+                        prompt_styles = prompt_text
 
                     return prompt_styles, negative_styles, []
 
