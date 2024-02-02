@@ -5,7 +5,7 @@ import shutil
 
 class OneButtonPresets:
     DEFAULT_OBP_FILE = Path("random_prompt/presets/obp_presets.default")
-    OBP_FILE = Path("random_prompt/presets/obp_presets.json")
+    OBP_FILE = Path("random_prompt/userfiles/obp_presets.json")
     CUSTOM_OBP = "Custom..."
 
     def __init__(self):
