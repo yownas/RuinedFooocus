@@ -15,6 +15,9 @@ def process_metadata(gen_data):
         if "prompt" in meta:
             gen_data["style_selection"] = []
 
+        if "steps" in meta:
+            gen_data["custom_steps"] = int(meta["steps"])
+
         if "loras" in meta:
             idx = 1
             for lora in re.findall(r"<(.*?):(.*?)>", meta["loras"]):

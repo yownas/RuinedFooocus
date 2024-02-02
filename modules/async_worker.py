@@ -115,7 +115,8 @@ def worker():
             perf_options = shared.performance_settings.get_perf_options(
                 gen_data["performance_selection"]
             )
-            gen_data.update(perf_options)
+            perf_options.update(gen_data)
+            gen_data = perf_options
 
         steps = gen_data["custom_steps"]
 
