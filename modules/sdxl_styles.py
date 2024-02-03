@@ -23,13 +23,19 @@ def load_styles():
         "prompt": "{prompt}",
         "negative_prompt": "",
     }
+    lora_keywords_style = {
+        "name": "LoRA keywords",
+        "prompt": "{prompt} {lora_keywords}", "negative_prompt": ""
+    }
+
+    styles.insert(0, lora_keywords_style)
     styles.insert(0, random_style)
     styles.insert(0, default_style)
 
     return {s["name"]: (s["prompt"], s["negative_prompt"]) for s in styles}
 
 
-def apply_style(style, prompt, negative_prompt):
+def apply_style(style, prompt, negative_prompt, lora_keywords):
     output_prompt = ""
     output_negative_prompt = ""
 
@@ -45,6 +51,7 @@ def apply_style(style, prompt, negative_prompt):
         output_negative_prompt += n + ", "
 
     output_prompt = output_prompt.replace("{prompt}", prompt)
+    output_prompt = output_prompt.replace("{lora_keywords}", lora_keywords)
     output_negative_prompt += ", " + negative_prompt
 
     return output_prompt, output_negative_prompt

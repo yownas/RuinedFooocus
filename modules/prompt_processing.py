@@ -209,7 +209,7 @@ def process_prompt(style, prompt, negative, gen_data=[]):
     for match in re.finditer(pattern, prompt):
         styles += [f"Style: {match.group(1)}"]
     prompt = re.sub(pattern, "", prompt)
-    p_txt, n_txt = apply_style(styles, prompt, negative)
+    p_txt, n_txt = apply_style(styles, prompt, negative, gen_data["lora_keywords"])
     wildcard_pattern = r"__([\w\-:]+)__"
     wildcard_pattern_onebutton = r"__([\w]+:[^\s_]+(?:[^\s_]+|\s(?=[\w:]+))*)__"
     while (
