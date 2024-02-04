@@ -86,7 +86,7 @@ class PathManager:
                     keywords = civit.get_keywords(models)
                     with open(txtcheck, "w") as f:
                         f.write(", ".join(keywords))
-            time.sleep(1)
+                    time.sleep(1)
         self.civit_worker_folders.remove(folder_path)
 
     def get_model_filenames(self, folder_path, isLora=False):
