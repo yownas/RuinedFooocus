@@ -22,7 +22,7 @@ import ui_controlnet
 from modules.interrogate import look
 
 from comfy.samplers import KSampler
-from modules.sdxl_styles import load_styles, styles, allstyles
+from modules.sdxl_styles import load_styles, styles, allstyles, apply_style
 from modules.settings import default_settings
 from modules.prompt_processing import get_promptlist
 from modules.util import get_wildcard_files, load_keywords
@@ -552,27 +552,12 @@ with shared.gradio_root as block:
                 add_ctrl("seed", image_seed)
 
                 @style_button.click(
-                    inputs=[prompt, style_selection],
+                    inputs=[prompt, negative_prompt, style_selection],
                     outputs=[prompt, negative_prompt, style_selection],
                 )
-                def apply_style(prompt_text, style_inputs):
-                    style_inputs = [
-                        (
-                            random.choice(allstyles)
-                            if style == "Style: Pick Random"
-                            else style
-                        )
-                        for style in style_inputs
-                    ]
-                    style_pairs = [styles.get(style) for style in style_inputs]
-
-                    prompt_styles = ", ".join(prompt for prompt, _ in style_pairs)
-                    negative_styles = ", ".join(negative for _, negative in style_pairs)
-
-                    if prompt_text and len(style_inputs) > 0:
-                        prompt_styles = prompt_styles.replace("{prompt}", prompt_text)
-
-                    return prompt_styles, negative_styles, []
+                def send_to_prompt(prompt_text, negative_text, style_inputs):
+                    prompt_style, negative_style = apply_style(style_inputs, prompt_text, negative_text, "")
+                    return prompt_style, negative_style, []
 
                 @seed_random.change(inputs=[seed_random], outputs=[image_seed])
                 def random_checked(r):
