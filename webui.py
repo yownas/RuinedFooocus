@@ -78,9 +78,11 @@ def launch_app(args):
         server_name=args.listen,
         server_port=args.port,
         share=args.share,
-        auth=args.auth.split("/", 1)
-        if isinstance(args.auth, str) and "/" in args.auth
-        else None,
+        auth=(
+            args.auth.split("/", 1)
+            if isinstance(args.auth, str) and "/" in args.auth
+            else None
+        ),
         favicon_path=favicon_path,
     )
 
@@ -107,9 +109,9 @@ def update_preview(product):
         progress_html: gr.update(
             visible=True, value=modules.html.make_progress_html(percentage, title)
         ),
-        main_view: gr.update(visible=True, value=image)
-        if image is not None
-        else gr.update(),
+        main_view: (
+            gr.update(visible=True, value=image) if image is not None else gr.update()
+        ),
     }
 
 
@@ -555,9 +557,11 @@ with shared.gradio_root as block:
                 )
                 def apply_style(prompt_text, style_inputs):
                     style_inputs = [
-                        random.choice(allstyles)
-                        if style == "Style: Pick Random"
-                        else style
+                        (
+                            random.choice(allstyles)
+                            if style == "Style: Pick Random"
+                            else style
+                        )
                         for style in style_inputs
                     ]
                     style_pairs = [styles.get(style) for style in style_inputs]
@@ -567,8 +571,6 @@ with shared.gradio_root as block:
 
                     if prompt_text and len(style_inputs) > 0:
                         prompt_styles = prompt_styles.replace("{prompt}", prompt_text)
-                    else:
-                        prompt_styles = prompt_text
 
                     return prompt_styles, negative_styles, []
 
@@ -587,9 +589,11 @@ with shared.gradio_root as block:
                     base_model = gr.Dropdown(
                         label="SDXL Base Model",
                         choices=path_manager.model_filenames,
-                        value=settings["base_model"]
-                        if settings["base_model"] in path_manager.model_filenames
-                        else [path_manager.model_filenames[0]],
+                        value=(
+                            settings["base_model"]
+                            if settings["base_model"] in path_manager.model_filenames
+                            else [path_manager.model_filenames[0]]
+                        ),
                         show_label=True,
                     )
                     add_ctrl("base_model_name", base_model)
