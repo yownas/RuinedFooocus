@@ -36,15 +36,17 @@ from modules.util import load_file_from_url
 from shared import path_manager
 
 REINSTALL_ALL = False
+if os.path.exists("reinstall"):
+    REINSTALL_ALL = True
 
 
 def prepare_environment():
     torch_index_url = os.environ.get(
-        "TORCH_INDEX_URL", "https://download.pytorch.org/whl/cu118"
+        "TORCH_INDEX_URL", "https://download.pytorch.org/whl/cu121"
     )
     torch_command = os.environ.get(
         "TORCH_COMMAND",
-        f"pip install torch==2.0.1 torchvision==0.17.0 --extra-index-url {torch_index_url}",
+        f"pip install torch==2.1.2 torchvision==0.16.2 --extra-index-url {torch_index_url}",
     )
     insightface_package = os.environ.get(
         "INSIGHTFACE_PACKAGE",
@@ -52,7 +54,7 @@ def prepare_environment():
     )
     requirements_file = os.environ.get("REQS_FILE", "requirements_versions.txt")
 
-    xformers_package = os.environ.get("XFORMERS_PACKAGE", "xformers==0.0.21")
+    xformers_package = os.environ.get("XFORMERS_PACKAGE", "xformers==0.0.23")
 
     comfy_repo = os.environ.get(
         "COMFY_REPO", "https://github.com/comfyanonymous/ComfyUI"
@@ -204,6 +206,8 @@ def cuda_malloc():
 
 
 prepare_environment()
+if os.path.exists("reinstall"):
+    os.remove("reinstall")
 
 clear_comfy_args()
 # cuda_malloc()

@@ -1,3 +1,7 @@
+### 1.32.0
+* Various Bugfixes
+* Adds the ability to upgrade to a newer torch and xformers, just create a blank `reinstall` file in the RF directory
+
 ### 1.31.0
 * Added presets / custom preset for OBP
 * Various Bugfixes

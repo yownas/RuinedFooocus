@@ -101,6 +101,7 @@ Coming soon ...
 36. Support --auth=username/password for rudimentary security (Forced when using --share)
 37. Automatically downloads your Lora triggerwords from civit and displays them for you
 38. Automatic Negative prompt, save yourself the heartache and hassle of writing negative prompts!
+39. If the file `reinstall` exists upgrade xformers and torch to 2.1.2 (to upgrade simply create a blank file called `reinstall`)
 
 
 ## Thanks
