@@ -89,7 +89,10 @@ def process_wildcards(wildcard_text, directory="wildcards"):
 
             if placeholder.startswith("onebuttonprompt"):
                 random_choice = build_dynamic_prompt(
-                    insanitylevel=5, givensubject=subjectoverride
+                    insanitylevel=5, 
+                    givensubject=subjectoverride,
+                    advancedprompting=False,
+                    base_model="SDXL",
                 )
             elif placeholder.startswith("onebuttonsubject"):
                 random_choice = build_dynamic_prompt(
@@ -97,6 +100,7 @@ def process_wildcards(wildcard_text, directory="wildcards"):
                     imagetype="subject only mode",
                     givensubject=subjectoverride,
                     advancedprompting=False,
+                    base_model="SDXL",
                 )
             elif placeholder.startswith("onebuttonhumanoid"):
                 random_choice = build_dynamic_prompt(
@@ -105,6 +109,7 @@ def process_wildcards(wildcard_text, directory="wildcards"):
                     givensubject=subjectoverride,
                     forcesubject="humanoid",
                     advancedprompting=False,
+                    base_model="SDXL",
                 )
             elif placeholder.startswith("onebuttonmale"):
                 random_choice = build_dynamic_prompt(
@@ -114,6 +119,7 @@ def process_wildcards(wildcard_text, directory="wildcards"):
                     forcesubject="humanoid",
                     gender="male",
                     advancedprompting=False,
+                    base_model="SDXL",
                 )
             elif placeholder.startswith("onebuttonfemale"):
                 random_choice = build_dynamic_prompt(
@@ -123,6 +129,7 @@ def process_wildcards(wildcard_text, directory="wildcards"):
                     forcesubject="humanoid",
                     gender="female",
                     advancedprompting=False,
+                    base_model="SDXL",
                 )
             elif placeholder.startswith("onebuttonanimal"):
                 random_choice = build_dynamic_prompt(
@@ -131,6 +138,7 @@ def process_wildcards(wildcard_text, directory="wildcards"):
                     givensubject=subjectoverride,
                     forcesubject="animal",
                     advancedprompting=False,
+                    base_model="SDXL",
                 )
             elif placeholder.startswith("onebuttonobject"):
                 random_choice = build_dynamic_prompt(
@@ -139,6 +147,7 @@ def process_wildcards(wildcard_text, directory="wildcards"):
                     givensubject=subjectoverride,
                     forcesubject="object",
                     advancedprompting=False,
+                    base_model="SDXL",
                 )
             elif placeholder.startswith("onebuttonlandscape"):
                 random_choice = build_dynamic_prompt(
@@ -147,6 +156,7 @@ def process_wildcards(wildcard_text, directory="wildcards"):
                     givensubject=subjectoverride,
                     forcesubject="landscape",
                     advancedprompting=False,
+                    base_model="SDXL",
                 )
             elif placeholder.startswith("onebuttonconcept"):
                 random_choice = build_dynamic_prompt(
@@ -155,6 +165,7 @@ def process_wildcards(wildcard_text, directory="wildcards"):
                     givensubject=subjectoverride,
                     forcesubject="concept",
                     advancedprompting=False,
+                    base_model="SDXL",
                 )
             elif placeholder.startswith("onebuttonartist"):
                 random_choice = build_dynamic_prompt(
@@ -162,6 +173,7 @@ def process_wildcards(wildcard_text, directory="wildcards"):
                     onlyartists=True,
                     artists=subjectoverride or "all",
                     advancedprompting=False,
+                    base_model="SDXL",
                 )
             # failover
             else:
@@ -170,6 +182,7 @@ def process_wildcards(wildcard_text, directory="wildcards"):
                     imagetype="subject only mode",
                     givensubject=subjectoverride,
                     advancedprompting=False,
+                    base_model="SDXL",
                 )
 
         # Regular wildcards
@@ -202,7 +215,10 @@ def process_prompt(style, prompt, negative, gen_data=[]):
             suffixprompt=gen_data["obp_suffixprompt"],
             giventypeofimage=gen_data["obp_giventypeofimage"],
             antivalues=gen_data["obp_antistring"],
+            OBP_preset=gen_data["OBP_preset"],
             advancedprompting=False,
+            base_model="SDXL",
+
         )
     pattern = re.compile(r"<style:([^>]+)>")
     styles = [] if style is None else style.copy()
@@ -220,7 +236,7 @@ def process_prompt(style, prompt, negative, gen_data=[]):
 
     # apply auto negative prompt if enabled
     if(gen_data["auto_negative"] == True):
-        n_txt = build_dynamic_negative(positive_prompt=p_txt,existing_negative_prompt=n_txt)
+        n_txt = build_dynamic_negative(positive_prompt=p_txt,existing_negative_prompt=n_txt,base_model="SDXL")
     return p_txt, n_txt
 
 

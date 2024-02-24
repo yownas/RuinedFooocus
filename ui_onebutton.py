@@ -312,6 +312,7 @@ def ui_onebutton(prompt, run_event):
         chosensubjectsubtypehumanoid,
         chosensubjectsubtypeconcept,
         givenoutfit,
+        OBP_preset,
     ):
         prompt = build_dynamic_prompt(
             insanitylevel,
@@ -336,6 +337,9 @@ def ui_onebutton(prompt, run_event):
             False,
             0,
             givenoutfit,
+            False,
+            "SDXL",
+            OBP_preset,
         )
 
         return prompt 
@@ -357,6 +361,7 @@ def ui_onebutton(prompt, run_event):
         chosensubjectsubtypehumanoid,
         chosensubjectsubtypeconcept,
         givenoutfit,
+        OBP_preset,
         run_event,
     ):
         prompt = build_dynamic_prompt(
@@ -382,6 +387,9 @@ def ui_onebutton(prompt, run_event):
             False,
             0,
             givenoutfit,
+            False,
+            "SDXL",
+            OBP_preset,
         )
 
         return prompt, run_event+1
@@ -404,6 +412,7 @@ def ui_onebutton(prompt, run_event):
         chosensubjectsubtypehumanoid,
         chosensubjectsubtypeconcept,
         givenoutfit,
+        OBP_preset,
     ):
         prompt = (
             prompt
@@ -431,6 +440,9 @@ def ui_onebutton(prompt, run_event):
                 False,
                 0,
                 givenoutfit,
+                False,
+                "SDXL",
+                OBP_preset,
             )
         )
 
@@ -452,7 +464,7 @@ def ui_onebutton(prompt, run_event):
         with gr.Row():
                 OBP_preset = gr.Dropdown(
                     label="One Button Preset",
-                    choices=list(OBPresets.opb_presets.keys())
+                    choices=[OBPresets.RANDOM_PRESET_OBP] + list(OBPresets.opb_presets.keys())
                     + [OBPresets.CUSTOM_OBP],
                     value=settings["OBP_preset"],
                 )
@@ -654,7 +666,7 @@ def ui_onebutton(prompt, run_event):
                         }
                         obp_options[obp_preset_name] = opts
                         OBPresets.save_obp_preset(obp_options)
-                        choices = list(obp_options.keys()) + [
+                        choices = [OBPresets.RANDOM_PRESET_OBP] + list(obp_options.keys()) + [
                             OBPresets.CUSTOM_OBP
                         ]
                         return gr.update(choices=choices, value=obp_preset_name)
@@ -695,7 +707,10 @@ def ui_onebutton(prompt, run_event):
                     return [gr.update()] * 16
 
                 # Update Custom values based on selected One Button preset
-                selected_opb_preset = OBPresets.get_obp_preset(selection)
+                if selection == OBPresets.RANDOM_PRESET_OBP:
+                    selected_opb_preset = OBPresets.get_obp_preset("Standard")
+                else:     
+                    selected_opb_preset = OBPresets.get_obp_preset(selection)
                 return [
                     insanitylevel.update(value=selected_opb_preset["insanitylevel"]),
                     subject.update(value=selected_opb_preset["subject"]),
@@ -811,6 +826,7 @@ def ui_onebutton(prompt, run_event):
                 chosensubjectsubtypehumanoid,
                 chosensubjectsubtypeconcept,
                 givenoutfit,
+                OBP_preset,
                 run_event,
             ],
             outputs=[prompt, run_event],
@@ -834,6 +850,7 @@ def ui_onebutton(prompt, run_event):
                 chosensubjectsubtypehumanoid,
                 chosensubjectsubtypeconcept,
                 givenoutfit,
+                OBP_preset,
             ],
             outputs=[prompt],
         )
@@ -857,6 +874,7 @@ def ui_onebutton(prompt, run_event):
                 chosensubjectsubtypehumanoid,
                 chosensubjectsubtypeconcept,
                 givenoutfit,
+                OBP_preset,
             ],
             outputs=[prompt],
         )

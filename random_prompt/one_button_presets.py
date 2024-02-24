@@ -7,6 +7,7 @@ class OneButtonPresets:
     DEFAULT_OBP_FILE = Path("random_prompt/presets/obp_presets.default")
     OBP_FILE = Path("random_prompt/userfiles/obp_presets.json")
     CUSTOM_OBP = "Custom..."
+    RANDOM_PRESET_OBP = "All (random)..."
 
     def __init__(self):
         self.opb_presets = self.load_obp_presets()
