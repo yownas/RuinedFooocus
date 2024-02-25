@@ -20,12 +20,18 @@ from random_prompt.random_functions import (
     chance_roll,
 )
 
+from random_prompt.one_button_presets import OneButtonPresets
+OBPresets = OneButtonPresets()
 
 #builds a prompt dynamically
 # insanity level controls randomness of propmt 0-10
 # forcesubject van be used to force a certain type of subject
 # Set artistmode to none, to exclude artists 
-def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all", imagetype = "all", onlyartists = False, antivalues = "", prefixprompt = "", suffixprompt ="",promptcompounderlevel ="1", seperator = "comma", givensubject="",smartsubject = True,giventypeofimage="", imagemodechance = 20, gender = "all", subtypeobject="all", subtypehumanoid="all", subtypeconcept="all", advancedprompting=True, hardturnoffemojis=False, seed=-1, overrideoutfit="", prompt_g_and_l = False):
+def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all", imagetype = "all", onlyartists = False, antivalues = "", prefixprompt = "", suffixprompt ="",promptcompounderlevel ="1", seperator = "comma", givensubject="",smartsubject = True,giventypeofimage="", imagemodechance = 20, gender = "all", subtypeobject="all", subtypehumanoid="all", subtypeconcept="all", advancedprompting=True, hardturnoffemojis=False, seed=-1, overrideoutfit="", prompt_g_and_l = False, base_model = "SDXL", OBP_preset = ""):
+
+    remove_weights =  False
+    less_verbose = False
+   
 
     # set seed
     # For use in ComfyUI (might bring to Automatic1111 as well)
@@ -38,6 +44,30 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
     if(advancedprompting != False and random.randint(0,max(0, insanitylevel - 2)) <= 0):
         advancedprompting == False
 
+    
+    if(OBP_preset == OBPresets.RANDOM_PRESET_OBP):
+        obp_options = OBPresets.load_obp_presets()
+        random_preset = random.choice(list(obp_options.keys()))
+        print("Engaging randomized presets, locking on to: " + random_preset)
+
+        selected_opb_preset = OBPresets.get_obp_preset(random_preset)
+        insanitylevel = selected_opb_preset["insanitylevel"]
+        forcesubject = selected_opb_preset["subject"]
+        artists = selected_opb_preset["artist"]
+        subtypeobject = selected_opb_preset["chosensubjectsubtypeobject"]
+        subtypehumanoid = selected_opb_preset["chosensubjectsubtypehumanoid"]
+        subtypeconcept = selected_opb_preset["chosensubjectsubtypeconcept"]
+        gender = selected_opb_preset["chosengender"]
+        imagetype = selected_opb_preset["imagetype"]
+        imagemodechance = selected_opb_preset["imagemodechance"]
+        givensubject = selected_opb_preset["givensubject"]
+        smartsubject = selected_opb_preset["smartsubject"]
+        overrideoutfit = selected_opb_preset["givenoutfit"]
+        prefixprompt = selected_opb_preset["prefixprompt"]
+        suffixprompt = selected_opb_preset["suffixprompt"]
+        giventypeofimage = selected_opb_preset["giventypeofimage"]
+        antistring = selected_opb_preset["antistring"]
+    
     originalartistchoice = artists
     doartistnormal = True
     outfitmode = 0
@@ -59,6 +89,18 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
 
     # clean up antivalue list:
     antilist = [s.strip().lower() for s in antilist]
+
+    # Base model options, used to change things in prompt generation. Might be able to extend to different forms like animatediff as well?
+    base_model_options = ["SD1.5", "SDXL", "Stable Cascade"]
+    if base_model not in base_model_options:
+        base_model = "SD1.5" # Just in case there is no option here.
+    # "SD1.5" -- Standard, future: More original style prompting
+    # "SDXL" -- Standard (for now), future: More natural language
+    # "Stable Cascade" -- Remove weights
+    if(base_model == "Stable Cascade"):
+        remove_weights = True
+    if(base_model == "SD1.5"):
+        less_verbose = True
 
     # Some tricks for gender to make sure we can choose Him/Her/It etc on the right time.
     if(gender=="all"):
@@ -105,7 +147,7 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
     haircolorlist = csv_to_list("haircolors",antilist)
     hairstylelist = csv_to_list("hairstyles",antilist)
     hairvomitlist = csv_to_list("hairvomit",antilist,"./csvfiles/",0,"?",False,False)
-    humanactivitylist = csv_to_list("human_activities",antilist,"./csvfiles/",0,"?",False,False)
+    
     humanoidlist = csv_to_list("humanoids",antilist)
     imagetypelist = csv_to_list(csvfilename="imagetypes",antilist=antilist, insanitylevel=insanitylevel)
     joblist = csv_to_list(csvfilename="jobs",antilist=antilist,skipheader=True,gender=gender)
@@ -189,15 +231,23 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
     humanlist = fictionallist + nonfictionallist + humanoidlist
     objecttotallist = objectlist + buildinglist + vehiclelist + foodlist + spacelist + floralist + containerlist
     outfitprinttotallist = objecttotallist + locationlist + colorlist + musicgenrelist + seasonlist + animallist + patternlist
-
-    humanactivitycheatinglist = ["OR(;, -heshe- is;uncommon) -miniactivity- OR(in;at) a OR(-location-;-building-;-waterlocation-)",
+    if(less_verbose):
+        humanactivitycheatinglist = ["-miniactivity- OR(in;at) a OR(-location-;-building-;-waterlocation-)",
+                                 "-miniactivity- OR(in;at) a OR(-location-;-building-;-waterlocation-)",
+                                 "-miniactivity- OR(in;at) a OR(-location-;-building-;-waterlocation-)",
+                                 "-miniactivity- OR(in;at) a OR(-location-;-building-;-waterlocation-)",
+                                 "-miniactivity- OR(in;at) a OR(-location-;-building-;-waterlocation-)",
+                                 "-miniactivity- OR(in;at) a OR(-location-;-building-;-waterlocation-)",
+                                 "-miniactivity- OR(in;at) a OR(-location-;-building-;-waterlocation-)"]
+    else:
+        humanactivitycheatinglist = ["OR(;, -heshe- is;uncommon) -miniactivity- OR(in;at) a OR(-location-;-building-;-waterlocation-)",
                                  "OR(;, -heshe- is;uncommon) -miniactivity- OR(in;at) a OR(-location-;-building-;-waterlocation-)",
                                  "OR(;, -heshe- is;uncommon) -miniactivity- OR(in;at) a OR(-location-;-building-;-waterlocation-)",
                                  "OR(;, -heshe- is;uncommon) -miniactivity- OR(in;at) a OR(-location-;-building-;-waterlocation-)",
                                  "OR(;, -heshe- is;uncommon) -miniactivity- OR(in;at) a OR(-location-;-building-;-waterlocation-)",
                                  "OR(;, -heshe- is;uncommon) -miniactivity- OR(in;at) a OR(-location-;-building-;-waterlocation-)",
                                  "OR(;, -heshe- is;uncommon) -miniactivity- OR(in;at) a OR(-location-;-building-;-waterlocation-)"]
-    humanactivitylist = humanactivitylist + humanactivitycheatinglist
+    
     # build artists list
     if artists == "wild":
         artists = "all (wild)"
@@ -285,19 +335,34 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
     backgroundtypelist = csv_to_list("backgroundtypes", antilist,"./csvfiles/special_lists/",0,"?")
     insideshotlist =  csv_to_list("insideshots", antilist,"./csvfiles/special_lists/",0,"?")
     photoadditionlist = csv_to_list("photoadditions", antilist,"./csvfiles/special_lists/",0,"?")
-    buildhairlist = csv_to_list("buildhair", antilist,"./csvfiles/special_lists/",0,"?")
-    buildoutfitlist = csv_to_list("buildoutfit", antilist,"./csvfiles/special_lists/",0,"?")
-    objectadditionslist = csv_to_list("objectadditions", antilist,"./csvfiles/special_lists/",0,"?")
-    humanadditionlist = csv_to_list("humanadditions", antilist,"./csvfiles/special_lists/",0,"?")
+    if(less_verbose):
+        buildhairlist = csv_to_list("buildhair_less_verbose", antilist,"./csvfiles/special_lists/",0,"?")
+        buildoutfitlist = csv_to_list("buildoutfit_less_verbose", antilist,"./csvfiles/special_lists/",0,"?")
+        humanadditionlist = csv_to_list("humanadditions_less_verbose", antilist,"./csvfiles/special_lists/",0,"?")
+        objectadditionslist = csv_to_list("objectadditions_less_verbose", antilist,"./csvfiles/special_lists/",0,"?")
+        buildfacelist = csv_to_list("buildface_less_verbose", antilist,"./csvfiles/special_lists/",0,"?")
+        buildaccessorielist = csv_to_list("buildaccessorie_less_verbose", antilist,"./csvfiles/special_lists/",0,"?")
+        humanactivitylist = csv_to_list("human_activities_less_verbose",antilist,"./csvfiles/",0,"?",False,False)
+    else:
+        buildhairlist = csv_to_list("buildhair", antilist,"./csvfiles/special_lists/",0,"?")
+        buildoutfitlist = csv_to_list("buildoutfit", antilist,"./csvfiles/special_lists/",0,"?")
+        humanadditionlist = csv_to_list("humanadditions", antilist,"./csvfiles/special_lists/",0,"?")
+        objectadditionslist = csv_to_list("objectadditions", antilist,"./csvfiles/special_lists/",0,"?")
+        buildfacelist = csv_to_list("buildface", antilist,"./csvfiles/special_lists/",0,"?")
+        buildaccessorielist = csv_to_list("buildaccessorie", antilist,"./csvfiles/special_lists/",0,"?")
+        humanactivitylist = csv_to_list("human_activities",antilist,"./csvfiles/",0,"?",False,False)
+
+    humanactivitylist = humanactivitylist + humanactivitycheatinglist
+
     animaladditionlist = csv_to_list("animaladditions", antilist,"./csvfiles/special_lists/",0,"?")
-    buildaccessorielist = csv_to_list("buildaccessorie", antilist,"./csvfiles/special_lists/",0,"?")
+    
     minilocationadditionslist = csv_to_list("minilocationadditions", antilist,"./csvfiles/special_lists/",0,"?")
     overalladditionlist = csv_to_list("overalladditions", antilist,"./csvfiles/special_lists/",0,"?")
     imagetypemodelist = csv_to_list("imagetypemodes", antilist,"./csvfiles/special_lists/",0,"?")
     miniactivitylist = csv_to_list("miniactivity", antilist,"./csvfiles/special_lists/",0,"?")
     animalsuffixadditionlist = csv_to_list("animalsuffixadditions", antilist,"./csvfiles/special_lists/",0,"?")
     buildfacepartlist = csv_to_list("buildfaceparts", antilist,"./csvfiles/special_lists/",0,"?")
-    buildfacelist = csv_to_list("buildface", antilist,"./csvfiles/special_lists/",0,"?")
+    
     
     tokinatorlist = csv_to_list("tokinator", antilist,"./csvfiles/templates/",0,"?")
     styleslist = csv_to_list("styles", antilist,"./csvfiles/templates/",0,"?")
@@ -1471,7 +1536,7 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
                     completeprompt += " ["
                     
                 while step < end: 
-                    if(normal_dist(insanitylevel)):
+                    if(normal_dist(insanitylevel) and remove_weights == False):
                         isweighted = 1
                     
                     if isweighted == 1:
@@ -1561,7 +1626,7 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
         if(thetokinatormode == True):
             tokinatorsubtype = ["personification", "human form", "object", "landscape", "OR(creature;beast;animal;myth;concept;world;planet)", "building", "location", "shape", "being", "-token-"]
             if(chance_roll(insanitylevel,"normal")):
-                if(chance_roll(insanitylevel,"normal")):
+                if(chance_roll(insanitylevel,"normal") and remove_weights == False):
                     completeprompt += "(OR(;-imagetypequality-;uncommon) OR(-imagetype-;-othertype-;rare):1.3) "
                 else:
                     completeprompt += "OR(;-imagetypequality-;uncommon) OR(-imagetype-;-othertype-;rare) "
@@ -1698,7 +1763,7 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
         # start subject building
 
         # divider between subject and everything else
-        completeprompt += " @ "
+        completeprompt += " @@@ "
 
  
         if(generatesubject == True):
@@ -2078,28 +2143,51 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
                 # Common to have 1 description, uncommon to have 2
                 if(chance_roll(insanitylevel, subjectdescriptor1chance) and generatedescriptors == True):
                     if(subjectchooser in ["animal as human,","human", "job", "fictional", "non fictional", "humanoid", "manwomanrelation","manwomanmultiple", "firstname"]):
-                        if(random.randint(0,3) > 0):
+                        if(less_verbose):
+                            completeprompt += ", -humandescriptor- "
+                        elif(random.randint(0,3) > 0):
                             completeprompt += ", OR(;-heshe- is;normal) OR(;very;rare) -humandescriptor- "
                         elif(subjectchooser == "manwomanmultiple"):
                             completeprompt += ", the -samehumansubject- are OR(;very;rare) -humandescriptor-"
                         else:
                             completeprompt += ", OR(the -manwoman-;-samehumansubject-) is OR(;very;rare) -humandescriptor-"
                     elif(mainchooser == "landscape"):
-                        completeprompt += ", OR(;-heshe- is;normal) OR(;very;rare) -locationdescriptor- "
+                        if(less_verbose):
+                            completeprompt += ", -locationdescriptor- "
+                        else:
+                            completeprompt += ", OR(;-heshe- is;normal) OR(;very;rare) -locationdescriptor- "
                     elif(mainchooser == "animal"):
-                        completeprompt += ", OR(;-heshe- is;normal) OR(;very;rare) -animaldescriptor- "
+                        if(less_verbose):
+                            completeprompt += ", -animaldescriptor- "
+                        else:
+                            completeprompt += ", OR(;-heshe- is;normal) OR(;very;rare) -animaldescriptor- "
                     else:
-                        completeprompt += ", OR(;-heshe- is;normal) OR(;very;rare) -descriptor- "
+                        if(less_verbose):
+                            completeprompt += ", -descriptor- "
+                        else:
+                            completeprompt += ", OR(;-heshe- is;normal) OR(;very;rare) -descriptor- "
 
                     if(chance_roll(insanitylevel, subjectdescriptor2chance) and generatedescriptors == True):
                         if(subjectchooser in ["animal as human,","human", "job", "fictional", "non fictional", "humanoid", "manwomanrelation","manwomanmultiple","firstname"]):
-                            completeprompt += " and -humandescriptor- "
+                            if(less_verbose):
+                                completeprompt += ", -humandescriptor- "
+                            else:
+                                completeprompt += " and -humandescriptor- "
                         elif(mainchooser == "landscape"):
-                            completeprompt += " and -locationdescriptor- "
+                            if(less_verbose):
+                                completeprompt += ", -locationdescriptor- "
+                            else:
+                                completeprompt += " and -locationdescriptor- "
                         elif(mainchooser == "animal"):
-                            completeprompt += " and -animaldescriptor- "
+                            if(less_verbose):
+                                completeprompt += ", -animaldescriptor- "
+                            else:
+                                completeprompt += " and -animaldescriptor- "
                         else:
-                            completeprompt += " and -descriptor- "
+                            if(less_verbose):
+                                completeprompt += ", -descriptor- "
+                            else:
+                                completeprompt += " and -descriptor- "
                 completeprompt += ", "
 
         if(thetokinatormode == False):
@@ -2208,7 +2296,7 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
 
 
             # divider between subject and everything else
-            completeprompt += " @ "
+            completeprompt += " @@@ "
             
 
             # Add more quality while in greg mode lol
@@ -2289,7 +2377,7 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
                     completeprompt += " ["
                     
                 while step < end: 
-                    if(normal_dist(insanitylevel)):
+                    if(normal_dist(insanitylevel) and remove_weights == False):
                         isweighted = 1
                     
                     if isweighted == 1:
@@ -2615,7 +2703,7 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
                     completeprompt += " ["
                     
                 while step < end: 
-                    if(normal_dist(insanitylevel)):
+                    if(normal_dist(insanitylevel) and remove_weights == False):
                         isweighted = 1
                     
                     if isweighted == 1:
@@ -2764,6 +2852,13 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
         completeprompt = completeprompt.replace("-outfit-", "-minioutfit-",1)
     if(rare_dist(insanitylevel)): # Use base outfit descriptor, until we are not.
         completeprompt = completeprompt.replace("-outfitdescriptor-", "-descriptor-")
+    
+    # if -outfit- is in the override, we want a consistent result
+    if("-outfit-" in overrideoutfit):
+        if(chance_roll(insanitylevel, "common")):
+            overrideoutfit = overrideoutfit.replace("-outfit-", random.choice(outfitlist))
+        else:
+            overrideoutfit = overrideoutfit.replace("-outfit-", random.choice(minioutfitlist))
 
     if(overrideoutfit != ""):
         completeprompt = completeprompt.replace("-sameoutfit-", overrideoutfit)
@@ -2992,7 +3087,7 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
         matches = re.findall(pattern, givensubject)
 
 
-    if(len(completeprompt) > 325 and matches == []):
+    if(len(completeprompt) > 325 and matches == [] and remove_weights == False):
         if(len(completeprompt) < 375):
             strenght = "1.1"  
         elif(len(completeprompt) < 450):
@@ -3020,7 +3115,7 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
     completeprompt = parse_custom_functions(completeprompt, insanitylevel)
 
     # prompt enhancer!
-    if(templatemode == False and specialmode == False):
+    if(templatemode == False and specialmode == False and base_model != "Stable Cascade"):
         # how insane do we want it?
 
         maxamountofwords = max(0, -1 + random.randint(0,4),6 - insanitylevel)
@@ -3035,18 +3130,18 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
     completeprompt = cleanup(completeprompt, advancedprompting, insanitylevel)
 
     # Split it up for support for prompt_g (subject) and prompt_l (style)
-    if("@" in completeprompt and prompt_g_and_l == True):
-        promptlist = completeprompt.split("@")
+    if("@@@" in completeprompt and prompt_g_and_l == True):
+        promptlist = completeprompt.split("@@@")
         prompt_g = cleanup(promptlist[1], advancedprompting, insanitylevel)
         prompt_l = cleanup((promptlist[0] + ", " + promptlist[2]).replace("of a",""), advancedprompting, insanitylevel)
     elif(prompt_g_and_l == True):
         prompt_g = completeprompt
         prompt_l = completeprompt
 
-    completeprompt = completeprompt.replace(" @ ", " ")
-    completeprompt = completeprompt.replace("@ ", " ")
-    completeprompt = completeprompt.replace(" @", " ")
-    completeprompt = completeprompt.replace("@", " ")
+    completeprompt = completeprompt.replace(" @@@ ", " ")
+    completeprompt = completeprompt.replace("@@@ ", " ")
+    completeprompt = completeprompt.replace(" @@@", " ")
+    completeprompt = completeprompt.replace("@@@", " ")
     completeprompt = cleanup(completeprompt, advancedprompting, insanitylevel)
 
     #just for me, some fun with posting fake dev messages (ala old sim games)
@@ -3871,12 +3966,23 @@ def replacewildcard(completeprompt, insanitylevel, wildcard,listname, activatehy
 
     return completeprompt
 
-def build_dynamic_negative(positive_prompt = "", insanitylevel = 0, enhance = False, existing_negative_prompt = ""):
+def build_dynamic_negative(positive_prompt = "", insanitylevel = 0, enhance = False, existing_negative_prompt = "", base_model="SD1.5"):
 
 
     negative_primer = []
     negative_result = []
     all_negative_words_list = []
+    remove_weights = False
+
+    # Base model options, used to change things in prompt generation. Might be able to extend to different forms like animatediff as well?
+    base_model_options = ["SD1.5", "SDXL", "Stable Cascade"]
+    if base_model not in base_model_options:
+        base_model = "SD1.5" # Just in case there is no option here.
+    # "SD1.5" -- Standard, future: More original style prompting
+    # "SDXL" -- Standard (for now), future: More natural language
+    # "Stable Cascade" -- Remove weights
+    if base_model == "Stable Cascade":
+        remove_weights = True
     
     # negavite_primer, all words that should trigger a negative result
     # the negative words to put in the negative prompt
@@ -3945,7 +4051,7 @@ def build_dynamic_negative(positive_prompt = "", insanitylevel = 0, enhance = Fa
     # Convert the list to unique values or (word:count) format
     unique_words = []
     for word, count in word_count.items():
-        if(count > 2):
+        if(count > 2 and remove_weights == False):
             #counttotal = int(count/2)
             counttotal = count
             if(counttotal > 3):
@@ -4078,6 +4184,8 @@ def cleanup(completeprompt, advancedprompting, insanitylevel = 5):
     completeprompt = re.sub(', ,', ',', completeprompt)
     completeprompt = re.sub(' , ', ', ', completeprompt)
     completeprompt = re.sub(' ,', ',', completeprompt)
+    completeprompt = re.sub(' ,', ',', completeprompt)
+    completeprompt = re.sub(' ,', ',', completeprompt)
     completeprompt = re.sub(',\(', ', (', completeprompt)
 
     while "  " in completeprompt:
@@ -4178,6 +4286,7 @@ def custom_or(values, insanitylevel = 5):
     return selected_value
 
 def parse_custom_functions(completeprompt, insanitylevel = 5):
+    #print(completeprompt)
 
     # Regular expression pattern to match 'or()' function calls and their arguments
     ORpattern = r'OR\((.*?)\)'
