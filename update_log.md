@@ -1,3 +1,7 @@
+### 1.33.0
+* Updated to latest comfy version
+* Now supports Playground 2.5 model!
+
 ### 1.32.0
 * Various Bugfixes
 * Adds the ability to upgrade to a newer torch and xformers, just create a blank `reinstall` file in the RF directory
