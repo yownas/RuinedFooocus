@@ -131,7 +131,8 @@ class pipeline:
         self.xl_base_patched_hash = ""
 
         try:
-            unet, clip, vae, clip_vision = load_checkpoint_guess_config(filename)
+            with torch.no_grad():
+                unet, clip, vae, clip_vision = load_checkpoint_guess_config(filename)
             self.xl_base = self.StableDiffusionModel(
                 unet=unet, clip=clip, vae=vae, clip_vision=clip_vision
             )
@@ -274,16 +275,22 @@ class pipeline:
         gen_data=None,
     ):
         try:
-            if self.xl_base_patched == None or not isinstance(self.xl_base_patched.unet.model, SDXL):
+            if self.xl_base_patched == None or not isinstance(
+                self.xl_base_patched.unet.model, SDXL
+            ):
                 print(f"ERROR: Can not use old 1.5 model")
                 worker.interrupt_ruined_processing = True
-                worker.outputs.append(["preview", (-1, f"Can not use old 1.5 model ...", "error.png")])
+                worker.outputs.append(
+                    ["preview", (-1, f"Can not use old 1.5 model ...", "error.png")]
+                )
                 return []
         except Exception as e:
             # Something went very wrong
             print(f"ERROR: {e}")
             worker.interrupt_ruined_processing = True
-            worker.outputs.append(["preview", (-1, f"Error when trying to use model ...", "error.png")])
+            worker.outputs.append(
+                ["preview", (-1, f"Error when trying to use model ...", "error.png")]
+            )
             return []
 
         img2img_mode = False
