@@ -84,7 +84,7 @@ class pipeline:
 
         def preview_function(x0, step, total_steps):
             global cv2_is_top
-            with torch.no_grad():
+            with torch.torch.inference_mode():
                 x_sample = (
                     taesd.taesd_decoder(
                         torch.nn.functional.avg_pool2d(x0, kernel_size=(2, 2))
@@ -131,7 +131,7 @@ class pipeline:
         self.xl_base_patched_hash = ""
 
         try:
-            with torch.no_grad():
+            with torch.torch.inference_mode():
                 unet, clip, vae, clip_vision = load_checkpoint_guess_config(filename)
             self.xl_base = self.StableDiffusionModel(
                 unet=unet, clip=clip, vae=vae, clip_vision=clip_vision
