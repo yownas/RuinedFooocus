@@ -504,7 +504,6 @@ class pipeline:
 
         if callback is not None:
             callback(steps, 0, 0, steps, images[0])
-            time.sleep(0.1)
 
         gc.collect()
 
