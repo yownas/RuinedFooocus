@@ -328,7 +328,7 @@ class pipeline:
 
             positive_switch = convert_cond(self.conditions["switch"]["cache"])
 
-        if controlnet is not None and input_image is not None:
+        if controlnet is not None and "type" in controlnet and input_image is not None:
             worker.outputs.append(["preview", (-1, f"Powering up ...", None)])
             input_image = input_image.convert("RGB")
             input_image = np.array(input_image).astype(np.float32) / 255.0
