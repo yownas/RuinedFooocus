@@ -2,6 +2,7 @@ import os
 import shutil
 import json
 from os.path import exists
+from shared import state
 
 DEFAULT_CNSETTINGS_FILE = "settings/powerup.default"
 CNSETTINGS_FILE = "settings/powerup.json"
@@ -17,7 +18,6 @@ controlnet_models = {
     "upscale": None,
     # "faceswap": None,
 }
-
 
 import json
 import os

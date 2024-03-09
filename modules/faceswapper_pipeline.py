@@ -2,7 +2,7 @@ import os
 import sys
 import cv2
 import re
-import modules.path
+from shared import path_manager
 import modules.async_worker as worker
 from tqdm import tqdm
 import tempfile
@@ -15,7 +15,7 @@ import imageio.v3 as iio
 import numpy as np
 import torch
 import insightface
-import onnxruntime
+#import onnxruntime
 import gfpgan
 from facexlib.utils.face_restoration_helper import FaceRestoreHelper
 
@@ -24,7 +24,13 @@ from facexlib.utils.face_restoration_helper import FaceRestoreHelper
 # onnxruntime-gpu==1.16.1
 # imageio==2.31.6
 # gfpgan==1.3.8
-
+# add to settings/powerup.json
+#
+#  "Faceswap": {
+#    "type": "faceswap"
+#  }
+#
+# Model in models/faceswap/
 
 class pipeline:
     pipeline_type = ["faceswap"]
@@ -39,7 +45,7 @@ class pipeline:
         model_name = "inswapper_128.onnx"
         if not self.swapper_hash == model_name:
             print(f"Loading swapper model: {model_name}")
-            model_path = os.path.join(modules.path.faceswap_path, model_name)
+            model_path = os.path.join(path_manager.model_paths["faceswap_path"], model_name)
             try:
                 with open(os.devnull, "w") as sys.stdout:
                     self.swapper_model = insightface.model_zoo.get_model(
@@ -69,11 +75,10 @@ class pipeline:
 
     def load_gfpgan_model(self):
         if self.gfpgan_model is None:
-            model_rootpath = modules.path.faceswap_path
             channel_multiplier = 2
 
             model_name = "GFPGANv1.4.pth"
-            model_path = os.path.join(model_rootpath, model_name)
+            model_path = os.path.join(path_manager.model_paths["faceswap_path"], model_name)
 
             # https://github.com/TencentARC/GFPGAN/blob/master/inference_gfpgan.py
             self.gfpgan_model = gfpgan.GFPGANer
@@ -87,7 +92,7 @@ class pipeline:
             self.gfpgan_model.face_helper = FaceRestoreHelper(
                 upscale,
                 det_model="retinaface_resnet50",
-                model_rootpath=model_rootpath,
+                model_rootpath=path_manager.model_paths["faceswap_path"],
             )
             # face_size=512,
             # crop_ratio=(1, 1),
@@ -213,7 +218,7 @@ class pipeline:
                     )
                     progress.update(1)
             images = generate_temp_filename(
-                folder=modules.path.temp_outputs_path, extension="gif"
+                folder=path_manager.model_paths["temp_outputs_path"], extension="gif"
             )
             os.makedirs(os.path.dirname(images), exist_ok=True)
             out_imgs[0].save(

@@ -86,8 +86,4 @@ class pipeline:
             for y in decoded_latent
         ]
 
-        # Return finished image to preview
-#        if callback is not None:
-#            callback(steps, 0, 0, steps, images[0])
-
         return images

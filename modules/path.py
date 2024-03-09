@@ -12,6 +12,7 @@ class PathManager:
         "path_controlnet": "../models/controlnet/",
         "path_vae_approx": "../models/vae_approx/",
         "path_preview": "../outputs/preview.jpg",
+        "path_faceswap": "../models/faceswap/",
         "path_upscalers": "../models/upscale_models",
         "path_outputs": "../outputs/",
         "path_clip": "../models/clip/",
@@ -48,6 +49,7 @@ class PathManager:
             "vae_approx_path": self.get_abspath_folder(self.paths["path_vae_approx"]),
             "temp_outputs_path": self.get_abspath_folder(self.paths["path_outputs"]),
             "temp_preview_path": self.get_abspath(self.paths["path_preview"]),
+            "faceswap_path": self.get_abspath_folder(self.paths["path_faceswap"]),
             "upscaler_path": self.get_abspath_folder(self.paths["path_upscalers"]),
             "clip_path": self.get_abspath_folder(self.paths["path_clip"]),
         }

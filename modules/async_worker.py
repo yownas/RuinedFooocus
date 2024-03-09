@@ -4,6 +4,7 @@ import torch
 import math
 from playsound import playsound
 import modules.controlnet
+import pathlib
 from pathlib import Path
 
 buffer = []
@@ -289,7 +290,7 @@ def worker():
                 metadata.add_text("parameters", json.dumps(prompt))
 
                 shared.state["preview_count"] += 1
-                if isinstance(x, str):
+                if isinstance(x, str) or isinstance(x, (pathlib.WindowsPath, pathlib.PosixPath)):
                     local_temp_filename = x
                 else:
                     if not isinstance(x, Image.Image):
