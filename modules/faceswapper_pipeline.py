@@ -30,7 +30,9 @@ from facexlib.utils.face_restoration_helper import FaceRestoreHelper
 #    "type": "faceswap"
 #  }
 #
-# Model in models/faceswap/
+# Models in models/faceswap/
+# https://github.com/TencentARC/GFPGAN/releases/download/v1.3.0/GFPGANv1.4.pth
+# and inswapper_128.onnx from where you can find it
 
 class pipeline:
     pipeline_type = ["faceswap"]
