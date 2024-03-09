@@ -209,8 +209,9 @@ class pipeline:
                 in_imgs.append(frame)
 
             with tqdm(total=len(in_imgs), desc="Groop", unit="frames") as progress:
+                i=0
+                steps=len(in_imgs)
                 for frame in in_imgs:
-                    ##out_faces = select_faces(frame, None, det_thresh)
                     out_faces = sorted(
                         self.analyser_model.get(frame), key=lambda x: x.bbox[0]
                     )
@@ -218,6 +219,8 @@ class pipeline:
                     out_imgs.append(
                         Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
                     )
+                    i+=1
+                    callback(i, 0, 0, steps, out_imgs[-1])
                     progress.update(1)
             images = generate_temp_filename(
                 folder=path_manager.model_paths["temp_outputs_path"], extension="gif"
