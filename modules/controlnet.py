@@ -68,6 +68,8 @@ def get_model(type):
 
 
 def get_settings(gen_data):
+    if "cn_selection" not in gen_data:
+        return {}
     if gen_data["cn_selection"] == NEWCN:
         return {
             "type": gen_data["cn_type"].lower(),
@@ -82,7 +84,7 @@ def get_settings(gen_data):
         return (
             controlnet_settings[gen_data["cn_selection"]]
             if gen_data["cn_selection"] in controlnet_settings
-            else None
+            else {}
         )
 
 

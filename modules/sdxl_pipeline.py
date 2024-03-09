@@ -41,7 +41,6 @@ from comfy.sample import (
 from comfy.samplers import KSampler
 from comfy_extras.nodes_post_processing import ImageScaleToTotalPixels
 from comfy_extras.nodes_canny import Canny
-from comfy_extras.nodes_upscale_model import ImageUpscaleWithModel
 from comfy_extras.nodes_freelunch import FreeU
 
 
@@ -110,14 +109,6 @@ class pipeline:
 
     models = []
     inference_memory = None
-
-    def load_upscaler_model(self, model_name):
-        model_path = os.path.join(path_manager.model_paths["upscaler_path"], model_name)
-        sd = comfy.utils.load_torch_file(model_path, safe_load=True)
-        if "module.layers.0.residual_group.blocks.0.norm1.weight" in sd:
-            sd = comfy.utils.state_dict_prefix_replace(sd, {"module.": ""})
-        out = model_loading.load_state_dict(sd).eval()
-        return out
 
     def load_base_model(self, name):
         if self.xl_base_hash == name:
@@ -395,18 +386,6 @@ class pipeline:
                 force_full_denoise = False
                 denoise = float(controlnet.get("denoise", controlnet.get("strength")))
                 img2img_mode = True
-            if controlnet["type"].lower() == "upscale":
-                worker.outputs.append(["preview", (-1, f"Upscaling image ...", None)])
-                upscaler_model = self.load_upscaler_model(controlnet["upscaler"])
-                decoded_latent = ImageUpscaleWithModel().upscale(
-                    upscaler_model, input_image
-                )[0]
-
-                images = [
-                    np.clip(255.0 * y.cpu().numpy(), 0, 255).astype(np.uint8)
-                    for y in decoded_latent
-                ]
-                return images
 
         if not img2img_mode:
             latent = EmptyLatentImage().generate(
