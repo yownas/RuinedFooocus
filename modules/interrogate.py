@@ -5,7 +5,9 @@ import json
 from shared import state, path_manager
 
 
-def look(image, gr):
+def look(image, prompt, gr):
+    if prompt != "":
+        return prompt
     try:
         info = image.info
         params = info.get("parameters", "")

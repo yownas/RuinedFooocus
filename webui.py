@@ -344,10 +344,12 @@ with shared.gradio_root as block:
                         value="Stop", interactive=False, visible=False
                     )
 
-                    @main_view.upload(inputs=[main_view], outputs=[prompt, gallery])
-                    def load_images_handler(file):
+                    @main_view.upload(
+                        inputs=[main_view, prompt], outputs=[prompt, gallery]
+                    )
+                    def load_images_handler(file, prompt):
                         image = Image.open(file)
-                        params = look(image, gr)
+                        params = look(image, prompt, gr)
                         return params, [file]
 
             with gr.Row():
@@ -556,7 +558,9 @@ with shared.gradio_root as block:
                     outputs=[prompt, negative_prompt, style_selection],
                 )
                 def send_to_prompt(prompt_text, negative_text, style_inputs):
-                    prompt_style, negative_style = apply_style(style_inputs, prompt_text, negative_text, "")
+                    prompt_style, negative_style = apply_style(
+                        style_inputs, prompt_text, negative_text, ""
+                    )
                     return prompt_style, negative_style, []
 
                 @seed_random.change(inputs=[seed_random], outputs=[image_seed])
