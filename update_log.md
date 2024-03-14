@@ -1,5 +1,5 @@
 ### 1.34.0
-* Added llyasviel's prompt tokenizer model for improving fonts, This can be used by adding the `Flufferizer` style
+* Added llyasviel's prompt tokenizer model for improving prompts, This can be used by adding the `Flufferizer` style
 
 ### 1.33.1
 * Moved upscale to its own pipeline
