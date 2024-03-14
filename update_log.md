@@ -1,3 +1,7 @@
+### 1.33.1
+* Moved upscale to its own pipeline
+* Various Bug Fixes
+
 ### 1.33.0
 * Updated to latest comfy version
 * Now supports Playground 2.5 model!
