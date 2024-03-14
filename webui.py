@@ -34,6 +34,7 @@ inpaint_toggle = None
 path_manager = PathManager()
 
 
+
 def find_unclosed_markers(s):
     markers = re.findall(r"__", s)
     for marker in markers:

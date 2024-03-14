@@ -2,9 +2,12 @@ import random
 import shutil
 from csv import DictReader
 from pathlib import Path
+from modules.prompt_expansion import PromptExpansion
 
 DEFAULT_STYLES_FILE = Path("settings/styles.default")
 STYLES_FILE = Path("settings/styles.csv")
+
+prompt_expansion = PromptExpansion()
 
 
 def load_styles():
@@ -25,9 +28,16 @@ def load_styles():
     }
     lora_keywords_style = {
         "name": "LoRA keywords",
-        "prompt": "{prompt} {lora_keywords}", "negative_prompt": ""
+        "prompt": "{prompt} {lora_keywords}",
+        "negative_prompt": "",
+    }
+    flufferizer_style = {
+        "name": "Flufferizer",
+        "prompt": "{prompt}",
+        "negative_prompt": "",
     }
 
+    styles.insert(0, flufferizer_style)
     styles.insert(0, lora_keywords_style)
     styles.insert(0, random_style)
     styles.insert(0, default_style)
@@ -44,6 +54,10 @@ def apply_style(style, prompt, negative_prompt, lora_keywords):
 
     if not style:
         return prompt, negative_prompt
+
+    if "Flufferizer" in style:
+        prompt = prompt_expansion.expand_prompt(prompt)
+        style.remove("Flufferizer")
 
     for s in style:
         p, n = styles.get(s, default_style)

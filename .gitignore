@@ -49,3 +49,4 @@ performance.json
 /models/loras/*.txt
 random_prompt/userfiles/obp_presets.json
 reinstall
+prompt_expansion/pytorch_model.bin

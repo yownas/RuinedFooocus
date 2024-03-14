@@ -158,6 +158,13 @@ upscaler_filenames = [
     ),
 ]
 
+magic_prompt_filenames = [
+    (
+        "pytorch_model.bin",
+        "https://huggingface.co/lllyasviel/misc/resolve/main/fooocus_expansion.bin",
+    ),
+]
+
 
 def download_models():
     for file_name, url in model_filenames:
@@ -188,6 +195,12 @@ def download_models():
         load_file_from_url(
             url=url,
             model_dir=path_manager.model_paths["upscaler_path"],
+            file_name=file_name,
+        )
+    for file_name, url in magic_prompt_filenames:
+        load_file_from_url(
+            url=url,
+            model_dir="prompt_expansion",
             file_name=file_name,
         )
     return

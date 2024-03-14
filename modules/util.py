@@ -115,3 +115,10 @@ class TimeIt:
         self.end = time.time()
         self.interval = self.end - self.start
         print(f"\033[91mTime taken: {self.interval:0.2f} seconds {self.text}\033[0m")
+
+
+def remove_empty_str(items, default=None):
+    items = [x for x in items if x != ""]
+    if len(items) == 0 and default is not None:
+        return [default]
+    return items
