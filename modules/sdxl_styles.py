@@ -48,6 +48,7 @@ def load_styles():
 def apply_style(style, prompt, negative_prompt, lora_keywords):
     output_prompt = ""
     output_negative_prompt = ""
+    bFlufferizer = False
 
     while "Style: Pick Random" in style:
         style[style.index("Style: Pick Random")] = random.choice(allstyles)
@@ -56,7 +57,7 @@ def apply_style(style, prompt, negative_prompt, lora_keywords):
         return prompt, negative_prompt
 
     if "Flufferizer" in style:
-        prompt = prompt_expansion.expand_prompt(prompt)
+        bFlufferizer = True
         style.remove("Flufferizer")
 
     for s in style:
@@ -65,6 +66,10 @@ def apply_style(style, prompt, negative_prompt, lora_keywords):
         output_negative_prompt += n + ", "
 
     output_prompt = output_prompt.replace("{prompt}", prompt)
+    if bFlufferizer:
+        if not style:
+            output_prompt = prompt_expansion.expand_prompt(prompt)
+        output_prompt = prompt_expansion.expand_prompt(output_prompt)
     output_prompt = output_prompt.replace("{lora_keywords}", lora_keywords)
     output_negative_prompt += ", " + negative_prompt
 
