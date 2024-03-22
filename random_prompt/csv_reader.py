@@ -121,6 +121,8 @@ def csv_to_list(csvfilename, antilist=[], directory="./csvfiles/", lowerandstrip
 
 def artist_category_by_category_csv_to_list(csvfilename,artist):
         csvlist = []
+        mediumlist = []
+        descriptionlist = []
         script_dir = os.path.dirname(os.path.abspath(__file__))
         full_path = os.path.join(script_dir, "./csvfiles/" )
         with open(full_path + csvfilename + ".csv", "r", newline="",encoding="utf8") as file:
@@ -128,7 +130,9 @@ def artist_category_by_category_csv_to_list(csvfilename,artist):
                 for row in reader:
                         if(row["Artist"] == artist):
                                 csvlist.append(row["Tags"])
-        return csvlist
+                                mediumlist.append(row["Medium"])
+                                descriptionlist.append(row["Description"])
+        return csvlist, mediumlist, descriptionlist
 
 def artist_category_csv_to_list(csvfilename,category):
         csvlist = []
@@ -139,6 +143,16 @@ def artist_category_csv_to_list(csvfilename,category):
                 for row in reader:
                         if(row[category] == "1"):
                                 csvlist.append(row["Artist"])
+        return csvlist
+
+def artist_descriptions_csv_to_list(csvfilename):
+        csvlist = []
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        full_path = os.path.join(script_dir, "./csvfiles/" )
+        with open(full_path + csvfilename + ".csv", "r", newline="",encoding="utf8") as file:
+                reader = csv.DictReader(file, delimiter=",")
+                for row in reader:
+                        csvlist.append(row["Description"])
         return csvlist
 
 def load_config_csv():
@@ -219,4 +233,26 @@ def load_all_artist_and_category():
 
         return artistlist, categorylist
 
+def sort_and_dedupe_csv_file():
+        tokenlist = csv_to_list(csvfilename="tokens",skipheader=False)
+        tokenlist = sorted(set(tokenlist))
+        newlist = []
+        for i in tokenlist:
+                j = i.lower()
+                result = all(c == i[0] for c in i)
+                if result:
+                        print("String {} have all characters same".format(i))
+                else:
+                        newlist.append(j)
         
+        
+        newlist = sorted(set(newlist))
+
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        
+        full_path = os.path.join(script_dir, "./csvfiles/special_lists/tokenwriter.csv" )
+        with open(full_path, 'w', encoding="utf8") as fp:
+                for item in newlist:
+                        # write each item on a new line
+                        fp.write("%s\n" % item)
+
