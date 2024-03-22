@@ -1,3 +1,7 @@
+### 1.35.0
+* Artify Update: NMake sure you check the style selection for a TON of new styles to try
+* OBP Update
+
 ### 1.34.0
 * Added llyasviel's prompt tokenizer model for improving prompts, This can be used by adding the `Flufferizer` style
 
