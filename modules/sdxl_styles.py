@@ -1,8 +1,10 @@
 import random
-import shutil
+import csv
+from os.path import exists
 from csv import DictReader
 from pathlib import Path
 from modules.prompt_expansion import PromptExpansion
+from random_prompt import build_dynamic_prompt
 
 DEFAULT_STYLES_FILE = Path("settings/styles.default")
 STYLES_FILE = Path("settings/styles.csv")
@@ -11,10 +13,33 @@ prompt_expansion = PromptExpansion()
 
 
 def load_styles():
+    default_styles = []
     styles = []
 
-    if not STYLES_FILE.is_file():
-        shutil.copy(DEFAULT_STYLES_FILE, STYLES_FILE)
+    with open(DEFAULT_STYLES_FILE) as f:
+        csv_reader = csv.reader(f)
+        for row in csv_reader:
+            default_styles.append(row)
+
+    if exists(STYLES_FILE):
+        with open(STYLES_FILE) as f:
+            csv_reader = csv.reader(f)
+            for row in csv_reader:
+                styles.append(row)
+
+    # Add any missing default styles
+    changed = False
+    for row in default_styles:
+        if row not in styles:
+            styles.append(row)
+            changed = True
+
+    if changed:
+        with open(STYLES_FILE, "w", newline='') as f:
+            csv_writer = csv.writer(f)
+            for row in styles:
+                csv_writer.writerow(row)
+
 
     with STYLES_FILE.open("r") as f:
         reader = DictReader(f)
@@ -49,6 +74,10 @@ def apply_style(style, prompt, negative_prompt, lora_keywords):
     output_prompt = ""
     output_negative_prompt = ""
     bFlufferizer = False
+    artifylist = []
+    artifystylelist = []
+    index = 0
+
 
     while "Style: Pick Random" in style:
         style[style.index("Style: Pick Random")] = random.choice(allstyles)
@@ -60,16 +89,31 @@ def apply_style(style, prompt, negative_prompt, lora_keywords):
         bFlufferizer = True
         style.remove("Flufferizer")
 
+    while index < len(style):
+        if style[index].startswith("Artify"):
+            artifylist.append(style[index].replace("Artify: ", ""))
+            artifystylelist.append(style[index])
+        index += 1
+
+    style = [x for x in style if x not in artifystylelist]
+
     for s in style:
         p, n = styles.get(s, default_style)
         output_prompt += p + ", "
         output_negative_prompt += n + ", "
 
     output_prompt = output_prompt.replace("{prompt}", prompt)
+
+    # prep outputprompt for use in Flufferize and Artify
+    if output_prompt == "":
+        output_prompt = prompt
+
+    for artist in artifylist:
+        output_prompt = build_dynamic_prompt.artify_prompt(prompt=output_prompt, artists=artist)
+   
     if bFlufferizer:
-        if not style:
-            output_prompt = prompt_expansion.expand_prompt(prompt)
         output_prompt = prompt_expansion.expand_prompt(output_prompt)
+
     output_prompt = output_prompt.replace("{lora_keywords}", lora_keywords)
     output_negative_prompt += ", " + negative_prompt
 

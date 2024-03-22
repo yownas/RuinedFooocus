@@ -109,6 +109,7 @@ imagetypes = [
     "anime key visual",
     "only other types",
     "only templates mode",
+    "dynamic templates mode",
     "art blaster mode",
     "quality vomit mode",
     "color cannon mode",
