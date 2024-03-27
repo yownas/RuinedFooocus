@@ -115,7 +115,7 @@ def worker():
         else:
             perf_options = shared.performance_settings.get_perf_options(
                 gen_data["performance_selection"]
-            )
+            ).copy()
             perf_options.update(gen_data)
             gen_data = perf_options
 
