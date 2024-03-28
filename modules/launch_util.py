@@ -30,7 +30,6 @@ def git_clone(url, dir, name, hash=None):
     try:
         try:
             repo = pygit2.Repository(dir)
-            print(f"{name} exists.")
         except:
             Path(dir).parent.mkdir(exist_ok=True)
             repo = pygit2.clone_repository(url, str(dir))
@@ -42,7 +41,7 @@ def git_clone(url, dir, name, hash=None):
         commit = repo.get(hash)
 
         repo.checkout_tree(commit, strategy=pygit2.GIT_CHECKOUT_FORCE)
-        print(f"{name} update finished.")
+        print(f"{name} update check complete.")
     except Exception as e:
         print(f"Git clone failed for {name}: {str(e)}")
 
