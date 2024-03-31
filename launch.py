@@ -165,6 +165,17 @@ magic_prompt_filenames = [
     ),
 ]
 
+layer_diffuse_filenames = [
+    (
+        "layer_xl_transparent_attn.safetensors",
+        "https://huggingface.co/LayerDiffusion/layerdiffusion-v1/resolve/main/layer_xl_transparent_attn.safetensors",
+    ),
+    (
+        "vae_transparent_decoder.safetensors",
+        "https://huggingface.co/LayerDiffusion/layerdiffusion-v1/resolve/main/vae_transparent_decoder.safetensors",
+    ),
+]
+
 
 def download_models():
     for file_name, url in model_filenames:
@@ -201,6 +212,12 @@ def download_models():
         load_file_from_url(
             url=url,
             model_dir="prompt_expansion",
+            file_name=file_name,
+        )
+    for file_name, url in layer_diffuse_filenames:
+        load_file_from_url(
+            url=url,
+            model_dir="layer_diffuse",
             file_name=file_name,
         )
     return
