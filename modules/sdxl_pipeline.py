@@ -569,6 +569,7 @@ class pipeline:
             return []
 
         img2img_mode = False
+        layerdiffusion_mode = False
         seed = image_seed if isinstance(image_seed, int) else random.randint(1, 2**32)
 
         worker.outputs.append(["preview", (-1, f"Processing text encoding ...", None)])
@@ -611,6 +612,8 @@ class pipeline:
                 positive_complete += positive_switch
 
             positive_switch = convert_cond(self.conditions["switch"]["cache"])
+
+        device = comfy.model_management.get_torch_device()
 
         if controlnet is not None and "type" in controlnet and input_image is not None:
             worker.outputs.append(["preview", (-1, f"Powering up ...", None)])
@@ -671,39 +674,38 @@ class pipeline:
                 denoise = float(controlnet.get("denoise", controlnet.get("strength")))
                 img2img_mode = True
 
+        if controlnet is not None and "type" in controlnet:
+            if controlnet["type"].lower() == "layerdiffusion":
+                tmodel = ModelPatcher(self.xl_base_patched.unet, device, "cpu", size=1)
+                layer_lora_state_dict = load_torch_file(
+                    "models/layerdiffuse/layer_xl_transparent_attn.safetensors"
+                )
+                layer_lora_patch_dict = self.to_lora_patch_dict(layer_lora_state_dict)
+                # weight = 1.0
+                tmodel.model.add_patches(layer_lora_patch_dict)
+                self.xl_base_patched.unet = tmodel.model
+                self.xl_base_patched_hash = ""
+
+                # load transparent vae
+                self.xl_base_patched.tvae = TransparentVAEDecoder(
+                    load_torch_file(
+                        "models/layerdiffuse/vae_transparent_decoder.safetensors"
+                    ),
+                    device=comfy.model_management.get_torch_device(),
+                    dtype=(
+                        torch.float16
+                        if comfy.model_management.should_use_fp16()
+                        else torch.float32
+                    ),
+                )
+                layerdiffusion_mode = True
+
         if not img2img_mode:
             latent = EmptyLatentImage().generate(
                 width=width, height=height, batch_size=1
             )[0]
             force_full_denoise = True
             denoise = None
-
-        device = comfy.model_management.get_torch_device()
-
-        # if controlnet["type"].lower() == "layerdiffuse":
-        if True:  # FIXME
-            tmodel = ModelPatcher(self.xl_base_patched.unet, device, "cpu", size=1)
-            layer_lora_state_dict = load_torch_file(
-                "models/layerdiffuse/layer_xl_transparent_attn.safetensors"
-            )
-            layer_lora_patch_dict = self.to_lora_patch_dict(layer_lora_state_dict)
-            # weight = 1.0
-            tmodel.model.add_patches(layer_lora_patch_dict)
-            self.xl_base_patched.unet = tmodel.model
-            self.xl_base_patched_hash = ""
-
-            # load transparent vae
-            self.xl_base_patched.tvae = TransparentVAEDecoder(
-                load_torch_file(
-                    "models/layerdiffuse/vae_transparent_decoder.safetensors"
-                ),
-                device=comfy.model_management.get_torch_device(),
-                dtype=(
-                    torch.float16
-                    if comfy.model_management.should_use_fp16()
-                    else torch.float32
-                ),
-            )
 
         if gen_data["inpaint_toggle"]:
             mask = gen_data["inpaint_view"]["mask"]
@@ -811,13 +813,7 @@ class pipeline:
             for y in decoded_latent
         ]
 
-        if callback is not None:
-            callback(steps, 0, 0, steps, images[0])
-
-        if True:  # layer diffusion
-            # HELP
-            # pixel = torch.from_numpy(images[0]).movedim(-1, 1)  # [B, H, W, C] => [B, C, H, W]
-            # pixel = decoded_latent[0].movedim(-1, 1)  # [B, H, W, C] => [B, C, H, W]
+        if layerdiffusion_mode:
             pixel = decoded_latent[0].permute(2, 0, 1).unsqueeze(0)
 
             ## Decoder requires dimension to be 64-aligned.
@@ -841,13 +837,16 @@ class pipeline:
             image = pixel_with_alpha[..., 1:]
             alpha = pixel_with_alpha[..., 0]
 
-            if callback is not None:
-                image = np.clip(255.0 * image.cpu().numpy(), 0, 255).astype(np.uint8)
-                image = np.squeeze(image)
-                callback(steps, 0, 0, steps, image)
+            i= np.clip(255.0 * image[0].cpu().numpy(), 0, 255).astype(np.uint8)
+            i= np.squeeze(i)
+            a= np.clip(255.0 * alpha[0].cpu().numpy(), 0, 255).astype(np.uint8)
+            a= np.squeeze(a)
+            img = Image.fromarray(i).convert("RGBA")
+            img.putalpha(Image.fromarray(a).convert("L"))
 
-            # return (image, alpha)
-            return [image]
+            images = [img]
 
-        else:
-            return images
+        if callback is not None:
+            callback(steps, 0, 0, steps, images[0])
+
+        return images
