@@ -182,8 +182,6 @@ def worker():
                 if isinstance(y, Image.Image):
                     image = y
                 else:
-                    if isinstance(y, torch.Tensor):
-                        y = y.cpu().numpy()
                     image = Image.fromarray(y)
                 grid_xpos = int(
                     (shared.state["preview_count"] % grid_xsize) * (pwidth / grid_xsize)

@@ -842,6 +842,8 @@ class pipeline:
             alpha = pixel_with_alpha[..., 0]
 
             if callback is not None:
+                image = np.clip(255.0 * image.cpu().numpy(), 0, 255).astype(np.uint8)
+                image = np.squeeze(image)
                 callback(steps, 0, 0, steps, image)
 
             # return (image, alpha)
