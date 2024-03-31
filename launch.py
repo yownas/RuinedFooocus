@@ -217,7 +217,7 @@ def download_models():
     for file_name, url in layer_diffuse_filenames:
         load_file_from_url(
             url=url,
-            model_dir="layer_diffuse",
+            model_dir="models/layerdiffuse/",
             file_name=file_name,
         )
     return
