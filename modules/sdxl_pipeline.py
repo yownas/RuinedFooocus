@@ -22,6 +22,7 @@ import einops
 import comfy.utils
 import comfy.model_management
 from comfy.sd import load_checkpoint_guess_config
+from tqdm import tqdm
 
 from comfy_extras.chainner_models import model_loading
 from nodes import (
@@ -51,6 +52,7 @@ from diffusers.models.modeling_utils import ModelMixin
 from diffusers.models.unet_2d_blocks import UNetMidBlock2D, get_down_block, get_up_block
 import torch.nn as nn
 
+
 def zero_module(module):
     """
     Zero out the parameters of a module and return it.
@@ -58,6 +60,7 @@ def zero_module(module):
     for p in module.parameters():
         p.detach().zero_()
     return module
+
 
 # From https://github.com/huchenlei/ComfyUI-layerdiffuse/blob/main/lib_layerdiffusion/models.py#L61
 # 1024 * 1024 * 3 -> 16 * 16 * 512 -> 1024 * 1024 * 3
@@ -229,6 +232,7 @@ class UNet1024(ModelMixin, ConfigMixin):
         sample = self.conv_act(sample)
         sample = self.conv_out(sample)
         return sample
+
 
 # From https://github.com/huchenlei/ComfyUI-layerdiffuse/blob/main/lib_layerdiffusion/models.py#L248
 class TransparentVAEDecoder:
@@ -507,11 +511,11 @@ class pipeline:
 
     # From https://github.com/huchenlei/ComfyUI-layerdiffuse/blob/main/lib_layerdiffusion/utils.py#L118
     def to_lora_patch_dict(self, state_dict: dict) -> dict:
-        """ Convert raw lora state_dict to patch_dict that can be applied on
+        """Convert raw lora state_dict to patch_dict that can be applied on
         modelpatcher."""
         patch_dict = {}
         for k, w in state_dict.items():
-            model_key, patch_type, weight_index = k.split('::')
+            model_key, patch_type, weight_index = k.split("::")
             if model_key not in patch_dict:
                 patch_dict[model_key] = {}
             if patch_type not in patch_dict[model_key]:
@@ -524,8 +528,6 @@ class pipeline:
                 patch_flat[model_key] = (patch_type, weight_list)
 
         return patch_flat
-
-
 
     @torch.inference_mode()
     def process(
@@ -678,19 +680,23 @@ class pipeline:
 
         device = comfy.model_management.get_torch_device()
 
-        #if controlnet["type"].lower() == "layerdiffuse":
-        if True: # FIXME
+        # if controlnet["type"].lower() == "layerdiffuse":
+        if True:  # FIXME
             tmodel = ModelPatcher(self.xl_base_patched.unet, device, "cpu", size=1)
-            layer_lora_state_dict = load_torch_file("models/layerdiffuse/layer_xl_transparent_attn.safetensors")
+            layer_lora_state_dict = load_torch_file(
+                "models/layerdiffuse/layer_xl_transparent_attn.safetensors"
+            )
             layer_lora_patch_dict = self.to_lora_patch_dict(layer_lora_state_dict)
-            #weight = 1.0
+            # weight = 1.0
             tmodel.model.add_patches(layer_lora_patch_dict)
             self.xl_base_patched.unet = tmodel.model
             self.xl_base_patched_hash = ""
 
             # load transparent vae
             self.xl_base_patched.tvae = TransparentVAEDecoder(
-                load_torch_file("models/layerdiffuse/vae_transparent_decoder.safetensors"),
+                load_torch_file(
+                    "models/layerdiffuse/vae_transparent_decoder.safetensors"
+                ),
                 device=comfy.model_management.get_torch_device(),
                 dtype=(
                     torch.float16
@@ -808,10 +814,11 @@ class pipeline:
         if callback is not None:
             callback(steps, 0, 0, steps, images[0])
 
-        if True: # layer diffusion
-            #HELP
-            #pixel = torch.from_numpy(images[0]).movedim(-1, 1)  # [B, H, W, C] => [B, C, H, W]
-            pixel = decoded_latent[0].movedim(-1, 1)  # [B, H, W, C] => [B, C, H, W]
+        if True:  # layer diffusion
+            # HELP
+            # pixel = torch.from_numpy(images[0]).movedim(-1, 1)  # [B, H, W, C] => [B, C, H, W]
+            # pixel = decoded_latent[0].movedim(-1, 1)  # [B, H, W, C] => [B, C, H, W]
+            pixel = decoded_latent[0].permute(2, 0, 1).unsqueeze(0)
 
             ## Decoder requires dimension to be 64-aligned.
             B, C, H, W = pixel.shape
@@ -837,9 +844,8 @@ class pipeline:
             if callback is not None:
                 callback(steps, 0, 0, steps, image)
 
-            #return (image, alpha)
+            # return (image, alpha)
             return [image]
 
         else:
             return images
-

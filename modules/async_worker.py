@@ -182,6 +182,8 @@ def worker():
                 if isinstance(y, Image.Image):
                     image = y
                 else:
+                    if isinstance(y, torch.Tensor):
+                        y = y.cpu().numpy()
                     image = Image.fromarray(y)
                 grid_xpos = int(
                     (shared.state["preview_count"] % grid_xsize) * (pwidth / grid_xsize)
@@ -290,7 +292,9 @@ def worker():
                 metadata.add_text("parameters", json.dumps(prompt))
 
                 shared.state["preview_count"] += 1
-                if isinstance(x, str) or isinstance(x, (pathlib.WindowsPath, pathlib.PosixPath)):
+                if isinstance(x, str) or isinstance(
+                    x, (pathlib.WindowsPath, pathlib.PosixPath)
+                ):
                     local_temp_filename = x
                 else:
                     if not isinstance(x, Image.Image):
