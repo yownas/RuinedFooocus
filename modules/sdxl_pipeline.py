@@ -367,6 +367,7 @@ class pipeline:
 
     xl_base_patched: StableDiffusionModel = None
     xl_base_patched_hash = ""
+    xl_base_patched_extra = set()
 
     xl_controlnet: StableDiffusionModel = None
     xl_controlnet_hash = ""
@@ -375,7 +376,7 @@ class pipeline:
     inference_memory = None
 
     def load_base_model(self, name):
-        if self.xl_base_hash == name:
+        if self.xl_base_hash == name and self.xl_base_patched_extra == set():
             return
 
         filename = os.path.join(path_manager.model_paths["modelfile_path"], name)
@@ -569,7 +570,7 @@ class pipeline:
             return []
 
         img2img_mode = False
-        layerdiffusion_mode = False
+        layerdiffuse_mode = False
         seed = image_seed if isinstance(image_seed, int) else random.randint(1, 2**32)
 
         worker.outputs.append(["preview", (-1, f"Processing text encoding ...", None)])
@@ -675,30 +676,37 @@ class pipeline:
                 img2img_mode = True
 
         if controlnet is not None and "type" in controlnet:
-            if controlnet["type"].lower() == "layerdiffusion":
-                tmodel = ModelPatcher(self.xl_base_patched.unet, device, "cpu", size=1)
-                layer_lora_state_dict = load_torch_file(
-                    "models/layerdiffuse/layer_xl_transparent_attn.safetensors"
-                )
-                layer_lora_patch_dict = self.to_lora_patch_dict(layer_lora_state_dict)
-                # weight = 1.0
-                tmodel.model.add_patches(layer_lora_patch_dict)
-                self.xl_base_patched.unet = tmodel.model
-                self.xl_base_patched_hash = ""
+            if controlnet["type"].lower() == "layerdiffuse":
+                if not "layerdiffuse" in self.xl_base_patched_extra:
+                    print(f"DEBUG: add layerdiffuse")
+                    tmodel = ModelPatcher(self.xl_base_patched.unet, device, "cpu", size=1)
+                    layer_lora_state_dict = load_torch_file(
+                        "models/layerdiffuse/layer_xl_transparent_attn.safetensors"
+                    )
+                    layer_lora_patch_dict = self.to_lora_patch_dict(layer_lora_state_dict)
+                    # weight = 1.0
+                    tmodel.model.add_patches(layer_lora_patch_dict)
+                    self.xl_base_patched.unet = tmodel.model
+                    self.xl_base_patched_extra.add("layerdiffuse")
 
-                # load transparent vae
-                self.xl_base_patched.tvae = TransparentVAEDecoder(
-                    load_torch_file(
-                        "models/layerdiffuse/vae_transparent_decoder.safetensors"
-                    ),
-                    device=comfy.model_management.get_torch_device(),
-                    dtype=(
-                        torch.float16
-                        if comfy.model_management.should_use_fp16()
-                        else torch.float32
-                    ),
-                )
-                layerdiffusion_mode = True
+                    # load transparent vae
+                    self.xl_base_patched.tvae = TransparentVAEDecoder(
+                        load_torch_file(
+                            "models/layerdiffuse/vae_transparent_decoder.safetensors"
+                        ),
+                        device=comfy.model_management.get_torch_device(),
+                        dtype=(
+                            torch.float16
+                            if comfy.model_management.should_use_fp16()
+                            else torch.float32
+                        ),
+                    )
+                layerdiffuse_mode = True
+            else:
+                print(f"DEBUG: remove layerdiffuse")
+                # FIXME try reloading model? (and loras)
+                self.xl_base_patched_extra.remove("layerdiffuse")
+                #self.xl_base_patched.tvae = None
 
         if not img2img_mode:
             latent = EmptyLatentImage().generate(
@@ -813,7 +821,7 @@ class pipeline:
             for y in decoded_latent
         ]
 
-        if layerdiffusion_mode:
+        if layerdiffuse_mode:
             pixel = decoded_latent[0].permute(2, 0, 1).unsqueeze(0)
 
             ## Decoder requires dimension to be 64-aligned.
