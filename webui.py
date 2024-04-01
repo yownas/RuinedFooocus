@@ -164,10 +164,11 @@ def generate_clicked(*args):
     for key, val in zip(state["ctrls_name"], args):
         gen_data[key] = val
 
-    generate_forever = False
     if int(gen_data["image_number"]) == 0:
         generate_forever = True
-        gen_data["image_number"] = 1
+    else:
+        generate_forever = False
+    gen_data["generate_forever"] = generate_forever
 
     append_work(gen_data)
 

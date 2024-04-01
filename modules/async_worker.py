@@ -60,7 +60,7 @@ def worker():
 
     def job_start(gen_data):
         shared.state["preview_grid"] = None
-        shared.state["preview_total"] = gen_data["image_total"]
+        shared.state["preview_total"] = max(gen_data["image_total"], 1)
         shared.state["preview_count"] = 0
 
     def job_stop():
@@ -147,7 +147,7 @@ def worker():
             seed = random.randint(0, max_seed)
         seed = seed % max_seed
 
-        all_steps = steps * gen_data["image_number"]
+        all_steps = steps * max(gen_data["image_number"], 1)
         with open("render.txt") as f:
             lines = f.readlines()
         status = random.choice(lines)
@@ -162,6 +162,10 @@ def worker():
                 shared.state["interrupted"] = True
                 interrupt_ruined_processing = False
                 raise InterruptProcessingException()
+
+            # If we only generate 1 image, skip the last preview
+            if not gen_data["generate_forever"] and gen_data["image_number"] == 1 and steps == step:
+                return
 
             done_steps = i * steps + step
             try:
@@ -215,7 +219,7 @@ def worker():
             )
 
         stop_batch = False
-        for i in range(gen_data["image_number"]):
+        for i in range(max(gen_data["image_number"], 1)):
             p_txt, n_txt = process_prompt(
                 gen_data["style_selection"], pos_stripped, neg_stripped, gen_data
             )
