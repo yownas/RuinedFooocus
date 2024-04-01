@@ -164,7 +164,7 @@ def worker():
                 raise InterruptProcessingException()
 
             # If we only generate 1 image, skip the last preview
-            if not gen_data["generate_forever"] and gen_data["image_number"] == 1 and steps == step:
+            if (not gen_data["generate_forever"]) and shared.state["preview_total"] == 1 and steps == step:
                 return
 
             done_steps = i * steps + step
