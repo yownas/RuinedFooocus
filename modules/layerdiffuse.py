@@ -62,6 +62,7 @@ class ImageRenderer:
         if isinstance(input_image_pil, Image.Image):
             bgimg = input_image_pil.resize((w, h), resample=Image.LANCZOS)
             img = Image.composite(img, bgimg, alpha)
+            preview = None
         else:
             pxlsize = 32
             preview = Image.new("RGBA", (int(w / pxlsize), int(h / pxlsize)))
