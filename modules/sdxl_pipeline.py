@@ -571,6 +571,7 @@ class pipeline:
             return []
 
         img2img_mode = False
+        input_image_pil = None
         layerdiffuse_mode = False
         seed = image_seed if isinstance(image_seed, int) else random.randint(1, 2**32)
 
@@ -619,8 +620,8 @@ class pipeline:
 
         if controlnet is not None and "type" in controlnet and input_image is not None:
             worker.outputs.append(["preview", (-1, f"Powering up ...", None)])
-            input_image = input_image.convert("RGB")
-            input_image = np.array(input_image).astype(np.float32) / 255.0
+            input_image_pil = input_image.convert("RGB")
+            input_image = np.array(input_image_pil).astype(np.float32) / 255.0
             input_image = torch.from_numpy(input_image)[None,]
             input_image = ImageScaleToTotalPixels().upscale(
                 image=input_image, upscale_method="bicubic", megapixels=1.0
@@ -822,6 +823,7 @@ class pipeline:
             for y in decoded_latent
         ]
 
+        preview = None
         if layerdiffuse_mode:
             pixel = decoded_latent[0].permute(2, 0, 1).unsqueeze(0)
 
@@ -846,16 +848,33 @@ class pipeline:
             image = pixel_with_alpha[..., 1:]
             alpha = pixel_with_alpha[..., 0]
 
-            i= np.clip(255.0 * image[0].cpu().numpy(), 0, 255).astype(np.uint8)
-            i= np.squeeze(i)
-            a= np.clip(255.0 * alpha[0].cpu().numpy(), 0, 255).astype(np.uint8)
-            a= np.squeeze(a)
+            i = np.clip(255.0 * image[0].cpu().numpy(), 0, 255).astype(np.uint8)
+            i = np.squeeze(i)
+            a = np.clip(255.0 * alpha[0].cpu().numpy(), 0, 255).astype(np.uint8)
+            a = np.squeeze(a)
             img = Image.fromarray(i).convert("RGBA")
-            img.putalpha(Image.fromarray(a).convert("L"))
+            alpha = Image.fromarray(a).convert("L")
+            img.putalpha(alpha)
+
+            w, h = img.size
+            if isinstance(input_image_pil, Image.Image):
+                bgimg = input_image_pil.resize((w, h), resample=Image.LANCZOS)
+                img = Image.composite(img, bgimg, alpha)
+            else:
+                pxlsize = 32
+                preview = Image.new("RGBA", (int(w/pxlsize), int(h/pxlsize)))
+                for i in range(int(w/pxlsize)):
+                    for j in range(int(h/pxlsize)):
+                        if (i+j)%2:
+                            preview.putpixel((i,j), (96,96,96))
+                        else:
+                            preview.putpixel((i,j), (128,128,128))
+                preview = preview.resize((w, h), resample=Image.NEAREST)
+                preview = Image.composite(img, preview, alpha)
 
             images = [img]
 
         if callback is not None:
-            callback(steps, 0, 0, steps, images[0])
+            callback(steps, 0, 0, steps, images[0] if preview is None else preview)
 
         return images
