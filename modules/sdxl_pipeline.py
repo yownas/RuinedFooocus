@@ -452,7 +452,8 @@ class pipeline:
             else:
                 print(f"DEBUG: remove layerdiffuse")
                 # FIXME try reloading model? (and loras)
-                self.xl_base_patched_extra.remove("layerdiffuse")
+                if "layerdiffuse" in self.xl_base_patched_extra:
+                    self.xl_base_patched_extra.remove("layerdiffuse")
                 # self.xl_base_patched.tvae = None
 
         if not img2img_mode:
