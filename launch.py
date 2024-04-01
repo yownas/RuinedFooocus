@@ -60,7 +60,7 @@ def prepare_environment():
         "COMFY_REPO", "https://github.com/comfyanonymous/ComfyUI"
     )
     comfy_commit_hash = os.environ.get(
-        "COMFY_COMMIT_HASH", "d7897fff2cfd38eac051fbc958a6f944bdf68cc9"
+        "COMFY_COMMIT_HASH", "96b4c757cf55698d50c782cf0f9462bc40ec4c19"
     )
 
     print(f"Python {sys.version}")
@@ -165,6 +165,17 @@ magic_prompt_filenames = [
     ),
 ]
 
+layer_diffuse_filenames = [
+    (
+        "layer_xl_transparent_attn.safetensors",
+        "https://huggingface.co/LayerDiffusion/layerdiffusion-v1/resolve/main/layer_xl_transparent_attn.safetensors",
+    ),
+    (
+        "vae_transparent_decoder.safetensors",
+        "https://huggingface.co/LayerDiffusion/layerdiffusion-v1/resolve/main/vae_transparent_decoder.safetensors",
+    ),
+]
+
 
 def download_models():
     for file_name, url in model_filenames:
@@ -201,6 +212,12 @@ def download_models():
         load_file_from_url(
             url=url,
             model_dir="prompt_expansion",
+            file_name=file_name,
+        )
+    for file_name, url in layer_diffuse_filenames:
+        load_file_from_url(
+            url=url,
+            model_dir="models/layerdiffuse/",
             file_name=file_name,
         )
     return

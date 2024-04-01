@@ -16,6 +16,7 @@ controlnet_models = {
     "sketch": "control-lora-sketch-rank128-metadata.safetensors",
     "img2img": None,
     "upscale": None,
+    "layerdiffusion": None,
     # "faceswap": None,
 }
 

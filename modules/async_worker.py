@@ -115,7 +115,7 @@ def worker():
         else:
             perf_options = shared.performance_settings.get_perf_options(
                 gen_data["performance_selection"]
-            )
+            ).copy()
             perf_options.update(gen_data)
             gen_data = perf_options
 
@@ -290,7 +290,9 @@ def worker():
                 metadata.add_text("parameters", json.dumps(prompt))
 
                 shared.state["preview_count"] += 1
-                if isinstance(x, str) or isinstance(x, (pathlib.WindowsPath, pathlib.PosixPath)):
+                if isinstance(x, str) or isinstance(
+                    x, (pathlib.WindowsPath, pathlib.PosixPath)
+                ):
                     local_temp_filename = x
                 else:
                     if not isinstance(x, Image.Image):
