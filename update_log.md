@@ -1,3 +1,6 @@
+### 1.35.0
+* Added LayerDiffuse to create transparent images with an optional background image
+
 ### 1.34.0
 * Added llyasviel's prompt tokenizer model for improving prompts, This can be used by adding the `Flufferizer` style
 
