@@ -78,6 +78,14 @@ def worker():
             print(f"ERROR: No pipeline")
             return
 
+        try:
+            # See if pipeline wants to pre-parse gen_data
+            gen_data = pipeline.parse_gen_data(gen_data)
+        except:
+            pass
+
+        image_number = gen_data["image_number"]
+
         loras = []
         i = 1
 
@@ -147,7 +155,7 @@ def worker():
             seed = random.randint(0, max_seed)
         seed = seed % max_seed
 
-        all_steps = steps * max(gen_data["image_number"], 1)
+        all_steps = steps * max(image_number, 1)
         with open("render.txt") as f:
             lines = f.readlines()
         status = random.choice(lines)
@@ -219,7 +227,7 @@ def worker():
             )
 
         stop_batch = False
-        for i in range(max(gen_data["image_number"], 1)):
+        for i in range(max(image_number, 1)):
             p_txt, n_txt = process_prompt(
                 gen_data["style_selection"], pos_stripped, neg_stripped, gen_data
             )
@@ -314,6 +322,7 @@ def worker():
             if (
                 shared.state["preview_grid"] is not None
                 and shared.state["preview_total"] > 1
+                and ("show_preview" not in gen_data or gen_data["show_preview"] == True)
             ):
                 results = [
                     shared.path_manager.model_paths["temp_preview_path"]

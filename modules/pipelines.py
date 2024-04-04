@@ -8,12 +8,11 @@ try:
     state["faceswap_loaded"] = True
 except:
     state["faceswap_loaded"] = False
-
 import modules.sdxl_pipeline as sdxl_pipeline
 import modules.template_pipeline as template_pipeline
 import modules.upscale_pipeline as upscale_pipeline
+import modules.search_pipeline as search_pipeline
 import modules.controlnet as controlnet
-
 
 def update(gen_data):
     prompt = gen_data["prompt"] if "prompt" in gen_data else ""
@@ -27,6 +26,13 @@ def update(gen_data):
                 or "template" not in state["pipeline"].pipeline_type
             ):
                 state["pipeline"] = template_pipeline.pipeline()
+
+        elif prompt.startswith("search:"):
+            if (
+                state["pipeline"] is None
+                or "search" not in state["pipeline"].pipeline_type
+            ):
+                state["pipeline"] = search_pipeline.pipeline()
 
         elif cn_type.lower() == "upscale":
             if (
