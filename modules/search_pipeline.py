@@ -98,6 +98,14 @@ class pipeline:
                 searchfor = re.sub(matchstr, "", searchfor)
                 chomp = True
 
+            # Skip more
+            matchstr = r"^\+(?P<skip>[0-9]+)\s?"
+            match = re.match(matchstr, searchfor)
+            if match is not None:
+                skip += int(match.group("skip"))
+                searchfor = re.sub(matchstr, "", searchfor)
+                chomp = True
+
         searchfor = searchfor.strip()
 
         # For all folder/daystr/*.png ... match metadata
@@ -112,8 +120,8 @@ class pipeline:
 
             if searchfor == "" or re.search(searchfor, metadata["Prompt"]):
                 # Return finished image to preview
-                if callback is not None:
-                    callback(found, 0, 0, maxresults, None) # Returning im here is a bit much...
+                if callback is not None and found > skip:
+                    callback(found - skip, 0, 0, maxresults, None) # Returning im here is a bit much...
                 images.append(file)
                 found += 1
             if found >= (maxresults + skip):
