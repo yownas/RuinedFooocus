@@ -1,3 +1,5 @@
+* Added search pipeline, Type "search:" in prompt to get todays images
+
 ### 1.35.0
 * Added LayerDiffuse to create transparent images with an optional background image  `Powerup Tab`
 * Artify Update: NMake sure you check the style selection for a TON of new styles to try
