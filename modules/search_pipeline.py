@@ -12,6 +12,18 @@ from PIL import Image
 
 # Copy this file, add suitable code and add logic to modules/pipelines.py to select it
 
+def search_for_words(searchfor, prompt):
+    searchfor = searchfor.lower()
+    prompt = prompt.lower()
+    words = searchfor.split(",")
+    result = True
+    for word in words:
+        word = word.strip()
+        if word not in prompt:
+            result = False
+            break
+    return result
+
 
 class pipeline:
     pipeline_type = ["search"]
@@ -45,6 +57,7 @@ class pipeline:
 
     def clean_prompt_cond_caches(self):
         return
+
 
     def process(
         self,
@@ -91,7 +104,7 @@ class pipeline:
                 chomp = True
 
             # Skip
-            matchstr = r"^skip: ?(?P<skip>[0-9]+)\s?"
+            matchstr = r"^skip:\s?(?P<skip>[0-9]+)\s?"
             match = re.match(matchstr, searchfor)
             if match is not None:
                 skip = int(match.group("skip"))
@@ -106,10 +119,18 @@ class pipeline:
                 searchfor = re.sub(matchstr, "", searchfor)
                 chomp = True
 
+            # Set max
+            matchstr = r"^max:\s?(?P<max>[0-9]+)\s?"
+            match = re.match(matchstr, searchfor)
+            if match is not None:
+                maxresults = int(match.group("max"))
+                searchfor = re.sub(matchstr, "", searchfor)
+                chomp = True
+
         searchfor = searchfor.strip()
 
         # For all folder/daystr/*.png ... match metadata
-        pngs = glob.glob(str(Path(folder) / daystr / "*.png"))
+        pngs = glob.glob(str(Path(folder) / daystr / "*.*"))
 
         found = 0
         for file in pngs:
@@ -118,7 +139,8 @@ class pipeline:
             if im.info.get("parameters"):
                 metadata = json.loads(im.info["parameters"])
 
-            if searchfor == "" or re.search(searchfor, metadata["Prompt"]):
+            # Show image if metadata is missing. (like for gifs)
+            if searchfor == "" or "Prompt" not in metadata or search_for_words(searchfor, metadata["Prompt"]):
                 # Return finished image to preview
                 if callback is not None and found > skip:
                     callback(found - skip, 0, 0, maxresults, None) # Returning im here is a bit much...
