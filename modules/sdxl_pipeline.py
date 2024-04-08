@@ -51,7 +51,6 @@ from modules.pipleline_utils import (
     get_previewer,
     clean_prompt_cond_caches,
     set_timestep_range,
-    load_all_keywords,
 )
 
 
@@ -135,10 +134,6 @@ class pipeline:
         )
 
     def load_loras(self, loras):
-        lora_prompt_addition = load_all_keywords(loras)
-        if self.xl_base_patched_hash == str(loras):
-            return lora_prompt_addition
-
         loaded_loras = []
 
         model = self.xl_base
@@ -169,7 +164,7 @@ class pipeline:
 
         print(f"LoRAs loaded: {loaded_loras}")
 
-        return lora_prompt_addition
+        return
 
     def refresh_controlnet(self, name=None):
         if self.xl_controlnet_hash == str(self.xl_controlnet):
