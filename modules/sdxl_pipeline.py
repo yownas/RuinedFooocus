@@ -18,7 +18,6 @@ from shared import path_manager
 import time
 import random
 
-import einops
 import comfy.utils
 import comfy.model_management
 from comfy.sd import load_checkpoint_guess_config
@@ -48,6 +47,12 @@ from comfy.utils import load_torch_file
 
 from modules.layerdiffuse import TransparentVAEDecoder, ImageRenderer
 
+from modules.pipleline_utils import (
+    get_previewer,
+    clean_prompt_cond_caches,
+    set_timestep_range,
+)
+
 
 class pipeline:
     pipeline_type = ["sdxl", "ssd"]
@@ -68,40 +73,6 @@ class pipeline:
                 self.clip.cond_stage_model.to("meta")
             if self.vae is not None:
                 self.vae.first_stage_model.to("meta")
-
-    def get_previewer(self, device, latent_format):
-        from latent_preview import TAESD, TAESDPreviewerImpl
-
-        taesd_decoder_path = os.path.abspath(
-            os.path.realpath(
-                os.path.join("models", "vae_approx", latent_format.taesd_decoder_name)
-            )
-        )
-
-        if not os.path.exists(taesd_decoder_path):
-            print(
-                f"Warning: TAESD previews enabled, but could not find {taesd_decoder_path}"
-            )
-            return None
-
-        taesd = TAESD(None, taesd_decoder_path).to(device)
-
-        def preview_function(x0, step, total_steps):
-            global cv2_is_top
-            with torch.torch.inference_mode():
-                x_sample = (
-                    taesd.taesd_decoder(
-                        torch.nn.functional.avg_pool2d(x0, kernel_size=(2, 2))
-                    ).detach()
-                    * 255.0
-                )
-                x_sample = einops.rearrange(x_sample, "b c h w -> b h w c")
-                x_sample = x_sample.cpu().numpy().clip(0, 255).astype(np.uint8)
-                return x_sample[0]
-
-        taesd.preview = preview_function
-
-        return taesd
 
     xl_base: StableDiffusionModel = None
     xl_base_hash = ""
@@ -154,17 +125,6 @@ class pipeline:
             )
 
         return
-
-    def load_all_keywords(self, loras):
-        lora_prompt_addition = ""
-        return lora_prompt_addition
-
-    def freeu(self, model, b1, b2, s1, s2):
-        freeu_model = FreeU()
-        unet = freeu_model.patch(model=model.unet, b1=b1, b2=b2, s1=s1, s2=s2)[0]
-        return self.StableDiffusionModel(
-            unet=unet, clip=model.clip, vae=model.vae, clip_vision=model.clip_vision
-        )
 
     def load_loras(self, loras):
         lora_prompt_addition = self.load_all_keywords(loras)
@@ -221,18 +181,6 @@ class pipeline:
 
     conditions = None
 
-    def clean_prompt_cond_caches(self):
-        self.conditions = {}
-        self.conditions["+"] = {}
-        self.conditions["-"] = {}
-        self.conditions["switch"] = {}
-        self.conditions["+"]["text"] = None
-        self.conditions["+"]["cache"] = None
-        self.conditions["-"]["text"] = None
-        self.conditions["-"]["cache"] = None
-        self.conditions["switch"]["text"] = None
-        self.conditions["switch"]["cache"] = None
-
     def textencode(self, id, text):
         update = False
         if text != self.conditions[id]["text"]:
@@ -242,15 +190,6 @@ class pipeline:
         self.conditions[id]["text"] = text
         update = True
         return update
-
-    def set_timestep_range(self, conditioning, start, end):
-        c = []
-        for t in conditioning:
-            if "pooled_output" in t:
-                t["start_percent"] = start
-                t["end_percent"] = end
-
-        return conditioning
 
     # From https://github.com/huchenlei/ComfyUI-layerdiffuse/blob/main/lib_layerdiffusion/utils.py#L118
     def to_lora_patch_dict(self, state_dict: dict) -> dict:
@@ -319,7 +258,7 @@ class pipeline:
         worker.outputs.append(["preview", (-1, f"Processing text encoding ...", None)])
         updated_conditions = False
         if self.conditions is None:
-            self.clean_prompt_cond_caches()
+            self.conditions = clean_prompt_cond_caches()
 
         if self.textencode("+", positive_prompt):
             updated_conditions = True
@@ -349,7 +288,7 @@ class pipeline:
                 end_perc = round((perc_per_step * (i + 1)) / 100, 2)
                 if end_perc >= 0.99:
                     end_perc = 1
-                positive_switch = self.set_timestep_range(
+                positive_switch = set_timestep_range(
                     positive_switch, start_perc, end_perc
                 )
 
@@ -487,9 +426,7 @@ class pipeline:
         if "noise_mask" in latent:
             noise_mask = latent["noise_mask"]
 
-        previewer = self.get_previewer(
-            device, self.xl_base_patched.unet.model.latent_format
-        )
+        previewer = get_previewer(device, self.xl_base_patched.unet.model.latent_format)
 
         pbar = comfy.utils.ProgressBar(steps)
 
@@ -509,7 +446,7 @@ class pipeline:
             conds = {
                 0: self.conditions["+"]["cache"],
                 1: self.conditions["-"]["cache"],
-            } 
+            }
             self.models, self.inference_memory = get_additional_models(
                 conds,
                 self.xl_base_patched.unet.model_dtype(),
@@ -521,12 +458,12 @@ class pipeline:
         noise = noise.to(device)
         latent_image = latent_image.to(device)
 
-# FIXME: convert_cond() doesn't seem to be used anymore, will probably break prompt_switch_mode
-#        if prompt_switch_mode:
-#            positive_copy = positive_complete
-#        else:
-#            positive_copy = convert_cond(self.conditions["+"]["cache"])
-#        negative_copy = convert_cond(self.conditions["-"]["cache"])
+        # FIXME: convert_cond() doesn't seem to be used anymore, will probably break prompt_switch_mode
+        #        if prompt_switch_mode:
+        #            positive_copy = positive_complete
+        #        else:
+        #            positive_copy = convert_cond(self.conditions["+"]["cache"])
+        #        negative_copy = convert_cond(self.conditions["-"]["cache"])
 
         kwargs = {
             "cfg": cfg,
@@ -554,7 +491,12 @@ class pipeline:
         kwargs.update(extra_kwargs)
 
         worker.outputs.append(["preview", (-1, f"Start sampling ...", None)])
-        samples = sampler.sample(noise, self.conditions["+"]["cache"], self.conditions["-"]["cache"], **kwargs)
+        samples = sampler.sample(
+            noise,
+            self.conditions["+"]["cache"],
+            self.conditions["-"]["cache"],
+            **kwargs,
+        )
 
         samples = samples.cpu()
 
