@@ -19,6 +19,11 @@ def clean_prompt_cond_caches():
     return conditions
 
 
+def load_all_keywords(loras):
+    lora_prompt_addition = ""
+    return lora_prompt_addition
+
+
 def set_timestep_range(conditioning, start, end):
     c = []
     for t in conditioning:
