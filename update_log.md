@@ -1,3 +1,4 @@
+### 1.36.0
 * Added search pipeline, Type "search:" in prompt to get todays images
 
 ### 1.35.0
