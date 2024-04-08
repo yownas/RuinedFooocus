@@ -33,7 +33,7 @@ from nodes import (
     VAEEncode,
     VAEEncodeForInpaint,
 )
-from comfy.sample import (
+from comfy.sampler_helpers import (
     cleanup_additional_models,
     convert_cond,
     get_additional_models,
@@ -506,9 +506,12 @@ class pipeline:
 
         worker.outputs.append(["preview", (-1, f"Prepare models ...", None)])
         if updated_conditions:
+            conds = {
+                0: self.conditions["+"]["cache"],
+                1: self.conditions["-"]["cache"],
+            } 
             self.models, self.inference_memory = get_additional_models(
-                self.conditions["+"]["cache"],
-                self.conditions["-"]["cache"],
+                conds,
                 self.xl_base_patched.unet.model_dtype(),
             )
 
@@ -518,11 +521,13 @@ class pipeline:
         noise = noise.to(device)
         latent_image = latent_image.to(device)
 
-        if prompt_switch_mode:
-            positive_copy = positive_complete
-        else:
-            positive_copy = convert_cond(self.conditions["+"]["cache"])
-        negative_copy = convert_cond(self.conditions["-"]["cache"])
+# FIXME: convert_cond() doesn't seem to be used anymore, will probably break prompt_switch_mode
+#        if prompt_switch_mode:
+#            positive_copy = positive_complete
+#        else:
+#            positive_copy = convert_cond(self.conditions["+"]["cache"])
+#        negative_copy = convert_cond(self.conditions["-"]["cache"])
+
         kwargs = {
             "cfg": cfg,
             "latent_image": latent_image,
@@ -535,7 +540,7 @@ class pipeline:
             "seed": seed,
         }
         sampler = KSampler(
-            self.xl_base_patched.unet.model,
+            self.xl_base_patched.unet,
             steps=steps,
             device=device,
             sampler=sampler_name,
@@ -549,7 +554,7 @@ class pipeline:
         kwargs.update(extra_kwargs)
 
         worker.outputs.append(["preview", (-1, f"Start sampling ...", None)])
-        samples = sampler.sample(noise, positive_copy, negative_copy, **kwargs)
+        samples = sampler.sample(noise, self.conditions["+"]["cache"], self.conditions["-"]["cache"], **kwargs)
 
         samples = samples.cpu()
 
