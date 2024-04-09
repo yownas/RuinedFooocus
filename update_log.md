@@ -1,3 +1,8 @@
+### 1.37.0
+* Updated Comfy Version
+* Tidied Code
+* Added CLipSkip
+
 ### 1.36.0
 * Added search pipeline, Type "search:" in prompt to get todays images
 
