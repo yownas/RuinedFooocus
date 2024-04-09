@@ -13,7 +13,7 @@ class PerformanceSettings:
         "cfg": 8,
         "sampler_name": "dpmpp_2m_sde_gpu",
         "scheduler": "karras",
-        "clip_skip": 0,
+        "clip_skip": 1,
     }
 
     def __init__(self):
