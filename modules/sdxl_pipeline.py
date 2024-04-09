@@ -26,6 +26,7 @@ from tqdm import tqdm
 from comfy_extras.chainner_models import model_loading
 from nodes import (
     CLIPTextEncode,
+    CLIPSetLastLayer,
     ControlNetApplyAdvanced,
     EmptyLatentImage,
     VAEDecode,
@@ -184,9 +185,12 @@ class pipeline:
 
     conditions = None
 
-    def textencode(self, id, text):
+    def textencode(self, id, text, clip_skip):
         update = False
         if text != self.conditions[id]["text"]:
+            self.xl_base_patched.clip = CLIPSetLastLayer().set_last_layer(
+                self.xl_base_patched.clip, clip_skip * -1
+            )[0]
             self.conditions[id]["cache"] = CLIPTextEncode().encode(
                 clip=self.xl_base_patched.clip, text=text
             )[0]
@@ -231,6 +235,7 @@ class pipeline:
         cfg,
         sampler_name,
         scheduler,
+        clip_skip,
         callback,
         gen_data=None,
     ):
@@ -263,9 +268,9 @@ class pipeline:
         if self.conditions is None:
             self.conditions = clean_prompt_cond_caches()
 
-        if self.textencode("+", positive_prompt):
+        if self.textencode("+", positive_prompt, clip_skip):
             updated_conditions = True
-        if self.textencode("-", negative_prompt):
+        if self.textencode("-", negative_prompt, clip_skip):
             updated_conditions = True
 
         prompt_switch_mode = False
@@ -284,7 +289,7 @@ class pipeline:
             perc_per_step = round(100 / steps, 2)
             positive_complete = []
             for i in range(len(prompt_per_step)):
-                if self.textencode("switch", prompt_per_step[i]):
+                if self.textencode("switch", prompt_per_step[i], clip_skip):
                     updated_conditions = True
                 positive_switch = convert_cond(self.conditions["switch"]["cache"])
                 start_perc = round((perc_per_step * i) / 100, 2)

@@ -34,7 +34,6 @@ inpaint_toggle = None
 path_manager = PathManager()
 
 
-
 def find_unclosed_markers(s):
     markers = re.findall(r"__", s)
     for marker in markers:
@@ -417,12 +416,24 @@ with shared.gradio_root as block:
                 )
                 add_ctrl("scheduler", scheduler)
 
+                clip_skip = gr.Slider(
+                    label="Clip Skip",
+                    minimum=1,
+                    maximum=5,
+                    step=1,
+                    value=1,
+                    visible=False,
+                )
+
+                add_ctrl("clip_skip", clip_skip)
+
                 performance_outputs = [
                     perf_name,
                     perf_save,
                     cfg,
                     sampler_name,
                     scheduler,
+                    clip_skip,
                     custom_steps,
                 ]
 
@@ -436,6 +447,7 @@ with shared.gradio_root as block:
                     cfg,
                     sampler_name,
                     scheduler,
+                    clip_skip,
                     custom_steps,
                 ):
                     if perf_name != "":
@@ -445,6 +457,7 @@ with shared.gradio_root as block:
                             "cfg": cfg,
                             "sampler_name": sampler_name,
                             "scheduler": scheduler,
+                            "clip_skip,": clip_skip,
                         }
                         perf_options[perf_name] = opts
                         performance_settings.save_performance(perf_options)
@@ -744,12 +757,16 @@ with shared.gradio_root as block:
 
             @performance_selection.change(
                 inputs=[performance_selection],
-                outputs=[custom_steps] + [cfg] + [sampler_name] + [scheduler],
+                outputs=[custom_steps]
+                + [cfg]
+                + [sampler_name]
+                + [scheduler]
+                + [clip_skip],
             )
             def performance_changed_update_custom(selection):
                 # Skip if Custom was selected
                 if selection == performance_settings.CUSTOM_PERFORMANCE:
-                    return [gr.update()] * 4
+                    return [gr.update()] * 5
 
                 # Update Custom values based on selected Performance mode
                 selected_perf_options = performance_settings.get_perf_options(selection)
@@ -758,6 +775,7 @@ with shared.gradio_root as block:
                     cfg.update(value=selected_perf_options["cfg"]),
                     sampler_name.update(value=selected_perf_options["sampler_name"]),
                     scheduler.update(value=selected_perf_options["scheduler"]),
+                    clip_skip.update(value=selected_perf_options["clip_skip"]),
                 ]
 
             @aspect_ratios_selection.change(

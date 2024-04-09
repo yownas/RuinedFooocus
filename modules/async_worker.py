@@ -252,6 +252,7 @@ def worker():
                         gen_data["cfg"],
                         gen_data["sampler_name"],
                         gen_data["scheduler"],
+                        gen_data["clip_skip"],
                         callback=callback,
                         gen_data=gen_data,
                     )
