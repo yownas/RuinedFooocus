@@ -182,6 +182,7 @@ class pipeline:
         cfg,
         sampler_name,
         scheduler,
+        clip_skip,
         callback,
         gen_data=None,
     ):
