@@ -1,0 +1,2 @@
+Simple prompts sometimes give better results.
+Setting Image Number to 0 will generate infinite images.
