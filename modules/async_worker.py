@@ -111,9 +111,7 @@ def worker():
         )
         gen_data["modelhash"] = pipeline.load_base_model(gen_data["base_model_name"])
         outputs.append(["preview", (-1, f"Loading LoRA models ...", None)])
-        lora_keywords = pipeline.load_loras(loras)
-        if lora_keywords is None:
-            lora_keywords = ""
+        pipeline.load_loras(loras)
 
         if (
             gen_data["performance_selection"]
@@ -172,7 +170,11 @@ def worker():
                 raise InterruptProcessingException()
 
             # If we only generate 1 image, skip the last preview
-            if (not gen_data["generate_forever"]) and shared.state["preview_total"] == 1 and steps == step:
+            if (
+                (not gen_data["generate_forever"])
+                and shared.state["preview_total"] == 1
+                and steps == step
+            ):
                 return
 
             done_steps = i * steps + step
@@ -231,7 +233,6 @@ def worker():
             p_txt, n_txt = process_prompt(
                 gen_data["style_selection"], pos_stripped, neg_stripped, gen_data
             )
-            p_txt = lora_keywords + p_txt
             start_step = 0
             denoise = None
             with TimeIt("Pipeline process"):
@@ -251,6 +252,7 @@ def worker():
                         gen_data["cfg"],
                         gen_data["sampler_name"],
                         gen_data["scheduler"],
+                        gen_data["clip_skip"],
                         callback=callback,
                         gen_data=gen_data,
                     )
