@@ -187,14 +187,15 @@ class pipeline:
 
     def textencode(self, id, text, clip_skip):
         update = False
-        if text != self.conditions[id]["text"]:
+        hash =  f"{text} {clip_skip}"
+        if hash != self.conditions[id]["text"]:
             self.xl_base_patched.clip = CLIPSetLastLayer().set_last_layer(
                 self.xl_base_patched.clip, clip_skip * -1
             )[0]
             self.conditions[id]["cache"] = CLIPTextEncode().encode(
                 clip=self.xl_base_patched.clip, text=text
             )[0]
-        self.conditions[id]["text"] = text
+        self.conditions[id]["text"] = hash
         update = True
         return update
 

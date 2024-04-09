@@ -8,6 +8,14 @@ class PerformanceSettings:
     PERFORMANCE_FILE = Path("settings/performance.json")
     CUSTOM_PERFORMANCE = "Custom..."
 
+    default_settings = {
+        "custom_steps": 30,
+        "cfg": 8,
+        "sampler_name": "dpmpp_2m_sde_gpu",
+        "scheduler": "karras",
+        "clip_skip": 0,
+    }
+
     def __init__(self):
         self.performance_options = self.load_performance()
 
@@ -16,6 +24,7 @@ class PerformanceSettings:
         data = self._load_data(self.PERFORMANCE_FILE)
 
         for name, settings in default_data.items():
+            settings = self.default_settings | settings
             if name not in data:
                 data[name] = settings
 

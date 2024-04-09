@@ -418,10 +418,10 @@ with shared.gradio_root as block:
 
                 clip_skip = gr.Slider(
                     label="Clip Skip",
-                    minimum=1,
+                    minimum=0,
                     maximum=5,
                     step=1,
-                    value=1,
+                    value=0,
                     visible=False,
                 )
 
