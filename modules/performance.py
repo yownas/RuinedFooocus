@@ -27,6 +27,8 @@ class PerformanceSettings:
             settings = self.default_settings | settings
             if name not in data:
                 data[name] = settings
+            if settings != data[name]:
+                data[name] = settings
 
         self._save_data(self.PERFORMANCE_FILE, data)
         return data
