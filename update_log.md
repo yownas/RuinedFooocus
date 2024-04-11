@@ -1,3 +1,6 @@
+### 1.37.1
+* Fixed missing clip skip in some performances
+
 ### 1.37.0
 * Updated Comfy Version
 * Tidied Code
