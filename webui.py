@@ -27,7 +27,6 @@ from modules.settings import default_settings
 from modules.prompt_processing import get_promptlist
 from modules.util import get_wildcard_files, load_keywords
 from modules.path import PathManager
-import modules.hints
 
 from PIL import Image
 
@@ -159,8 +158,6 @@ def append_work(gen_data):
 
 def generate_clicked(*args):
     global status
-
-    modules.hints.get_hint()
 
     yield update_clicked()
     gen_data = {}

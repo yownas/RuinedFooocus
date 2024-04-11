@@ -31,6 +31,7 @@ def worker():
     from modules.util import generate_temp_filename, TimeIt, model_hash
     import modules.pipelines
     from modules.settings import default_settings
+    from modules.hints import get_hint
 
     pipeline = modules.pipelines.update(
         {"base_model_name": default_settings["base_model"]}
@@ -157,6 +158,8 @@ def worker():
         with open("render.txt") as f:
             lines = f.readlines()
         status = random.choice(lines)
+        hints = get_hint()
+        status = f"{status}<br>{hints}"
 
         class InterruptProcessingException(Exception):
             pass
@@ -222,7 +225,7 @@ def worker():
                             * (gen_data["index"][0] + done_steps / all_steps)
                             / gen_data["index"][1]
                         ),
-                        f"{status} - {step}/{total_steps}",
+                        f"{status} - {step}/{total_steps}<br>{hints}",
                         shared.path_manager.model_paths["temp_preview_path"],
                     ),
                 ]
