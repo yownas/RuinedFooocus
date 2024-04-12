@@ -68,6 +68,14 @@ progress::after {
   height: 30px !important;
 }
 
+.hint-container > .generating {
+  display: none !important;
+}
+
+.hint-container{
+  height: 150px !important;
+}
+
 .json-container{
   height: 600px;
   overflow: auto !important;

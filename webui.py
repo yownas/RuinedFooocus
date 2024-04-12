@@ -17,6 +17,7 @@ import re
 import version
 import modules.async_worker as worker
 import modules.html
+import modules.hints
 import ui_onebutton
 import ui_controlnet
 from modules.interrogate import look
@@ -98,6 +99,10 @@ def update_clicked():
         gallery: gr.update(visible=False),
         main_view: gr.update(visible=True, value="init_image.png"),
         inpaint_view: gr.update(visible=False),
+        hint_text: gr.update(
+            visible=True,
+            value=modules.hints.get_hint()
+        ),
     }
 
 
@@ -714,6 +719,12 @@ with shared.gradio_root as block:
                         """,
                     )
 
+            hint_text = gr.Markdown(
+                value="",
+                elem_id="hint-container",
+                elem_classes="hint-container",
+            )
+
             @sampler_name.change(
                 inputs=[sampler_name], outputs=[lora_ctrls[0]] + [lora_ctrls[1]]
             )
@@ -822,6 +833,7 @@ with shared.gradio_root as block:
                 inpaint_toggle,
                 gallery,
                 metadata_json,
+                hint_text,
             ],
         )
 
