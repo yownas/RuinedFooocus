@@ -463,7 +463,7 @@ with shared.gradio_root as block:
                             "cfg": cfg,
                             "sampler_name": sampler_name,
                             "scheduler": scheduler,
-                            "clip_skip,": clip_skip,
+                            "clip_skip": clip_skip,
                         }
                         perf_options[perf_name] = opts
                         performance_settings.save_performance(perf_options)
