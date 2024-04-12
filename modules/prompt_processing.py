@@ -220,19 +220,23 @@ def process_prompt(style, prompt, negative, gen_data=[]):
             base_model="SDXL",
             prompt_enhancer=gen_data["OBP_promptenhance"],
         )
+    
+    #wildcards
+    wildcard_pattern = r"__([\w\-:]+)__"
+    wildcard_pattern_onebutton = r"__([\w]+:[^\s_]+(?:[^\s_]+|\s(?=[\w:]+))*)__"
+    while (
+        (match := re.search(wildcard_pattern, prompt))
+        or (match := re.search(wildcard_pattern_onebutton, prompt))
+    ) is not None:
+        prompt = process_wildcards(prompt)
+
+    #styles
     pattern = re.compile(r"<style:([^>]+)>")
     styles = [] if style is None else style.copy()
     for match in re.finditer(pattern, prompt):
         styles += [f"Style: {match.group(1)}"]
     prompt = re.sub(pattern, "", prompt)
     p_txt, n_txt = apply_style(styles, prompt, negative, gen_data["lora_keywords"])
-    wildcard_pattern = r"__([\w\-:]+)__"
-    wildcard_pattern_onebutton = r"__([\w]+:[^\s_]+(?:[^\s_]+|\s(?=[\w:]+))*)__"
-    while (
-        (match := re.search(wildcard_pattern, p_txt))
-        or (match := re.search(wildcard_pattern_onebutton, p_txt))
-    ) is not None:
-        p_txt = process_wildcards(p_txt)
 
     # apply auto negative prompt if enabled
     if(gen_data["auto_negative"] == True):
