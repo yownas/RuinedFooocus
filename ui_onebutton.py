@@ -134,6 +134,8 @@ genders = ["all", "male", "female"]
 qualitymodelist = ["highest", "gated"]
 qualitykeeplist = ["keep used", "keep all"]
 
+promptenhancelist = ["none", "hyperprompt"]
+
 generatevehicle = True
 generateobject = True
 generatefood = True
@@ -314,6 +316,7 @@ def ui_onebutton(prompt, run_event):
         chosensubjectsubtypeconcept,
         givenoutfit,
         OBP_preset,
+        promptenhance,
     ):
         prompt = build_dynamic_prompt(
             insanitylevel,
@@ -341,6 +344,7 @@ def ui_onebutton(prompt, run_event):
             False,
             "SDXL",
             OBP_preset,
+            promptenhance,
         )
 
         return prompt 
@@ -363,6 +367,7 @@ def ui_onebutton(prompt, run_event):
         chosensubjectsubtypeconcept,
         givenoutfit,
         OBP_preset,
+        promptenhance,
         run_event,
     ):
         prompt = build_dynamic_prompt(
@@ -391,6 +396,7 @@ def ui_onebutton(prompt, run_event):
             False,
             "SDXL",
             OBP_preset,
+            promptenhance, 
         )
 
         return prompt, run_event+1
@@ -414,6 +420,7 @@ def ui_onebutton(prompt, run_event):
         chosensubjectsubtypeconcept,
         givenoutfit,
         OBP_preset,
+        promptenhance,
     ):
         prompt = (
             prompt
@@ -444,6 +451,7 @@ def ui_onebutton(prompt, run_event):
                 False,
                 "SDXL",
                 OBP_preset,
+                promptenhance,
             )
         )
 
@@ -596,6 +604,11 @@ def ui_onebutton(prompt, run_event):
                         " ", value=custom_obp_values["antistring"]
                     )
                     add_ctrl("obp_antistring", antistring)
+        with gr.Row():
+            promptenhance = gr.Dropdown(
+                choices=promptenhancelist, label="HYPERPROMPTING", value="none"
+            )
+            add_ctrl("OBP_promptenhance", promptenhance)
         with gr.Row():
             gr.Markdown(
                 """
@@ -828,6 +841,7 @@ def ui_onebutton(prompt, run_event):
                 chosensubjectsubtypeconcept,
                 givenoutfit,
                 OBP_preset,
+                promptenhance,
                 run_event,
             ],
             outputs=[prompt, run_event],
@@ -852,6 +866,7 @@ def ui_onebutton(prompt, run_event):
                 chosensubjectsubtypeconcept,
                 givenoutfit,
                 OBP_preset,
+                promptenhance,
             ],
             outputs=[prompt],
         )
@@ -876,6 +891,7 @@ def ui_onebutton(prompt, run_event):
                 chosensubjectsubtypeconcept,
                 givenoutfit,
                 OBP_preset,
+                promptenhance,
             ],
             outputs=[prompt],
         )

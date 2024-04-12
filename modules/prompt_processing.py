@@ -218,7 +218,7 @@ def process_prompt(style, prompt, negative, gen_data=[]):
             OBP_preset=gen_data["OBP_preset"],
             advancedprompting=False,
             base_model="SDXL",
-
+            prompt_enhancer=gen_data["OBP_promptenhance"],
         )
     pattern = re.compile(r"<style:([^>]+)>")
     styles = [] if style is None else style.copy()
