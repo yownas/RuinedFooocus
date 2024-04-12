@@ -61,7 +61,13 @@ def load_styles():
         "prompt": "{prompt}",
         "negative_prompt": "",
     }
+    hyperprompt_style = {
+        "name": "Hyperprompt",
+        "prompt": "{prompt}",
+        "negative_prompt": "",
+    }
 
+    styles.insert(0, hyperprompt_style)
     styles.insert(0, flufferizer_style)
     styles.insert(0, lora_keywords_style)
     styles.insert(0, random_style)
@@ -74,6 +80,7 @@ def apply_style(style, prompt, negative_prompt, lora_keywords):
     output_prompt = ""
     output_negative_prompt = ""
     bFlufferizer = False
+    bHyperprompt = False
     artifylist = []
     artifystylelist = []
     index = 0
@@ -88,6 +95,13 @@ def apply_style(style, prompt, negative_prompt, lora_keywords):
     if "Flufferizer" in style:
         bFlufferizer = True
         style.remove("Flufferizer")
+    
+    if "Hyperprompt" in style:
+        bHyperprompt = True
+        style.remove("Hyperprompt")
+
+    if bHyperprompt:
+        prompt = build_dynamic_prompt.one_button_superprompt(prompt=prompt)
 
     while index < len(style):
         if style[index].startswith("Artify"):
