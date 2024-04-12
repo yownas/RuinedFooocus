@@ -158,6 +158,7 @@ generatepoemline = True
 generatesongline = True
 generatecardname = True
 generateepisodetitle = True
+generateconceptmixer = True
 
 config = load_config_csv()
 
@@ -211,6 +212,8 @@ for item in config:
         generatecardname = False
     if item[0] == "subject_episodetitle" and item[1] != "on":
         generateepisodetitle = False
+    if item[0] == "subject_conceptmixer" and item[1] != "on":
+        generateconceptmixer = False
 
 # build up all subjects we can choose based on the loaded config file
 if (
@@ -241,6 +244,7 @@ if (
     or generatesongline
     or generatecardname
     or generateepisodetitle
+    or generateconceptmixer
 ):
     subjects.append("concept")
 
@@ -295,6 +299,8 @@ if generatecardname:
     subjectsubtypesconcept.append("names from card based games")
 if generateepisodetitle:
     subjectsubtypesconcept.append("episode titles from tv shows")
+if generateconceptmixer:
+    subjectsubtypesconcept.append("concept mixer")
 
 
 def ui_onebutton(prompt, run_event):
