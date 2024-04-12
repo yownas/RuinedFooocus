@@ -1,3 +1,7 @@
+### 1.38.0
+* Added HyperPrompt to styles / OBP
+* Added handy hints!
+
 ### 1.37.1
 * Fixed missing clip skip in some performances
 
