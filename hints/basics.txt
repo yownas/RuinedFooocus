@@ -1,2 +1,18 @@
 Simple prompts sometimes give better results.
 Setting Image Number to 0 will generate infinite images.
+Combine simple prompts with styles for instant great results.
+The Flufferize style will magically improve your prompt.
+The Hyperprompt style will rewrite and expand your prompt.
+Easily apply LoRA's on the Models tab.
+Auto Negative Prompt will automatically apply a negative prompt for you.
+Gain ultimate power on the PowerUp tab!
+IMG2IMG can be found on the PowerUp tab.
+Inpainting can be found on the PowerUp tab.
+ControlNET can be found on the PowerUp tab.
+Upscaling can be done on via the PowerUp tab.
+Evolve your prompt and create 9 variants. Look for Evolve on the PowerUp tab.
+Need inspiration? Use the One Button tab to autogenerate a prompt for you!
+Creating art? Use the Artify styles!
+Can't choose your style? Choose "Style: Pick Random"!
+Check your prompt on the Info tab.
+Slideshow while generating? Find the secret π on the Info tab.
