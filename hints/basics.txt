@@ -1,2 +1,5 @@
 Simple prompts sometimes give better results.
 Setting Image Number to 0 will generate infinite images.
+Confused? Join our discord server and we will help you out.
+
+
