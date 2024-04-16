@@ -11,5 +11,5 @@ def get_hint():
         lines = open(hintfile).read().splitlines()
         hints += lines
 
-    hint = random.choice(hints)
+    hint = f"**LPT:** *{random.choice(hints)}*"
     return hint

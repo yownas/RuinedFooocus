@@ -14,7 +14,7 @@ Get transparent images with LayerDiffuse. Available on the PowerUp tab.
 Evolve your prompt and create 9 variants. Look for Evolve on the PowerUp tab.
 Need inspiration? Use the One Button tab to autogenerate a prompt for you!
 Creating art? Use the Artify styles!
-Can't choose your style? Choose "Style: Pick Random"!
+Can't decide your style? Choose "Style: Pick Random"!
 Check your prompt in the Info tab.
 Slideshow while generating? Find the secret π on the Info tab.
 RuinedFooocus supports wildcards, type __ to bring up the wildcard helper.
