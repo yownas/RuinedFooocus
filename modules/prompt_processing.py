@@ -4,7 +4,10 @@ import random
 import json
 
 from modules.sdxl_styles import apply_style, allstyles
-from random_prompt.build_dynamic_prompt import build_dynamic_prompt, build_dynamic_negative
+from random_prompt.build_dynamic_prompt import (
+    build_dynamic_prompt,
+    build_dynamic_negative,
+)
 
 
 def process_metadata(gen_data):
@@ -89,7 +92,7 @@ def process_wildcards(wildcard_text, directory="wildcards"):
 
             if placeholder.startswith("onebuttonprompt"):
                 random_choice = build_dynamic_prompt(
-                    insanitylevel=5, 
+                    insanitylevel=5,
                     givensubject=subjectoverride,
                     advancedprompting=False,
                     base_model="SDXL",
@@ -220,17 +223,8 @@ def process_prompt(style, prompt, negative, gen_data=[]):
             base_model="SDXL",
             prompt_enhancer=gen_data["OBP_promptenhance"],
         )
-    
-    #wildcards
-    wildcard_pattern = r"__([\w\-:]+)__"
-    wildcard_pattern_onebutton = r"__([\w]+:[^\s_]+(?:[^\s_]+|\s(?=[\w:]+))*)__"
-    while (
-        (match := re.search(wildcard_pattern, prompt))
-        or (match := re.search(wildcard_pattern_onebutton, prompt))
-    ) is not None:
-        prompt = process_wildcards(prompt)
 
-    #styles
+    # styles
     pattern = re.compile(r"<style:([^>]+)>")
     styles = [] if style is None else style.copy()
     for match in re.finditer(pattern, prompt):
@@ -238,9 +232,20 @@ def process_prompt(style, prompt, negative, gen_data=[]):
     prompt = re.sub(pattern, "", prompt)
     p_txt, n_txt = apply_style(styles, prompt, negative, gen_data["lora_keywords"])
 
+    # wildcards
+    wildcard_pattern = r"__([\w\-:]+)__"
+    wildcard_pattern_onebutton = r"__([\w]+:[^\s_]+(?:[^\s_]+|\s(?=[\w:]+))*)__"
+    while (
+        (match := re.search(wildcard_pattern, p_txt))
+        or (match := re.search(wildcard_pattern_onebutton, p_txt))
+    ) is not None:
+        p_txt = process_wildcards(p_txt)
+
     # apply auto negative prompt if enabled
-    if(gen_data["auto_negative"] == True):
-        n_txt = build_dynamic_negative(positive_prompt=p_txt,existing_negative_prompt=n_txt,base_model="SDXL")
+    if gen_data["auto_negative"] == True:
+        n_txt = build_dynamic_negative(
+            positive_prompt=p_txt, existing_negative_prompt=n_txt, base_model="SDXL"
+        )
     return p_txt, n_txt
 
 
