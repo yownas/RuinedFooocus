@@ -1,3 +1,7 @@
+### 1.38.1
+* Minor Fixes
+
+
 ### 1.38.0
 * Added HyperPrompt to styles / OBP
 * Added handy hints!
