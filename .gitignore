@@ -47,6 +47,8 @@ powerup.json
 performance.json
 *.old
 /models/loras/*.txt
+/models/loras/*.jpeg
+/models/checkpoints/*.jpeg
 random_prompt/userfiles/obp_presets.json
 reinstall
 prompt_expansion/pytorch_model.bin
