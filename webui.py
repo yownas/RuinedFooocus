@@ -600,7 +600,7 @@ with shared.gradio_root as block:
 
                 with gr.Row():
                     model_gallery = gr.Gallery(
-                        label="SDXL model: sdxl-something.safetensors",
+                        label=f"SDXL model: {settings['base_model']}",
                         show_label=True,
                         object_fit="scale-down",
                         height=300,
