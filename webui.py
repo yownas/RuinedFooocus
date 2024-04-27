@@ -26,7 +26,7 @@ from comfy.samplers import KSampler
 from modules.sdxl_styles import load_styles, styles, allstyles, apply_style
 from modules.settings import default_settings
 from modules.prompt_processing import get_promptlist
-from modules.util import get_wildcard_files, load_keywords
+from modules.util import get_wildcard_files, load_keywords, get_checkpoint_thumbnail
 from modules.path import PathManager
 
 from PIL import Image
@@ -595,18 +595,55 @@ with shared.gradio_root as block:
                         return s
 
             with gr.Tab(label="Models"):
+                if settings["base_model"] not in path_manager.model_filenames:
+                    settings["base_model"] = path_manager.model_filenames[0]
+
                 with gr.Row():
-                    base_model = gr.Dropdown(
-                        label="SDXL Base Model",
-                        choices=path_manager.model_filenames,
-                        value=(
-                            settings["base_model"]
-                            if settings["base_model"] in path_manager.model_filenames
-                            else [path_manager.model_filenames[0]]
-                        ),
+                    model_gallery = gr.Gallery(
+                        label="SDXL model: sdxl-something.safetensors",
                         show_label=True,
+                        object_fit="scale-down",
+                        height=300,
+                        allow_preview=False,
+                        preview=False,
+                        visible=True,
+                        show_download_button=False,
+                        min_width=60,
+                        coulmns=3,
+                        value=list(map(lambda x: (get_checkpoint_thumbnail(x), x), path_manager.model_filenames)),
+                    )
+
+                    base_model = gr.Text(
+                        visible=False,
+                        value=settings["base_model"],
                     )
                     add_ctrl("base_model_name", base_model)
+
+                    def update_model_select(evt: gr.SelectData):
+                        return {
+                            model_gallery: gr.update(label=f"SDXL model: {evt.value[1]}"),
+                            base_model: gr.update(value=evt.value[1]),
+                        }
+
+                    model_gallery.select(
+                        update_model_select,
+                        None,
+                        outputs=[model_gallery, base_model]
+                    )
+
+#                with gr.Row():
+#                    base_model = gr.Dropdown(
+#                        visible=False,
+#                        label="SDXL Base Model",
+#                        choices=path_manager.model_filenames,
+#                        value=(
+#                            settings["base_model"]
+#                            if settings["base_model"] in path_manager.model_filenames
+#                            else [path_manager.model_filenames[0]]
+#                        ),
+#                        show_label=True,
+#                    )
+#                    add_ctrl("base_model_name", base_model)
                 with gr.Accordion(label="LoRA / Strength", open=True), gr.Group():
                     lora_ctrls = []
                     nones = 0

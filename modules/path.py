@@ -75,13 +75,18 @@ class PathManager:
             # Already working on this folder
             return
         self.civit_worker_folders.append(folder_path)
-        if not isLora:  # We only do LoRAs at the moment
-            return
         civit = Civit()
         for path in folder_path.rglob("*"):
             if path.suffix.lower() in self.EXTENSIONS:
+                thumbcheck = path.with_suffix(".jpeg")
+                if not thumbcheck.exists():
+                    hash = civit.model_hash(str(path))
+                    print(f"Downloading model thumbnail for {path}")
+                    models = civit.get_models_by_hash(hash)
+                    civit.get_image(models, thumbcheck)
+                    time.sleep(1)
                 txtcheck = path.with_suffix(".txt")
-                if not txtcheck.exists():
+                if isLora and not txtcheck.exists():
                     hash = civit.model_hash(str(path))
                     print(f"Downloading LoRA keywords for {path}")
                     models = civit.get_models_by_hash(hash)

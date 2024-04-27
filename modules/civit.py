@@ -7,6 +7,7 @@ class Civit:
     def __init__(self, base_url="https://civitai.com/api/v1/"):
         self.base_url = base_url
         self.headers = {"Content-Type": "application/json"}
+        self.session = requests.Session()
 
     def _read_file(self, filename):
         try:
@@ -49,3 +50,12 @@ class Civit:
     def get_keywords(self, model):
         keywords = model.get("trainedWords", ["No Keywords for LoRA"])
         return keywords
+
+    def get_image(self, model, path):
+        image_url = model.get("images", [{}])[0].get("url")
+        if image_url:
+            response = self.session.get(image_url)
+            response.raise_for_status()
+            with open(path, "wb") as file:
+                file.write(response.content)
+        # FIXME add image here if civit can't give us one

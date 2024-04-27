@@ -8,6 +8,7 @@ from pathlib import Path
 from contextlib import contextmanager
 from typing import Optional
 from urllib.parse import urlparse
+from shared import path_manager
 
 
 def get_wildcard_files():
@@ -71,6 +72,18 @@ def load_keywords(lora):
         return data
     except FileNotFoundError:
         return " "
+
+def get_model_thumbnail(model):
+    filename = model.replace(".safetensors", ".jpeg")
+    if Path(filename).is_file():
+        return filename
+    else:
+        return "logo.png"
+
+def get_checkpoint_thumbnail(model):
+    return get_model_thumbnail(
+            os.path.join(path_manager.model_paths["modelfile_path"], model)
+    )
 
 
 def load_file_from_url(
