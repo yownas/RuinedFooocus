@@ -78,7 +78,7 @@ def get_model_thumbnail(model):
     if Path(filename).is_file():
         return filename
     else:
-        return "logo.png"
+        return "html/warning.png"
 
 def get_checkpoint_thumbnail(model):
     return get_model_thumbnail(
