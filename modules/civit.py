@@ -1,5 +1,6 @@
 import requests
 import hashlib
+import shutil
 from typing import Dict, Any
 
 
@@ -58,4 +59,5 @@ class Civit:
             response.raise_for_status()
             with open(path, "wb") as file:
                 file.write(response.content)
-        # FIXME add image here if civit can't give us one
+        else:
+            shutil.copyfile("html/warning.jpeg", path)
