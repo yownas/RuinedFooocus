@@ -53,3 +53,4 @@ random_prompt/userfiles/obp_presets.json
 reinstall
 prompt_expansion/pytorch_model.bin
 /superprompter/model_files
+models/upscale_models/*.jpeg
