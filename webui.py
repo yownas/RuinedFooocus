@@ -99,10 +99,7 @@ def update_clicked():
         gallery: gr.update(visible=False),
         main_view: gr.update(visible=True, value="init_image.png"),
         inpaint_view: gr.update(visible=False),
-        hint_text: gr.update(
-            visible=True,
-            value=modules.hints.get_hint()
-        ),
+        hint_text: gr.update(visible=True, value=modules.hints.get_hint()),
     }
 
 
@@ -599,51 +596,74 @@ with shared.gradio_root as block:
                     settings["base_model"] = path_manager.model_filenames[0]
 
                 with gr.Row():
-                    model_gallery = gr.Gallery(
-                        label=f"SDXL model: {settings['base_model']}",
-                        show_label=True,
-                        object_fit="scale-down",
-                        height=300,
-                        allow_preview=False,
-                        preview=False,
-                        visible=True,
-                        show_download_button=False,
-                        min_width=60,
-                        coulmns=3,
-                        value=list(map(lambda x: (get_checkpoint_thumbnail(x), x), path_manager.model_filenames)),
-                    )
+                    with gr.Group():
+                        modelfilter = gr.Textbox(
+                            placeholder="Model name", value="", show_label=False
+                        )
+                        model_gallery = gr.Gallery(
+                            label=f"SDXL model: {settings['base_model']}",
+                            show_label=True,
+                            object_fit="scale-down",
+                            height=300,
+                            allow_preview=False,
+                            preview=False,
+                            visible=True,
+                            show_download_button=False,
+                            min_width=60,
+                            coulmns=3,
+                            value=list(
+                                map(
+                                    lambda x: (get_checkpoint_thumbnail(x), x),
+                                    path_manager.model_filenames,
+                                )
+                            ),
+                        )
 
-                    base_model = gr.Text(
-                        visible=False,
-                        value=settings["base_model"],
-                    )
-                    add_ctrl("base_model_name", base_model)
+                        base_model = gr.Text(
+                            visible=False,
+                            value=settings["base_model"],
+                        )
+                        add_ctrl("base_model_name", base_model)
+
+                    @modelfilter.input(inputs=modelfilter, outputs=[model_gallery])
+                    def update_model_filter(filtered):
+                        filtered_filenames = filter(
+                            lambda filename: filtered.lower() in filename.lower(),
+                            path_manager.model_filenames,
+                        )
+                        newlist = list(
+                            map(
+                                lambda x: (get_checkpoint_thumbnail(x), x),
+                                filtered_filenames,
+                            )
+                        )
+                        return gr.update(value=newlist)
 
                     def update_model_select(evt: gr.SelectData):
                         return {
-                            model_gallery: gr.update(label=f"SDXL model: {evt.value[1]}"),
+                            model_gallery: gr.update(
+                                label=f"SDXL model: {evt.value[1]}"
+                            ),
                             base_model: gr.update(value=evt.value[1]),
                         }
 
                     model_gallery.select(
-                        update_model_select,
-                        None,
-                        outputs=[model_gallery, base_model]
+                        update_model_select, None, outputs=[model_gallery, base_model]
                     )
 
-#                with gr.Row():
-#                    base_model = gr.Dropdown(
-#                        visible=False,
-#                        label="SDXL Base Model",
-#                        choices=path_manager.model_filenames,
-#                        value=(
-#                            settings["base_model"]
-#                            if settings["base_model"] in path_manager.model_filenames
-#                            else [path_manager.model_filenames[0]]
-#                        ),
-#                        show_label=True,
-#                    )
-#                    add_ctrl("base_model_name", base_model)
+                #                with gr.Row():
+                #                    base_model = gr.Dropdown(
+                #                        visible=False,
+                #                        label="SDXL Base Model",
+                #                        choices=path_manager.model_filenames,
+                #                        value=(
+                #                            settings["base_model"]
+                #                            if settings["base_model"] in path_manager.model_filenames
+                #                            else [path_manager.model_filenames[0]]
+                #                        ),
+                #                        show_label=True,
+                #                    )
+                #                    add_ctrl("base_model_name", base_model)
                 with gr.Accordion(label="LoRA / Strength", open=True), gr.Group():
                     lora_ctrls = []
                     nones = 0
