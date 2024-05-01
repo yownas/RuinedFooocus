@@ -596,28 +596,32 @@ with shared.gradio_root as block:
                     settings["base_model"] = path_manager.model_filenames[0]
 
                 with gr.Row():
-                    with gr.Group():
-                        modelfilter = gr.Textbox(
-                            placeholder="Model name", value="", show_label=False
-                        )
-                        model_gallery = gr.Gallery(
-                            label=f"SDXL model: {settings['base_model']}",
-                            show_label=True,
-                            object_fit="scale-down",
-                            height=300,
-                            allow_preview=False,
-                            preview=False,
-                            visible=True,
-                            show_download_button=False,
-                            min_width=60,
-                            coulmns=3,
-                            value=list(
-                                map(
-                                    lambda x: (get_checkpoint_thumbnail(x), x),
-                                    path_manager.model_filenames,
-                                )
-                            ),
-                        )
+                    with gr.Accordion(label=f"Model:\U0000202F{settings['base_model']}") as model_accordion:
+                        with gr.Group():
+                            modelfilter = gr.Textbox(
+                                placeholder="Model name",
+                                value="",
+                                show_label=False,
+                                container=False,
+                            )
+                            model_gallery = gr.Gallery(
+                                label=f"SDXL model: {settings['base_model']}",
+                                show_label=False,
+                                object_fit="scale-down",
+                                height=300,
+                                allow_preview=False,
+                                preview=False,
+                                visible=True,
+                                show_download_button=False,
+                                min_width=60,
+                                coulmns=3,
+                                value=list(
+                                    map(
+                                        lambda x: (get_checkpoint_thumbnail(x), x),
+                                        path_manager.model_filenames,
+                                    )
+                                ),
+                            )
 
                         base_model = gr.Text(
                             visible=False,
@@ -641,14 +645,14 @@ with shared.gradio_root as block:
 
                     def update_model_select(evt: gr.SelectData):
                         return {
-                            model_gallery: gr.update(
-                                label=f"SDXL model: {evt.value[1]}"
+                            model_accordion: gr.update(
+                                label=f"Model:\U0000202F{evt.value[1]}"
                             ),
                             base_model: gr.update(value=evt.value[1]),
                         }
 
                     model_gallery.select(
-                        update_model_select, None, outputs=[model_gallery, base_model]
+                        update_model_select, None, outputs=[model_accordion, base_model]
                     )
 
                 #                with gr.Row():
