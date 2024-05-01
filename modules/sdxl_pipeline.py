@@ -99,6 +99,7 @@ class pipeline:
         self.xl_base_patched = None
         self.xl_base_patched_hash = ""
         self.xl_base_patched_extra = set()
+        self.conditions = None
 
         try:
             with torch.torch.inference_mode():
