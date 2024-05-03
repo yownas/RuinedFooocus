@@ -63,7 +63,7 @@ def generate_temp_filename(folder="./outputs/", extension="png"):
 
 
 def load_keywords(lora):
-    filename = lora.with_suffix(".txt")
+    filename = Path(path_manager.model_paths["cache_path"] / "loras" / lora).with_suffix(".txt")
     try:
         with open(filename, "r") as file:
             data = file.read()

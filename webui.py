@@ -720,9 +720,9 @@ with shared.gradio_root as block:
                                 hide = True
                             if model == "None" or strength == 0:
                                 continue
-                            filename = Path(path_manager.model_paths["cache_path"] / "loras" / model)
+#                            filename = Path(path_manager.model_paths["cache_path"] / "loras" / model)
                             lora_prompt_addition = (
-                                f"{lora_prompt_addition} {load_keywords(filename)} "
+                                f"{lora_prompt_addition} {load_keywords(model)} "
                             )
 
                         updates += [lora_keywords.update(value=lora_prompt_addition)]
