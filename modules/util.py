@@ -1,7 +1,5 @@
 import datetime
 import random
-import os
-import sys
 import time
 from pathlib import Path
 
@@ -65,7 +63,7 @@ def generate_temp_filename(folder="./outputs/", extension="png"):
 
 
 def load_keywords(lora):
-    filename = lora.replace(".safetensors", ".txt")
+    filename = lora.with_suffix(".txt")
     try:
         with open(filename, "r") as file:
             data = file.read()
@@ -73,8 +71,8 @@ def load_keywords(lora):
     except FileNotFoundError:
         return " "
 
-def get_model_thumbnail(model):
-    filename = model.replace(".safetensors", ".jpeg")
+def get_model_thumbnail(cache_path):
+    filename = cache_path.with_suffix(".jpeg")
     if Path(filename).is_file():
         return filename
     else:
@@ -82,7 +80,12 @@ def get_model_thumbnail(model):
 
 def get_checkpoint_thumbnail(model):
     return get_model_thumbnail(
-            os.path.join(path_manager.model_paths["modelfile_path"], model)
+            Path(path_manager.model_paths["cache_path"] / "checkpoints" / model)
+    )
+
+def get_lora_thumbnail(model):
+    return get_model_thumbnail(
+            Path(path_manager.model_paths["cache_path"] / "loras" / model)
     )
 
 

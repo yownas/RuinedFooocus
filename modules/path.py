@@ -16,6 +16,7 @@ class PathManager:
         "path_upscalers": "../models/upscale_models",
         "path_outputs": "../outputs/",
         "path_clip": "../models/clip/",
+        "path_cache": "../cache/",
     }
 
     EXTENSIONS = [".pth", ".ckpt", ".bin", ".safetensors"]
@@ -52,6 +53,7 @@ class PathManager:
             "faceswap_path": self.get_abspath_folder(self.paths["path_faceswap"]),
             "upscaler_path": self.get_abspath_folder(self.paths["path_upscalers"]),
             "clip_path": self.get_abspath_folder(self.paths["path_clip"]),
+            "cache_path": self.get_abspath_folder(self.paths["path_cache"]),
         }
 
     def get_default_model_names(self):
@@ -70,22 +72,31 @@ class PathManager:
     def get_abspath(self, path):
         return Path(path) if Path(path).is_absolute() else Path(__file__).parent / path
 
-    def civit_update_worker(self, folder_path, isLora):
+    def civit_update_worker(self, folder_path, cache, isLora):
         if folder_path in self.civit_worker_folders:
             # Already working on this folder
+            return
+        if cache:
+            cache_path = Path(self.model_paths["cache_path"] / cache)
+        else:
             return
         self.civit_worker_folders.append(folder_path)
         civit = Civit()
         for path in folder_path.rglob("*"):
             if path.suffix.lower() in self.EXTENSIONS:
-                thumbcheck = path.with_suffix(".jpeg")
+
+                # get file name, add cache path change suffix
+                cache_file = Path(cache_path / path.name)
+
+                thumbcheck = cache_file.with_suffix(".jpeg")
                 if not thumbcheck.exists():
                     hash = civit.model_hash(str(path))
                     print(f"Downloading model thumbnail for {path}")
                     models = civit.get_models_by_hash(hash)
                     civit.get_image(models, thumbcheck)
                     time.sleep(1)
-                txtcheck = path.with_suffix(".txt")
+
+                txtcheck = cache_file.with_suffix(".txt")
                 if isLora and not txtcheck.exists():
                     hash = civit.model_hash(str(path))
                     print(f"Downloading LoRA keywords for {path}")
@@ -94,9 +105,10 @@ class PathManager:
                     with open(txtcheck, "w") as f:
                         f.write(", ".join(keywords))
                     time.sleep(1)
+
         self.civit_worker_folders.remove(folder_path)
 
-    def get_model_filenames(self, folder_path, isLora=False):
+    def get_model_filenames(self, folder_path, cache=None, isLora=False):
         folder_path = Path(folder_path)
         if not folder_path.is_dir():
             raise ValueError("Folder path is not a valid directory.")
@@ -104,6 +116,7 @@ class PathManager:
             target=self.civit_update_worker,
             args=(
                 folder_path,
+                cache,
                 isLora,
             ),
             daemon=True,
@@ -129,10 +142,13 @@ class PathManager:
 
     def update_all_model_names(self):
         self.model_filenames = self.get_model_filenames(
-            self.model_paths["modelfile_path"]
+            self.model_paths["modelfile_path"],
+            cache="checkpoints"
         )
         self.lora_filenames = self.get_model_filenames(
-            self.model_paths["lorafile_path"], True
+            self.model_paths["lorafile_path"], 
+            cache="loras",
+            isLora=True
         )
         self.upscaler_filenames = self.get_model_filenames(
             self.model_paths["upscaler_path"]

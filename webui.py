@@ -1,6 +1,6 @@
 import argparse
 import shared
-import os
+from pathlib import Path
 from shared import (
     state,
     add_ctrl,
@@ -11,7 +11,6 @@ from shared import (
 import time
 
 import gradio as gr
-import random
 import re
 
 import version
@@ -721,9 +720,7 @@ with shared.gradio_root as block:
                                 hide = True
                             if model == "None" or strength == 0:
                                 continue
-                            filename = os.path.join(
-                                path_manager.model_paths["lorafile_path"], model
-                            )
+                            filename = Path(path_manager.model_paths["cache_path"] / "loras" / model)
                             lora_prompt_addition = (
                                 f"{lora_prompt_addition} {load_keywords(filename)} "
                             )
