@@ -1,6 +1,9 @@
+### 1.39.0
+* New model selection with model previews!
+
+
 ### 1.38.1
 * Minor Fixes
-
 
 ### 1.38.0
 * Added HyperPrompt to styles / OBP
