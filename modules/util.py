@@ -80,12 +80,12 @@ def get_model_thumbnail(cache_path):
 
 def get_checkpoint_thumbnail(model):
     return get_model_thumbnail(
-            Path(path_manager.model_paths["cache_path"] / "checkpoints" / model)
+            Path(path_manager.model_paths["cache_path"] / "checkpoints" / Path(model).name)
     )
 
 def get_lora_thumbnail(model):
     return get_model_thumbnail(
-            Path(path_manager.model_paths["cache_path"] / "loras" / model)
+            Path(path_manager.model_paths["cache_path"] / "loras" / Path(model).name)
     )
 
 
