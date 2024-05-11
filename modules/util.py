@@ -63,13 +63,16 @@ def generate_temp_filename(folder="./outputs/", extension="png"):
 
 
 def load_keywords(lora):
-    filename = Path(path_manager.model_paths["cache_path"] / "loras" / lora).with_suffix(".txt")
+    filename = Path(
+        path_manager.model_paths["cache_path"] / "loras" / Path(lora).name
+    ).with_suffix(".txt")
     try:
         with open(filename, "r") as file:
             data = file.read()
         return data
     except FileNotFoundError:
         return " "
+
 
 def get_model_thumbnail(cache_path):
     filename = cache_path.with_suffix(".jpeg")
@@ -78,14 +81,16 @@ def get_model_thumbnail(cache_path):
     else:
         return "html/warning.png"
 
+
 def get_checkpoint_thumbnail(model):
     return get_model_thumbnail(
-            Path(path_manager.model_paths["cache_path"] / "checkpoints" / Path(model).name)
+        Path(path_manager.model_paths["cache_path"] / "checkpoints" / Path(model).name)
     )
+
 
 def get_lora_thumbnail(model):
     return get_model_thumbnail(
-            Path(path_manager.model_paths["cache_path"] / "loras" / Path(model).name)
+        Path(path_manager.model_paths["cache_path"] / "loras" / Path(model).name)
     )
 
 
