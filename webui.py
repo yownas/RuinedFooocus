@@ -25,7 +25,7 @@ from comfy.samplers import KSampler
 from modules.sdxl_styles import load_styles, styles, allstyles, apply_style
 from modules.settings import default_settings
 from modules.prompt_processing import get_promptlist
-from modules.util import get_wildcard_files, load_keywords, get_checkpoint_thumbnail
+from modules.util import get_wildcard_files, load_keywords, get_checkpoint_thumbnail, get_lora_thumbnail
 from modules.path import PathManager
 
 from PIL import Image
@@ -613,7 +613,6 @@ with shared.gradio_root as block:
                                 visible=True,
                                 show_download_button=False,
                                 min_width=60,
-                                coulmns=3,
                                 value=list(
                                     map(
                                         lambda x: (get_checkpoint_thumbnail(x), x),
@@ -654,19 +653,131 @@ with shared.gradio_root as block:
                         update_model_select, None, outputs=[model_accordion, base_model]
                     )
 
-                #                with gr.Row():
-                #                    base_model = gr.Dropdown(
-                #                        visible=False,
-                #                        label="SDXL Base Model",
-                #                        choices=path_manager.model_filenames,
-                #                        value=(
-                #                            settings["base_model"]
-                #                            if settings["base_model"] in path_manager.model_filenames
-                #                            else [path_manager.model_filenames[0]]
-                #                        ),
-                #                        show_label=True,
-                #                    )
-                #                    add_ctrl("base_model_name", base_model)
+                lora_list = []
+                lora_weight_list = []
+                with gr.Row():
+                    with gr.Accordion(label=f"LoRAs") as lora_accordion:
+                        with gr.Group(visible=False) as lora_add:
+                            lorafilter = gr.Textbox(
+                                placeholder="Search LoRA",
+                                value="",
+                                show_label=False,
+                                container=False,
+                            )
+                            lora_gallery = gr.Gallery(
+                                label=f"LoRA model",
+                                show_label=False,
+                                object_fit="scale-down",
+                                height=300,
+                                allow_preview=False,
+                                preview=False,
+                                show_download_button=False,
+                                min_width=60,
+                                value=list(
+                                    map(
+                                        lambda x: (get_lora_thumbnail(x), x),
+                                        path_manager.lora_filenames,
+                                    )
+                                ),
+                            )
+
+                        with gr.Group(visible=True) as lora_active:
+                            with gr.Row():
+                                lora_weight_slider = gr.Slider(
+                                    label="Weight",
+                                    show_label=True,
+                                    minimum=-2,
+                                    maximum=2,
+                                    step=0.05,
+                                    value=1.0,
+                                    interactive=True,
+                                )
+                            lora_active_gallery = gr.Gallery(
+                                label=f"LoRA model",
+                                show_label=False,
+                                object_fit="scale-down",
+                                height=240,
+                                allow_preview=False,
+                                preview=False,
+                                visible=True,
+                                show_download_button=False,
+                                min_width=60,
+                                value=[],
+                            )
+                            with gr.Row():
+                                lora_add_btn = gr.Button(
+                                    value="+",
+                                    scale=1,
+                                )
+                                lora_del_btn = gr.Button(
+                                    value="-",
+                                    scale=1,
+                                )
+
+                def lora_gallery_toggle():
+                    result = [
+                        gr.update(visible=True),
+                        gr.update(visible=False),
+                    ]
+                    return result
+
+                def lora_select(evt: gr.SelectData):
+                    w = 1.0
+                    lora_list.append((get_lora_thumbnail(evt.value[1]), f"{w} - {evt.value[1]}"))
+                    lora_weight_list.append(w)
+                    return {
+                        lora_add: gr.update(visible=False),
+                        lora_active: gr.update(visible=True),
+                        lora_active_gallery: gr.update(value=lora_list),
+                    }
+
+                lora_active_selected = None
+                def lora_active_select(evt: gr.SelectData):
+                    global lora_active_selected
+                    print(f"DEBUG: {evt.index}")
+                    lora_active_selected = evt.index
+                    return {
+                        lora_active: gr.update(),
+                        lora_active_gallery: gr.update(),
+                        lora_weight_slider: gr.update(value=0.5),
+                    }
+
+                def lora_delete(gallery):
+                    global lora_active_selected
+                    print(f"DEBUG1: {lora_list}")
+                    print(f"DEBUG2: {gallery}")
+                    if lora_active_selected is not None:
+                        print(f"DEBUG: delete {lora_active_selected}")
+                        del lora_list[lora_active_selected]
+                        del lora_weight_list[lora_active_selected]
+                        if lora_active_selected >= len(lora_list):
+                            lora_active_selected = None
+                    return {
+                        lora_active_gallery: gr.update(value=lora_list),
+                    }
+
+                lora_add_btn.click(
+                    fn=lora_gallery_toggle,
+                    outputs=[lora_add, lora_active],
+                )
+                lora_del_btn.click(
+                    fn=lora_delete,
+                    inputs=lora_active_gallery,
+                    outputs=lora_active_gallery
+                )
+                lora_gallery.select(
+                    fn=lora_select,
+                    inputs=None,
+                    outputs=[lora_active, lora_active_gallery, lora_add],
+                )
+                lora_active_gallery.select(
+                    fn=lora_active_select,
+                    inputs=None,
+                    outputs=[lora_active, lora_active_gallery, lora_weight_slider],
+                )
+
+
+                # FIXME remove this
                 with gr.Accordion(label="LoRA / Strength", open=True), gr.Group():
                     lora_ctrls = []
                     nones = 0
