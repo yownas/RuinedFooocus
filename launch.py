@@ -60,7 +60,7 @@ def prepare_environment():
         "COMFY_REPO", "https://github.com/comfyanonymous/ComfyUI"
     )
     comfy_commit_hash = os.environ.get(
-        "COMFY_COMMIT_HASH", "0fecfd2b1a2794b77277c7e256c84de54a63d860"
+        "COMFY_COMMIT_HASH", "04b308229ee59b5aebc0c78ea416e0b3ac22c146"
     )
 
     print(f"Python {sys.version}")

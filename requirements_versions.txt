@@ -21,3 +21,4 @@ clip_interrogator==0.6.0
 opencv-python==4.8.1.78
 kornia==0.7.2
 sentencepiece==0.2.0
+spandrel==0.3.4
