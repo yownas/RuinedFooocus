@@ -657,10 +657,6 @@ with shared.gradio_root as block:
                         update_model_select, None, outputs=[model_current, base_model]
                     )
 
-                lora_list = []
-                lora_name_list = []
-                lora_weight_list = []
-
                 with gr.Tab(label="LoRAs"):
                     with gr.Group(visible=False) as lora_add:
                         lorafilter = gr.Textbox(
@@ -733,72 +729,75 @@ with shared.gradio_root as block:
                     ]
                     return result
 
-                def lora_select(loras, evt: gr.SelectData):
-                    global lora_list, lora_name_list, lora_weight_list
+                def lora_select(gallery, evt: gr.SelectData):
                     w = 1.0
 
                     keywords = ""
-                    for lora_data in loras:
+                    for lora_data in gallery:
                         w, l  = lora_data[1].split(" - ")
                         keywords = f"{keywords}, {load_keywords(l)} "
                     keywords = f"{keywords}, {load_keywords(evt.value[1])} "
 
-                    lora_name_list.append(evt.value[1])
-                    lora_weight_list.append(w)
-                    lora_list.append((get_lora_thumbnail(evt.value[1]), f"{w} - {evt.value[1]}"))
+                    loras = []
+                    for lora_data in gallery:
+                        loras.append((lora_data[0]["name"], lora_data[1]))
+
+                    loras.append((get_lora_thumbnail(evt.value[1]), f"{w} - {evt.value[1]}"))
                     return {
                         lora_add: gr.update(visible=False),
                         lora_active: gr.update(visible=True),
-                        lora_active_gallery: gr.update(value=lora_list),
+                        lora_active_gallery: gr.update(value=loras),
                         lora_keywords: gr.update(value=keywords)
                     }
 
                 lora_active_selected = None
-                def lora_active_select(evt: gr.SelectData):
+                def lora_active_select(gallery, evt: gr.SelectData):
                     global lora_active_selected
                     lora_active_selected = evt.index
+                    loras = []
+                    for lora_data in gallery:
+                        loras.append((lora_data[0]["name"], lora_data[1]))
                     return {
                         lora_active: gr.update(),
                         lora_active_gallery: gr.update(),
-                        lora_weight_slider: gr.update(value=lora_weight_list[lora_active_selected]),
+                        lora_weight_slider: gr.update(value=float(loras[evt.index][1].split(" - ")[0])),
                     }
 
                 def lora_delete(gallery):
-                    global lora_active_selected, lora_name_list
+                    global lora_active_selected
                     if lora_active_selected is not None:
-
-                        keywords = ""
-                        for lora_data in gallery:
-                            w, l  = lora_data[1].split(" - ")
-                            if not lora_name_list[lora_active_selected] == l:
-                                keywords = f"{keywords}, {load_keywords(l)} "
-
-                        del lora_list[lora_active_selected]
-                        del lora_name_list[lora_active_selected]
-                        del lora_weight_list[lora_active_selected]
-                        if lora_active_selected >= len(lora_list):
+                        del gallery[lora_active_selected]
+                        if lora_active_selected >= len(gallery):
                             lora_active_selected = None
+                    keywords = ""
+                    loras = []
+                    for lora_data in gallery:
+                        w, l  = lora_data[1].split(" - ")
+                        loras.append((lora_data[0]["name"], lora_data[1]))
+                        keywords = f"{keywords}, {load_keywords(l)} "
                     return {
-                        lora_active_gallery: gr.update(value=lora_list),
+                        lora_active_gallery: gr.update(value=loras),
                         lora_keywords: gr.update(value=keywords),
                     }
 
-                def lora_weight_slider_update(w):
+                def lora_weight_slider_update(gallery, w):
                     global lora_active_selected
-                    global lora_list, lora_name_list, lora_weight_list
                     if lora_active_selected is None:
                         return {lora_active_gallery: gr.update()}
-                    lora_weight_list[lora_active_selected] = w
-                    name = lora_name_list[lora_active_selected]
-                    lora_list[lora_active_selected] = (get_lora_thumbnail(name), f"{w} - {name}")
-                    # Fix lora_list
+
+                    loras = []
+                    for lora_data in gallery:
+                        loras.append((lora_data[0]["name"], lora_data[1]))
+                    l = gallery[lora_active_selected][1].split(" - ")[1]
+                    loras[lora_active_selected] = (get_lora_thumbnail(l), f"{w} - {l}")
+
                     return {
-                        lora_active_gallery: gr.update(value=lora_list),
+                        lora_active_gallery: gr.update(value=loras),
                     }
 
                 lora_weight_slider.release(
                     fn=lora_weight_slider_update,
-                    inputs=[lora_weight_slider],
+                    inputs=[lora_active_gallery, lora_weight_slider],
                     outputs=[lora_active_gallery]
                 )
                 lora_add_btn.click(
@@ -817,7 +816,7 @@ with shared.gradio_root as block:
                 )
                 lora_active_gallery.select(
                     fn=lora_active_select,
-                    inputs=None,
+                    inputs=[lora_active_gallery],
                     outputs=[lora_active, lora_active_gallery, lora_weight_slider],
                 )
 
