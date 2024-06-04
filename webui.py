@@ -25,7 +25,7 @@ from comfy.samplers import KSampler
 from modules.sdxl_styles import load_styles, styles, allstyles, apply_style
 from modules.settings import default_settings
 from modules.prompt_processing import get_promptlist
-from modules.util import get_wildcard_files, load_keywords, get_checkpoint_thumbnail
+from modules.util import get_wildcard_files, load_keywords, get_checkpoint_thumbnail, get_lora_thumbnail
 from modules.path import PathManager
 
 from PIL import Image
@@ -594,39 +594,42 @@ with shared.gradio_root as block:
                 if settings["base_model"] not in path_manager.model_filenames:
                     settings["base_model"] = path_manager.model_filenames[0]
 
-                with gr.Row():
-                    with gr.Accordion(label=f"Model:\U0000202F{settings['base_model']}") as model_accordion:
-                        with gr.Group():
-                            modelfilter = gr.Textbox(
-                                placeholder="Model name",
-                                value="",
-                                show_label=False,
-                                container=False,
-                            )
-                            model_gallery = gr.Gallery(
-                                label=f"SDXL model: {settings['base_model']}",
-                                show_label=False,
-                                object_fit="scale-down",
-                                height=300,
-                                allow_preview=False,
-                                preview=False,
-                                visible=True,
-                                show_download_button=False,
-                                min_width=60,
-                                coulmns=3,
-                                value=list(
-                                    map(
-                                        lambda x: (get_checkpoint_thumbnail(x), x),
-                                        path_manager.model_filenames,
-                                    )
-                                ),
-                            )
-
-                        base_model = gr.Text(
-                            visible=False,
-                            value=settings["base_model"],
+                with gr.Tab(label="Model"):
+                    model_current = gr.HTML(
+                            value=f"{settings['base_model']}",
+                            container=False,
+                            interactive=False,
                         )
-                        add_ctrl("base_model_name", base_model)
+                    with gr.Group():
+                        modelfilter = gr.Textbox(
+                            placeholder="Model name",
+                            value="",
+                            show_label=False,
+                            container=False,
+                        )
+                        model_gallery = gr.Gallery(
+                            label=f"SDXL model: {settings['base_model']}",
+                            show_label=False,
+                            object_fit="scale-down",
+                            height=550,
+                            allow_preview=False,
+                            preview=False,
+                            visible=True,
+                            show_download_button=False,
+                            min_width=60,
+                            value=list(
+                                map(
+                                    lambda x: (get_checkpoint_thumbnail(x), x),
+                                    path_manager.model_filenames,
+                                )
+                            ),
+                        )
+
+                    base_model = gr.Text(
+                        visible=False,
+                        value=settings["base_model"],
+                    )
+                    add_ctrl("base_model_name", base_model)
 
                     @modelfilter.input(inputs=modelfilter, outputs=[model_gallery])
                     def update_model_filter(filtered):
@@ -644,96 +647,179 @@ with shared.gradio_root as block:
 
                     def update_model_select(evt: gr.SelectData):
                         return {
-                            model_accordion: gr.update(
-                                label=f"Model:\U0000202F{evt.value[1]}"
+                            model_current: gr.update(
+                                value=f"{evt.value[1]}"
                             ),
                             base_model: gr.update(value=evt.value[1]),
                         }
 
                     model_gallery.select(
-                        update_model_select, None, outputs=[model_accordion, base_model]
+                        update_model_select, None, outputs=[model_current, base_model]
                     )
 
-                #                with gr.Row():
-                #                    base_model = gr.Dropdown(
-                #                        visible=False,
-                #                        label="SDXL Base Model",
-                #                        choices=path_manager.model_filenames,
-                #                        value=(
-                #                            settings["base_model"]
-                #                            if settings["base_model"] in path_manager.model_filenames
-                #                            else [path_manager.model_filenames[0]]
-                #                        ),
-                #                        show_label=True,
-                #                    )
-                #                    add_ctrl("base_model_name", base_model)
-                with gr.Accordion(label="LoRA / Strength", open=True), gr.Group():
-                    lora_ctrls = []
-                    nones = 0
-                    for i in range(5):
-                        if settings[f"lora_{i+1}_model"] == "None":
-                            nones += 1
-                            visible = False if nones > 1 else True
-                        else:
-                            visible = True
-                        with gr.Row():
-                            lora_model = gr.Dropdown(
-                                label=f"SDXL LoRA {i+1}",
-                                show_label=False,
-                                choices=["None"] + path_manager.lora_filenames,
-                                value=settings[f"lora_{i+1}_model"],
-                                visible=visible,
-                            )
-                            add_ctrl(f"l{i+1}", lora_model)
+                lora_list = []
+                lora_name_list = []
+                lora_weight_list = []
 
-                            lora_weight = gr.Slider(
-                                label="Strength",
-                                show_label=False,
-                                minimum=-2,
+                with gr.Tab(label="LoRAs"):
+                    with gr.Group(visible=False) as lora_add:
+                        lorafilter = gr.Textbox(
+                            placeholder="Search LoRA",
+                            value="",
+                            show_label=False,
+                            container=False,
+                        )
+                        lora_gallery = gr.Gallery(
+                            label=f"LoRA model",
+                            show_label=False,
+                            object_fit="scale-down",
+                            height=550,
+                            allow_preview=False,
+                            preview=False,
+                            show_download_button=False,
+                            min_width=60,
+                            value=list(
+                                map(
+                                    lambda x: (get_lora_thumbnail(x), x),
+                                    path_manager.lora_filenames,
+                                )
+                            ),
+                        )
+
+                    with gr.Group(visible=True) as lora_active:
+                        with gr.Row():
+                            lora_weight_slider = gr.Slider(
+                                label="Weight",
+                                show_label=True,
+                                minimum=0,
                                 maximum=2,
                                 step=0.05,
-                                value=settings[f"lora_{i+1}_weight"],
-                                visible=visible,
+                                value=1.0,
+                                interactive=True,
                             )
-                            add_ctrl(f"w{i+1}", lora_weight)
-                            lora_ctrls += [lora_model, lora_weight]
-
-                    lora_keywords = gr.Textbox(
-                        label="LoRA Trigger Words", interactive=False
-                    )
-                    add_ctrl("lora_keywords", lora_keywords)
-
-                    def update_loras_visibility(*lora_controls):
-                        """Update the visibility of LoRa controls based on their values."""
-                        hide = False
-                        updates = []
-                        lora_prompt_addition = ""
-                        for model, strength in zip(
-                            lora_controls[::2], lora_controls[1::2]
-                        ):
-                            visibility = False if model == "None" and hide else True
-                            updates += [
-                                gr.update(visible=visibility),
-                                gr.update(visible=visibility),
-                            ]
-                            if model == "None":
-                                hide = True
-                            if model == "None" or strength == 0:
-                                continue
-#                            filename = Path(path_manager.model_paths["cache_path"] / "loras" / model)
-                            lora_prompt_addition = (
-                                f"{lora_prompt_addition} {load_keywords(model)} "
-                            )
-
-                        updates += [lora_keywords.update(value=lora_prompt_addition)]
-                        return updates
-
-                    for model, strength in zip(lora_ctrls[::2], lora_ctrls[1::2]):
-                        model.change(
-                            fn=update_loras_visibility,
-                            inputs=lora_ctrls,
-                            outputs=lora_ctrls + [lora_keywords],
+                        lora_active_gallery = gr.Gallery(
+                            label=f"LoRA model",
+                            show_label=False,
+                            object_fit="scale-down",
+                            height=510,
+                            allow_preview=False,
+                            preview=False,
+                            visible=True,
+                            show_download_button=False,
+                            min_width=60,
+                            value=[],
                         )
+                        add_ctrl("loras", lora_active_gallery)
+
+                        with gr.Group(), gr.Row():
+                            lora_add_btn = gr.Button(
+                                value="+",
+                                scale=1,
+                            )
+                            lora_del_btn = gr.Button(
+                                value="-",
+                                scale=1,
+                            )
+
+                        lora_keywords = gr.Textbox(
+                            label="LoRA Trigger Words", interactive=False
+                        )
+                        add_ctrl("lora_keywords", lora_keywords)
+
+                def lora_gallery_toggle():
+                    result = [
+                        gr.update(visible=True),
+                        gr.update(visible=False),
+                    ]
+                    return result
+
+                def lora_select(loras, evt: gr.SelectData):
+                    global lora_list, lora_name_list, lora_weight_list
+                    w = 1.0
+
+                    keywords = ""
+                    for lora_data in loras:
+                        w, l  = lora_data[1].split(" - ")
+                        keywords = f"{keywords}, {load_keywords(l)} "
+                    keywords = f"{keywords}, {load_keywords(evt.value[1])} "
+
+                    lora_name_list.append(evt.value[1])
+                    lora_weight_list.append(w)
+                    lora_list.append((get_lora_thumbnail(evt.value[1]), f"{w} - {evt.value[1]}"))
+                    return {
+                        lora_add: gr.update(visible=False),
+                        lora_active: gr.update(visible=True),
+                        lora_active_gallery: gr.update(value=lora_list),
+                        lora_keywords: gr.update(value=keywords)
+                    }
+
+                lora_active_selected = None
+                def lora_active_select(evt: gr.SelectData):
+                    global lora_active_selected
+                    lora_active_selected = evt.index
+                    return {
+                        lora_active: gr.update(),
+                        lora_active_gallery: gr.update(),
+                        lora_weight_slider: gr.update(value=lora_weight_list[lora_active_selected]),
+                    }
+
+                def lora_delete(gallery):
+                    global lora_active_selected, lora_name_list
+                    if lora_active_selected is not None:
+
+                        keywords = ""
+                        for lora_data in gallery:
+                            w, l  = lora_data[1].split(" - ")
+                            if not lora_name_list[lora_active_selected] == l:
+                                keywords = f"{keywords}, {load_keywords(l)} "
+
+                        del lora_list[lora_active_selected]
+                        del lora_name_list[lora_active_selected]
+                        del lora_weight_list[lora_active_selected]
+                        if lora_active_selected >= len(lora_list):
+                            lora_active_selected = None
+                    return {
+                        lora_active_gallery: gr.update(value=lora_list),
+                        lora_keywords: gr.update(value=keywords),
+                    }
+
+                def lora_weight_slider_update(w):
+                    global lora_active_selected
+                    global lora_list, lora_name_list, lora_weight_list
+                    if lora_active_selected is None:
+                        return {lora_active_gallery: gr.update()}
+                    lora_weight_list[lora_active_selected] = w
+                    name = lora_name_list[lora_active_selected]
+                    lora_list[lora_active_selected] = (get_lora_thumbnail(name), f"{w} - {name}")
+                    # Fix lora_list
+                    return {
+                        lora_active_gallery: gr.update(value=lora_list),
+                    }
+
+                lora_weight_slider.release(
+                    fn=lora_weight_slider_update,
+                    inputs=[lora_weight_slider],
+                    outputs=[lora_active_gallery]
+                )
+                lora_add_btn.click(
+                    fn=lora_gallery_toggle,
+                    outputs=[lora_add, lora_active],
+                )
+                lora_del_btn.click(
+                    fn=lora_delete,
+                    inputs=lora_active_gallery,
+                    outputs=[lora_active_gallery, lora_keywords],
+                )
+                lora_gallery.select(
+                    fn=lora_select,
+                    inputs=[lora_active_gallery],
+                    outputs=[lora_add, lora_active, lora_active_gallery, lora_keywords],
+                )
+                lora_active_gallery.select(
+                    fn=lora_active_select,
+                    inputs=None,
+                    outputs=[lora_active, lora_active_gallery, lora_weight_slider],
+                )
 
                 with gr.Row():
                     model_refresh = gr.Button(
@@ -743,7 +829,7 @@ with shared.gradio_root as block:
                     )
 
             @model_refresh.click(
-                inputs=[], outputs=[base_model] + lora_ctrls + [style_selection]
+                inputs=[], outputs=[model_gallery, lora_gallery, style_selection]
             )
             def model_refresh_clicked():
                 path_manager.update_all_model_names()
@@ -783,47 +869,48 @@ with shared.gradio_root as block:
                 elem_classes="hint-container",
             )
 
-            @sampler_name.change(
-                inputs=[sampler_name], outputs=[lora_ctrls[0]] + [lora_ctrls[1]]
-            )
-            def sampler_changed(sampler_name):
-                if sampler_name == "lcm":
-                    return [gr.update(value=path_manager.find_lcm_lora())] + [
-                        gr.update(value=1.0)
-                    ]
-                else:
-                    return [gr.update()] + [gr.update()]
+# FIXME
+#            @sampler_name.change(
+#                inputs=[sampler_name], outputs=[lora_ctrls[0]] + [lora_ctrls[1]]
+#            )
+#            def sampler_changed(sampler_name):
+#                if sampler_name == "lcm":
+#                    return [gr.update(value=path_manager.find_lcm_lora())] + [
+#                        gr.update(value=1.0)
+#                    ]
+#                else:
+#                    return [gr.update()] + [gr.update()]
 
-            @performance_selection.change(
-                inputs=[performance_selection],
-                outputs=[perf_name]
-                + performance_outputs
-                + [lora_ctrls[0]]
-                + [lora_ctrls[1]],
-            )
-            def performance_changed(selection):
-                if selection == performance_settings.CUSTOM_PERFORMANCE:
-                    return (
-                        [perf_name.update(value="")]
-                        + [gr.update(visible=True)] * len(performance_outputs)
-                        + [lora_ctrls[0].update()]
-                        + [lora_ctrls[1].update()]
-                    )
-                elif selection == "Lcm":
-                    return (
-                        [perf_name.update(visible=False)]
-                        + [gr.update(visible=False)] * len(performance_outputs)
-                        + [lora_ctrls[0].update(value=path_manager.find_lcm_lora())]
-                        + [lora_ctrls[1].update(value=1.0)]
-                    )
-
-                else:
-                    return (
-                        [perf_name.update(visible=False)]
-                        + [gr.update(visible=False)] * len(performance_outputs)
-                        + [lora_ctrls[0].update()]
-                        + [lora_ctrls[1].update()]
-                    )
+#            @performance_selection.change(
+#                inputs=[performance_selection],
+#                outputs=[perf_name]
+#                + performance_outputs
+#                + [lora_ctrls[0]]
+#                + [lora_ctrls[1]],
+#            )
+#            def performance_changed(selection):
+#                if selection == performance_settings.CUSTOM_PERFORMANCE:
+#                    return (
+#                        [perf_name.update(value="")]
+#                        + [gr.update(visible=True)] * len(performance_outputs)
+#                        + [lora_ctrls[0].update()]
+#                        + [lora_ctrls[1].update()]
+#                    )
+#                elif selection == "Lcm":
+#                    return (
+#                        [perf_name.update(visible=False)]
+#                        + [gr.update(visible=False)] * len(performance_outputs)
+#                        + [lora_ctrls[0].update(value=path_manager.find_lcm_lora())]
+#                        + [lora_ctrls[1].update(value=1.0)]
+#                    )
+#
+#                else:
+#                    return (
+#                        [perf_name.update(visible=False)]
+#                        + [gr.update(visible=False)] * len(performance_outputs)
+#                        + [lora_ctrls[0].update()]
+#                        + [lora_ctrls[1].update()]
+#                    )
 
             @performance_selection.change(
                 inputs=[performance_selection],
