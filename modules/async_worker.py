@@ -89,7 +89,7 @@ def worker():
         loras = []
 
         for lora_data in gen_data["loras"]:
-            w, l  = lora_data[1].split(" - ")
+            w, l  = lora_data[1].split(" - ", 1)
             loras.append((l, float(w)))
 
         parsed_loras, pos_stripped, neg_stripped = parse_loras(

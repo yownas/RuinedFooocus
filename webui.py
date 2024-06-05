@@ -734,7 +734,7 @@ with shared.gradio_root as block:
 
                     keywords = ""
                     for lora_data in gallery:
-                        w, l  = lora_data[1].split(" - ")
+                        w, l  = lora_data[1].split(" - ", 1)
                         keywords = f"{keywords}, {load_keywords(l)} "
                     keywords = f"{keywords}, {load_keywords(evt.value[1])} "
 
@@ -760,7 +760,7 @@ with shared.gradio_root as block:
                     return {
                         lora_active: gr.update(),
                         lora_active_gallery: gr.update(),
-                        lora_weight_slider: gr.update(value=float(loras[evt.index][1].split(" - ")[0])),
+                        lora_weight_slider: gr.update(value=float(loras[evt.index][1].split(" - ", 1)[0])),
                     }
 
                 def lora_delete(gallery):
@@ -772,7 +772,7 @@ with shared.gradio_root as block:
                     keywords = ""
                     loras = []
                     for lora_data in gallery:
-                        w, l  = lora_data[1].split(" - ")
+                        w, l  = lora_data[1].split(" - ", 1)
                         loras.append((lora_data[0]["name"], lora_data[1]))
                         keywords = f"{keywords}, {load_keywords(l)} "
                     return {
