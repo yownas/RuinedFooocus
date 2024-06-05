@@ -832,15 +832,26 @@ with shared.gradio_root as block:
             )
             def model_refresh_clicked():
                 path_manager.update_all_model_names()
-                results = []
-                results += [
-                    gr.update(choices=path_manager.model_filenames),
+                results = [
+                    gr.update(
+                        value=list(
+                            map(
+                                lambda x: (get_checkpoint_thumbnail(x), x),
+                                path_manager.model_filenames,
+                            )
+                        ),
+                    )
                 ]
-                for i in range(5):
-                    results += [
-                        gr.update(choices=["None"] + path_manager.lora_filenames),
-                        gr.update(),
-                    ]
+                results += [
+                    gr.update(
+                        value=list(
+                            map(
+                                lambda x: (get_lora_thumbnail(x), x),
+                                path_manager.lora_filenames,
+                            )
+                        ),
+                    )
+                ]
                 results += [gr.update(choices=list(load_styles().keys()))]
                 return results
 
@@ -867,49 +878,6 @@ with shared.gradio_root as block:
                 elem_id="hint-container",
                 elem_classes="hint-container",
             )
-
-# FIXME
-#            @sampler_name.change(
-#                inputs=[sampler_name], outputs=[lora_ctrls[0]] + [lora_ctrls[1]]
-#            )
-#            def sampler_changed(sampler_name):
-#                if sampler_name == "lcm":
-#                    return [gr.update(value=path_manager.find_lcm_lora())] + [
-#                        gr.update(value=1.0)
-#                    ]
-#                else:
-#                    return [gr.update()] + [gr.update()]
-
-#            @performance_selection.change(
-#                inputs=[performance_selection],
-#                outputs=[perf_name]
-#                + performance_outputs
-#                + [lora_ctrls[0]]
-#                + [lora_ctrls[1]],
-#            )
-#            def performance_changed(selection):
-#                if selection == performance_settings.CUSTOM_PERFORMANCE:
-#                    return (
-#                        [perf_name.update(value="")]
-#                        + [gr.update(visible=True)] * len(performance_outputs)
-#                        + [lora_ctrls[0].update()]
-#                        + [lora_ctrls[1].update()]
-#                    )
-#                elif selection == "Lcm":
-#                    return (
-#                        [perf_name.update(visible=False)]
-#                        + [gr.update(visible=False)] * len(performance_outputs)
-#                        + [lora_ctrls[0].update(value=path_manager.find_lcm_lora())]
-#                        + [lora_ctrls[1].update(value=1.0)]
-#                    )
-#
-#                else:
-#                    return (
-#                        [perf_name.update(visible=False)]
-#                        + [gr.update(visible=False)] * len(performance_outputs)
-#                        + [lora_ctrls[0].update()]
-#                        + [lora_ctrls[1].update()]
-#                    )
 
             @performance_selection.change(
                 inputs=[performance_selection],
