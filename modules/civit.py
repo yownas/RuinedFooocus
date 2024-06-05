@@ -58,7 +58,7 @@ class Civit:
             url = preview.get("url")
             if url and url.endswith(".jpeg"):
                 image_url = url
-                continue
+                break
         if image_url:
             response = self.session.get(image_url)
             response.raise_for_status()
