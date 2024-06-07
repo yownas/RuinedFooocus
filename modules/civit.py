@@ -53,7 +53,12 @@ class Civit:
         return keywords
 
     def get_image(self, model, path):
-        image_url = model.get("images", [{}])[0].get("url")
+        image_url = None
+        for preview in model.get("images", [{}]):
+            url = preview.get("url")
+            if url and url.endswith(".jpeg"):
+                image_url = url
+                break
         if image_url:
             response = self.session.get(image_url)
             response.raise_for_status()

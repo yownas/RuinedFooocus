@@ -87,16 +87,10 @@ def worker():
         image_number = gen_data["image_number"]
 
         loras = []
-        i = 1
 
-        while True:
-            l_key = f"l{i}"
-            w_key = f"w{i}"
-            try:
-                loras.append((gen_data[l_key], gen_data[w_key]))
-                i += 1
-            except KeyError:
-                break
+        for lora_data in gen_data["loras"]:
+            w, l  = lora_data[1].split(" - ", 1)
+            loras.append((l, float(w)))
 
         parsed_loras, pos_stripped, neg_stripped = parse_loras(
             gen_data["prompt"], gen_data["negative"]
