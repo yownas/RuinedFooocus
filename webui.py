@@ -672,7 +672,7 @@ with shared.gradio_root as block:
                             label=f"LoRA model",
                             show_label=False,
                             object_fit="scale-down",
-                            height=550,
+                            height=510,
                             allow_preview=False,
                             preview=False,
                             show_download_button=False,
@@ -683,6 +683,10 @@ with shared.gradio_root as block:
                                     path_manager.lora_filenames,
                                 )
                             ),
+                        )
+                        lora_cancel_btn = gr.Button(
+                            value="cancel",
+                            scale=1,
                         )
 
                     with gr.Group(visible=True) as lora_active:
@@ -825,6 +829,10 @@ with shared.gradio_root as block:
                 lora_add_btn.click(
                     fn=lora_gallery_toggle,
                     outputs=[lora_add, lora_active],
+                )
+                lora_cancel_btn.click(
+                    fn=lora_gallery_toggle,
+                    outputs=[lora_active, lora_add],
                 )
                 lora_del_btn.click(
                     fn=lora_delete,
