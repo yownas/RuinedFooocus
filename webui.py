@@ -740,7 +740,7 @@ with shared.gradio_root as block:
                     )
                     newlist = list(
                         map(
-                            lambda x: (get_checkpoint_thumbnail(x), x),
+                            lambda x: (get_lora_thumbnail(x), x),
                             filtered_filenames,
                         )
                     )
