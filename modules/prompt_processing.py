@@ -110,7 +110,7 @@ def process_wildcards(wildcard_text, directory="wildcards"):
                     insanitylevel=5,
                     imagetype="subject only mode",
                     givensubject=subjectoverride,
-                    forcesubject="humanoid",
+                    forcesubject="human - all",
                     advancedprompting=False,
                     base_model="SDXL",
                 )
@@ -119,7 +119,7 @@ def process_wildcards(wildcard_text, directory="wildcards"):
                     insanitylevel=5,
                     imagetype="subject only mode",
                     givensubject=subjectoverride,
-                    forcesubject="humanoid",
+                    forcesubject="human - all",
                     gender="male",
                     advancedprompting=False,
                     base_model="SDXL",
@@ -129,7 +129,7 @@ def process_wildcards(wildcard_text, directory="wildcards"):
                     insanitylevel=5,
                     imagetype="subject only mode",
                     givensubject=subjectoverride,
-                    forcesubject="humanoid",
+                    forcesubject="human - all",
                     gender="female",
                     advancedprompting=False,
                     base_model="SDXL",
@@ -139,7 +139,7 @@ def process_wildcards(wildcard_text, directory="wildcards"):
                     insanitylevel=5,
                     imagetype="subject only mode",
                     givensubject=subjectoverride,
-                    forcesubject="animal",
+                    forcesubject="animal - all",
                     advancedprompting=False,
                     base_model="SDXL",
                 )
@@ -157,7 +157,7 @@ def process_wildcards(wildcard_text, directory="wildcards"):
                     insanitylevel=5,
                     imagetype="subject only mode",
                     givensubject=subjectoverride,
-                    forcesubject="landscape",
+                    forcesubject="landscape - all",
                     advancedprompting=False,
                     base_model="SDXL",
                 )
@@ -166,7 +166,7 @@ def process_wildcards(wildcard_text, directory="wildcards"):
                     insanitylevel=5,
                     imagetype="subject only mode",
                     givensubject=subjectoverride,
-                    forcesubject="concept",
+                    forcesubject="concept - all",
                     advancedprompting=False,
                     base_model="SDXL",
                 )
@@ -177,6 +177,35 @@ def process_wildcards(wildcard_text, directory="wildcards"):
                     artists=subjectoverride or "all",
                     advancedprompting=False,
                     base_model="SDXL",
+                )
+            elif placeholder.startswith("onebutton1girl"):
+                random_choice = build_dynamic_prompt(
+                    insanitylevel=5,
+                    imagetype="subject only mode",
+                    givensubject=subjectoverride,
+                    forcesubject="human - all",
+                    gender="female",
+                    advancedprompting=False,
+                    base_model="Anime Model",
+                )
+            elif placeholder.startswith("onebutton1boy"):
+                random_choice = build_dynamic_prompt(
+                    insanitylevel=5,
+                    imagetype="subject only mode",
+                    givensubject=subjectoverride,
+                    forcesubject="human - all",
+                    gender="male",
+                    advancedprompting=False,
+                    base_model="Anime Model",
+                )
+            elif placeholder.startswith("onebuttonfurry"):
+                random_choice = build_dynamic_prompt(
+                    insanitylevel=5,
+                    imagetype="subject only mode",
+                    givensubject=subjectoverride,
+                    forcesubject="animal - all",
+                    advancedprompting=False,
+                    base_model="Anime Model",
                 )
             # failover
             else:
@@ -220,7 +249,7 @@ def process_prompt(style, prompt, negative, gen_data=[]):
             antivalues=gen_data["obp_antistring"],
             OBP_preset=gen_data["OBP_preset"],
             advancedprompting=False,
-            base_model="SDXL",
+            base_model=gen_data["OBP_modeltype"],
             prompt_enhancer=gen_data["OBP_promptenhance"],
         )
 

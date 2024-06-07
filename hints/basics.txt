@@ -28,3 +28,14 @@ Use --- to add multiple prompts.
 Choose "Custom..." in many places to create and save your own settings.
 Type `search:` in the prompt to find images generated today.
 No seed is better than any other, except -1, which is random.
+Using OBP and an Anime/Pony style model? Set the Model type to `Anime model`
+Download new models from civitai or huggingface.
+RuinedFooocus is automatically updated on startup.
+Add `LoRA keywords` as a style to automatically add all neccesary keywords for each loaded LoRa.
+Words at the start of the prompt are considered more important.
+Adding `(parentheses)` makes words have more weight.
+A good starting prompt structure is: type of image, a subject, lighting, atmosphere
+Adding an artist to a prompt heavily influences the outcome.
+Some words can have a big impact on the outcome. Be creative and vary things up.
+You can type nonsense words, and it will still work. Mostly.
+Some models are very specific in what they can and can't generate.
