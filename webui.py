@@ -25,7 +25,12 @@ from comfy.samplers import KSampler
 from modules.sdxl_styles import load_styles, styles, allstyles, apply_style
 from modules.settings import default_settings
 from modules.prompt_processing import get_promptlist
-from modules.util import get_wildcard_files, load_keywords, get_checkpoint_thumbnail, get_lora_thumbnail
+from modules.util import (
+    get_wildcard_files,
+    load_keywords,
+    get_checkpoint_thumbnail,
+    get_lora_thumbnail,
+)
 from modules.path import PathManager
 
 from PIL import Image
@@ -596,10 +601,10 @@ with shared.gradio_root as block:
 
                 with gr.Tab(label="Model"):
                     model_current = gr.HTML(
-                            value=f"{settings['base_model']}",
-                            container=False,
-                            interactive=False,
-                        )
+                        value=f"{settings['base_model']}",
+                        container=False,
+                        interactive=False,
+                    )
                     with gr.Group():
                         modelfilter = gr.Textbox(
                             placeholder="Model name",
@@ -647,9 +652,7 @@ with shared.gradio_root as block:
 
                     def update_model_select(evt: gr.SelectData):
                         return {
-                            model_current: gr.update(
-                                value=f"{evt.value[1]}"
-                            ),
+                            model_current: gr.update(value=f"{evt.value[1]}"),
                             base_model: gr.update(value=evt.value[1]),
                         }
 
@@ -729,12 +732,26 @@ with shared.gradio_root as block:
                     ]
                     return result
 
+                @lorafilter.input(inputs=lorafilter, outputs=[lora_gallery])
+                def update_lora_filter(filtered):
+                    filtered_filenames = filter(
+                        lambda filename: filtered.lower() in filename.lower(),
+                        path_manager.lora_filenames,
+                    )
+                    newlist = list(
+                        map(
+                            lambda x: (get_checkpoint_thumbnail(x), x),
+                            filtered_filenames,
+                        )
+                    )
+                    return gr.update(value=newlist)
+
                 def lora_select(gallery, evt: gr.SelectData):
                     w = 1.0
 
                     keywords = ""
                     for lora_data in gallery:
-                        w, l  = lora_data[1].split(" - ", 1)
+                        w, l = lora_data[1].split(" - ", 1)
                         keywords = f"{keywords}, {load_keywords(l)} "
                     keywords = f"{keywords}, {load_keywords(evt.value[1])} "
 
@@ -742,15 +759,18 @@ with shared.gradio_root as block:
                     for lora_data in gallery:
                         loras.append((lora_data[0]["name"], lora_data[1]))
 
-                    loras.append((get_lora_thumbnail(evt.value[1]), f"{w} - {evt.value[1]}"))
+                    loras.append(
+                        (get_lora_thumbnail(evt.value[1]), f"{w} - {evt.value[1]}")
+                    )
                     return {
                         lora_add: gr.update(visible=False),
                         lora_active: gr.update(visible=True),
                         lora_active_gallery: gr.update(value=loras),
-                        lora_keywords: gr.update(value=keywords)
+                        lora_keywords: gr.update(value=keywords),
                     }
 
                 lora_active_selected = None
+
                 def lora_active_select(gallery, evt: gr.SelectData):
                     global lora_active_selected
                     lora_active_selected = evt.index
@@ -760,7 +780,9 @@ with shared.gradio_root as block:
                     return {
                         lora_active: gr.update(),
                         lora_active_gallery: gr.update(),
-                        lora_weight_slider: gr.update(value=float(loras[evt.index][1].split(" - ", 1)[0])),
+                        lora_weight_slider: gr.update(
+                            value=float(loras[evt.index][1].split(" - ", 1)[0])
+                        ),
                     }
 
                 def lora_delete(gallery):
@@ -772,7 +794,7 @@ with shared.gradio_root as block:
                     keywords = ""
                     loras = []
                     for lora_data in gallery:
-                        w, l  = lora_data[1].split(" - ", 1)
+                        w, l = lora_data[1].split(" - ", 1)
                         loras.append((lora_data[0]["name"], lora_data[1]))
                         keywords = f"{keywords}, {load_keywords(l)} "
                     return {
@@ -798,7 +820,7 @@ with shared.gradio_root as block:
                 lora_weight_slider.release(
                     fn=lora_weight_slider_update,
                     inputs=[lora_active_gallery, lora_weight_slider],
-                    outputs=[lora_active_gallery]
+                    outputs=[lora_active_gallery],
                 )
                 lora_add_btn.click(
                     fn=lora_gallery_toggle,
