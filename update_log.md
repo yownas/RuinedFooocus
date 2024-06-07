@@ -1,3 +1,6 @@
+### 1.40.0
+* New LoRA selection
+
 ### 1.39.0
 * New model selection with model previews!
 
