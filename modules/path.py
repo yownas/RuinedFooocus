@@ -88,8 +88,15 @@ class PathManager:
                 # get file name, add cache path change suffix
                 cache_file = Path(cache_path / path.name)
 
-                thumbcheck = cache_file.with_suffix(".jpeg")
-                if not thumbcheck.exists():
+                has_preview = False
+                suffixes = [".jpeg", ".jpg", ".png", ".gif"]
+                for suffix in suffixes:
+                    thumbcheck = cache_file.with_suffix(suffix)
+                    if Path(thumbcheck).is_file():
+                        has_preview = True
+                        continue
+
+                if not has_preview:
                     hash = civit.model_hash(str(path))
                     print(f"Downloading model thumbnail for {path}")
                     models = civit.get_models_by_hash(hash)

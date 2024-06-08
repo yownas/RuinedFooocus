@@ -78,9 +78,11 @@ def load_keywords(lora):
 
 
 def get_model_thumbnail(cache_path):
-    filename = cache_path.with_suffix(".jpeg")
-    if Path(filename).is_file():
-        return filename
+    suffixes = [".jpeg", ".jpg", ".png", ".gif"]
+    for suffix in suffixes:
+        filename = cache_path.with_suffix(suffix)
+        if Path(filename).is_file():
+            return filename
     else:
         return "html/warning.png"
 
