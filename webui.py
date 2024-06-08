@@ -911,6 +911,23 @@ with shared.gradio_root as block:
 
             @performance_selection.change(
                 inputs=[performance_selection],
+                outputs=[perf_name]
+                + performance_outputs
+            )
+            def performance_changed(selection):
+                if selection == performance_settings.CUSTOM_PERFORMANCE:
+                    return (
+                        [perf_name.update(value="")]
+                        + [gr.update(visible=True)] * len(performance_outputs)
+                    )
+                else:
+                    return (
+                        [perf_name.update(visible=False)]
+                        + [gr.update(visible=False)] * len(performance_outputs)
+                    )
+
+            @performance_selection.change(
+                inputs=[performance_selection],
                 outputs=[custom_steps]
                 + [cfg]
                 + [sampler_name]
