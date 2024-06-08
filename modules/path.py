@@ -94,7 +94,7 @@ class PathManager:
                     thumbcheck = cache_file.with_suffix(suffix)
                     if Path(thumbcheck).is_file():
                         has_preview = True
-                        continue
+                        break
 
                 if not has_preview:
                     hash = civit.model_hash(str(path))
