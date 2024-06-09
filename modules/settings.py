@@ -25,9 +25,9 @@ DEFAULT_SETTINGS = {
     "lora_5_model": "None",
     "lora_5_weight": path_manager.default_model_names["default_lora_weight"],
     "theme": "None",
-    "auto_negative_prompt": True,
+    "auto_negative_prompt": False,
     "OBP_preset": "Standard",
-    "hint_chance": 25
+    "hint_chance": 25,
 }
 
 
