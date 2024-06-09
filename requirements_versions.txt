@@ -5,10 +5,10 @@ safetensors==0.3.1
 accelerate==0.21.0
 pyyaml==6.0
 Pillow==9.2.0
-scipy==1.9.3
+scipy==1.10.0
 tqdm==4.64.1
 psutil==5.9.5
-numpy==1.23.5
+numpy==1.24.4
 pytorch_lightning==1.9.4
 omegaconf==2.2.3
 gradio==3.50.2
@@ -22,4 +22,4 @@ opencv-python==4.8.1.78
 kornia==0.7.2
 sentencepiece==0.2.0
 spandrel==0.3.4
-imageio==2.34.1 
+imageio[pyav]==2.34.1 
