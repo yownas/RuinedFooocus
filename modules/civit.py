@@ -74,7 +74,7 @@ class Civit:
                     video = iio.imiter(tmp_path)
                     fps = iio.immeta(tmp_path)["fps"]
                     video_out = []
-                    max = 160  # Max width or height
+                    max = 166  # Max width or height
                     for i in video:
                         oh = i.shape[0]
                         ow = i.shape[1]
