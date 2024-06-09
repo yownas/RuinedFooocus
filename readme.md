@@ -99,7 +99,7 @@ Or if you want to open a remote port, use
 38. Automatic Negative prompt, save yourself the heartache and hassle of writing negative prompts!
 39. If the file `reinstall` exists upgrade xformers and torch to 2.1.2 (to upgrade simply create a blank file called `reinstall`)
 40. Support [LayerDiffuse](https://github.com/huchenlei/ComfyUI-layerdiffuse) PowerUp.
-41. New model/LoRA select.
+41. New model/LoRA select with support for animated thumbnails.
 
 
 ## Thanks
