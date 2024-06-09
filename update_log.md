@@ -1,3 +1,6 @@
+### 1.40.1
+* Support animated thumbnails
+
 ### 1.40.0
 * New LoRA selection
 * Updated OBP
