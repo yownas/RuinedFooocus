@@ -3,6 +3,7 @@ import hashlib
 import shutil
 import os
 import imageio.v3 as iio
+import cv2
 from typing import Dict, Any
 
 
@@ -69,9 +70,17 @@ class Civit:
                 if format == 'video':
                     tmp_path = f"{path}.tmp"
                     os.rename(path, tmp_path)
-                    video = iio.imread(tmp_path)
+                    video = iio.imiter(tmp_path)
                     fps = iio.immeta(tmp_path)['fps']
-                    iio.imwrite(str(path.with_suffix(".gif")), video, fps=fps, loop=0)
+                    video_out = []
+                    max = 160 # Max width or height
+                    for i in video:
+                        oh = i.shape[0]
+                        ow = i.shape[1]
+                        zoom = max / oh if oh > ow else max / ow
+                        out = cv2.resize(i, dsize=(int(ow*zoom), int(oh*zoom)), interpolation=cv2.INTER_LANCZOS4)
+                        video_out.append(out)
+                    iio.imwrite(str(path.with_suffix(".gif")), video_out, fps=fps, loop=0)
                     os.remove(tmp_path)
                 break
         if image_url is None:
