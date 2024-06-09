@@ -2,7 +2,6 @@ import requests
 import hashlib
 import shutil
 import os
-import imageio.v3 as iio
 import cv2
 from typing import Dict, Any
 
@@ -56,6 +55,8 @@ class Civit:
         return keywords
 
     def get_image(self, model, path):
+        import imageio.v3 as iio
+
         path = path.with_suffix(".jpeg")
         image_url = None
         for preview in model.get("images", [{}]):
@@ -67,20 +68,26 @@ class Civit:
                 response.raise_for_status()
                 with open(path, "wb") as file:
                     file.write(response.content)
-                if format == 'video':
+                if format == "video":
                     tmp_path = f"{path}.tmp"
                     os.rename(path, tmp_path)
                     video = iio.imiter(tmp_path)
-                    fps = iio.immeta(tmp_path)['fps']
+                    fps = iio.immeta(tmp_path)["fps"]
                     video_out = []
-                    max = 160 # Max width or height
+                    max = 160  # Max width or height
                     for i in video:
                         oh = i.shape[0]
                         ow = i.shape[1]
                         zoom = max / oh if oh > ow else max / ow
-                        out = cv2.resize(i, dsize=(int(ow*zoom), int(oh*zoom)), interpolation=cv2.INTER_LANCZOS4)
+                        out = cv2.resize(
+                            i,
+                            dsize=(int(ow * zoom), int(oh * zoom)),
+                            interpolation=cv2.INTER_LANCZOS4,
+                        )
                         video_out.append(out)
-                    iio.imwrite(str(path.with_suffix(".gif")), video_out, fps=fps, loop=0)
+                    iio.imwrite(
+                        str(path.with_suffix(".gif")), video_out, fps=fps, loop=0
+                    )
                     os.remove(tmp_path)
                 break
         if image_url is None:
