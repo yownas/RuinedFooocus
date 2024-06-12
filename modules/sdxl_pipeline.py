@@ -247,24 +247,25 @@ class pipeline:
         callback,
         gen_data=None,
     ):
-        #       try:
-        #           if self.xl_base_patched == None or not isinstance(
-        #               self.xl_base_patched.unet.model, SDXL
-        #           ):
-        #               print(f"ERROR: Can not use old 1.5 model")
-        #               worker.interrupt_ruined_processing = True
-        #               worker.outputs.append(
-        #                   ["preview", (-1, f"Can not use old 1.5 model ...", "error.png")]
-        #               )
-        #               return []
-        #       except Exception as e:
-        #           # Something went very wrong
-        #           print(f"ERROR: {e}")
-        #           worker.interrupt_ruined_processing = True
-        #           worker.outputs.append(
-        #               ["preview", (-1, f"Error when trying to use model ...", "error.png")]
-        #           )
-        #           return []
+        try:
+            if self.xl_base_patched == None or not (
+                isinstance(self.xl_base_patched.unet.model, SDXL) or
+                isinstance(self.xl_base_patched.unet.model, SD3)
+                ):
+                print(f"ERROR: Can only use SDXL or SD3 models")
+                worker.interrupt_ruined_processing = True
+                worker.outputs.append(
+                    ["preview", (-1, f"Can only use SDXL or SD3 models ...", "error.png")]
+                )
+                return []
+        except Exception as e:
+            # Something went very wrong
+            print(f"ERROR: {e}")
+            worker.interrupt_ruined_processing = True
+            worker.outputs.append(
+                ["preview", (-1, f"Error when trying to use model ...", "error.png")]
+            )
+            return []
 
         img2img_mode = False
         input_image_pil = None
