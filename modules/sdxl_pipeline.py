@@ -11,7 +11,7 @@ import modules.prompt_processing as pp
 
 from PIL import Image, ImageOps
 
-from comfy.model_base import SDXL
+from comfy.model_base import SDXL, SD3
 from modules.settings import default_settings
 from shared import path_manager
 
@@ -110,11 +110,14 @@ class pipeline:
             self.xl_base = self.StableDiffusionModel(
                 unet=unet, clip=clip, vae=vae, clip_vision=clip_vision
             )
-            #            if not isinstance(self.xl_base.unet.model, SDXL):
-            #                print(
-            #                    "Model not supported. Fooocus only support SDXL model as the base model."
-            #                )
-            #                self.xl_base = None
+            if not (
+                isinstance(self.xl_base.unet.model, SDXL) or
+                isinstance(self.xl_base.unet.model, SD3)
+            ):
+                print(
+                    "Model not supported. Fooocus only support SDXL/SD3 models as the base model."
+                )
+                self.xl_base = None
 
             if self.xl_base is not None:
                 self.xl_base_hash = name
@@ -409,9 +412,14 @@ class pipeline:
                 # self.xl_base_patched.tvae = None
 
         if not img2img_mode:
-            latent = EmptySD3LatentImage().generate(
-                width=width, height=height, batch_size=1
-            )[0]
+            if isinstance(self.xl_base.unet.model, SDXL):
+                latent = EmptyLatentImage().generate(
+                    width=width, height=height, batch_size=1
+                )[0]
+            elif isinstance(self.xl_base.unet.model, SD3):
+                latent = EmptySD3LatentImage().generate(
+                    width=width, height=height, batch_size=1
+                )[0]
             force_full_denoise = False
             denoise = None
 
