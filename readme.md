@@ -100,6 +100,7 @@ Or if you want to open a remote port, use
 39. If the file `reinstall` exists upgrade xformers and torch to 2.1.2 (to upgrade simply create a blank file called `reinstall`)
 40. Support [LayerDiffuse](https://github.com/huchenlei/ComfyUI-layerdiffuse) PowerUp.
 41. New model/LoRA select with support for animated thumbnails.
+42. SD3 Support, make sure to use `sd3_medium_incl_clips.safetensors` - Note: *If the pictures look "strange" change to euler and simple*
 
 
 ## Thanks

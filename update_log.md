@@ -1,3 +1,6 @@
+### 1.50.0
+* SD3 BBY
+
 ### 1.40.1
 * Support animated thumbnails
 
