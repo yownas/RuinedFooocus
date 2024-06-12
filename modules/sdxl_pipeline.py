@@ -39,6 +39,9 @@ from comfy.sampler_helpers import (
     get_additional_models,
     prepare_mask,
 )
+
+from comfy_extras.nodes_sd3 import EmptySD3LatentImage
+
 from comfy.samplers import KSampler
 from comfy_extras.nodes_post_processing import ImageScaleToTotalPixels
 from comfy_extras.nodes_canny import Canny
@@ -107,11 +110,11 @@ class pipeline:
             self.xl_base = self.StableDiffusionModel(
                 unet=unet, clip=clip, vae=vae, clip_vision=clip_vision
             )
-            if not isinstance(self.xl_base.unet.model, SDXL):
-                print(
-                    "Model not supported. Fooocus only support SDXL model as the base model."
-                )
-                self.xl_base = None
+            #            if not isinstance(self.xl_base.unet.model, SDXL):
+            #                print(
+            #                    "Model not supported. Fooocus only support SDXL model as the base model."
+            #                )
+            #                self.xl_base = None
 
             if self.xl_base is not None:
                 self.xl_base_hash = name
@@ -188,7 +191,7 @@ class pipeline:
 
     def textencode(self, id, text, clip_skip):
         update = False
-        hash =  f"{text} {clip_skip}"
+        hash = f"{text} {clip_skip}"
         if hash != self.conditions[id]["text"]:
             self.xl_base_patched.clip = CLIPSetLastLayer().set_last_layer(
                 self.xl_base_patched.clip, clip_skip * -1
@@ -241,24 +244,24 @@ class pipeline:
         callback,
         gen_data=None,
     ):
-        try:
-            if self.xl_base_patched == None or not isinstance(
-                self.xl_base_patched.unet.model, SDXL
-            ):
-                print(f"ERROR: Can not use old 1.5 model")
-                worker.interrupt_ruined_processing = True
-                worker.outputs.append(
-                    ["preview", (-1, f"Can not use old 1.5 model ...", "error.png")]
-                )
-                return []
-        except Exception as e:
-            # Something went very wrong
-            print(f"ERROR: {e}")
-            worker.interrupt_ruined_processing = True
-            worker.outputs.append(
-                ["preview", (-1, f"Error when trying to use model ...", "error.png")]
-            )
-            return []
+        #       try:
+        #           if self.xl_base_patched == None or not isinstance(
+        #               self.xl_base_patched.unet.model, SDXL
+        #           ):
+        #               print(f"ERROR: Can not use old 1.5 model")
+        #               worker.interrupt_ruined_processing = True
+        #               worker.outputs.append(
+        #                   ["preview", (-1, f"Can not use old 1.5 model ...", "error.png")]
+        #               )
+        #               return []
+        #       except Exception as e:
+        #           # Something went very wrong
+        #           print(f"ERROR: {e}")
+        #           worker.interrupt_ruined_processing = True
+        #           worker.outputs.append(
+        #               ["preview", (-1, f"Error when trying to use model ...", "error.png")]
+        #           )
+        #           return []
 
         img2img_mode = False
         input_image_pil = None
@@ -406,10 +409,10 @@ class pipeline:
                 # self.xl_base_patched.tvae = None
 
         if not img2img_mode:
-            latent = EmptyLatentImage().generate(
+            latent = EmptySD3LatentImage().generate(
                 width=width, height=height, batch_size=1
             )[0]
-            force_full_denoise = True
+            force_full_denoise = False
             denoise = None
 
         if gen_data["inpaint_toggle"]:

@@ -30,6 +30,7 @@ def set_timestep_range(conditioning, start, end):
 
 
 def get_previewer(device, latent_format):
+    return None
     taesd_decoder_path = os.path.abspath(
         os.path.realpath(
             os.path.join("models", "vae_approx", latent_format.taesd_decoder_name)
