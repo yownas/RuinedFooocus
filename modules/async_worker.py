@@ -137,8 +137,13 @@ def worker():
             height = gen_data["height"]
 
         if gen_data["cn_selection"] == "Img2Img" or gen_data["cn_type"] == "Img2img":
-            width = gen_data["input_image"].width
-            height = gen_data["input_image"].height
+            if gen_data["input_image"]:
+                width = gen_data["input_image"].width
+                height = gen_data["input_image"].height
+            else:
+                print(f"WARNING: CheatCode selected but no Input image selected. Ignoring PowerUp!")
+                gen_data["cn_selection"] = "None"
+                gen_data["cn_type"] = "None"
 
         seed = gen_data["seed"]
 
