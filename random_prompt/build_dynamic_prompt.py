@@ -30,7 +30,7 @@ OBPresets = OneButtonPresets()
 # insanity level controls randomness of propmt 0-10
 # forcesubject van be used to force a certain type of subject
 # Set artistmode to none, to exclude artists 
-def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all", imagetype = "all", onlyartists = False, antivalues = "", prefixprompt = "", suffixprompt ="",promptcompounderlevel ="1", seperator = "comma", givensubject="",smartsubject = True,giventypeofimage="", imagemodechance = 20, gender = "all", subtypeobject="all", subtypehumanoid="all", subtypeconcept="all", advancedprompting=True, hardturnoffemojis=False, seed=-1, overrideoutfit="", prompt_g_and_l = False, base_model = "SD1.5", OBP_preset = "", prompt_enhancer = "none", subtypeanimal="all", subtypelocation="all"):
+def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all", imagetype = "all", onlyartists = False, antivalues = "", prefixprompt = "", suffixprompt ="",promptcompounderlevel ="1", seperator = "comma", givensubject="",smartsubject = True,giventypeofimage="", imagemodechance = 20, gender = "all", subtypeobject="all", subtypehumanoid="all", subtypeconcept="all", advancedprompting=True, hardturnoffemojis=False, seed=-1, overrideoutfit="", prompt_g_and_l = False, base_model = "SD1.5", OBP_preset = "", prompt_enhancer = "none", subtypeanimal="all", subtypelocation="all", preset_prefix = "", preset_suffix = ""):
 
     remove_weights = False
     less_verbose = False
@@ -38,6 +38,8 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
     add_quality = True
     anime_mode = False
     configfilesuffix = ""
+    if(forcesubject ==  "------ all"):
+        forcesubject = "all"
 
     superprompter = False
     prompt_enhancer = prompt_enhancer.lower()
@@ -120,6 +122,9 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
         giventypeofimage = selected_opb_preset["giventypeofimage"]
         antistring = selected_opb_preset["antistring"]
 
+    prefixprompt = preset_prefix + ", " + prefixprompt
+    suffixprompt = suffixprompt + ", " + preset_suffix
+
     # new method of subject choosing from the interface, lets translate this:
     # really hacky way of doing this now.
     if("-" in forcesubject):
@@ -169,6 +174,10 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
         advancedprompting = False
         anime_mode = True
         configfilesuffix = "anime"
+    
+    # Hard overwrite some stuff because people dont config this themselves
+    if((anime_mode or imagetype == "all - anime") and (artists == "all" or normal_dist(insanitylevel))):
+        artists = "none"
 
 
     # load the config file
@@ -423,6 +432,7 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
         artistlist = csv_to_list(artists,antilist,"./userfiles/")
     elif(artists != "none"):
         artistlist = csv_to_list("artists",antilist)
+
 
     # create special artists lists, used in templates
     fantasyartistlist = artist_category_csv_to_list("artists_and_category","fantasy")
@@ -1033,7 +1043,6 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
     generatelandscape = generatelocation or generatelocationfantasy or generatelocationscifi or generatelocationvideogame or generatelocationbiome or generatelocationcity
 
     if(generatelandscape):
-        mainchooserlist.append("landscape")
         addontolocationlist.append("-location-")
         addontolocationlist.append("-background-")
         addontolocationinsidelist.append("-location-")
@@ -1088,8 +1097,16 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
 
 
     # determine wether we have a special mode or not
-    if(random.randint(1,int(imagemodechance)) == 1 and imagetype == "all" and giventypeofimage == "" and onlyartists == False):
+    if(random.randint(1,int(imagemodechance)) == 1 and (imagetype == "all" or imagetype == "all - anime") and giventypeofimage == "" and onlyartists == False):
+        if(less_verbose):
+            imagetypemodelist.remove("dynamic templates mode")
+        if(anime_mode):
+            imagetypemodelist.remove("only templates mode")
+            imagetypemodelist.remove("massive madness mode")
+            imagetypemodelist.remove("fixed styles mode")
+            imagetypemodelist.remove("unique art mode")
         imagetype = random.choice(imagetypemodelist)  # override imagetype with a random "mode" value
+
 
 
     specialmode = False
@@ -1116,9 +1133,11 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
         specialmode = True
         if(uncommon_dist(insanitylevel)):
             artblastermode = True
-        else:
+        elif(bool(artistlist)):
             onlysubjectmode = True
             artifymode = True
+        else:
+            artblastermode = True
         print("Running in art blaster mode")
 
     if(imagetype == "unique art mode"):
@@ -1489,7 +1508,18 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
                 mainchooserlist.remove("object")
             if(random.randint(0,8) > max(2,insanitylevel -2) and "humanoid" in mainchooserlist):
                 mainchooserlist.remove("humanoid")
- 
+
+        #focus in animemode on mostly humans
+        if(anime_mode  and (forcesubject == "all" or forcesubject == "")):
+            if(random.randint(0,11) > max(2,insanitylevel -2) and "concept" in mainchooserlist):
+                mainchooserlist.remove("concept")
+            if(random.randint(0,11) > max(2,insanitylevel -2) and "landscape" in mainchooserlist):
+                mainchooserlist.remove("landscape")
+            if(random.randint(0,11) > max(2,insanitylevel -2) and "object" in mainchooserlist):
+                mainchooserlist.remove("object")
+            if(random.randint(0,8) > max(2,insanitylevel -2) and "animal" in mainchooserlist):
+                mainchooserlist.remove("animal")
+    
 
         # choose the main subject type
         mainchooser = random.choice(mainchooserlist)
@@ -1634,6 +1664,7 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
                 if(uncommon_dist(insanitylevel) and bool(artistlist)):
                     completeprompt += "-artiststyle-, "
                 step = step + 1 
+
 
         # start unique art here
         if(uniqueartmode==True):
@@ -1946,6 +1977,10 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
         # start tokinator here
         if(thetokinatormode == True):
             tokinatorsubtype = ["personification", "human form", "object", "landscape", "OR(creature;beast;animal;myth;concept;world;planet)", "building", "location", "shape", "being", "-token-"]
+            if(anime_mode and gender == "male"):
+                tokinatorsubtype = ["(1boy, solo)"]
+            if(anime_mode and gender == "female"):
+                tokinatorsubtype = ["(1girl, solo)"]
             if(chance_roll(insanitylevel,"normal")):
                 if(chance_roll(insanitylevel,"normal") and remove_weights == False):
                     completeprompt += "(OR(;-imagetypequality-;uncommon) OR(-imagetype-;-othertype-;rare):1.3) "
@@ -2841,7 +2876,7 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
                 # todo
                 descriptivemode = False
                 # if we have artists, maybe go in artists descriptor mode
-                if(templatemode == False and specialmode == False and "-artist-" in completeprompt and common_dist(max(8 - insanitylevel,3))):
+                if(not anime_mode and not less_verbose and templatemode == False and specialmode == False and "-artist-" in completeprompt and uncommon_dist(max(8 - insanitylevel,3))):
                     for i in range(random.randint(1,3)):
                         # print("adding artist stuff")
                         completeprompt += ", -artistdescription-"
@@ -2851,7 +2886,7 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
                     
 
                 # if not, we could go in random styles descriptor mode
-                elif(not anime_mode and templatemode == False and specialmode == False and uncommon_dist(10 - insanitylevel)):
+                elif(not anime_mode and not less_verbose and templatemode == False and specialmode == False and legendary_dist(10 - insanitylevel)):
                     for i in range(random.randint(1,max(7,insanitylevel + 2))):
                         # print("adding random crap")
                         completeprompt += ", -allstylessuffix-"
@@ -3241,7 +3276,6 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
 
         
         
-        
         if(partlystylemode == True):
             # add a part of the style to the back
             chosenstylesuffixlist = chosenstylesuffix.split(",")
@@ -3278,7 +3312,6 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
                 completeprompt += " \n , "
             else:
                 completeprompt += " \n " + seperator + " "
-
 
 
 
@@ -3682,7 +3715,8 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
         print(random.choice(devmessagelist))
         print("")
 
-    print(completeprompt)
+    print(completeprompt) # keep this! :D 
+
     if(prompt_g_and_l == False):
         return completeprompt
     else:
@@ -5489,8 +5523,15 @@ def replace_user_wildcards(completeprompt):
 
 def translate_main_subject(main_subject=""):
     subjecttype_lookup = {
+        "all": ["all", "all"],
+        "random": ["all", "all"],
+        "--- all": ["all", "all"],
+        "------all": ["all", "all"],
+        "------ all": ["all", "all"],
+
         "object - all": ["object", "all"],
         "--- object - all": ["object", "all"],
+        "object": ["object", "all"],
         "object - generic": ["object", "all"],
         "generic object": ["object", "generic objects"],
         "generic objects": ["object", "generic objects"],
