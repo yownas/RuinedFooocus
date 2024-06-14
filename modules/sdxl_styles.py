@@ -79,19 +79,19 @@ def load_styles():
 def apply_style(style, prompt, negative_prompt, lora_keywords):
     output_prompt = ""
     output_negative_prompt = ""
+    temp_style_prompt = prompt
     bFlufferizer = False
     bHyperprompt = False
     artifylist = []
     artifystylelist = []
     index = 0
 
-
-    while "Style: Pick Random" in style:
-        style[style.index("Style: Pick Random")] = random.choice(allstyles)
-
     if not style:
         return prompt, negative_prompt
 
+    while "Style: Pick Random" in style:
+        style[style.index("Style: Pick Random")] = random.choice(allstyles)
+  
     if "Flufferizer" in style:
         bFlufferizer = True
         style.remove("Flufferizer")
@@ -113,10 +113,12 @@ def apply_style(style, prompt, negative_prompt, lora_keywords):
 
     for s in style:
         p, n = styles.get(s, default_style)
-        output_prompt += p + ", "
+        output_prompt = p + ", "
         output_negative_prompt += n + ", "
 
-    output_prompt = output_prompt.replace("{prompt}", prompt)
+        temp_style_prompt = output_prompt.replace("{prompt}", temp_style_prompt)
+        output_prompt = temp_style_prompt.replace(", ,", ", ")
+
 
     # prep outputprompt for use in Flufferize and Artify
     if output_prompt == "":

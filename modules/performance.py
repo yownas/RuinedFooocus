@@ -23,12 +23,13 @@ class PerformanceSettings:
         default_data = self._load_data(self.DEFAULT_PERFORMANCE_FILE)
         data = self._load_data(self.PERFORMANCE_FILE)
 
-        for name, settings in default_data.items():
-            settings = self.default_settings | settings
+        for name, default_settings in default_data.items():
             if name not in data:
-                data[name] = settings
-            if settings != data[name]:
-                data[name] = settings
+                data[name] = default_settings
+            else:
+                existing_settings = data[name]
+                merged_settings = existing_settings | default_settings
+                data[name] = merged_settings
 
         self._save_data(self.PERFORMANCE_FILE, data)
         return data
