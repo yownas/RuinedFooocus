@@ -1,3 +1,8 @@
+### 1.51.0
+* Bugfixes
+* Now works with the SD3 LARGE model.
+* OBP Update!!!
+
 ### 1.50.0
 * SD3 BBY
 
