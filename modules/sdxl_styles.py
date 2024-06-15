@@ -91,14 +91,19 @@ def apply_style(style, prompt, negative_prompt, lora_keywords):
 
     while "Style: Pick Random" in style:
         style[style.index("Style: Pick Random")] = random.choice(allstyles)
-  
-    if "Flufferizer" in style:
-        bFlufferizer = True
-        style.remove("Flufferizer")
-    
-    if "Hyperprompt" in style:
-        bHyperprompt = True
-        style.remove("Hyperprompt")
+
+    for s in style.copy():
+        _s = s.upper().strip()
+        if _s in map(str.upper, ["Flufferizer", "Style: Flufferizer"]):
+            bFlufferizer = True
+            del style[style.index(s)]
+
+        if _s in map(str.upper, ["Hyperprompt", "Style: Hyperprompt"]):
+            bHyperprompt = True
+            del style[style.index(s)]
+
+        if _s in map(str.upper, ["LoRA keywords", "Style: LoRA keywords"]):
+            style[style.index(s)] = "LoRA keywords" # Make sure it has the correct name
 
     if bHyperprompt:
         prompt = build_dynamic_prompt.one_button_superprompt(prompt=prompt)
@@ -126,11 +131,12 @@ def apply_style(style, prompt, negative_prompt, lora_keywords):
 
     for artist in artifylist:
         output_prompt = build_dynamic_prompt.artify_prompt(prompt=output_prompt, artists=artist)
-   
+
     if bFlufferizer:
         output_prompt = prompt_expansion.expand_prompt(output_prompt)
 
     output_prompt = output_prompt.replace("{lora_keywords}", lora_keywords)
+
     output_negative_prompt += ", " + negative_prompt
 
     return output_prompt, output_negative_prompt
