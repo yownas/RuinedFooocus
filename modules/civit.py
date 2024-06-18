@@ -57,7 +57,7 @@ class Civit:
     def get_models_by_path(self, path, cache_path=None):
         data = None
         if cache_path is None:
-            cache_path = Path(self.cache_path / Path(path).name)
+            cache_path = Path(self.cache_path) / Path(Path(path).name)
         json_path = Path(cache_path).with_suffix(".json")
 
         if json_path.exists():
@@ -102,7 +102,12 @@ class Civit:
         return model.get("baseModel", "Unknown")
 
     def get_model_type(self, model):
-        return model.get("model").get("type", "Unknown")
+        res = model.get("model", None)
+        if res is not None:
+            res = res.get("type", "Unknown")
+        else:
+            res = "Unknown"
+        return res
 
     def get_image(self, model, path):
         import imageio.v3 as iio

@@ -1,5 +1,9 @@
 import os
-from shared import state
+from shared import state, path_manager
+from modules.civit import Civit
+from pathlib import Path
+
+civit = Civit(cache_path=Path(path_manager.model_paths["cache_path"]) / Path("checkpoints"))
 
 try:
     import modules.faceswapper_pipeline as faceswapper_pipeline
@@ -13,6 +17,9 @@ import modules.template_pipeline as template_pipeline
 import modules.upscale_pipeline as upscale_pipeline
 import modules.search_pipeline as search_pipeline
 import modules.controlnet as controlnet
+
+class NoPipeLine:
+    pipeline_type = []
 
 def update(gen_data):
     prompt = gen_data["prompt"] if "prompt" in gen_data else ""
@@ -49,11 +56,20 @@ def update(gen_data):
                 state["pipeline"] = faceswapper_pipeline.pipeline()
 
         else:
-            if (
-                state["pipeline"] is None
-                or "sdxl" not in state["pipeline"].pipeline_type
-            ):
-                state["pipeline"] = sdxl_pipeline.pipeline()
+            baseModel = None
+            if "base_model_name" in gen_data:
+                file = Path(path_manager.model_paths["modelfile_path"]) / Path(gen_data['base_model_name'])
+                baseModel = civit.get_model_base(civit.get_models_by_path(file))
+            if state["pipeline"] is None:
+                state["pipeline"] = NoPipeLine()
+
+            if baseModel is not None:
+                # Try with SDXL if we have an "Unknown" model.
+                if (
+                    baseModel in ["Pony", "SD 3", "SDXL 1.0", "SDXL Distilled", "SDXL Turbo", "Unknown"]
+                    and "sdxl" not in state["pipeline"].pipeline_type
+                ):
+                    state["pipeline"] = sdxl_pipeline.pipeline()
 
         return state["pipeline"]
     except:
