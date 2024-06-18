@@ -81,7 +81,7 @@ class PathManager:
         else:
             return
         self.civit_worker_folders.append(folder_path)
-        civit = Civit()
+        civit = Civit(cache_path=cache_path)
         for path in folder_path.rglob("*"):
             if path.suffix.lower() in self.EXTENSIONS:
 
@@ -100,15 +100,15 @@ class PathManager:
 
                 if not has_preview:
                     if models is None:
-                        models = civit.get_models_by_path(str(path), cache_path=cache_file)
-                    print(f"Downloading model thumbnail for {Path(path).name} ({civit.get_model_type(models)})")
+                        models = civit.get_models_by_path(str(path))
+                    print(f"Downloading model thumbnail for {Path(path).name} ({civit.get_model_base(models)} - {civit.get_model_type(models)})")
                     civit.get_image(models, thumbcheck)
                     time.sleep(1)
 
                 txtcheck = cache_file.with_suffix(".txt")
                 if isLora and not txtcheck.exists():
                     if models is None:
-                        models = civit.get_models_by_path(str(path), cache_path=cache_file)
+                        models = civit.get_models_by_path(str(path))
                     print(f"Downloading LoRA keywords for {Path(path).name} ({civit.get_model_type(models)})")
                     keywords = civit.get_keywords(models)
                     with open(txtcheck, "w") as f:

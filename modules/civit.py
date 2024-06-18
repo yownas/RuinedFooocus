@@ -7,9 +7,9 @@ import json
 from typing import Dict, Any
 from pathlib import Path
 
-
 class Civit:
-    def __init__(self, base_url="https://civitai.com/api/v1/"):
+    def __init__(self, base_url="https://civitai.com/api/v1/", cache_path="cache"):
+        self.cache_path = cache_path
         self.base_url = base_url
         self.headers = {"Content-Type": "application/json"}
         self.session = requests.Session()
@@ -57,7 +57,7 @@ class Civit:
     def get_models_by_path(self, path, cache_path=None):
         data = None
         if cache_path is None:
-            cache_path = Path(path).parent
+            cache_path = Path(self.cache_path / Path(path).name)
         json_path = Path(cache_path).with_suffix(".json")
 
         if json_path.exists():
@@ -98,13 +98,11 @@ class Civit:
         keywords = model.get("trainedWords", ["No Keywords for LoRA"])
         return keywords
 
-    def get_model_type(self, model):
+    def get_model_base(self, model):
         return model.get("baseModel", "Unknown")
 
-    def get_json(self, path):
-        path = path.with_suffix(".json")
-        # FIXME
-        return None
+    def get_model_type(self, model):
+        return model.get("model").get("type", "Unknown")
 
     def get_image(self, model, path):
         import imageio.v3 as iio
