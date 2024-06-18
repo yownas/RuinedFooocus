@@ -3,7 +3,9 @@ import hashlib
 import shutil
 import os
 import cv2
+import json
 from typing import Dict, Any
+from pathlib import Path
 
 
 class Civit:
@@ -30,29 +32,79 @@ class Civit:
         shorthash = m.hexdigest()[0:8]
         return shorthash
 
-    def get_models_by_hash(self, hash):
+#    def get_models_by_hash(self, hash):
+#        url = f"{self.base_url}model-versions/by-hash/{hash}"
+#        try:
+#            response = requests.get(url, headers=self.headers)
+#            response.raise_for_status()
+#            json = response.json()
+#
+#            return json
+#        except requests.exceptions.HTTPError as e:
+#            if response.status_code == 404:
+#                print("Error: Model Not Found on civit.ai")
+#                return {}
+#            elif response.status_code == 503:
+#                print("Error: Civit.ai Service Currently Unavailable")
+#                return {}
+#            else:
+#                print(f"HTTP Error: {e}")
+#                return {}
+#        except requests.exceptions.RequestException as e:
+#            print(f"Error: {e}")
+#            return {}
+
+    def get_models_by_path(self, path, cache_path=None):
+        data = None
+        if cache_path is None:
+            cache_path = Path(path).parent
+        json_path = Path(cache_path).with_suffix(".json")
+
+        if json_path.exists():
+            try:
+                with open(json_path) as f:
+                    data = json.load(f)
+            except:
+                data = None
+        if data is not None:
+            return data
+
+        hash = self.model_hash(path)
         url = f"{self.base_url}model-versions/by-hash/{hash}"
         try:
             response = requests.get(url, headers=self.headers)
             response.raise_for_status()
-            return response.json()
+            data = response.json()
         except requests.exceptions.HTTPError as e:
             if response.status_code == 404:
                 print("Error: Model Not Found on civit.ai")
-                return {}
             elif response.status_code == 503:
                 print("Error: Civit.ai Service Currently Unavailable")
-                return {}
             else:
                 print(f"HTTP Error: {e}")
-                return {}
         except requests.exceptions.RequestException as e:
             print(f"Error: {e}")
+
+        if data is None:
             return {}
+
+        print(f"Update model data: {json_path}")
+        with open(json_path, "w") as f:
+            json.dump(data, f, indent=2)
+
+        return data
 
     def get_keywords(self, model):
         keywords = model.get("trainedWords", ["No Keywords for LoRA"])
         return keywords
+
+    def get_model_type(self, model):
+        return model.get("baseModel", "Unknown")
+
+    def get_json(self, path):
+        path = path.with_suffix(".json")
+        # FIXME
+        return None
 
     def get_image(self, model, path):
         import imageio.v3 as iio

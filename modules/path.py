@@ -88,7 +88,9 @@ class PathManager:
                 # get file name, add cache path change suffix
                 cache_file = Path(cache_path / path.name)
 
+                models = None
                 has_preview = False
+
                 suffixes = [".jpeg", ".jpg", ".png", ".gif"]
                 for suffix in suffixes:
                     thumbcheck = cache_file.with_suffix(suffix)
@@ -97,17 +99,17 @@ class PathManager:
                         break
 
                 if not has_preview:
-                    hash = civit.model_hash(str(path))
-                    print(f"Downloading model thumbnail for {path}")
-                    models = civit.get_models_by_hash(hash)
+                    if models is None:
+                        models = civit.get_models_by_path(str(path), cache_path=cache_file)
+                    print(f"Downloading model thumbnail for {Path(path).name} ({civit.get_model_type(models)})")
                     civit.get_image(models, thumbcheck)
                     time.sleep(1)
 
                 txtcheck = cache_file.with_suffix(".txt")
                 if isLora and not txtcheck.exists():
-                    hash = civit.model_hash(str(path))
-                    print(f"Downloading LoRA keywords for {path}")
-                    models = civit.get_models_by_hash(hash)
+                    if models is None:
+                        models = civit.get_models_by_path(str(path), cache_path=cache_file)
+                    print(f"Downloading LoRA keywords for {Path(path).name} ({civit.get_model_type(models)})")
                     keywords = civit.get_keywords(models)
                     with open(txtcheck, "w") as f:
                         f.write(", ".join(keywords))
