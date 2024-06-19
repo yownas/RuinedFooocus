@@ -109,7 +109,7 @@ class PathManager:
                 if isLora and not txtcheck.exists():
                     if models is None:
                         models = civit.get_models_by_path(str(path))
-                    print(f"Downloading LoRA keywords for {Path(path).name} ({civit.get_model_type(models)})")
+                    print(f"Downloading LoRA keywords for {Path(path).name} ({civit.get_model_base(models)} - {civit.get_model_type(models)})")
                     keywords = civit.get_keywords(models)
                     with open(txtcheck, "w") as f:
                         f.write(", ".join(keywords))

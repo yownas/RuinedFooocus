@@ -32,12 +32,14 @@ from modules.util import (
     get_lora_thumbnail,
 )
 from modules.path import PathManager
+from modules.civit import Civit
 
 from PIL import Image
 
 inpaint_toggle = None
 path_manager = PathManager()
-
+civit_checkpoints = Civit(cache_path=Path(path_manager.model_paths["cache_path"] / "checkpoints"))
+civit_loras = Civit(cache_path=Path(path_manager.model_paths["cache_path"] / "loras"))
 
 def find_unclosed_markers(s):
     markers = re.findall(r"__", s)
@@ -651,9 +653,16 @@ with shared.gradio_root as block:
                         return gr.update(value=newlist)
 
                     def update_model_select(evt: gr.SelectData):
+
+                        model_name = f"{evt.value[1]}"
+                        models = civit_checkpoints.get_models_by_path(str(model_name))
+                        model_base = civit_checkpoints.get_model_base(models)
+
+                        txt = f"{evt.value[1]}<br>Model type: {model_base}"
+
                         return {
-                            model_current: gr.update(value=f"{evt.value[1]}"),
-                            base_model: gr.update(value=evt.value[1]),
+                            model_current: gr.update(value=txt),
+                            base_model: gr.update(value=model_name),
                         }
 
                     model_gallery.select(
