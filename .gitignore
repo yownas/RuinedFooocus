@@ -57,9 +57,11 @@ performance.json
 /cache/loras/*.jpeg
 /cache/loras/*.jpg
 /cache/loras/*.gif
+/cache/loras/*.json
 /cache/checkpoints/*.jpeg
 /cache/checkpoints/*.jpg
 /cache/checkpoints/*.gif
+/cache/checkpoints/*.json
 random_prompt/userfiles/obp_presets.json
 reinstall
 prompt_expansion/pytorch_model.bin
