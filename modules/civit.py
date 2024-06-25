@@ -35,10 +35,13 @@ class Civit:
     def model_sha256(self, filename):
         blksize = 1024 * 1024
         hash_sha256 = hashlib.sha256()
-        with open(filename, 'rb') as f:
-            for chunk in iter(lambda: f.read(blksize), b""):
-                hash_sha256.update(chunk)
-        return hash_sha256.hexdigest().upper()
+        try:
+            with open(filename, 'rb') as f:
+                for chunk in iter(lambda: f.read(blksize), b""):
+                    hash_sha256.update(chunk)
+            return hash_sha256.hexdigest().upper()
+        except:
+            return None
 
 #    def get_models_by_hash(self, hash):
 #        url = f"{self.base_url}model-versions/by-hash/{hash}"
