@@ -655,7 +655,7 @@ with shared.gradio_root as block:
                     def update_model_select(evt: gr.SelectData):
 
                         model_name = f"{evt.value[1]}"
-                        models = civit_checkpoints.get_models_by_path(str(model_name))
+                        models = civit_checkpoints.get_models_by_path(path_manager.model_paths["modelfile_path"] / Path(model_name))
                         model_base = civit_checkpoints.get_model_base(models)
 
                         txt = f"{evt.value[1]}<br>Model type: {model_base}"

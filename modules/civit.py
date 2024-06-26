@@ -41,6 +41,7 @@ class Civit:
                     hash_sha256.update(chunk)
             return hash_sha256.hexdigest().upper()
         except:
+            print(f"model_sha256(): Failed reading {filename}")
             return None
 
 #    def get_models_by_hash(self, hash):
@@ -88,7 +89,7 @@ class Civit:
             data = response.json()
         except requests.exceptions.HTTPError as e:
             if response.status_code == 404:
-                print("Error: Model Not Found on civit.ai")
+                print(f"Error: Model {Path(path).name} Not Found on civit.ai")
             elif response.status_code == 503:
                 print("Error: Civit.ai Service Currently Unavailable")
             else:
@@ -131,7 +132,9 @@ class Civit:
             if url:
                 image_url = url
                 response = self.session.get(image_url)
-                response.raise_for_status()
+                if response.status_code != 200:
+                    print(f"WARNING: get_image() - {response.status} : {response.reason}")
+                    break
                 with open(path, "wb") as file:
                     file.write(response.content)
                 if format == "video":
