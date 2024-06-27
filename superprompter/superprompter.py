@@ -13,7 +13,7 @@ modelDir = script_dir / "model_files"
 
 def load_models():
 
-    if not os.listdir(modelDir):
+    if not os.path.isdir(modelDir):
         print("Model files not found. Downloading...\n")
         download_models(modelDir)
 
