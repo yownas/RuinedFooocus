@@ -71,6 +71,10 @@ def update(gen_data):
                 ):
                     state["pipeline"] = sdxl_pipeline.pipeline()
 
+        if state["pipeline"] is None:
+            print(f"Warning: Using SDXL pipeline as fallback.")
+            state["pipeline"] = sdxl_pipeline.pipeline()
+
         return state["pipeline"]
     except:
         # If things fail. Use the template pipeline that only returns a logo
