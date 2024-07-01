@@ -71,7 +71,7 @@ def update(gen_data):
                 ):
                     state["pipeline"] = sdxl_pipeline.pipeline()
 
-        if state["pipeline"] is None:
+        if state["pipeline"] is None or len(state["pipeline"].pipeline_type) == 0:
             print(f"Warning: Using SDXL pipeline as fallback.")
             state["pipeline"] = sdxl_pipeline.pipeline()
 
