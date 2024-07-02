@@ -98,7 +98,7 @@ class Civit:
             print(f"Error: {e}")
 
         if data is None:
-            return {}
+            data = {}
 
         print(f"Update model data: {json_path}")
         with open(json_path, "w") as f:
