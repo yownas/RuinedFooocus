@@ -15,7 +15,8 @@ from comfy.model_base import SDXL, SD3
 from modules.settings import default_settings
 from shared import path_manager
 
-import time
+from pathlib import Path
+import json
 import random
 
 import comfy.utils
@@ -91,11 +92,91 @@ class pipeline:
     models = []
     inference_memory = None
 
+    # Test
+    def merge_models(self, name):
+        print(f"Loading base model: {name}")
+
+        self.xl_base_patched = None
+        self.xl_base_patched_hash = ""
+        self.xl_base_patched_extra = set()
+        self.conditions = None
+
+        filename = Path(path_manager.model_paths["modelfile_path"] / name)
+
+        with filename.open() as f:
+            merge_data = json.load(f)
+
+        print(f"DEBUG: {merge_data}")
+
+        filename = Path(path_manager.model_paths["modelfile_path"] / merge_data["base"]["name"])
+        norm = 1.0
+        if "models" in merge_data and len(merge_data["models"]) > 0:
+            weights = sum([merge_data["base"]["weight"]] + [x.get("weight") for x in merge_data["models"]])
+            if "normalize" in merge_data:
+                norm = float(merge_data["normalize"]) / weights
+            else:
+                norm = 1.0 / weights
+
+        print(f"DEBUG: load base {merge_data['base']['name']} ({merge_data['base']['weight']} * {norm})")
+#        try:
+        if True:
+            with torch.torch.inference_mode():
+                unet, clip, vae, clip_vision = load_checkpoint_guess_config(str(filename))
+
+            self.xl_base = self.StableDiffusionModel(
+                unet=unet, clip=clip, vae=vae, clip_vision=clip_vision
+            )
+            if self.xl_base is not None:
+                self.xl_base_hash = name
+                self.xl_base_patched = self.xl_base
+                self.xl_base_patched_hash = ""
+#        except:
+#            print(f"ERROR?")
+
+        if "models" in merge_data and len(merge_data["models"]) > 0:
+            device = comfy.model_management.get_torch_device()
+            mp = ModelPatcher(self.xl_base_patched.unet, device, "cpu", size=1)
+
+            w = float(merge_data["base"]["weight"]) * norm
+            for m in merge_data["models"]:
+                print(f"DEBUG: merge {m['name']} ({m['weight']} * {norm})")
+                filename = Path(path_manager.model_paths["modelfile_path"] / m["name"])
+                with torch.torch.inference_mode():
+                    m_unet, m_clip, m_vae, m_clip_vision = load_checkpoint_guess_config(str(filename))
+                del m_clip
+                del m_vae
+                del m_clip_vision
+                kp = m_unet.get_key_patches("diffusion_model.")
+                for k in kp:
+                    mp.model.add_patches({k: kp[k]}, strength_patch=float(m['weight'] * norm), strength_model=w)
+                del m_unet
+                w = 1.0
+
+            self.xl_base = self.StableDiffusionModel(
+                unet=mp.model, clip=clip, vae=vae, clip_vision=clip_vision
+            )
+
+        if "loras" in merge_data and len(merge_data["loras"]) > 0:
+            loras = [(x.get("name"), x.get("weight")) for x in merge_data["loras"]]
+            print(f"DEBUG: Add loras: {loras}")
+            self.load_loras(loras)
+
+        # TODO
+        # cache
+
+        return
+
+
     def load_base_model(self, name):
         if self.xl_base_hash == name and self.xl_base_patched_extra == set():
             return
 
         filename = os.path.join(path_manager.model_paths["modelfile_path"], name)
+        if Path(filename).suffix == '.merge':
+            print(f"DEBUG: merge {name}")
+            self.merge_models(name)
+            print(f"DEBUG: merged {name}")
+            return
 
         print(f"Loading base model: {name}")
 

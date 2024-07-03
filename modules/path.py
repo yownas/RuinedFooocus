@@ -19,7 +19,7 @@ class PathManager:
         "path_cache": "../cache/",
     }
 
-    EXTENSIONS = [".pth", ".ckpt", ".bin", ".safetensors"]
+    EXTENSIONS = [".pth", ".ckpt", ".bin", ".safetensors", ".merge"]
 
     civit_worker_folders = []
 
