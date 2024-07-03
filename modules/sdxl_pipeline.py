@@ -160,6 +160,7 @@ class pipeline:
             loras = [(x.get("name"), x.get("weight")) for x in merge_data["loras"]]
             print(f"DEBUG: Add loras: {loras}")
             self.load_loras(loras)
+            self.xl_base = self.xl_base_patched
 
         # TODO
         # cache
