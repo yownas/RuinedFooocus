@@ -49,7 +49,7 @@ from comfy_extras.nodes_canny import Canny
 from comfy_extras.nodes_freelunch import FreeU
 from comfy.model_patcher import ModelPatcher
 from comfy.utils import load_torch_file
-
+from comfy.sd import save_checkpoint
 from modules.layerdiffuse import TransparentVAEDecoder, ImageRenderer
 
 from modules.pipleline_utils import (
@@ -94,19 +94,27 @@ class pipeline:
 
     # Test
     def merge_models(self, name):
-        print(f"Loading base model: {name}")
+        print(f"Loading merge: {name}")
 
         self.xl_base_patched = None
         self.xl_base_patched_hash = ""
         self.xl_base_patched_extra = set()
         self.conditions = None
 
+        # TODO check if there is a cached version
+        cache_name = str(Path(path_manager.model_paths["cache_path"] / "merges" / Path(name).name).with_suffix(".safetensors"))
+        if Path(cache_name).exists():
+            print(f"Loading cached version:")
+            self.load_base_model(cache_name)
+            return
+
         filename = Path(path_manager.model_paths["modelfile_path"] / name)
 
         with filename.open() as f:
             merge_data = json.load(f)
 
-        print(f"DEBUG: {merge_data}")
+        if 'comment' in merge_data:
+            print(f"  {merge_data['comment']}")
 
         filename = Path(path_manager.model_paths["modelfile_path"] / merge_data["base"]["name"])
         norm = 1.0
@@ -117,9 +125,8 @@ class pipeline:
             else:
                 norm = 1.0 / weights
 
-        print(f"DEBUG: load base {merge_data['base']['name']} ({merge_data['base']['weight']} * {norm})")
-#        try:
-        if True:
+        print(f"Loading base {merge_data['base']['name']} ({float(merge_data['base']['weight']) * norm * 100}%)")
+        try:
             with torch.torch.inference_mode():
                 unet, clip, vae, clip_vision = load_checkpoint_guess_config(str(filename))
 
@@ -130,8 +137,9 @@ class pipeline:
                 self.xl_base_hash = name
                 self.xl_base_patched = self.xl_base
                 self.xl_base_patched_hash = ""
-#        except:
-#            print(f"ERROR?")
+        except:
+            print(f"ERROR?")
+            return
 
         if "models" in merge_data and len(merge_data["models"]) > 0:
             device = comfy.model_management.get_torch_device()
@@ -139,8 +147,9 @@ class pipeline:
 
             w = float(merge_data["base"]["weight"]) * norm
             for m in merge_data["models"]:
-                print(f"DEBUG: merge {m['name']} ({m['weight']} * {norm})")
+                print(f"Merging {m['name']} ({m['weight'] * norm * 100}%)")
                 filename = Path(path_manager.model_paths["modelfile_path"] / m["name"])
+                # FIXME add error check?`
                 with torch.torch.inference_mode():
                     m_unet, m_clip, m_vae, m_clip_vision = load_checkpoint_guess_config(str(filename))
                 del m_clip
@@ -158,12 +167,21 @@ class pipeline:
 
         if "loras" in merge_data and len(merge_data["loras"]) > 0:
             loras = [(x.get("name"), x.get("weight")) for x in merge_data["loras"]]
-            print(f"DEBUG: Add loras: {loras}")
             self.load_loras(loras)
             self.xl_base = self.xl_base_patched
 
-        # TODO
-        # cache
+        if 'cache' in merge_data and merge_data['cache'] == True:
+            filename = str(Path(path_manager.model_paths["cache_path"] / "merges" / Path(name).name).with_suffix(".safetensors"))
+            print(f"Saving merged model: {filename}")
+            with torch.torch.inference_mode():
+                save_checkpoint(
+                    filename,
+                    self.xl_base.unet,
+                    clip=self.xl_base.clip,
+                    vae=self.xl_base.vae,
+                    clip_vision=self.xl_base.clip_vision,
+                    metadata={"rf_merge_data": str(merge_data)}
+                )
 
         return
 
@@ -174,9 +192,7 @@ class pipeline:
 
         filename = os.path.join(path_manager.model_paths["modelfile_path"], name)
         if Path(filename).suffix == '.merge':
-            print(f"DEBUG: merge {name}")
             self.merge_models(name)
-            print(f"DEBUG: merged {name}")
             return
 
         print(f"Loading base model: {name}")
