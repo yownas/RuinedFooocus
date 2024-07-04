@@ -81,6 +81,9 @@ class Civit:
         if data is not None:
             return data
 
+        if Path(path).suffix == ".merge":
+            return {"baseModel": "Merge"}
+
         hash = self.model_sha256(path)
         url = f"{self.base_url}model-versions/by-hash/{hash}"
         try:

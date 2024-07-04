@@ -66,7 +66,7 @@ def update(gen_data):
             if baseModel is not None:
                 # Try with SDXL if we have an "Unknown" model.
                 if (
-                    baseModel in ["Playground v2", "Pony", "SD 3", "SDXL 1.0", "SDXL Distilled", "SDXL Hyper", "SDXL Turbo", "Unknown"]
+                    baseModel in ["Playground v2", "Pony", "SD 3", "SDXL 1.0", "SDXL Distilled", "SDXL Hyper", "SDXL Turbo", "Unknown", "Merge"]
                     and "sdxl" not in state["pipeline"].pipeline_type
                 ):
                     state["pipeline"] = sdxl_pipeline.pipeline()
