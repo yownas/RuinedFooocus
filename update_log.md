@@ -1,3 +1,6 @@
+### 1.52.0
+* Merge-recipes for checkpoints
+
 ### 1.51.0
 * Bugfixes
 * Now works with the SD3 LARGE model.

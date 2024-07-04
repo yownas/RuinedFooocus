@@ -101,6 +101,7 @@ Or if you want to open a remote port, use
 40. Support [LayerDiffuse](https://github.com/huchenlei/ComfyUI-layerdiffuse) PowerUp.
 41. New model/LoRA select with support for animated thumbnails.
 42. SD3 Support, make sure to use `sd3_medium_incl_clips.safetensors` - Note: *If the pictures look "strange" change to euler and simple*
+43. Use [merge-files](https://github.com/runew0lf/RuinedFooocus/wiki/Checkpoint-merges) as checkpoints.
 
 
 ## Thanks
