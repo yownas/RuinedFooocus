@@ -92,7 +92,6 @@ class pipeline:
     models = []
     inference_memory = None
 
-    # Test
     def merge_models(self, name):
         print(f"Loading merge: {name}")
 
@@ -101,32 +100,30 @@ class pipeline:
         self.xl_base_patched_extra = set()
         self.conditions = None
 
-        # TODO check if there is a cached version
+        filename = Path(path_manager.model_paths["modelfile_path"] / name)
         cache_name = str(Path(path_manager.model_paths["cache_path"] / "merges" / Path(name).name).with_suffix(".safetensors"))
-        if Path(cache_name).exists():
+        if Path(cache_name).exists() and Path(cache_name).stat().st_mtime <= Path(filename).stat().st_mtime:
             print(f"Loading cached version:")
             self.load_base_model(cache_name)
             return
 
-        filename = Path(path_manager.model_paths["modelfile_path"] / name)
-
-        with filename.open() as f:
-            merge_data = json.load(f)
-
-        if 'comment' in merge_data:
-            print(f"  {merge_data['comment']}")
-
-        filename = Path(path_manager.model_paths["modelfile_path"] / merge_data["base"]["name"])
-        norm = 1.0
-        if "models" in merge_data and len(merge_data["models"]) > 0:
-            weights = sum([merge_data["base"]["weight"]] + [x.get("weight") for x in merge_data["models"]])
-            if "normalize" in merge_data:
-                norm = float(merge_data["normalize"]) / weights
-            else:
-                norm = 1.0 / weights
-
-        print(f"Loading base {merge_data['base']['name']} ({float(merge_data['base']['weight']) * norm * 100}%)")
         try:
+            with filename.open() as f:
+                merge_data = json.load(f)
+
+            if 'comment' in merge_data:
+                print(f"  {merge_data['comment']}")
+
+            filename = Path(path_manager.model_paths["modelfile_path"] / merge_data["base"]["name"])
+            norm = 1.0
+            if "models" in merge_data and len(merge_data["models"]) > 0:
+                weights = sum([merge_data["base"]["weight"]] + [x.get("weight") for x in merge_data["models"]])
+                if "normalize" in merge_data:
+                    norm = float(merge_data["normalize"]) / weights
+                else:
+                    norm = 1.0 / weights
+
+            print(f"Loading base {merge_data['base']['name']} ({float(merge_data['base']['weight']) * norm * 100}%)")
             with torch.torch.inference_mode():
                 unet, clip, vae, clip_vision = load_checkpoint_guess_config(str(filename))
 
@@ -137,8 +134,9 @@ class pipeline:
                 self.xl_base_hash = name
                 self.xl_base_patched = self.xl_base
                 self.xl_base_patched_hash = ""
-        except:
-            print(f"ERROR?")
+        except Exception as e:
+            self.xl_base = None
+            print(f"ERROR: {e}")
             return
 
         if "models" in merge_data and len(merge_data["models"]) > 0:
