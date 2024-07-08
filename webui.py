@@ -744,10 +744,17 @@ with shared.gradio_root as block:
                         mm_name = gr.Textbox(
                             show_label=False,
                             placeholder="Name(.merge)",
+                            container=False,
                         )
                         mm_comment = gr.Textbox(
                             show_label=False,
                             placeholder="Comment",
+                            container=False,
+                        )
+                        mm_cache = gr.Checkbox(
+                            label="Save cached safetensor of merged model",
+                            value=False,
+                            container=False,
                         )
 
                     with gr.Group(visible=False) as mm_add:
@@ -1038,7 +1045,7 @@ with shared.gradio_root as block:
                         mm_active_gallery: gr.update(value=mm),
                     }
 
-                def mm_save(name, comment, gallery):
+                def mm_save(name, comment, gallery, cache):
                     if name == "":
                         gr.Info("Merge needs a name.")
                         return
@@ -1068,7 +1075,7 @@ with shared.gradio_root as block:
                     for lora in loras:
                         dict["loras"].append({"name": lora[0], "weight": float(lora[1])})
                     dict["normalize"] = 1.0
-                    dict["cache"] = False
+                    dict["cache"] = cache
 
                     filename = Path(path_manager.model_paths["modelfile_path"] / name).with_suffix(".merge")
                     if filename.exists():
@@ -1109,7 +1116,7 @@ with shared.gradio_root as block:
                 )
                 mm_save_btn.click(
                     fn=mm_save,
-                    inputs=[mm_name, mm_comment, mm_active_gallery],
+                    inputs=[mm_name, mm_comment, mm_active_gallery, mm_cache],
                     outputs=[],
                 )
 
