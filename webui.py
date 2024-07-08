@@ -1071,10 +1071,12 @@ with shared.gradio_root as block:
                     dict["cache"] = False
 
                     filename = Path(path_manager.model_paths["modelfile_path"] / name).with_suffix(".merge")
-                    with open(filename, "w") as outfile: 
-                        json.dump(dict, outfile, indent=2)
-
-                    gr.Info(f"Saved {filename}")
+                    if filename.exists():
+                        gr.Info("Not saving, file already exists.")
+                    else:
+                        with open(filename, "w") as outfile: 
+                            json.dump(dict, outfile, indent=2)
+                        gr.Info(f"Saved {Path(name).with_suffix('.merge')}")
 
 
                 mm_weight_slider.release(
