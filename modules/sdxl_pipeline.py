@@ -123,7 +123,7 @@ class pipeline:
                 else:
                     norm = 1.0 / weights
 
-            print(f"Loading base {merge_data['base']['name']} ({int(merge_data['base']['weight']) * norm * 100}%)")
+            print(f"Loading base {merge_data['base']['name']} ({int(merge_data['base']['weight'] * norm * 100)}%)")
             with torch.torch.inference_mode():
                 unet, clip, vae, clip_vision = load_checkpoint_guess_config(str(filename))
 
