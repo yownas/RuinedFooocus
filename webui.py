@@ -9,7 +9,7 @@ from shared import (
     path_manager,
 )
 import time
-
+import json
 import gradio as gr
 import re
 
@@ -30,6 +30,7 @@ from modules.util import (
     load_keywords,
     get_checkpoint_thumbnail,
     get_lora_thumbnail,
+    get_model_thumbnail,
 )
 from modules.path import PathManager
 from modules.civit import Civit
@@ -738,13 +739,97 @@ with shared.gradio_root as block:
                         )
                         add_ctrl("lora_keywords", lora_keywords)
 
-                def lora_gallery_toggle():
+                with gr.Tab(label="MergeMaker"):
+                    with gr.Group():
+                        mm_name = gr.Textbox(
+                            show_label=False,
+                            placeholder="Name(.merge)",
+                        )
+                        mm_comment = gr.Textbox(
+                            show_label=False,
+                            placeholder="Comment",
+                        )
+
+                    with gr.Group(visible=False) as mm_add:
+                        mm_filter = gr.Textbox(
+                            placeholder="Search model/LoRA",
+                            value="",
+                            show_label=False,
+                            container=False,
+                        )
+                        mm_gallery = gr.Gallery(
+                            label=f"Models",
+                            show_label=False,
+                            object_fit="scale-down",
+                            height=410,
+                            allow_preview=False,
+                            preview=False,
+                            show_download_button=False,
+                            min_width=60,
+                            value=list(
+                                map(
+                                    lambda x: (get_checkpoint_thumbnail(x), f"C:{x}"),
+                                    path_manager.model_filenames,
+                                )
+                            ) + list (
+                                map(
+                                    lambda x: (get_lora_thumbnail(x), f"L:{x}"),
+                                    path_manager.lora_filenames,
+                                )
+                            ),
+                        )
+                        mm_cancel_btn = gr.Button(
+                            value="cancel",
+                            scale=1,
+                        )
+
+                    with gr.Group(visible=True) as mm_active:
+                        with gr.Row():
+                            mm_weight_slider = gr.Slider(
+                                label="Weight",
+                                show_label=True,
+                                minimum=0,
+                                maximum=2,
+                                step=0.05,
+                                value=1.0,
+                                interactive=True,
+                            )
+                        mm_active_gallery = gr.Gallery(
+                            label=f"Models",
+                            show_label=False,
+                            object_fit="scale-down",
+                            height=410,
+                            allow_preview=False,
+                            preview=False,
+                            visible=True,
+                            show_download_button=False,
+                            min_width=60,
+                            value=[],
+                        )
+                        add_ctrl("mm_models", mm_active_gallery)
+
+                        with gr.Group(), gr.Row():
+                            mm_add_btn = gr.Button(
+                                value="+",
+                                scale=1,
+                            )
+                            mm_del_btn = gr.Button(
+                                value="-",
+                                scale=1,
+                            )
+
+                        mm_save_btn = gr.Button(
+                            value="Save",
+                        )
+
+                def gallery_toggle():
                     result = [
                         gr.update(visible=True),
                         gr.update(visible=False),
                     ]
                     return result
 
+                # LoRA
                 @lorafilter.input(inputs=lorafilter, outputs=[lora_gallery])
                 def update_lora_filter(filtered):
                     filtered_filenames = filter(
@@ -836,11 +921,11 @@ with shared.gradio_root as block:
                     outputs=[lora_active_gallery],
                 )
                 lora_add_btn.click(
-                    fn=lora_gallery_toggle,
+                    fn=gallery_toggle,
                     outputs=[lora_add, lora_active],
                 )
                 lora_cancel_btn.click(
-                    fn=lora_gallery_toggle,
+                    fn=gallery_toggle,
                     outputs=[lora_active, lora_add],
                 )
                 lora_del_btn.click(
@@ -858,6 +943,175 @@ with shared.gradio_root as block:
                     inputs=[lora_active_gallery],
                     outputs=[lora_active, lora_active_gallery, lora_weight_slider],
                 )
+
+                # MM
+                @mm_filter.input(inputs=mm_filter, outputs=[mm_gallery])
+                def update_mm_filter(filtered):
+                    filtered_models = filter(
+                        lambda filename: ".merge" not in filename.lower(),
+                        path_manager.model_filenames,
+                    )
+                    filtered_models = filter(
+                        lambda filename: filtered.lower() in filename.lower(),
+                        filtered_models,
+                    )
+                    filtered_loras = filter(
+                        lambda filename: filtered.lower() in filename.lower(),
+                        path_manager.lora_filenames,
+                    )
+                    newlist = list(
+                        map(
+                            lambda x: (get_checkpoint_thumbnail(x), f"C:{x}"),
+                            filtered_models,
+                        )
+                    ) + list (
+                        map(
+                            lambda x: (get_lora_thumbnail(x), f"L:{x}"),
+                            filtered_loras,
+                        )
+                    )
+                    return gr.update(value=newlist)
+
+
+                def mm_select(gallery, evt: gr.SelectData):
+                    w = 1.0
+
+                    mm = []
+                    for mm_data in gallery:
+                        mm.append((mm_data[0]["name"], mm_data[1]))
+
+                    m = evt.value[1]
+                    n = re.sub("[CL]:", "", m)
+                    mm.append(
+                        (get_model_thumbnail(n), f"{w} - {m}")
+                    )
+                    return {
+                        mm_add: gr.update(visible=False),
+                        mm_active: gr.update(visible=True),
+                        mm_active_gallery: gr.update(value=mm),
+                    }
+
+                mm_active_selected = None
+
+                def mm_active_select(gallery, evt: gr.SelectData):
+                    global mm_active_selected
+                    mm_active_selected = evt.index
+                    mm = []
+                    for mm_data in gallery:
+                        mm.append((mm_data[0]["name"], mm_data[1]))
+                    return {
+                        mm_active: gr.update(),
+                        mm_active_gallery: gr.update(),
+                        mm_weight_slider: gr.update(
+                            value=float(mm[evt.index][1].split(" - ", 1)[0])
+                        ),
+                    }
+
+
+                def mm_delete(gallery):
+                    global mm_active_selected
+                    if mm_active_selected is not None:
+                        del gallery[mm_active_selected]
+                        if mm_active_selected >= len(gallery):
+                            mm_active_selected = None
+                    mm = []
+                    for mm_data in gallery:
+                        w, l = mm_data[1].split(" - ", 1)
+                        mm.append((mm_data[0]["name"], mm_data[1]))
+                    return {
+                        mm_active_gallery: gr.update(value=mm),
+                    }
+
+                def mm_weight_slider_update(gallery, w):
+                    global mm_active_selected
+                    if mm_active_selected is None:
+                        return {mm_active_gallery: gr.update()}
+
+                    mm = []
+                    for mm_data in gallery:
+                        mm.append((mm_data[0]["name"], mm_data[1]))
+                    l = gallery[mm_active_selected][1].split(" - ")[1]
+                    n = re.sub("[CL]:", "", l)
+                    mm[mm_active_selected] = (get_model_thumbnail(n), f"{w} - {l}")
+
+                    return {
+                        mm_active_gallery: gr.update(value=mm),
+                    }
+
+                def mm_save(name, comment, gallery):
+                    if name == "":
+                        gr.Info("Merge needs a name.")
+                        return
+                    if comment == "":
+                        gr.Info("You probably want a comment.")
+                        return
+
+                    dict = {}
+                    models = []
+                    loras = []
+
+                    for model_data in gallery:
+                        w, m = model_data[1].split(" - ", 1)
+                        n = re.sub("[CL]:", "", m)
+                        if m.startswith("C:"):
+                            models.append((n, w))
+                        if m.startswith("L:"):
+                            loras.append((n, w))
+
+                    dict["comment"] = comment
+                    base = models.pop(0)
+                    dict["base"] = {"name": base[0], "weight": float(base[1])}
+                    dict["models"] = []
+                    for model in models:
+                        dict["models"].append({"name": model[0], "weight": float(model[1])})
+                    dict["loras"] = []
+                    for lora in loras:
+                        dict["loras"].append({"name": lora[0], "weight": float(lora[1])})
+                    dict["normalize"] = 1.0
+                    dict["cache"] = False
+
+                    filename = Path(path_manager.model_paths["modelfile_path"] / name).with_suffix(".merge")
+                    with open(filename, "w") as outfile: 
+                        json.dump(dict, outfile, indent=2)
+
+                    gr.Info(f"Saved {filename}")
+
+
+                mm_weight_slider.release(
+                    fn=mm_weight_slider_update,
+                    inputs=[mm_active_gallery, mm_weight_slider],
+                    outputs=[mm_active_gallery],
+                )
+                mm_add_btn.click(
+                    fn=gallery_toggle,
+                    outputs=[mm_add, mm_active],
+                )
+                mm_cancel_btn.click(
+                    fn=gallery_toggle,
+                    outputs=[mm_active, mm_add],
+                )
+                mm_del_btn.click(
+                    fn=mm_delete,
+                    inputs=mm_active_gallery,
+                    outputs=[mm_active_gallery],
+                )
+                mm_gallery.select(
+                    fn=mm_select,
+                    inputs=[mm_active_gallery],
+                    outputs=[mm_add, mm_active, mm_active_gallery],
+                )
+                mm_active_gallery.select(
+                    fn=mm_active_select,
+                    inputs=[mm_active_gallery],
+                    outputs=[mm_active, mm_active_gallery, mm_weight_slider],
+                )
+                mm_save_btn.click(
+                    fn=mm_save,
+                    inputs=[mm_name, mm_comment, mm_active_gallery],
+                    outputs=[],
+                )
+
+
 
                 with gr.Row():
                     model_refresh = gr.Button(

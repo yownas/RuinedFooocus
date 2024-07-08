@@ -77,27 +77,41 @@ def load_keywords(lora):
         return " "
 
 
-def get_model_thumbnail(cache_path):
+def _get_model_thumbnail(cache_path, not_found="html/warning.png"):
     suffixes = [".jpeg", ".jpg", ".png", ".gif"]
     for suffix in suffixes:
         filename = cache_path.with_suffix(suffix)
         if Path(filename).is_file():
             return filename
     else:
+        return not_found
+
+def get_model_thumbnail(model):
+    res = _get_model_thumbnail(
+        Path(path_manager.model_paths["cache_path"] / "checkpoints" / Path(model).name),
+        not_found=None
+    )
+    if res is not None:
+        return res
+    res = _get_model_thumbnail(
+        Path(path_manager.model_paths["cache_path"] / "loras" / Path(model).name),
+        not_found=None
+    )
+    if res is not None:
+        return res
+    else:
         return "html/warning.png"
 
-
 def get_checkpoint_thumbnail(model):
-    return get_model_thumbnail(
+    return _get_model_thumbnail(
         Path(path_manager.model_paths["cache_path"] / "checkpoints" / Path(model).name)
     )
 
 
 def get_lora_thumbnail(model):
-    return get_model_thumbnail(
+    return _get_model_thumbnail(
         Path(path_manager.model_paths["cache_path"] / "loras" / Path(model).name)
     )
-
 
 def load_file_from_url(
     url: str,

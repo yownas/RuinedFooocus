@@ -123,7 +123,7 @@ class pipeline:
                 else:
                     norm = 1.0 / weights
 
-            print(f"Loading base {merge_data['base']['name']} ({float(merge_data['base']['weight']) * norm * 100}%)")
+            print(f"Loading base {merge_data['base']['name']} ({int(merge_data['base']['weight']) * norm * 100}%)")
             with torch.torch.inference_mode():
                 unet, clip, vae, clip_vision = load_checkpoint_guess_config(str(filename))
 
@@ -145,7 +145,7 @@ class pipeline:
 
             w = float(merge_data["base"]["weight"]) * norm
             for m in merge_data["models"]:
-                print(f"Merging {m['name']} ({m['weight'] * norm * 100}%)")
+                print(f"Merging {m['name']} ({int(m['weight'] * norm * 100)}%)")
                 filename = Path(path_manager.model_paths["modelfile_path"] / m["name"])
                 # FIXME add error check?`
                 with torch.torch.inference_mode():
