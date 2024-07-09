@@ -1,3 +1,6 @@
+### 1.53.0
+* MergeMaker
+
 ### 1.52.0
 * Merge-recipes for checkpoints
 
