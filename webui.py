@@ -195,14 +195,15 @@ def generate_clicked(*args):
             yield update_preview(product)
 
         elif flag == "results":
-            worker.buffer.append({"task_type": "stop"})
 
             if generate_forever and shared.state["interrupted"] == False:
+                worker.buffer.append({"task_type": "stop"})
                 append_work(gen_data)
             else:
                 yield update_results(product)
                 finished = True
 
+    worker.buffer.append({"task_type": "stop"})
     shared.state["interrupted"] = False
 
 
@@ -1274,7 +1275,6 @@ with shared.gradio_root as block:
         run_button.click(fn=poke, inputs=run_event, outputs=run_event)
 
         def stop_clicked():
-            worker.buffer = []
             worker.interrupt_ruined_processing = True
             shared.state["interrupted"] = False
 
