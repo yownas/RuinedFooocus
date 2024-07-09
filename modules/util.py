@@ -103,8 +103,14 @@ def get_model_thumbnail(model):
         return "html/warning.png"
 
 def get_checkpoint_thumbnail(model):
+    if Path(model).suffix == ".merge":
+        not_found="html/merge.jpeg"
+    else:
+        not_found="html/warning.jpeg"
+
     return _get_model_thumbnail(
-        Path(path_manager.model_paths["cache_path"] / "checkpoints" / Path(model).name)
+        Path(path_manager.model_paths["cache_path"] / "checkpoints" / Path(model).name),
+        not_found=not_found
     )
 
 

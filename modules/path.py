@@ -101,7 +101,7 @@ class PathManager:
                 if not has_preview:
                     if models is None:
                         models = civit.get_models_by_path(str(path))
-                    print(f"Downloading model thumbnail for {Path(path).name} ({civit.get_model_base(models)} - {civit.get_model_type(models)})")
+                    #print(f"Downloading model thumbnail for {Path(path).name} ({civit.get_model_base(models)} - {civit.get_model_type(models)})")
                     civit.get_image(models, thumbcheck)
                     time.sleep(1)
 
