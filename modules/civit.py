@@ -128,6 +128,11 @@ class Civit:
         import imageio.v3 as iio
 
         path = path.with_suffix(".jpeg")
+
+        if model["baseModel"] == "Merge":
+            shutil.copyfile("html/merge.jpeg", path)
+            return
+
         image_url = None
         for preview in model.get("images", [{}]):
             url = preview.get("url")
