@@ -129,7 +129,7 @@ class Civit:
 
         path = path.with_suffix(".jpeg")
 
-        if model["baseModel"] == "Merge":
+        if "baseModel" in model and model["baseModel"] == "Merge":
             return
 
         image_url = None
