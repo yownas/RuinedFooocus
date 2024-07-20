@@ -211,7 +211,7 @@ class pipeline:
                 isinstance(self.xl_base.unet.model, SD3)
             ):
                 print(
-                    "Model not supported. Fooocus only support SDXL/SD3 models as the base model."
+                    "Model not supported. RuinedFooocus only support SDXL/SD3 models as the base model."
                 )
                 self.xl_base = None
 
