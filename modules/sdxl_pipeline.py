@@ -102,7 +102,7 @@ class pipeline:
 
         filename = Path(path_manager.model_paths["modelfile_path"] / name)
         cache_name = str(Path(path_manager.model_paths["cache_path"] / "merges" / Path(name).name).with_suffix(".safetensors"))
-        if Path(cache_name).exists() and Path(cache_name).stat().st_mtime <= Path(filename).stat().st_mtime:
+        if Path(cache_name).exists() and Path(cache_name).stat().st_mtime >= Path(filename).stat().st_mtime:
             print(f"Loading cached version:")
             self.load_base_model(cache_name)
             return
