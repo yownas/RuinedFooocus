@@ -142,7 +142,7 @@ class Civit:
                 image_url = url
                 response = self.session.get(image_url)
                 if response.status_code != 200:
-                    print(f"WARNING: get_image() - {response.status} : {response.reason}")
+                    print(f"WARNING: get_image() - {response.status_code} : {response.reason}")
                     break
                 with open(path, "wb") as file:
                     file.write(response.content)
