@@ -112,7 +112,7 @@ class Civit:
         return data
 
     def get_keywords(self, model):
-        keywords = model.get("trainedWords", ["No Keywords for LoRA"])
+        keywords = model.get("trainedWords", [""])
         return keywords
 
     def get_model_base(self, model):
