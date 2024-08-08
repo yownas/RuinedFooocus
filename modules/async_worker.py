@@ -28,7 +28,7 @@ def worker():
 
     from PIL import Image
     from PIL.PngImagePlugin import PngInfo
-    from modules.util import generate_temp_filename, TimeIt, model_hash
+    from modules.util import generate_temp_filename, TimeIt, model_hash, get_lora_hashes
     import modules.pipelines
     from modules.settings import default_settings
 
@@ -283,7 +283,7 @@ def worker():
                         Path(shared.path_manager.model_paths["modelfile_path"])
                         / gen_data["base_model_name"]
                     ),
-                    "loras": [['', f"{lora[1]} - {lora[0]}"] for lora in loras],
+                    "loras": [[f"{get_lora_hashes(lora[0])['AutoV2']}", f"{lora[1]} - {lora[0]}"] for lora in loras],
                     "start_step": start_step,
                     "denoise": denoise,
                     "clip_skip": gen_data["clip_skip"],

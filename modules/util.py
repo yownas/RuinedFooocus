@@ -7,6 +7,7 @@ from contextlib import contextmanager
 from typing import Optional
 from urllib.parse import urlparse
 from shared import path_manager
+import json
 
 
 def get_wildcard_files():
@@ -76,6 +77,42 @@ def load_keywords(lora):
     except FileNotFoundError:
         return " "
 
+def _get_model_hashes(cache_path, not_found=None):
+    hashes = {
+        "AutoV1": "",
+        "AutoV2": "",
+        "SHA256": "",
+        "CRC32": "",
+        "BLAKE3": "",
+        "AutoV3": ""
+    }
+    filename = cache_path.with_suffix(".json")
+    if Path(filename).is_file():
+        try:
+            with open(filename) as f:
+                data = json.load(f)
+        except:
+            print(f"ERROR: model {cache_path} is missing json-file")
+            data = {}
+        if "files" not in data:
+            data = {"files": [{"hashes": {}}]}
+        hashes.update(data['files'][0]['hashes'])
+        return hashes
+    else:
+        if not_found:
+            return not_found
+        else:
+            return hashes
+
+def get_checkpoint_hashes(model):
+    return _get_model_thumbnail(
+        Path(path_manager.model_paths["cache_path"] / "checkpoints" / Path(model).name)
+    )
+
+def get_lora_hashes(model):
+    return _get_model_hashes(
+        Path(path_manager.model_paths["cache_path"] / "loras" / Path(model).name)
+    )
 
 def _get_model_thumbnail(cache_path, not_found="html/warning.png"):
     suffixes = [".jpeg", ".jpg", ".png", ".gif"]
