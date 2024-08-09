@@ -1,7 +1,7 @@
 from typing import Optional, Tuple
 from diffusers.configuration_utils import ConfigMixin, register_to_config
 from diffusers.models.modeling_utils import ModelMixin
-from diffusers.models.unet_2d_blocks import UNetMidBlock2D, get_down_block, get_up_block
+from diffusers.models.unets.unet_2d_blocks import UNetMidBlock2D, get_down_block, get_up_block
 import torch.nn as nn
 import torch
 import numpy as np

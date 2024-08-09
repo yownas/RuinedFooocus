@@ -8,6 +8,7 @@ import time
 class PathManager:
     DEFAULT_PATHS = {
         "path_checkpoints": "../models/checkpoints/",
+        "path_diffusers": "../models/diffusers/",
         "path_loras": "../models/loras/",
         "path_controlnet": "../models/controlnet/",
         "path_vae_approx": "../models/vae_approx/",
@@ -45,6 +46,7 @@ class PathManager:
     def get_model_paths(self):
         return {
             "modelfile_path": self.get_abspath_folder(self.paths["path_checkpoints"]),
+            "diffusers_path": self.get_abspath_folder(self.paths["path_diffusers"]),
             "lorafile_path": self.get_abspath_folder(self.paths["path_loras"]),
             "controlnet_path": self.get_abspath_folder(self.paths["path_controlnet"]),
             "vae_approx_path": self.get_abspath_folder(self.paths["path_vae_approx"]),
@@ -120,7 +122,7 @@ class PathManager:
     def get_model_filenames(self, folder_path, cache=None, isLora=False):
         folder_path = Path(folder_path)
         if not folder_path.is_dir():
-            raise ValueError("Folder path is not a valid directory.")
+            raise ValueError(f"{folder_path} is not a valid directory.")
         threading.Thread(
             target=self.civit_update_worker,
             args=(
@@ -149,9 +151,33 @@ class PathManager:
             else f"1{x.casefold()}",
         )
 
+    def get_diffusers_filenames(self, folder_path, cache=None, isLora=False):
+        folder_path = Path(folder_path)
+        if not folder_path.is_dir():
+            raise ValueError(f"{folder_path} is not a valid directory.")
+        filenames = []
+        for path in folder_path.glob("*/*"):
+#            if path.suffix.lower() in self.EXTENSIONS:
+#                if isLora:
+#                    txtcheck = path.with_suffix(".txt")
+#                    if txtcheck.exists():
+#                        fstats = txtcheck.stat()
+#                        if fstats.st_size > 0:
+#                            path = path.with_suffix(f"{path.suffix}")
+            filenames.append(f"🤗:{path.relative_to(folder_path)}")
+        return sorted(
+            filenames,
+            key=lambda x: f"0{x.casefold()}"
+            if not str(Path(x).parent) == "."
+            else f"1{x.casefold()}",
+        )
+
     def update_all_model_names(self):
         self.model_filenames = self.get_model_filenames(
             self.model_paths["modelfile_path"],
+            cache="checkpoints"
+        ) + self.get_diffusers_filenames(
+            self.model_paths["diffusers_path"],
             cache="checkpoints"
         )
         self.lora_filenames = self.get_model_filenames(

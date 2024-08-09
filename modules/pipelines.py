@@ -17,6 +17,7 @@ import modules.template_pipeline as template_pipeline
 import modules.upscale_pipeline as upscale_pipeline
 import modules.search_pipeline as search_pipeline
 import modules.huggingface_dl_pipeline as huggingface_dl_pipeline
+import modules.diffusers_pipeline as diffusers_pipeline
 import modules.controlnet as controlnet
 
 class NoPipeLine:
@@ -68,10 +69,18 @@ def update(gen_data):
             if "base_model_name" in gen_data:
                 file = Path(path_manager.model_paths["modelfile_path"]) / Path(gen_data['base_model_name'])
                 baseModel = civit.get_model_base(civit.get_models_by_path(file))
+                baseModelName = gen_data['base_model_name']
             if state["pipeline"] is None:
                 state["pipeline"] = NoPipeLine()
 
-            if baseModel is not None:
+            if baseModelName.startswith("🤗"):
+                if (
+                    state["pipeline"] is None
+                    or "diffusers" not in state["pipeline"].pipeline_type
+                ):
+                    state["pipeline"] = diffusers_pipeline.pipeline()
+
+            elif baseModel is not None:
                 # Try with SDXL if we have an "Unknown" model.
                 if (
                     baseModel in ["Playground v2", "Pony", "SD 3", "SDXL 1.0", "SDXL Distilled", "SDXL Hyper", "SDXL Turbo", "Unknown", "Merge"]
