@@ -16,6 +16,7 @@ import modules.sdxl_pipeline as sdxl_pipeline
 import modules.template_pipeline as template_pipeline
 import modules.upscale_pipeline as upscale_pipeline
 import modules.search_pipeline as search_pipeline
+import modules.huggingface_dl_pipeline as huggingface_dl_pipeline
 import modules.controlnet as controlnet
 
 class NoPipeLine:
@@ -40,6 +41,13 @@ def update(gen_data):
                 or "search" not in state["pipeline"].pipeline_type
             ):
                 state["pipeline"] = search_pipeline.pipeline()
+
+        elif prompt.startswith("hf:"):
+            if (
+                state["pipeline"] is None
+                or "huggingface_dl" not in state["pipeline"].pipeline_type
+            ):
+                state["pipeline"] = huggingface_dl_pipeline.pipeline()
 
         elif cn_type.lower() == "upscale":
             if (
