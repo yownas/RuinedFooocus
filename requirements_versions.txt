@@ -1,6 +1,8 @@
+--extra-index-url https://download.pytorch.org/whl/cu121
+torch==2.2.2
 torchsde==0.2.6
 einops==0.4.1
-transformers==4.43.3
+transformers==4.44.0
 safetensors==0.4.3
 accelerate==0.33.0
 pyyaml==6.0
@@ -23,5 +25,4 @@ kornia==0.7.2
 sentencepiece==0.2.0
 spandrel==0.3.4
 imageio[pyav]==2.34.1 
-torch==2.4.0
-xformers==0.0.27.post2
+xformers==0.0.26
