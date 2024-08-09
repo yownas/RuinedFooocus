@@ -46,8 +46,12 @@ class pipeline:
             diffusers_pipeline = diffusers.PixArtSigmaPipeline
         elif self.model_class == "FluxPipeline":
             diffusers_pipeline = diffusers.FluxPipeline
-#        elif self.model_class == "WuerstchenDecoderPipeline":
-#            diffusers_pipeline = diffusers.AutoPipelineForText2Image
+        elif self.model_class == "WuerstchenDecoderPipeline":
+            diffusers_pipeline = diffusers.AutoPipelineForText2Image
+        elif self.model_class == "StableDiffusionPipeline":
+            diffusers_pipeline = diffusers.StableDiffusionPipeline
+        elif self.model_class == "StableDiffusionXLPipeline":
+            diffusers_pipeline = diffusers.StableDiffusionXLPipeline
 
         if diffusers_pipeline == None:
             print(f"ERRROR: Unknown diffuser pipeline: {model_json['_class_name']}")
@@ -56,8 +60,8 @@ class pipeline:
 
         self.pipe = diffusers_pipeline.from_pretrained(
             folder,
-            local_files_only = True,
-            cache_dir = os.path.join(path_manager.model_paths["diffusers_path"]),
+            local_files_only = False,
+            cache_dir = path_manager.model_paths["diffusers_cache_path"],
             torch_dtype=torch.bfloat16
             )
         self.pipe.enable_sequential_cpu_offload() #save some VRAM by offloading the model to CPU. Remove this if you have enough GPU power

@@ -2,6 +2,7 @@ import os
 from shared import state, path_manager
 from modules.civit import Civit
 from pathlib import Path
+import re
 
 civit = Civit(cache_path=Path(path_manager.model_paths["cache_path"]) / Path("checkpoints"))
 
@@ -43,7 +44,7 @@ def update(gen_data):
             ):
                 state["pipeline"] = search_pipeline.pipeline()
 
-        elif prompt.startswith("hf:"):
+        elif re.match(r"^\s*hf:", prompt):
             if (
                 state["pipeline"] is None
                 or "huggingface_dl" not in state["pipeline"].pipeline_type

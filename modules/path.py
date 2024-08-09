@@ -9,6 +9,7 @@ class PathManager:
     DEFAULT_PATHS = {
         "path_checkpoints": "../models/checkpoints/",
         "path_diffusers": "../models/diffusers/",
+        "path_diffusers_cache": "../models/diffusers_cache/",
         "path_loras": "../models/loras/",
         "path_controlnet": "../models/controlnet/",
         "path_vae_approx": "../models/vae_approx/",
@@ -47,6 +48,7 @@ class PathManager:
         return {
             "modelfile_path": self.get_abspath_folder(self.paths["path_checkpoints"]),
             "diffusers_path": self.get_abspath_folder(self.paths["path_diffusers"]),
+            "diffusers_cache_path": self.get_abspath_folder(self.paths["path_diffusers_cache"]),
             "lorafile_path": self.get_abspath_folder(self.paths["path_loras"]),
             "controlnet_path": self.get_abspath_folder(self.paths["path_controlnet"]),
             "vae_approx_path": self.get_abspath_folder(self.paths["path_vae_approx"]),

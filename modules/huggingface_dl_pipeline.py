@@ -65,14 +65,18 @@ class pipeline:
         callback,
         gen_data=None,
     ):
-        print(f"DEBUG: {positive_prompt}")
+        print(f"Downloading: {positive_prompt}")
 
-        repo_id = re.sub(r"hf:\s*", "", positive_prompt, count=1)
+        repo_id = re.sub(r"^\s*hf:\s*", "", positive_prompt, count=1)
         repo_id = re.sub(r"\s.*$", "", repo_id, count=1)
 
         worker.outputs.append(["preview", (-1, f"Downloading {repo_id}...", None)])
 
-        snapshot_download(repo_id=repo_id, local_dir=f"models/diffusers/{repo_id}")
+        snapshot_download(
+            repo_id=repo_id,
+            local_dir=f"models/diffusers/{repo_id}",
+            resume_download=True
+            )
 
         images = ["logo.png"]
 
