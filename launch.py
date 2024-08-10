@@ -98,6 +98,7 @@ def prepare_environment():
             run_pip(f"install -U -I --no-deps {xformers_package}", "xformers")
 
     if REINSTALL_ALL or not requirements_met(requirements_file):
+        print("This next step may take a while")
         run_pip(f'install -r "{requirements_file}"', "requirements")
 
     return

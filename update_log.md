@@ -1,3 +1,6 @@
+### 1.55.0
+* Pixart and Flux oh my!
+
 ### 1.53.0
 * MergeMaker
 
