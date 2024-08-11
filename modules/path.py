@@ -77,6 +77,12 @@ class PathManager:
         return Path(path) if Path(path).is_absolute() else Path(__file__).parent / path
 
     def civit_update_worker(self, folder_path, cache, isLora):
+        try:
+            import imageio.v3
+        except:
+            # Skip updates if we are missing imageio
+            print(f"DEBUG: Skip CivitAI update")
+            return
         if folder_path in self.civit_worker_folders:
             # Already working on this folder
             return
