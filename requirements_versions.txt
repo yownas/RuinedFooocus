@@ -27,3 +27,4 @@ spandrel==0.3.4
 imageio[pyav]==2.34.1 
 xformers==0.0.26
 beautifulsoup4==4.12.3
+protobuf==5.27.3
