@@ -46,7 +46,7 @@ def prepare_environment():
     )
     torch_command = os.environ.get(
         "TORCH_COMMAND",
-        f"pip install torch==2.1.2 torchvision==0.16.2 --extra-index-url {torch_index_url}",
+        f"pip install torch==2.2.2 torchvision==0.17.2 --extra-index-url {torch_index_url}",
     )
     insightface_package = os.environ.get(
         "INSIGHTFACE_PACKAGE",
@@ -54,7 +54,7 @@ def prepare_environment():
     )
     requirements_file = os.environ.get("REQS_FILE", "requirements_versions.txt")
 
-    xformers_package = os.environ.get("XFORMERS_PACKAGE", "xformers==0.0.23")
+    xformers_package = os.environ.get("XFORMERS_PACKAGE", "xformers==0.0.26.post1")
 
     comfy_repo = os.environ.get(
         "COMFY_REPO", "https://github.com/comfyanonymous/ComfyUI"
