@@ -42,6 +42,8 @@ from comfy.sampler_helpers import (
 )
 
 from comfy_extras.nodes_sd3 import EmptySD3LatentImage
+#from comfy_extras.nodes_flux import FluxGuidance
+from node_helpers import conditioning_set_values
 
 from comfy.samplers import KSampler
 from comfy_extras.nodes_post_processing import ImageScaleToTotalPixels
@@ -298,9 +300,10 @@ class pipeline:
                 self.xl_base_patched.clip = CLIPSetLastLayer().set_last_layer(
                     self.xl_base_patched.clip, clip_skip * -1
                 )[0]
-            self.conditions[id]["cache"] = CLIPTextEncode().encode(
+            self.conditions[id]["clip"] = CLIPTextEncode().encode(
                 clip=self.xl_base_patched.clip, text=text
-            )[0]
+            )
+            self.conditions[id]["cache"] = self.conditions[id]["clip"][0]
         self.conditions[id]["text"] = hash
         update = True
         return update
@@ -590,6 +593,13 @@ class pipeline:
         #            positive_copy = convert_cond(self.conditions["+"]["cache"])
         #        negative_copy = convert_cond(self.conditions["-"]["cache"])
 
+        # Use FluxGuidance for Flux
+        if isinstance(self.xl_base.unet.model, Flux):
+            positive_cond = conditioning_set_values(self.conditions["+"]["cache"], {"guidance": cfg})
+            cfg = 1.0
+        else:
+            positive_cond = self.conditions["+"]["cache"],
+
         kwargs = {
             "cfg": cfg,
             "latent_image": latent_image,
@@ -618,7 +628,7 @@ class pipeline:
         worker.outputs.append(["preview", (-1, f"Start sampling ...", None)])
         samples = sampler.sample(
             noise,
-            self.conditions["+"]["cache"],
+            positive_cond,
             self.conditions["-"]["cache"],
             **kwargs,
         )
