@@ -300,10 +300,9 @@ class pipeline:
                 self.xl_base_patched.clip = CLIPSetLastLayer().set_last_layer(
                     self.xl_base_patched.clip, clip_skip * -1
                 )[0]
-            self.conditions[id]["clip"] = CLIPTextEncode().encode(
+            self.conditions[id]["cache"] = CLIPTextEncode().encode(
                 clip=self.xl_base_patched.clip, text=text
-            )
-            self.conditions[id]["cache"] = self.conditions[id]["clip"][0]
+            )[0]
         self.conditions[id]["text"] = hash
         update = True
         return update
