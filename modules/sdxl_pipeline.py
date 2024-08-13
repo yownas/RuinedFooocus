@@ -11,7 +11,7 @@ import modules.prompt_processing as pp
 
 from PIL import Image, ImageOps
 
-from comfy.model_base import SDXL, SD3
+from comfy.model_base import SDXL, SD3, Flux
 from modules.settings import default_settings
 from shared import path_manager
 
@@ -60,7 +60,7 @@ from modules.pipleline_utils import (
 
 
 class pipeline:
-    pipeline_type = ["sdxl", "ssd"]
+    pipeline_type = ["sdxl", "ssd", "sd3", "flux"]
 
     comfy.model_management.DISABLE_SMART_MEMORY = True
 
@@ -208,10 +208,11 @@ class pipeline:
             )
             if not (
                 isinstance(self.xl_base.unet.model, SDXL) or
-                isinstance(self.xl_base.unet.model, SD3)
+                isinstance(self.xl_base.unet.model, SD3) or
+                isinstance(self.xl_base.unet.model, Flux)
             ):
                 print(
-                    "Model not supported. RuinedFooocus only support SDXL/SD3 models as the base model."
+                    f"Model {type(self.xl_base.unet.model)} not supported. RuinedFooocus only support SDXL/SD3/Flux models as the base model."
                 )
                 self.xl_base = None
 
@@ -222,7 +223,8 @@ class pipeline:
                 # self.xl_base_patched.unet.model.to("cuda")
                 print(f"Base model loaded: {self.xl_base_hash}")
 
-        except:
+        except Exception as e:
+            print(f"ERROR: {e}")
             print(f"Failed to load {name}, loading default model instead")
             self.load_base_model(
                 path_manager.default_model_names["default_base_model_name"]
@@ -292,9 +294,10 @@ class pipeline:
         update = False
         hash = f"{text} {clip_skip}"
         if hash != self.conditions[id]["text"]:
-            self.xl_base_patched.clip = CLIPSetLastLayer().set_last_layer(
-                self.xl_base_patched.clip, clip_skip * -1
-            )[0]
+            if clip_skip > 1:
+                self.xl_base_patched.clip = CLIPSetLastLayer().set_last_layer(
+                    self.xl_base_patched.clip, clip_skip * -1
+                )[0]
             self.conditions[id]["cache"] = CLIPTextEncode().encode(
                 clip=self.xl_base_patched.clip, text=text
             )[0]
@@ -346,12 +349,13 @@ class pipeline:
         try:
             if self.xl_base_patched == None or not (
                 isinstance(self.xl_base_patched.unet.model, SDXL) or
-                isinstance(self.xl_base_patched.unet.model, SD3)
+                isinstance(self.xl_base_patched.unet.model, SD3) or
+                isinstance(self.xl_base_patched.unet.model, Flux)
                 ):
-                print(f"ERROR: Can only use SDXL or SD3 models")
+                print(f"ERROR: Can only use SDXL, SD3 or Flux models")
                 worker.interrupt_ruined_processing = True
                 worker.outputs.append(
-                    ["preview", (-1, f"Can only use SDXL or SD3 models ...", "error.png")]
+                    ["preview", (-1, f"Can only use SDXL, SD3 or Flux models ...", "error.png")]
                 )
                 return []
         except Exception as e:
@@ -513,7 +517,10 @@ class pipeline:
                 latent = EmptyLatentImage().generate(
                     width=width, height=height, batch_size=1
                 )[0]
-            elif isinstance(self.xl_base.unet.model, SD3):
+            elif (
+                isinstance(self.xl_base.unet.model, SD3) or
+                isinstance(self.xl_base.unet.model, Flux)
+            ):
                 latent = EmptySD3LatentImage().generate(
                     width=width, height=height, batch_size=1
                 )[0]
