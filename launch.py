@@ -9,6 +9,7 @@ import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
 
 warnings.filterwarnings("ignore", category=FutureWarning, module="insightface")
+warnings.filterwarnings("ignore", category=FutureWarning, module="transformers")
 warnings.filterwarnings("ignore", category=UserWarning, module="torchvision")
 warnings.filterwarnings("ignore", category=UserWarning, module="gradio")
 warnings.filterwarnings("ignore", category=UserWarning, module="torchsde")
