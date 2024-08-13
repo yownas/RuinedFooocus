@@ -597,7 +597,7 @@ class pipeline:
             positive_cond = conditioning_set_values(self.conditions["+"]["cache"], {"guidance": cfg})
             cfg = 1.0
         else:
-            positive_cond = self.conditions["+"]["cache"],
+            positive_cond = self.conditions["+"]["cache"]
 
         kwargs = {
             "cfg": cfg,
