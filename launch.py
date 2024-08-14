@@ -33,8 +33,6 @@ from modules.launch_util import (
     script_path,
     dir_repos,
 )
-from modules.util import load_file_from_url
-from shared import path_manager
 
 REINSTALL_ALL = False
 if os.path.exists("reinstall"):
@@ -180,6 +178,9 @@ layer_diffuse_filenames = [
 
 
 def download_models():
+    from modules.util import load_file_from_url
+    from shared import path_manager
+
     for file_name, url in model_filenames:
         load_file_from_url(
             url=url,
