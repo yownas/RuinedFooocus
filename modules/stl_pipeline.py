@@ -42,7 +42,7 @@ class pipeline:
 
         print('Loading SF3D model ...')
         worker.outputs.append(["preview", (-1, f"Loading SF3D model ...", None)])
-        os.environ["HF_DATASETS_CACHE"] = "models/diffusers_cache"
+        os.environ["HF_HOME"] = "models/diffusers_cache"
         self.pipeline = SF3D.from_pretrained(
             "stabilityai/stable-fast-3d",
             config_name="config.yaml",
@@ -98,6 +98,10 @@ class pipeline:
         x_offset = 0
         y_offset = 0
         z_offset = 0
+
+        if gen_data["prompt"].startswith("token:"):
+            from huggingface_hub import login
+            login(token=gen_data["prompt"].split("token:")[1].strip())
 
         worker.outputs.append(["preview", (-1, f"Removing background ...", None)])
 
