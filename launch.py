@@ -61,6 +61,12 @@ def prepare_environment():
     comfy_commit_hash = os.environ.get(
         "COMFY_COMMIT_HASH", "39fb74c5bd13a1dccf4d7293a2f7a755d9f43cbd"
     )
+    sf3d_repo = os.environ.get(
+        "SF3D_REPO", "https://github.com/Stability-AI/stable-fast-3d.git"
+    )
+    sf3d_commit_hash = os.environ.get(
+        "SF3D_COMMIT_HASH", "070ece138459e38e1fe9f54aa19edb834bced85e"
+    )
 
     print(f"Python {sys.version}")
     print(f"RuinedFooocus version: {version.version}")
@@ -68,6 +74,11 @@ def prepare_environment():
     comfyui_name = "ComfyUI-from-StabilityAI-Official"
     git_clone(comfy_repo, repo_dir(comfyui_name), "Comfy Backend", comfy_commit_hash)
     path = Path(script_path) / dir_repos / comfyui_name
+    sys.path.append(str(path))
+
+    sf3d_name = "stable-fast-3d"
+    git_clone(sf3d_repo, repo_dir(sf3d_name), "Stable Fast 3D", sf3d_commit_hash)
+    path = Path(script_path) / dir_repos / "stable-fast-3d"
     sys.path.append(str(path))
 
     if REINSTALL_ALL or not is_installed("torch") or not is_installed("torchvision"):
