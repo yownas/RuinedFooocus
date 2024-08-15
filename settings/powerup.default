@@ -22,5 +22,6 @@
     "Img2Img": {"type": "img2img", "start": 0.06, "denoise": 0.64},
     "Upscale": {"type": "upscale", "upscaler": "4x-UltraSharp.pth"},
     "LayerDiffuse": {"type": "layerdiffuse"},
-    "Img2STL": {"type": "stl"}
+    "Img2STL": {"type": "stl"},
+    "RemBG": {"type": "rembg"}
 }
