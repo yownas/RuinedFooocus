@@ -131,7 +131,7 @@ class pipeline:
 
         torch.cuda.reset_peak_memory_stats()
         with torch.no_grad():
-            texture_resolution = 512
+            texture_resolution = 1024
             remesh_option = "none" # choices=["none", "triangle", "quad"],
             sf3d_mesh, glob_dict = self.pipeline.run_image(
                 [input_image],
@@ -185,11 +185,12 @@ class pipeline:
         worker.outputs.append(["preview", (-1, f"Create GIF ...", None)])
 
         frames = []
-        for i in range(frame_count):    
-            # Rotate the view
-            axes.view_init(elev=elevation, azim=init_angle + 360/frame_count*i)
-            x = figure.canvas.print_to_buffer()
-            frames.append(Image.frombytes('RGBA', x[1], x[0]))
+        #for i in range(frame_count):    
+        i = 5
+        # Rotate the view
+        axes.view_init(elev=elevation, azim=init_angle + 360/frame_count*i)
+        x = figure.canvas.print_to_buffer()
+        frames.append(Image.frombytes('RGBA', x[1], x[0]))
 
         # Save the images as a GIF using imageio
         os.makedirs(os.path.dirname(images), exist_ok=True)
