@@ -19,6 +19,8 @@ import modules.upscale_pipeline as upscale_pipeline
 import modules.search_pipeline as search_pipeline
 import modules.huggingface_dl_pipeline as huggingface_dl_pipeline
 import modules.diffusers_pipeline as diffusers_pipeline
+import modules.stl_pipeline as stl_pipeline
+import modules.rembg_pipeline as rembg_pipeline
 import modules.controlnet as controlnet
 
 class NoPipeLine:
@@ -64,6 +66,20 @@ def update(gen_data):
                 or "faceswap" not in state["pipeline"].pipeline_type
             ):
                 state["pipeline"] = faceswapper_pipeline.pipeline()
+
+        elif cn_type.lower() == "rembg":
+            if (
+                state["pipeline"] is None
+                or "rembg" not in state["pipeline"].pipeline_type
+            ):
+                state["pipeline"] = rembg_pipeline.pipeline()
+
+        elif cn_type.lower() == "stl":
+            if (
+                state["pipeline"] is None
+                or "stl" not in state["pipeline"].pipeline_type
+            ):
+                state["pipeline"] = stl_pipeline.pipeline()
 
         else:
             baseModel = None

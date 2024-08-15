@@ -28,3 +28,10 @@ imageio[pyav]==2.34.1
 xformers==0.0.26
 beautifulsoup4==4.12.3
 protobuf==5.27.3
+rembg==2.0.58
+trimesh==4.4.4
+jaxtyping==0.2.33
+gpytoolbox==0.3.2
+pynim==1.0.5
+slangtorch==1.2.3
+numpy-stl==3.1.2
