@@ -34,6 +34,9 @@ class pipeline:
 
     # Optional function
     def parse_gen_data(self, gen_data):
+        gen_data["original_image_number"] = gen_data["image_number"]
+        gen_data["image_number"] = 1
+        gen_data["show_preview"] = False
         return gen_data
 
     def load_base_model(self, name):
