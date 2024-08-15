@@ -27,6 +27,7 @@ class pipeline:
 
     pipeline = None
     model = None
+    device = "cuda:0"
 
     # Optional function
     def parse_gen_data(self, gen_data):
@@ -36,11 +37,12 @@ class pipeline:
         if self.pipeline is not None:
             return
 
-        device = torch.device('cuda:0')
+        self.device = torch.device('cuda')
         if not torch.cuda.is_available():
-            device = "cpu"
+            self.device = "cpu"
 
         print('Loading SF3D model ...')
+
         worker.outputs.append(["preview", (-1, f"Loading SF3D model ...", None)])
         os.environ["HF_HOME"] = "models/diffusers_cache"
         self.pipeline = SF3D.from_pretrained(
@@ -48,7 +50,7 @@ class pipeline:
             config_name="config.yaml",
             weight_name="model.safetensors",
         )
-        self.pipeline.to(device)
+        self.pipeline.to(self.device)
         self.pipeline.eval()
 
         print('Loading Finished!')
@@ -114,24 +116,6 @@ class pipeline:
         if callback is not None:
             callback(0, 0, 0, 0, input_image)
 
-        worker.outputs.append(["preview", (-1, f"Running SF3D ...", None)])
-
-        device = torch.device('cuda:0')
-        if not torch.cuda.is_available():
-            device = "cpu"
-
-#        torch.cuda.reset_peak_memory_stats()
-        with torch.no_grad():
-            with torch.autocast(device_type="cuda", dtype=torch.float16):
-                texture_resolution = 1024
-                remesh_option = "none" # choices=["none", "triangle", "quad"],
-                sf3d_mesh, glob_dict = self.pipeline.run_image(
-                    [input_image],
-                    bake_resolution=texture_resolution,
-                    remesh=remesh_option,
-                )
-#        print("Peak Memory:", torch.cuda.max_memory_allocated() / 1024 / 1024, "MB")
-
         stl_filename = generate_temp_filename(
             folder=shared.path_manager.model_paths["temp_outputs_path"],
             extension="stl",
@@ -143,8 +127,21 @@ class pipeline:
         dir_path = Path(stl_filename).parent
         dir_path.mkdir(parents=True, exist_ok=True)
 
+        worker.outputs.append(["preview", (-1, f"Running SF3D ...", None)])
+
+        torch.cuda.reset_peak_memory_stats()
+        with torch.no_grad():
+            texture_resolution = 512
+            remesh_option = "none" # choices=["none", "triangle", "quad"],
+            sf3d_mesh, glob_dict = self.pipeline.run_image(
+                [input_image],
+                bake_resolution=texture_resolution,
+                remesh=remesh_option,
+            )
+
         worker.outputs.append(["preview", (-1, f"Export STL ...", None)])
         sf3d_mesh.export(stl_filename)
+        print("Peak Memory:", torch.cuda.max_memory_allocated() / 1024 / 1024, "MB")
 
         print("Loading STL")
         stl_mesh = mesh.Mesh.from_file(stl_filename)
@@ -153,7 +150,6 @@ class pipeline:
         stl_mesh.rotate(rotation_axises, math.radians(rotation_angle))
     
         print("Creating GIF")
-
         # Center the STL
         x_min = stl_mesh.vectors[:,:,0].min()
         x_max = stl_mesh.vectors[:,:,0].max()
