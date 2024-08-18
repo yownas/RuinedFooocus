@@ -14,12 +14,8 @@ from pathlib import Path
 from sf3d.system import SF3D
 from sf3d.utils import remove_background, resize_foreground
 
-from matplotlib.backends.backend_agg import FigureCanvasAgg
-import matplotlib
-matplotlib.use("agg")
-import matplotlib.pyplot as plt
-from mpl_toolkits import mplot3d
-from stl import mesh
+import trimesh
+import pyrender
 
 class pipeline:
     pipeline_type = ["stl"]
@@ -92,8 +88,8 @@ class pipeline:
         gen_data=None,
     ):
         # GIFs parameters
-        frame_count = 25
-        duration_frame = 0.2
+        frame_count = 40
+        duration_frame = 0.1
 
         # Visualization parameters
         init_angle = 0
@@ -146,54 +142,63 @@ class pipeline:
         sf3d_mesh.export(stl_filename)
         print("Peak Memory:", torch.cuda.max_memory_allocated() / 1024 / 1024, "MB")
 
-        print("Loading STL")
-        stl_mesh = mesh.Mesh.from_file(stl_filename)
-
-        # Rotate
-        stl_mesh.rotate(rotation_axises, math.radians(rotation_angle))
-    
         print("Creating GIF")
-        # Center the STL
-        x_min = stl_mesh.vectors[:,:,0].min()
-        x_max = stl_mesh.vectors[:,:,0].max()
-        y_min = stl_mesh.vectors[:,:,1].min()
-        y_max = stl_mesh.vectors[:,:,1].max()
-        z_min = stl_mesh.vectors[:,:,2].min()
-        z_max = stl_mesh.vectors[:,:,2].max() 
+        scene = pyrender.Scene(ambient_light=[0.02, 0.03, 0.03],bg_color=[0.0, 0.0, 0.0])
+        mesh = trimesh.load(stl_filename)
+        mesh = pyrender.Mesh.from_trimesh(mesh)
+        cam = pyrender.PerspectiveCamera(yfov=np.pi / 3.0, aspectRatio=1.414)
+        light1 = pyrender.PointLight(color=[0.0, 1.0, 1.0], intensity=10.0)
+        light2 = pyrender.PointLight(color=[1.0, 0.0, 0.0], intensity=10.0)
 
-        x_center_offset = (x_max + x_min)/2.0
-        y_center_offset = (y_max + y_min)/2.0
-        z_center_offset = (z_max + z_min)/2.0
+        # Set the 4x4 transformation matrices for the camera and the box surface. Start with an eye matrix and change the translation
+        cam_matrix = np.eye(4)
+        cam_matrix[:3, 3] = np.array([0,0,2])
 
-        stl_mesh.vectors[:,:,0] = stl_mesh.vectors[:,:,0] - x_center_offset - x_offset
-        stl_mesh.vectors[:,:,1] = stl_mesh.vectors[:,:,1] - y_center_offset - y_offset
-        stl_mesh.vectors[:,:,2] = stl_mesh.vectors[:,:,2] - z_center_offset - z_offset
-    
-        # Create a new plot
-        figure = plt.figure()
-        axes = figure.add_subplot(projection='3d')
+        light1_matrix = np.array([
+            [1., 0., 0., 2.],
+            [0., 1., 0., 2.],
+            [0., 0., 1., 1.],
+            [0., 0., 0., 1.]
+        ])
 
-        # Add STL vectors to the plot
-        axes.add_collection3d(mplot3d.art3d.Poly3DCollection(stl_mesh.vectors,color="cyan"))
-        axes.add_collection3d(mplot3d.art3d.Line3DCollection(stl_mesh.vectors,color="black",linewidth=0.1))
-        #axes.view_init(elev=35., azim=-45)
+        light2_matrix = np.array([
+            [1., 0., 0., 2.],
+            [0., 1., 0., -3.],
+            [0., 0., 1., 1.5],
+            [0., 0., 0., 1.]
+        ])
 
-        # Auto scale to the mesh size
-        scale = stl_mesh.points.flatten()
-        axes.auto_scale_xyz(scale, scale, scale)
+        nm = pyrender.Node(mesh=mesh, matrix=np.eye(4))
+        nc = pyrender.Node(camera=cam, matrix=cam_matrix)
+        nl1 = pyrender.Node(light=light1, matrix=light1_matrix)
+        nl2 = pyrender.Node(light=light2, matrix=light2_matrix)
 
-        # Deactivate Axes
-        plt.axis('off')
+        scene.add_node(nm)
+        scene.add_node(nc)
+        scene.add_node(nl1)
+        scene.add_node(nl2)
+
+        viewer_options = {"rotate_axis": [0,1,0]}
+        render_options = {"face_normals":False}
+        # We explicitly set raymond lighting - aka connected to the camera and set the flag for running the viewer in a separate thread so we can animate the objects
+#        v = pyrender.Viewer(scene, use_raymond_lighting = True, viewer_flags = viewer_options, render_flags = render_options, run_in_thread=True )
+        r = pyrender.OffscreenRenderer(
+            viewport_width=640,
+            viewport_height=480,
+            point_size=1.0,
+        )
 
         worker.outputs.append(["preview", (-1, f"Create GIF ...", None)])
 
+        yaxis = [0., 1., 0.]
+
         frames = []
-        #for i in range(frame_count):    
-        i = 5
-        # Rotate the view
-        axes.view_init(elev=elevation, azim=init_angle + 360/frame_count*i)
-        x = figure.canvas.print_to_buffer()
-        frames.append(Image.frombytes('RGBA', x[1], x[0]))
+        flags = pyrender.constants.RenderFlags.FACE_NORMALS | pyrender.constants.RenderFlags.SHADOWS_POINT
+        for i in range(frame_count):    
+            R = trimesh.transformations.rotation_matrix((np.pi*2.*(frame_count-i))/frame_count, yaxis)
+            scene.set_pose(nm, R)
+            color, _ = r.render(scene)
+            frames.append(Image.fromarray(color))
 
         # Save the images as a GIF using imageio
         os.makedirs(os.path.dirname(images), exist_ok=True)
