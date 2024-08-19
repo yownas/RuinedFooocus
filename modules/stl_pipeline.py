@@ -1,4 +1,5 @@
 import modules.async_worker as worker
+from modules.settings import default_settings
 
 from modules.util import generate_temp_filename
 import shared
@@ -6,7 +7,6 @@ import shared
 import torch
 import numpy as np
 import os
-import math
 import rembg
 from PIL import Image
 from pathlib import Path
@@ -44,8 +44,12 @@ class pipeline:
 
         worker.outputs.append(["preview", (-1, f"Loading SF3D model ...", None)])
         os.environ["HF_HOME"] = "models/diffusers_cache"
+        if "img2stl_repo" in default_settings:
+            repo = default_settings["img2stl_repo"]
+        else:
+            repo = "stabilityai/stable-fast-3d"
         self.pipeline = SF3D.from_pretrained(
-            "stabilityai/stable-fast-3d",
+            repo,
             config_name="config.yaml",
             weight_name="model.safetensors",
         )
