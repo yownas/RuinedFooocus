@@ -11,6 +11,7 @@ from huggingface_hub import snapshot_download
 
 from PIL import Image
 
+
 class pipeline:
     pipeline_type = ["hugginface_dl"]
 
@@ -44,7 +45,6 @@ class pipeline:
     def clean_prompt_cond_caches(self):
         return
 
-
     def process(
         self,
         positive_prompt,
@@ -69,16 +69,16 @@ class pipeline:
 
         repo_id = re.sub(r"^\s*hf:\s*", "", positive_prompt, count=1)
         repo_id = re.sub(r"\s.*$", "", repo_id, count=1)
+        repo_id = repo_id.replace(",", "")
 
         worker.outputs.append(["preview", (-1, f"Downloading {repo_id}...", None)])
 
         snapshot_download(
             repo_id=repo_id,
             local_dir=f"models/diffusers/{repo_id}",
-            resume_download=True
-            )
+            resume_download=True,
+        )
 
         images = ["logo.png"]
-
 
         return images
