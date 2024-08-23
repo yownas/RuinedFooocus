@@ -205,6 +205,14 @@ class pipeline:
         try:
             with torch.torch.inference_mode():
                 unet, clip, vae, clip_vision = load_checkpoint_guess_config(filename)
+
+            vram_limit = 8*1024*1024*1024
+            vram = comfy.model_management.get_total_memory()
+            model_size = unet.model_size()
+            if vram < vram_limit and model_size >= vram_limit:
+                unet.model.to(dtype=torch.float8_e4m3fn)
+                print(f"Cast unet to float8_e4m3fn")
+
             self.xl_base = self.StableDiffusionModel(
                 unet=unet, clip=clip, vae=vae, clip_vision=clip_vision
             )
