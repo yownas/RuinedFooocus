@@ -136,6 +136,7 @@ class pipeline:
         with torch.no_grad():
             texture_resolution = 1024
             remesh_option = "none" # choices=["none", "triangle", "quad"],
+            os.environ['PYOPENGL_PLATFORM'] = 'egl'
             sf3d_mesh, glob_dict = self.pipeline.run_image(
                 [input_image],
                 bake_resolution=texture_resolution,
