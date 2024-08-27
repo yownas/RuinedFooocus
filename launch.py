@@ -38,7 +38,6 @@ REINSTALL_ALL = False
 if os.path.exists("reinstall"):
     REINSTALL_ALL = True
 
-
 def prepare_environment():
     torch_index_url = os.environ.get(
         "TORCH_INDEX_URL", "https://download.pytorch.org/whl/cu121"
@@ -71,6 +70,12 @@ def prepare_environment():
     print(f"Python {sys.version}")
     print(f"RuinedFooocus version: {version.version}")
 
+    if not is_installed("wheel"):
+        run(f'"{python}" -m pip install wheel', "Installing wheel", "Couldn't install wheel", live=True)
+
+    if not is_installed("packaging"):
+        run(f'"{python}" -m pip install packaging', "Installing packaging", "Couldn't install packaging", live=True)
+
     comfyui_name = "ComfyUI-from-StabilityAI-Official"
     git_clone(comfy_repo, repo_dir(comfyui_name), "Comfy Backend", comfy_commit_hash)
     path = Path(script_path) / dir_repos / comfyui_name
@@ -80,16 +85,6 @@ def prepare_environment():
     git_clone(sf3d_repo, repo_dir(sf3d_name), "Stable Fast 3D", sf3d_commit_hash)
     path = Path(script_path) / dir_repos / "stable-fast-3d"
     sys.path.append(str(path))
-
-    try:
-        import wheel
-    except:
-        run(
-            f'"{python}" -m pip install wheel',
-            "Installing wheel",
-            "Couldn't install wheel",
-            live=True,
-        )
 
     if REINSTALL_ALL or not is_installed("torch") or not is_installed("torchvision"):
         run(
