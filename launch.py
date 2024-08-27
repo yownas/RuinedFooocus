@@ -46,10 +46,6 @@ def prepare_environment():
         "TORCH_COMMAND",
         f"pip install torch==2.2.2 torchvision==0.17.2 --extra-index-url {torch_index_url}",
     )
-    insightface_package = os.environ.get(
-        "INSIGHTFACE_PACKAGE",
-        f"https://github.com/Gourieff/sd-webui-reactor/raw/main/example/insightface-0.7.3-cp310-cp310-win_amd64.whl",
-    )
     requirements_file = os.environ.get("REQS_FILE", "requirements_versions.txt")
 
     xformers_package = os.environ.get("XFORMERS_PACKAGE", "xformers==0.0.26.post1")
@@ -120,124 +116,82 @@ def prepare_environment():
     return
 
 
-model_filenames = [
-    (
-        "sd_xl_base_1.0_0.9vae.safetensors",
-        "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0_0.9vae.safetensors",
-    ),
-]
-
-lora_filenames = [
-    (
-        "sd_xl_offset_example-lora_1.0.safetensors",
-        "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_offset_example-lora_1.0.safetensors",
-    ),
-    (
-        "lcm-lora-sdxl.safetensors",
-        "https://huggingface.co/latent-consistency/lcm-lora-sdxl/resolve/main/pytorch_lora_weights.safetensors",
-    ),
-    (
-        "lcm-lora-ssd-1b.safetensors",
-        "https://huggingface.co/latent-consistency/lcm-lora-ssd-1b/resolve/main/pytorch_lora_weights.safetensors",
-    ),
-]
-
-vae_approx_filenames = [
-    (
-        "taesdxl_decoder",
-        "https://github.com/madebyollin/taesd/raw/main/taesdxl_decoder.pth",
-    )
-]
-
-controlnet_filenames = [
-    (
-        "control-lora-canny-rank128.safetensors",
-        "https://huggingface.co/stabilityai/control-lora/resolve/main/control-LoRAs-rank128/control-lora-canny-rank128.safetensors",
-    ),
-    (
-        "control-lora-depth-rank128.safetensors",
-        "https://huggingface.co/stabilityai/control-lora/resolve/main/control-LoRAs-rank128/control-lora-depth-rank128.safetensors",
-    ),
-    (
-        "control-lora-recolor-rank128.safetensors",
-        "https://huggingface.co/stabilityai/control-lora/resolve/main/control-LoRAs-rank128/control-lora-recolor-rank128.safetensors",
-    ),
-    (
-        "control-lora-sketch-rank128-metadata.safetensors",
-        "https://huggingface.co/stabilityai/control-lora/resolve/main/control-LoRAs-rank128/control-lora-sketch-rank128-metadata.safetensors",
-    ),
-]
-
-upscaler_filenames = [
-    (
-        "4x-UltraSharp.pth",
-        "https://huggingface.co/lokCX/4x-Ultrasharp/resolve/main/4x-UltraSharp.pth",
-    ),
-]
-
-magic_prompt_filenames = [
-    (
-        "pytorch_model.bin",
-        "https://huggingface.co/lllyasviel/misc/resolve/main/fooocus_expansion.bin",
-    ),
-]
-
-layer_diffuse_filenames = [
-    (
-        "layer_xl_transparent_attn.safetensors",
-        "https://huggingface.co/LayerDiffusion/layerdiffusion-v1/resolve/main/layer_xl_transparent_attn.safetensors",
-    ),
-    (
-        "vae_transparent_decoder.safetensors",
-        "https://huggingface.co/LayerDiffusion/layerdiffusion-v1/resolve/main/vae_transparent_decoder.safetensors",
-    ),
-]
-
-
 def download_models():
     from modules.util import load_file_from_url
     from shared import path_manager
 
-    for file_name, url in model_filenames:
+    model_filenames = [
+        (
+            path_manager.model_paths["modelfile_path"],
+            "sd_xl_base_1.0_0.9vae.safetensors",
+            "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0_0.9vae.safetensors",
+        ),
+        (
+            path_manager.model_paths["lorafile_path"],
+            "sd_xl_offset_example-lora_1.0.safetensors",
+            "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_offset_example-lora_1.0.safetensors",
+        ),
+        (
+            path_manager.model_paths["lorafile_path"],
+            "lcm-lora-sdxl.safetensors",
+            "https://huggingface.co/latent-consistency/lcm-lora-sdxl/resolve/main/pytorch_lora_weights.safetensors",
+        ),
+        (
+            path_manager.model_paths["lorafile_path"],
+            "lcm-lora-ssd-1b.safetensors",
+            "https://huggingface.co/latent-consistency/lcm-lora-ssd-1b/resolve/main/pytorch_lora_weights.safetensors",
+        ),
+        (
+            path_manager.model_paths["vae_approx_path"],
+            "taesdxl_decoder",
+            "https://github.com/madebyollin/taesd/raw/main/taesdxl_decoder.pth",
+        ),
+        (
+            path_manager.model_paths["controlnet_path"],
+            "control-lora-canny-rank128.safetensors",
+            "https://huggingface.co/stabilityai/control-lora/resolve/main/control-LoRAs-rank128/control-lora-canny-rank128.safetensors",
+        ),
+        (
+            path_manager.model_paths["controlnet_path"],
+            "control-lora-depth-rank128.safetensors",
+            "https://huggingface.co/stabilityai/control-lora/resolve/main/control-LoRAs-rank128/control-lora-depth-rank128.safetensors",
+        ),
+        (
+            path_manager.model_paths["controlnet_path"],
+            "control-lora-recolor-rank128.safetensors",
+            "https://huggingface.co/stabilityai/control-lora/resolve/main/control-LoRAs-rank128/control-lora-recolor-rank128.safetensors",
+        ),
+        (
+            path_manager.model_paths["controlnet_path"],
+            "control-lora-sketch-rank128-metadata.safetensors",
+            "https://huggingface.co/stabilityai/control-lora/resolve/main/control-LoRAs-rank128/control-lora-sketch-rank128-metadata.safetensors",
+        ),
+        (
+            path_manager.model_paths["upscaler_path"],
+            "4x-UltraSharp.pth",
+            "https://huggingface.co/lokCX/4x-Ultrasharp/resolve/main/4x-UltraSharp.pth",
+        ),
+        (
+            "prompt_expansion",
+            "pytorch_model.bin",
+            "https://huggingface.co/lllyasviel/misc/resolve/main/fooocus_expansion.bin",
+        ),
+        (
+            "models/layerdiffuse/",
+            "layer_xl_transparent_attn.safetensors",
+            "https://huggingface.co/LayerDiffusion/layerdiffusion-v1/resolve/main/layer_xl_transparent_attn.safetensors",
+        ),
+        (
+            "models/layerdiffuse/",
+            "vae_transparent_decoder.safetensors",
+            "https://huggingface.co/LayerDiffusion/layerdiffusion-v1/resolve/main/vae_transparent_decoder.safetensors",
+        ),
+    ]
+
+    for model_dir, file_name, url in model_filenames:
         load_file_from_url(
             url=url,
-            model_dir=path_manager.model_paths["modelfile_path"],
-            file_name=file_name,
-        )
-    for file_name, url in lora_filenames:
-        load_file_from_url(
-            url=url,
-            model_dir=path_manager.model_paths["lorafile_path"],
-            file_name=file_name,
-        )
-    for file_name, url in controlnet_filenames:
-        load_file_from_url(
-            url=url,
-            model_dir=path_manager.model_paths["controlnet_path"],
-            file_name=file_name,
-        )
-    for file_name, url in vae_approx_filenames:
-        load_file_from_url(
-            url=url,
-            model_dir=path_manager.model_paths["vae_approx_path"],
-            file_name=file_name,
-        )
-    for file_name, url in upscaler_filenames:
-        load_file_from_url(
-            url=url,
-            model_dir=path_manager.model_paths["upscaler_path"],
-            file_name=file_name,
-        )
-    for file_name, url in magic_prompt_filenames:
-        load_file_from_url(
-            url=url,
-            model_dir="prompt_expansion",
-            file_name=file_name,
-        )
-    for file_name, url in layer_diffuse_filenames:
-        load_file_from_url(
-            url=url,
-            model_dir="models/layerdiffuse/",
+            model_dir=model_dir,
             file_name=file_name,
         )
     return
