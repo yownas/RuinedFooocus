@@ -28,10 +28,18 @@ from modules.launch_util import (
     python,
     run_pip,
     repo_dir,
-    git_clone,
     requirements_met,
     script_path,
     dir_repos,
+)
+
+comfy_repo = (
+    os.environ.get("COMFY_REPO", "https://github.com/comfyanonymous/ComfyUI"),
+    os.environ.get("COMFY_COMMIT_HASH", "8ae23d8e80620835495248cd29d5ae17c80622ca"),
+)
+sf3d_repo = (
+    os.environ.get("SF3D_REPO", "https://github.com/Stability-AI/stable-fast-3d.git"),
+    os.environ.get("SF3D_COMMIT_HASH", "070ece138459e38e1fe9f54aa19edb834bced85e"),
 )
 
 REINSTALL_ALL = False
@@ -50,19 +58,6 @@ def prepare_environment():
 
     xformers_package = os.environ.get("XFORMERS_PACKAGE", "xformers==0.0.26.post1")
 
-    comfy_repo = os.environ.get(
-        "COMFY_REPO", "https://github.com/comfyanonymous/ComfyUI"
-    )
-    comfy_commit_hash = os.environ.get(
-        "COMFY_COMMIT_HASH", "8ae23d8e80620835495248cd29d5ae17c80622ca"
-    )
-    sf3d_repo = os.environ.get(
-        "SF3D_REPO", "https://github.com/Stability-AI/stable-fast-3d.git"
-    )
-    sf3d_commit_hash = os.environ.get(
-        "SF3D_COMMIT_HASH", "070ece138459e38e1fe9f54aa19edb834bced85e"
-    )
-
     print(f"Python {sys.version}")
     print(f"RuinedFooocus version: {version.version}")
 
@@ -71,16 +66,6 @@ def prepare_environment():
 
     if not is_installed("packaging"):
         run(f'"{python}" -m pip install packaging', "Installing packaging", "Couldn't install packaging", live=True)
-
-    comfyui_name = "ComfyUI-from-StabilityAI-Official"
-    git_clone(comfy_repo, repo_dir(comfyui_name), "Comfy Backend", comfy_commit_hash)
-    path = Path(script_path) / dir_repos / comfyui_name
-    sys.path.append(str(path))
-
-    sf3d_name = "stable-fast-3d"
-    git_clone(sf3d_repo, repo_dir(sf3d_name), "Stable Fast 3D", sf3d_commit_hash)
-    path = Path(script_path) / dir_repos / "stable-fast-3d"
-    sys.path.append(str(path))
 
     if REINSTALL_ALL or not is_installed("torch") or not is_installed("torchvision"):
         run(
@@ -112,6 +97,21 @@ def prepare_environment():
         print("This next step may take a while")
         os.environ["FLASH_ATTENTION_SKIP_CUDA_BUILD"] = "TRUE"
         run_pip(f'install -r "{requirements_file}" --extra-index-url {torch_index_url}', "requirements")
+
+    return
+
+def clone_git_repos():
+    from modules.launch_util import git_clone
+
+    comfyui_name = "ComfyUI-from-StabilityAI-Official"
+    git_clone(comfy_repo[0], repo_dir(comfyui_name), "Comfy Backend", comfy_repo[1])
+    path = Path(script_path) / dir_repos / comfyui_name
+    sys.path.append(str(path))
+
+    sf3d_name = "stable-fast-3d"
+    git_clone(sf3d_repo[0], repo_dir(sf3d_name), "Stable Fast 3D", sf3d_repo[1])
+    path = Path(script_path) / dir_repos / "stable-fast-3d"
+    sys.path.append(str(path))
 
     return
 
@@ -212,6 +212,7 @@ def cuda_malloc():
 prepare_environment()
 if os.path.exists("reinstall"):
     os.remove("reinstall")
+clone_git_repos()
 
 clear_comfy_args()
 # cuda_malloc()

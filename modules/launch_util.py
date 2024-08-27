@@ -6,11 +6,7 @@ import subprocess
 import sys
 import re
 import logging
-import pygit2
 from pathlib import Path
-
-pygit2.option(pygit2.GIT_OPT_SET_OWNER_VALIDATION, 0)
-
 
 logging.getLogger("torch.distributed.nn").setLevel(logging.ERROR)  # sshh...
 logging.getLogger("xformers").addFilter(
@@ -28,6 +24,9 @@ dir_repos = "repositories"
 
 def git_clone(url, dir, name, hash=None):
     try:
+        import pygit2
+        pygit2.option(pygit2.GIT_OPT_SET_OWNER_VALIDATION, 0)
+
         try:
             repo = pygit2.Repository(dir)
         except:
