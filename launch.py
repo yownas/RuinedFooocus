@@ -81,6 +81,16 @@ def prepare_environment():
     path = Path(script_path) / dir_repos / "stable-fast-3d"
     sys.path.append(str(path))
 
+    try:
+        import wheel
+    except:
+        run(
+            f'"{python}" -m pip install wheel',
+            "Installing wheel",
+            "Couldn't install wheel",
+            live=True,
+        )
+
     if REINSTALL_ALL or not is_installed("torch") or not is_installed("torchvision"):
         run(
             f'"{python}" -m {torch_command}',
