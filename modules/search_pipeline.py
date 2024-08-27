@@ -130,8 +130,13 @@ class pipeline:
 
         searchfor = searchfor.strip()
 
-        # For all folder/daystr/*.png ... match metadata
-        pngs = glob.glob(str(Path(folder) / daystr / "*.*"))
+        # For all folder/daystr/*.(png|gif) ... match metadata
+        globs = ["*.png", "*.gif"]
+        pngs = set()
+        for g in globs:
+            for f in glob.glob(str(Path(folder) / daystr / g)):
+                pngs.add(f)
+        pngs = sorted(pngs)
 
         found = 0
         for file in pngs:
