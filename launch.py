@@ -114,7 +114,8 @@ def prepare_environment():
 
     if REINSTALL_ALL or not requirements_met(requirements_file):
         print("This next step may take a while")
-        run_pip(f'install -r "{requirements_file}"', "requirements")
+        os.environ["FLASH_ATTENTION_SKIP_CUDA_BUILD"] = "TRUE"
+        run_pip(f'install -r "{requirements_file}" --extra-index-url {torch_index_url}', "requirements")
 
     return
 
