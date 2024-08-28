@@ -52,11 +52,11 @@ def prepare_environment():
     )
     torch_command = os.environ.get(
         "TORCH_COMMAND",
-        f"pip install torch==2.2.2 torchvision==0.17.2 --extra-index-url {torch_index_url}",
+        f"pip install torch==2.2.1 torchvision==0.17.1 --extra-index-url {torch_index_url}",
     )
     requirements_file = os.environ.get("REQS_FILE", "requirements_versions.txt")
 
-    xformers_package = os.environ.get("XFORMERS_PACKAGE", "xformers==0.0.26.post1")
+    xformers_package = os.environ.get("XFORMERS_PACKAGE", "xformers==0.0.25")
 
     print(f"Python {sys.version}")
     print(f"RuinedFooocus version: {version.version}")
