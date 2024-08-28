@@ -6,6 +6,10 @@ from shared import state, path_manager
 from transformers import AutoProcessor, AutoModelForCausalLM 
 from modules.util import TimeIt
 
+import os
+from transformers.dynamic_module_utils import get_imports
+from unittest.mock import patch
+
 def old_look(image, prompt, gr):
     if prompt != "":
         return prompt
@@ -33,6 +37,14 @@ def old_look(image, prompt, gr):
     return text
 
 def look(image, prompt, gr):
+    def fixed_get_imports(filename: str | os.PathLike) -> list[str]:
+        """Work around for https://huggingface.co/microsoft/Florence-2-large-ft/discussions/4 ."""
+        if os.path.basename(filename) != "modeling_florence2.py":
+            return get_imports(filename)
+        imports = get_imports(filename)
+        imports.remove("flash_attn")
+        return imports
+
     if prompt != "":
         return prompt
     try:
@@ -52,12 +64,15 @@ def look(image, prompt, gr):
             torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
 
             prompt = "<MORE_DETAILED_CAPTION>"
-            model = AutoModelForCausalLM.from_pretrained(
-                "microsoft/Florence-2-large",
-                torch_dtype=torch_dtype,
-                trust_remote_code=True
-            ).to(device)
-            processor = AutoProcessor.from_pretrained("microsoft/Florence-2-large", trust_remote_code=True)
+
+            with patch("transformers.dynamic_module_utils.get_imports", fixed_get_imports):
+                model = AutoModelForCausalLM.from_pretrained(
+                    "microsoft/Florence-2-large",
+                    torch_dtype=torch_dtype,
+                    trust_remote_code=True
+                ).to(device)
+                processor = AutoProcessor.from_pretrained("microsoft/Florence-2-large", trust_remote_code=True)
+
             inputs = processor(text=prompt, images=image, return_tensors="pt").to(device, torch_dtype)
             print(f"Judging...")
             generated_ids = model.generate(
