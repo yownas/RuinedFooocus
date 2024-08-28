@@ -108,6 +108,10 @@ class pipeline:
             from huggingface_hub import login
             login(token=gen_data["prompt"].split("token:")[1].strip())
 
+        if input_image is None:
+            print("Img2STL: No input image?")
+            return []
+
         worker.outputs.append(["preview", (-1, f"Removing background ...", None)])
 
         rembg_session = rembg.new_session()
