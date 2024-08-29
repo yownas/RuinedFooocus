@@ -5,7 +5,6 @@ import re
 from shared import path_manager
 import modules.async_worker as worker
 from tqdm import tqdm
-import tempfile
 
 from modules.settings import default_settings
 from modules.util import generate_temp_filename
@@ -15,7 +14,7 @@ import imageio.v3 as iio
 import numpy as np
 import torch
 import insightface
-#import onnxruntime
+
 import gfpgan
 from facexlib.utils.face_restoration_helper import FaceRestoreHelper
 
@@ -42,6 +41,12 @@ class pipeline:
     swapper_model = None
     swapper_hash = ""
     gfpgan_model = None
+
+    def parse_gen_data(self, gen_data):
+        gen_data["original_image_number"] = gen_data["image_number"]
+        gen_data["image_number"] = 1
+        gen_data["show_preview"] = False
+        return gen_data
 
     def load_base_model(self, name):
         model_name = "inswapper_128.onnx"
