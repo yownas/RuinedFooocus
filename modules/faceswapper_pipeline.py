@@ -15,14 +15,45 @@ import numpy as np
 import torch
 import insightface
 
+from importlib.abc import MetaPathFinder, Loader
+from importlib.util import spec_from_loader, module_from_spec
+
+class ImportRedirector(MetaPathFinder):
+    def __init__(self, redirect_map):
+        self.redirect_map = redirect_map
+
+    def find_spec(self, fullname, path, target=None):
+        if fullname in self.redirect_map:
+            return spec_from_loader(fullname, ImportLoader(self.redirect_map[fullname]))
+        return None
+
+class ImportLoader(Loader):
+    def __init__(self, redirect):
+        self.redirect = redirect
+
+    def create_module(self, spec):
+        return None
+
+    def exec_module(self, module):
+        import importlib
+        redirected = importlib.import_module(self.redirect)
+        module.__dict__.update(redirected.__dict__)
+
+# Set up the redirection
+redirect_map = {
+    'torchvision.transforms.functional_tensor': 'torchvision.transforms.functional'
+}
+
+sys.meta_path.insert(0, ImportRedirector(redirect_map))
+
 import gfpgan
 from facexlib.utils.face_restoration_helper import FaceRestoreHelper
 
 # Requirements:
 # insightface==0.7.3
 # onnxruntime-gpu==1.16.1
-# imageio==2.31.6
 # gfpgan==1.3.8
+#
 # add to settings/powerup.json
 #
 #  "Faceswap": {
