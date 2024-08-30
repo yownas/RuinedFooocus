@@ -41,13 +41,9 @@ class FooocusExpansion:
         if cls.tokenizer is None or cls.model is None:
             cls.tokenizer = AutoTokenizer.from_pretrained(model_path)
             cls.model = AutoModelForCausalLM.from_pretrained(model_path)
-            load_device = model_management.text_encoder_device()
-            if "mps" in load_device.type:
-                load_device = torch.device("cpu")
-            cls.model.to(load_device)
+            cls.model.to("cpu")
 
     def __call__(self, prompt, seed):
-        model_management.load_model_gpu(self.patcher)
         seed = int(seed) % SEED_LIMIT_NUMPY
         set_seed(seed)
         positive_words = (
