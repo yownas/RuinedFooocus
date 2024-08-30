@@ -35,7 +35,7 @@ from modules.launch_util import (
 
 comfy_repo = (
     os.environ.get("COMFY_REPO", "https://github.com/comfyanonymous/ComfyUI"),
-    os.environ.get("COMFY_COMMIT_HASH", "8ae23d8e80620835495248cd29d5ae17c80622ca"),
+    os.environ.get("COMFY_COMMIT_HASH", "935ae153e154813ace36db4c4656a5e96f403eba"),
 )
 sf3d_repo = (
     os.environ.get("SF3D_REPO", "https://github.com/Stability-AI/stable-fast-3d.git"),
@@ -52,11 +52,11 @@ def prepare_environment():
     )
     torch_command = os.environ.get(
         "TORCH_COMMAND",
-        f"pip install torch==2.2.1 torchvision==0.17.1 --extra-index-url {torch_index_url}",
+        f"pip install torch==2.2.2 torchvision==0.17.2 --extra-index-url {torch_index_url}",
     )
     requirements_file = os.environ.get("REQS_FILE", "requirements_versions.txt")
 
-    xformers_package = os.environ.get("XFORMERS_PACKAGE", "xformers==0.0.25")
+    xformers_package = os.environ.get("XFORMERS_PACKAGE", "xformers==0.0.26")
 
     print(f"Python {sys.version}")
     print(f"RuinedFooocus version: {version.version}")
