@@ -21,7 +21,7 @@ def old_look(image, prompt, gr):
         text = "Lets interrogate"
 
         # Unload models, if needed?
-        # state["pipeline"] = None
+        #state["pipeline"] = None
         gr.Info("Creating Your Prompt")
 
         conf = Config(
@@ -60,8 +60,8 @@ def look(image, prompt, gr):
         gr.Info("Creating Your Prompt")
 
         with TimeIt(""):
-            device = "cuda:0" if torch.cuda.is_available() else "cpu"
-            torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
+            device = "cpu"
+            torch_dtype = torch.float32
 
             prompt = "<MORE_DETAILED_CAPTION>"
 
