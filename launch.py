@@ -61,6 +61,8 @@ def prepare_environment():
     print(f"Python {sys.version}")
     print(f"RuinedFooocus version: {version.version}")
 
+    run(f'"{python}" -m pip install --upgrade pip', "Check pip", "Couldn't check pip", live=True)
+
     if not is_installed("wheel"):
         run(f'"{python}" -m pip install wheel', "Installing wheel", "Couldn't install wheel", live=True)
 
