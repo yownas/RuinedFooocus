@@ -1,7 +1,6 @@
 from pathlib import Path
 import json
 import threading
-from modules.civit import Civit
 import time
 
 
@@ -22,8 +21,6 @@ class PathManager:
     }
 
     EXTENSIONS = [".pth", ".ckpt", ".bin", ".safetensors", ".merge"]
-
-    civit_worker_folders = []
 
     def __init__(self):
         self.paths = self.load_paths()
@@ -76,70 +73,10 @@ class PathManager:
     def get_abspath(self, path):
         return Path(path) if Path(path).is_absolute() else Path(__file__).parent / path
 
-    def civit_update_worker(self, folder_path, cache, isLora):
-        try:
-            import imageio.v3
-        except:
-            # Skip updates if we are missing imageio
-            print(f"DEBUG: Skip CivitAI update")
-            return
-        if folder_path in self.civit_worker_folders:
-            # Already working on this folder
-            return
-        if cache:
-            cache_path = Path(self.model_paths["cache_path"] / cache)
-        else:
-            return
-        self.civit_worker_folders.append(folder_path)
-        civit = Civit(cache_path=cache_path)
-        for path in folder_path.rglob("*"):
-            if path.suffix.lower() in self.EXTENSIONS:
-
-                # get file name, add cache path change suffix
-                cache_file = Path(cache_path / path.name)
-
-                models = None
-                has_preview = False
-
-                suffixes = [".jpeg", ".jpg", ".png", ".gif"]
-                for suffix in suffixes:
-                    thumbcheck = cache_file.with_suffix(suffix)
-                    if Path(thumbcheck).is_file():
-                        has_preview = True
-                        break
-
-                if not has_preview:
-                    if models is None:
-                        models = civit.get_models_by_path(str(path))
-                    #print(f"Downloading model thumbnail for {Path(path).name} ({civit.get_model_base(models)} - {civit.get_model_type(models)})")
-                    civit.get_image(models, thumbcheck)
-                    time.sleep(1)
-
-                txtcheck = cache_file.with_suffix(".txt")
-                if isLora and not txtcheck.exists():
-                    if models is None:
-                        models = civit.get_models_by_path(str(path))
-                    print(f"Downloading LoRA keywords for {Path(path).name} ({civit.get_model_base(models)} - {civit.get_model_type(models)})")
-                    keywords = civit.get_keywords(models)
-                    with open(txtcheck, "w") as f:
-                        f.write(", ".join(keywords))
-                    time.sleep(1)
-
-        self.civit_worker_folders.remove(folder_path)
-
     def get_model_filenames(self, folder_path, cache=None, isLora=False):
         folder_path = Path(folder_path)
         if not folder_path.is_dir():
             raise ValueError(f"{folder_path} is not a valid directory.")
-        threading.Thread(
-            target=self.civit_update_worker,
-            args=(
-                folder_path,
-                cache,
-                isLora,
-            ),
-            daemon=True,
-        ).start()
         filenames = []
         for path in folder_path.rglob("*"):
             if path.suffix.lower() in self.EXTENSIONS:

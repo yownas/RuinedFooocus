@@ -39,8 +39,14 @@ from PIL import Image
 
 inpaint_toggle = None
 path_manager = PathManager()
-civit_checkpoints = Civit(cache_path=Path(path_manager.model_paths["cache_path"] / "checkpoints"))
-civit_loras = Civit(cache_path=Path(path_manager.model_paths["cache_path"] / "loras"))
+civit_checkpoints = Civit(
+    model_dir=Path(path_manager.model_paths["modelfile_path"]),
+    cache_path=Path(path_manager.model_paths["cache_path"] / "checkpoints")
+)
+civit_loras = Civit(
+    model_dir=Path(path_manager.model_paths["lorafile_path"]),
+    cache_path=Path(path_manager.model_paths["cache_path"] / "loras")
+)
 
 def find_unclosed_markers(s):
     markers = re.findall(r"__", s)
@@ -351,7 +357,7 @@ with shared.gradio_root as block:
                         return {prompt: gr.update(value=newtext)}
 
                 with gr.Column(scale=1, min_width=0):
-                    run_button = gr.Button(value="Generate", elem_id="generate")
+                    run_button = gr.Button(value="Generate", elem_id="generate", api_name="generate")
                     stop_button = gr.Button(
                         value="Stop", interactive=False, visible=False
                     )
