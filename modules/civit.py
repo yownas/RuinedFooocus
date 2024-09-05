@@ -89,7 +89,7 @@ class Civit:
         return shorthash
 
     def model_sha256(self, filename):
-        print(f"Hashingh {filename}")
+        print(f"Hashing {filename}")
         blksize = 1024 * 1024
         hash_sha256 = hashlib.sha256()
         try:
