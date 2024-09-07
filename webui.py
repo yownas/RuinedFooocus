@@ -706,6 +706,13 @@ with shared.gradio_root as block:
                             scale=1,
                         )
 
+                    default_active = []
+                    for i in range(1,6):
+                        m = default_settings.get(f"lora_{i}_model", "None")
+                        w = default_settings.get(f"lora_{i}_weight", 0.0)
+                        if m != "" and m != "None":
+                            default_active.append((get_lora_thumbnail(m), f"{w} - {m}"))
+
                     with gr.Group(visible=True) as lora_active:
                         with gr.Row():
                             lora_weight_slider = gr.Slider(
@@ -727,7 +734,7 @@ with shared.gradio_root as block:
                             visible=True,
                             show_download_button=False,
                             min_width=60,
-                            value=[],
+                            value=default_active,
                         )
                         add_ctrl("loras", lora_active_gallery)
 
