@@ -35,3 +35,4 @@ pynim==1.0.5
 slangtorch==1.2.3
 numpy-stl==3.1.2
 pyrender==0.1.45
+gguf==0.10.0
