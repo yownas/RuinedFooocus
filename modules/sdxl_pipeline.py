@@ -217,19 +217,20 @@ class pipeline:
                     )
 
                     # https://huggingface.co/comfyanonymous/flux_text_encoders/tree/main
-                    clip_path1 = os.path.join(path_manager.model_paths["clip_path"], "clip_l.safetensors")
+                    clip_name1 = default_settings.get("gguf_clip1", "clip_l.safetensors")
+                    clip_path1 = os.path.join(path_manager.model_paths["clip_path"], clip_name1)
                     # https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/tree/main
-                    clip_path2 = os.path.join(path_manager.model_paths["clip_path"], "t5-v1_1-xxl-encoder-Q3_K_S.gguf")
+                    clip_name2 = default_settings.get("gguf_clip2", "t5-v1_1-xxl-encoder-Q3_K_S.gguf")
+                    clip_path2 = os.path.join(path_manager.model_paths["clip_path"], clip_name2)
+
                     clip_paths = (clip_path1, clip_path2)
                     clip_loader = DualCLIPLoaderGGUF()
-
-                    #clip = clip_loader.load_clip(clip_path, type="flux")
                     clip_type = comfy.sd.CLIPType.FLUX
                     clip = clip_loader.load_patcher(clip_paths, clip_type, clip_loader.load_data(clip_paths))
 
-
                     # https://huggingface.co/black-forest-labs/FLUX.1-schnell/tree/main
-                    vae_path = os.path.join(path_manager.model_paths["vae_path"], "ae.safetensors")
+                    vae_name = default_settings.get("gguf_vae", "ae.safetensors")
+                    vae_path = os.path.join(path_manager.model_paths["vae_path"], vae_name)
                     sd = comfy.utils.load_torch_file(vae_path)
                     vae = comfy.sd.VAE(sd=sd)
 
