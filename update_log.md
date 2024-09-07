@@ -1,3 +1,9 @@
+### 1.56.0
+* Support for Flux GGUF unet models
+* RemBG
+* Img2STL
+* Florence as default Interrogator
+
 ### 1.55.0
 * Pixart and Flux oh my!
 
