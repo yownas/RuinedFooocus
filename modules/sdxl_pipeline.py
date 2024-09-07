@@ -226,11 +226,13 @@ class pipeline:
                     clip_paths = (clip_path1, clip_path2)
                     clip_loader = DualCLIPLoaderGGUF()
                     clip_type = comfy.sd.CLIPType.FLUX
+                    print(f"Loading CLIP {clip_name1} and {clip_name2}")
                     clip = clip_loader.load_patcher(clip_paths, clip_type, clip_loader.load_data(clip_paths))
 
                     # https://huggingface.co/black-forest-labs/FLUX.1-schnell/tree/main
                     vae_name = default_settings.get("gguf_vae", "ae.safetensors")
                     vae_path = os.path.join(path_manager.model_paths["vae_path"], vae_name)
+                    print(f"Loading VAE {vae_name}")
                     sd = comfy.utils.load_torch_file(vae_path)
                     vae = comfy.sd.VAE(sd=sd)
 
