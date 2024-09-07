@@ -2,7 +2,7 @@ import gc
 import numpy as np
 import os
 import torch
-import cv2
+import traceback
 import re
 
 import modules.controlnet
@@ -33,6 +33,8 @@ from nodes import (
     VAEDecode,
     VAEEncode,
     VAEEncodeForInpaint,
+    CLIPLoader,
+    VAELoader,
 )
 from comfy.sampler_helpers import (
     cleanup_additional_models,
@@ -60,6 +62,8 @@ from modules.pipleline_utils import (
     set_timestep_range,
 )
 
+from comfyui_gguf.nodes import gguf_clip_loader, gguf_sd_loader, DualCLIPLoaderGGUF
+from comfyui_gguf.ops import GGMLOps
 
 class pipeline:
     pipeline_type = ["sdxl", "ssd", "sd3", "flux"]
@@ -93,6 +97,8 @@ class pipeline:
 
     models = []
     inference_memory = None
+
+    ggml_ops = GGMLOps()
 
     def merge_models(self, name):
         print(f"Loading merge: {name}")
@@ -204,7 +210,32 @@ class pipeline:
 
         try:
             with torch.torch.inference_mode():
-                unet, clip, vae, clip_vision = load_checkpoint_guess_config(filename)
+                if filename.endswith(".gguf"):
+                    sd = gguf_sd_loader(filename)
+                    unet = comfy.sd.load_diffusion_model_state_dict(
+                        sd, model_options={"custom_operations": self.ggml_ops}
+                    )
+
+                    # https://huggingface.co/comfyanonymous/flux_text_encoders/tree/main
+                    clip_path1 = os.path.join(path_manager.model_paths["clip_path"], "clip_l.safetensors")
+                    # https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/tree/main
+                    clip_path2 = os.path.join(path_manager.model_paths["clip_path"], "t5-v1_1-xxl-encoder-Q3_K_S.gguf")
+                    clip_paths = (clip_path1, clip_path2)
+                    clip_loader = DualCLIPLoaderGGUF()
+
+                    #clip = clip_loader.load_clip(clip_path, type="flux")
+                    clip_type = comfy.sd.CLIPType.FLUX
+                    clip = clip_loader.load_patcher(clip_paths, clip_type, clip_loader.load_data(clip_paths))
+
+
+                    # https://huggingface.co/black-forest-labs/FLUX.1-schnell/tree/main
+                    vae_path = os.path.join(path_manager.model_paths["vae_path"], "ae.safetensors")
+                    sd = comfy.utils.load_torch_file(vae_path)
+                    vae = comfy.sd.VAE(sd=sd)
+
+                    clip_vision = None
+                else:
+                    unet, clip, vae, clip_vision = load_checkpoint_guess_config(filename)
 
             self.xl_base = self.StableDiffusionModel(
                 unet=unet, clip=clip, vae=vae, clip_vision=clip_vision
@@ -227,7 +258,8 @@ class pipeline:
                 print(f"Base model loaded: {self.xl_base_hash}")
 
         except Exception as e:
-            print(f"ERROR: {e}")
+            #print(f"ERROR: {e}")_
+            traceback.print_exc() 
             print(f"Failed to load {name}, loading default model instead")
             self.load_base_model(
                 path_manager.default_model_names["default_base_model_name"]

@@ -58,7 +58,7 @@ class Civit:
         self.headers = {"Content-Type": "application/json"}
         self.session = requests.Session()
         self.civit_worker_folders = []
-        self.EXTENSIONS = [".pth", ".ckpt", ".bin", ".safetensors", ".merge"]
+        self.EXTENSIONS = [".pth", ".ckpt", ".bin", ".safetensors", ".gguf", ".merge"]
 
         if model_dir:
             threading.Thread(

@@ -41,6 +41,10 @@ sf3d_repo = (
     os.environ.get("SF3D_REPO", "https://github.com/Stability-AI/stable-fast-3d.git"),
     os.environ.get("SF3D_COMMIT_HASH", "070ece138459e38e1fe9f54aa19edb834bced85e"),
 )
+gguf_repo = (
+    os.environ.get("GGUF_REPO", "https://github.com/city96/ComfyUI-GGUF.git"),
+    os.environ.get("GGUF_COMMIT_HASH", "ac96699b7a451c645d5d8643f27dd3d389f83c92"),
+)
 
 REINSTALL_ALL = False
 if os.path.exists("reinstall"):
@@ -112,7 +116,12 @@ def clone_git_repos():
 
     sf3d_name = "stable-fast-3d"
     git_clone(sf3d_repo[0], repo_dir(sf3d_name), "Stable Fast 3D", sf3d_repo[1])
-    path = Path(script_path) / dir_repos / "stable-fast-3d"
+    path = Path(script_path) / dir_repos / sf3d_name
+    sys.path.append(str(path))
+
+    gguf_name = "comfyui_gguf"
+    git_clone(gguf_repo[0], repo_dir(gguf_name), "ComfyUI-GGUF", gguf_repo[1])
+    path = Path(script_path) / dir_repos
     sys.path.append(str(path))
 
     return

@@ -1,6 +1,5 @@
 from pathlib import Path
 import json
-import threading
 import time
 
 
@@ -12,6 +11,7 @@ class PathManager:
         "path_loras": "../models/loras/",
         "path_controlnet": "../models/controlnet/",
         "path_vae_approx": "../models/vae_approx/",
+        "path_vae": "../models/vae/",
         "path_preview": "../outputs/preview.jpg",
         "path_faceswap": "../models/faceswap/",
         "path_upscalers": "../models/upscale_models",
@@ -20,7 +20,7 @@ class PathManager:
         "path_cache": "../cache/",
     }
 
-    EXTENSIONS = [".pth", ".ckpt", ".bin", ".safetensors", ".merge"]
+    EXTENSIONS = [".pth", ".ckpt", ".bin", ".safetensors", ".gguf", ".merge"]
 
     def __init__(self):
         self.paths = self.load_paths()
@@ -49,6 +49,7 @@ class PathManager:
             "lorafile_path": self.get_abspath_folder(self.paths["path_loras"]),
             "controlnet_path": self.get_abspath_folder(self.paths["path_controlnet"]),
             "vae_approx_path": self.get_abspath_folder(self.paths["path_vae_approx"]),
+            "vae_path": self.get_abspath_folder(self.paths["path_vae"]),
             "temp_outputs_path": self.get_abspath_folder(self.paths["path_outputs"]),
             "temp_preview_path": self.get_abspath(self.paths["path_preview"]),
             "faceswap_path": self.get_abspath_folder(self.paths["path_faceswap"]),
