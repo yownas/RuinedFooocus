@@ -192,7 +192,7 @@ class pipeline:
         return
 
 
-    def load_base_model(self, name):
+    def load_base_model(self, name, unet_only=False):
         if self.xl_base_hash == name and self.xl_base_patched_extra == set():
             return
 
@@ -208,13 +208,23 @@ class pipeline:
         self.xl_base_patched_extra = set()
         self.conditions = None
 
-        try:
+        comfy.model_management.cleanup_models()
+        comfy.model_management.soft_empty_cache()
+
+        unet = None
+
+        if filename.endswith(".gguf") or unet_only:
             with torch.torch.inference_mode():
-                if filename.endswith(".gguf"):
-                    sd = gguf_sd_loader(filename)
-                    unet = comfy.sd.load_diffusion_model_state_dict(
-                        sd, model_options={"custom_operations": self.ggml_ops}
-                    )
+                try:
+                    if filename.endswith(".gguf"):
+                        sd = gguf_sd_loader(filename)
+                        unet = comfy.sd.load_diffusion_model_state_dict(
+                            sd, model_options={"custom_operations": self.ggml_ops}
+                        )
+                    else:
+                        model_options = {}
+                        model_options["dtype"] = torch.float8_e4m3fn # FIXME should be a setting
+                        unet = comfy.sd.load_diffusion_model(filename, model_options=model_options)
 
                     # https://huggingface.co/comfyanonymous/flux_text_encoders/tree/main
                     clip_name1 = default_settings.get("gguf_clip1", "clip_l.safetensors")
@@ -237,9 +247,31 @@ class pipeline:
                     vae = comfy.sd.VAE(sd=sd)
 
                     clip_vision = None
-                else:
+                except Exception as e:
+                    unet = None
+                    traceback.print_exc() 
+
+        else:
+            try:
+                with torch.torch.inference_mode():
                     unet, clip, vae, clip_vision = load_checkpoint_guess_config(filename)
 
+                if clip == None or vae == None:
+                    raise
+            except:
+                print(f"Failed. Trying to load as Flux unet only.")
+                self.load_base_model(
+                    filename,
+                    unet_only=True
+                )
+                return
+
+        if unet == None:
+            print(f"Failed to load {name}, loading default model instead")
+            self.load_base_model(
+                path_manager.default_model_names["default_base_model_name"]
+            )
+        else:
             self.xl_base = self.StableDiffusionModel(
                 unet=unet, clip=clip, vae=vae, clip_vision=clip_vision
             )
@@ -259,14 +291,6 @@ class pipeline:
                 self.xl_base_patched_hash = ""
                 # self.xl_base_patched.unet.model.to("cuda")
                 print(f"Base model loaded: {self.xl_base_hash}")
-
-        except Exception as e:
-            #print(f"ERROR: {e}")_
-            traceback.print_exc() 
-            print(f"Failed to load {name}, loading default model instead")
-            self.load_base_model(
-                path_manager.default_model_names["default_base_model_name"]
-            )
 
         return
 
