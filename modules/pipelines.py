@@ -32,14 +32,14 @@ def update(gen_data):
     cn_type = cn_settings["type"] if "type" in cn_settings else ""
 
     try:
-        if prompt == "ruinedfooocuslogo":
+        if prompt.lower() == "ruinedfooocuslogo":
             if (
                 state["pipeline"] is None
                 or "template" not in state["pipeline"].pipeline_type
             ):
                 state["pipeline"] = template_pipeline.pipeline()
 
-        elif prompt.startswith("search:"):
+        elif prompt.lower().startswith("search:"):
             if (
                 state["pipeline"] is None
                 or "search" not in state["pipeline"].pipeline_type

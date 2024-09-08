@@ -90,7 +90,7 @@ class pipeline:
         daystr = current_time.strftime("%Y-%m-%d")
 
         # Parse search arguments
-        searchfor = re.sub(r"search: *", "", positive_prompt, count=1)
+        searchfor = re.sub(r"search: *", "", positive_prompt, count=1, flags=re.IGNORECASE)
 
         chomp = True # Do this until we can't chomp off any more options
         while chomp:
@@ -98,7 +98,7 @@ class pipeline:
 
             # Date
             matchstr = r"^[0-9]{4}-[0-9]{2}-[0-9]{2}\s?"
-            match = re.match(matchstr, searchfor)
+            match = re.match(matchstr, searchfor, re.IGNORECASE)
             if match is not None:
                 daystr = match.group().strip()
                 searchfor = re.sub(matchstr, "", searchfor)
@@ -106,7 +106,7 @@ class pipeline:
 
             # Skip
             matchstr = r"^skip:\s?(?P<skip>[0-9]+)\s?"
-            match = re.match(matchstr, searchfor)
+            match = re.match(matchstr, searchfor, re.IGNORECASE)
             if match is not None:
                 skip = int(match.group("skip"))
                 searchfor = re.sub(matchstr, "", searchfor)
@@ -114,7 +114,7 @@ class pipeline:
 
             # Skip more
             matchstr = r"^\+(?P<skip>[0-9]+)\s?"
-            match = re.match(matchstr, searchfor)
+            match = re.match(matchstr, searchfor, re.IGNORECASE)
             if match is not None:
                 skip += int(match.group("skip"))
                 searchfor = re.sub(matchstr, "", searchfor)
@@ -122,7 +122,7 @@ class pipeline:
 
             # Set max
             matchstr = r"^max:\s?(?P<max>[0-9]+)\s?"
-            match = re.match(matchstr, searchfor)
+            match = re.match(matchstr, searchfor, re.IGNORECASE)
             if match is not None:
                 maxresults = int(match.group("max"))
                 searchfor = re.sub(matchstr, "", searchfor)
