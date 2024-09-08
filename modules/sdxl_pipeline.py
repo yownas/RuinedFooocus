@@ -201,7 +201,7 @@ class pipeline:
             self.merge_models(name)
             return
 
-        print(f"Loading base model: {name}")
+        print(f"Loading base {'unet' if unet_only else 'model'}: {name}")
 
         self.xl_base_patched = None
         self.xl_base_patched_hash = ""
@@ -259,7 +259,7 @@ class pipeline:
                 if clip == None or vae == None:
                     raise
             except:
-                print(f"Failed. Trying to load as Flux unet only.")
+                print(f"Failed. Trying to load as Flux unet.")
                 self.load_base_model(
                     filename,
                     unet_only=True
