@@ -1134,8 +1134,6 @@ with shared.gradio_root as block:
                     outputs=[],
                 )
 
-
-
                 with gr.Row():
                     model_refresh = gr.Button(
                         value="\U0001f504 Refresh All Files",
@@ -1144,31 +1142,27 @@ with shared.gradio_root as block:
                     )
 
             @model_refresh.click(
-                inputs=[], outputs=[model_gallery, lora_gallery, style_selection]
+                inputs=[],
+                outputs=[modelfilter, model_gallery, lorafilter, lora_gallery, style_selection, mm_filter, mm_gallery]
             )
             def model_refresh_clicked():
                 path_manager.update_all_model_names()
-                results = [
-                    gr.update(
-                        value=list(
-                            map(
-                                lambda x: (get_checkpoint_thumbnail(x), x),
-                                path_manager.model_filenames,
-                            )
-                        ),
-                    )
-                ]
-                results += [
-                    gr.update(
-                        value=list(
-                            map(
-                                lambda x: (get_lora_thumbnail(x), x),
-                                path_manager.lora_filenames,
-                            )
-                        ),
-                    )
-                ]
+
+                # model_filter
+                results = [gr.update(value="")]
+                # model_gallery
+                results += [update_model_filter("")]
+                # lorafilter
+                results += [gr.update(value="")]
+                # lora_gallery
+                results += [update_lora_filter("")]
+                # style_selection
                 results += [gr.update(choices=list(load_styles().keys()))]
+                # mm_filter
+                results += [gr.update(value="")]
+                # mm_gallery
+                results += [update_mm_filter("")]
+
                 return results
 
             ui_onebutton.ui_onebutton(prompt, run_event)
