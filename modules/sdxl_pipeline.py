@@ -267,10 +267,11 @@ class pipeline:
                 return
 
         if unet == None:
-            print(f"Failed to load {name}, loading default model instead")
-            self.load_base_model(
-                path_manager.default_model_names["default_base_model_name"]
-            )
+            print(f"Failed to load {name}")
+            self.xl_base = None
+            self.xl_base_hash = ""
+            self.xl_base_patched = None
+            self.xl_base_patched_hash = ""
         else:
             self.xl_base = self.StableDiffusionModel(
                 unet=unet, clip=clip, vae=vae, clip_vision=clip_vision
