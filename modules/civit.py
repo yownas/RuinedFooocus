@@ -185,7 +185,7 @@ class Civit:
                 oh = image.shape[0]
                 ow = image.shape[1]
                 scale = max / oh if oh > ow else max / ow
-                res = cv2.resize(
+                image = cv2.resize(
                     image,
                     dsize=(int(ow * scale), int(oh * scale)),
                     interpolation=cv2.INTER_LANCZOS4,
@@ -193,10 +193,10 @@ class Civit:
 
             if caption:
                 font = cv2.FONT_HERSHEY_SIMPLEX
-                fontScale = 1
-                thickness = 2
+                fontScale = 0.35
+                thickness = 1
 
-                org = (7, 32)
+                org = (3, 10)
                 color = (25, 15, 11) # BGR
                 res = cv2.putText(
                     image,
@@ -205,11 +205,11 @@ class Civit:
                     font,
                     fontScale,
                     color,
-                    thickness,
+                    thickness*2,
                     cv2.LINE_AA
                 )
-                org = (5, 30)
-                color = (243, 195, 165) # BGR
+                org = (3, 10)
+                color = (255, 215, 185) # BGR
                 res = cv2.putText(
                     image,
                     text,
