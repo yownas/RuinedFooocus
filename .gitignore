@@ -54,6 +54,7 @@ performance.json
 /models/checkpoints/*.jpg
 /models/checkpoints/*.gif
 /models/diffusers/*
+/models/clip/*
 /cache/loras/*.txt
 /cache/loras/*.jpeg
 /cache/loras/*.jpg
