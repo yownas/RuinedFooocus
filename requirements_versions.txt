@@ -24,7 +24,7 @@ kornia==0.7.2
 sentencepiece==0.2.0
 spandrel==0.3.4
 imageio[pyav]==2.34.1 
-xformers==0.0.26
+xformers==0.0.25.post1
 beautifulsoup4==4.12.3
 protobuf==4.25.4
 rembg==2.0.58

@@ -60,7 +60,7 @@ def prepare_environment():
     )
     requirements_file = os.environ.get("REQS_FILE", "requirements_versions.txt")
 
-    xformers_package = os.environ.get("XFORMERS_PACKAGE", "xformers==0.0.26")
+    xformers_package = os.environ.get("XFORMERS_PACKAGE", "xformers==0.0.25.post1")
 
     print(f"Python {sys.version}")
     print(f"RuinedFooocus version: {version.version}")
