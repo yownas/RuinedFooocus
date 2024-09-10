@@ -170,6 +170,9 @@ class Civit:
         max = 166  # Max width or height
 
         def make_thumbnail(image, text, zoom=False, caption=False):
+            if image is None:
+                return None
+
             from modules.settings import default_settings
 
             res = None
@@ -254,6 +257,8 @@ class Civit:
                     video_out = []
                     for i in video:
                         out = make_thumbnail(i, caption, zoom=True)
+                        if out is None:
+                            out = i
                         video_out.append(out)
                     iio.imwrite(
                         str(path.with_suffix(".gif")), video_out, fps=fps, loop=0
