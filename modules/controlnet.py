@@ -3,6 +3,7 @@ import shutil
 import json
 from os.path import exists
 from shared import state
+from shared import path_manager
 
 DEFAULT_CNSETTINGS_FILE = "settings/powerup.default"
 CNSETTINGS_FILE = "settings/powerup.json"
@@ -65,7 +66,8 @@ def modes():
 
 
 def get_model(type):
-    return controlnet_models[type] if type in controlnet_models else None
+    #return controlnet_models[type] if type in controlnet_models else None
+    return path_manager.get_file_path(f"cn_{type}", default=None)
 
 
 def get_settings(gen_data):

@@ -158,26 +158,6 @@ def download_models():
             "https://github.com/madebyollin/taesd/raw/main/taesdxl_decoder.pth",
         ),
         (
-            path_manager.model_paths["controlnet_path"],
-            "control-lora-canny-rank128.safetensors",
-            "https://huggingface.co/stabilityai/control-lora/resolve/main/control-LoRAs-rank128/control-lora-canny-rank128.safetensors",
-        ),
-        (
-            path_manager.model_paths["controlnet_path"],
-            "control-lora-depth-rank128.safetensors",
-            "https://huggingface.co/stabilityai/control-lora/resolve/main/control-LoRAs-rank128/control-lora-depth-rank128.safetensors",
-        ),
-        (
-            path_manager.model_paths["controlnet_path"],
-            "control-lora-recolor-rank128.safetensors",
-            "https://huggingface.co/stabilityai/control-lora/resolve/main/control-LoRAs-rank128/control-lora-recolor-rank128.safetensors",
-        ),
-        (
-            path_manager.model_paths["controlnet_path"],
-            "control-lora-sketch-rank128-metadata.safetensors",
-            "https://huggingface.co/stabilityai/control-lora/resolve/main/control-LoRAs-rank128/control-lora-sketch-rank128-metadata.safetensors",
-        ),
-        (
             path_manager.model_paths["upscaler_path"],
             "4x-UltraSharp.pth",
             "https://huggingface.co/lokCX/4x-Ultrasharp/resolve/main/4x-UltraSharp.pth",

@@ -91,6 +91,26 @@ class PathManager:
             "path": "path_clip",
             "filename": "t5-v1_1-xxl-encoder-f32.gguf",
         },
+        "cn_canny": {
+            "url": "https://huggingface.co/stabilityai/control-lora/resolve/main/control-LoRAs-rank128/control-lora-canny-rank128.safetensors",
+            "path": "path_controlnet",
+            "filename": "control-lora-canny-rank128.safetensors",
+        },
+        "cn_depth": {
+            "url": "https://huggingface.co/stabilityai/control-lora/resolve/main/control-LoRAs-rank128/control-lora-depth-rank128.safetensors",
+            "path": "path_controlnet",
+            "filename": "control-lora-depth-rank128.safetensors",
+        },
+        "cn_recolour": {
+            "url": "https://huggingface.co/stabilityai/control-lora/resolve/main/control-LoRAs-rank128/control-lora-recolor-rank128.safetensors",
+            "path": "path_controlnet",
+            "filename": "control-lora-recolor-rank128.safetensors",
+        },
+        "cn_sketch": {
+            "url": "https://huggingface.co/stabilityai/control-lora/resolve/main/control-LoRAs-rank128/control-lora-sketch-rank128-metadata.safetensors",
+            "path": "path_controlnet",
+            "filename": "control-lora-sketch-rank128-metadata.safetensors",
+        },
         "vae/ae.safetensors": {
             "url": "https://huggingface.co/black-forest-labs/FLUX.1-schnell/resolve/main/ae.safetensors",
             "path": "path_vae",

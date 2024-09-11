@@ -351,11 +351,10 @@ class pipeline:
         if self.xl_controlnet_hash == str(self.xl_controlnet):
             return
 
-        name = modules.controlnet.get_model(name)
+        filename = modules.controlnet.get_model(name)
 
-        if name is not None and self.xl_controlnet_hash != name:
-            filename = os.path.join(path_manager.model_paths["controlnet_path"], name)
-            self.xl_controlnet = comfy.controlnet.load_controlnet(filename)
+        if filename is not None and self.xl_controlnet_hash != name:
+            self.xl_controlnet = comfy.controlnet.load_controlnet(str(filename))
             self.xl_controlnet_hash = name
             print(f"ControlNet model loaded: {self.xl_controlnet_hash}")
         if self.xl_controlnet_hash != name:
@@ -552,7 +551,6 @@ class pipeline:
         if controlnet is not None and "type" in controlnet:
             if controlnet["type"].lower() == "layerdiffuse":
                 if not "layerdiffuse" in self.xl_base_patched_extra:
-                    print(f"DEBUG: add layerdiffuse")
                     tmodel = ModelPatcher(
                         self.xl_base_patched.unet, device, "cpu", size=1
                     )
@@ -581,7 +579,6 @@ class pipeline:
                     )
                 layerdiffuse_mode = True
             else:
-                print(f"DEBUG: remove layerdiffuse")
                 # FIXME try reloading model? (and loras)
                 if "layerdiffuse" in self.xl_base_patched_extra:
                     self.xl_base_patched_extra.remove("layerdiffuse")
