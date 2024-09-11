@@ -1,6 +1,8 @@
 from pathlib import Path
 import json
 import time
+import requests
+from tqdm import tqdm
 
 
 class PathManager:
@@ -21,6 +23,16 @@ class PathManager:
     }
 
     EXTENSIONS = [".pth", ".ckpt", ".bin", ".safetensors", ".gguf", ".merge"]
+
+    # Add a dictionary to store file download information
+    DOWNLOADABLE_FILES = {
+        "lcm_lora": {
+            "url": "https://huggingface.co/latent-consistency/lcm-lora-sdxl/resolve/main/lcm-lora-sdxl.safetensors",
+            "path": "path_loras",
+            "filename": "lcm-lora-sdxl.safetensors",
+        },
+        # Add more downloadable files here
+    }
 
     def __init__(self):
         self.paths = self.load_paths()
@@ -45,7 +57,9 @@ class PathManager:
         return {
             "modelfile_path": self.get_abspath_folder(self.paths["path_checkpoints"]),
             "diffusers_path": self.get_abspath_folder(self.paths["path_diffusers"]),
-            "diffusers_cache_path": self.get_abspath_folder(self.paths["path_diffusers_cache"]),
+            "diffusers_cache_path": self.get_abspath_folder(
+                self.paths["path_diffusers_cache"]
+            ),
             "lorafile_path": self.get_abspath_folder(self.paths["path_loras"]),
             "controlnet_path": self.get_abspath_folder(self.paths["path_controlnet"]),
             "vae_approx_path": self.get_abspath_folder(self.paths["path_vae_approx"]),
@@ -92,9 +106,11 @@ class PathManager:
         # if it is a plain file. This will sort folders above files in the dropdown
         return sorted(
             filenames,
-            key=lambda x: f"0{x.casefold()}"
-            if not str(Path(x).parent) == "."
-            else f"1{x.casefold()}",
+            key=lambda x: (
+                f"0{x.casefold()}"
+                if not str(Path(x).parent) == "."
+                else f"1{x.casefold()}"
+            ),
         )
 
     def get_diffusers_filenames(self, folder_path, cache=None, isLora=False):
@@ -103,41 +119,78 @@ class PathManager:
             raise ValueError(f"{folder_path} is not a valid directory.")
         filenames = []
         for path in folder_path.glob("*/*"):
-#            if path.suffix.lower() in self.EXTENSIONS:
-#                if isLora:
-#                    txtcheck = path.with_suffix(".txt")
-#                    if txtcheck.exists():
-#                        fstats = txtcheck.stat()
-#                        if fstats.st_size > 0:
-#                            path = path.with_suffix(f"{path.suffix}")
+            #            if path.suffix.lower() in self.EXTENSIONS:
+            #                if isLora:
+            #                    txtcheck = path.with_suffix(".txt")
+            #                    if txtcheck.exists():
+            #                        fstats = txtcheck.stat()
+            #                        if fstats.st_size > 0:
+            #                            path = path.with_suffix(f"{path.suffix}")
             filenames.append(f"🤗:{path.relative_to(folder_path)}")
         return sorted(
             filenames,
-            key=lambda x: f"0{x.casefold()}"
-            if not str(Path(x).parent) == "."
-            else f"1{x.casefold()}",
+            key=lambda x: (
+                f"0{x.casefold()}"
+                if not str(Path(x).parent) == "."
+                else f"1{x.casefold()}"
+            ),
         )
 
     def update_all_model_names(self):
         self.model_filenames = self.get_model_filenames(
-            self.model_paths["modelfile_path"],
-            cache="checkpoints"
+            self.model_paths["modelfile_path"], cache="checkpoints"
         ) + self.get_diffusers_filenames(
-            self.model_paths["diffusers_path"],
-            cache="checkpoints"
+            self.model_paths["diffusers_path"], cache="checkpoints"
         )
         self.lora_filenames = self.get_model_filenames(
-            self.model_paths["lorafile_path"], 
-            cache="loras",
-            isLora=True
+            self.model_paths["lorafile_path"], cache="loras", isLora=True
         )
         self.upscaler_filenames = self.get_model_filenames(
             self.model_paths["upscaler_path"]
         )
 
+    def get_file_path(self, file_key):
+        """
+        Get the path for a file, downloading it if it doesn't exist.
+        """
+        if file_key not in self.DOWNLOADABLE_FILES:
+            raise ValueError(f"Unknown file key: {file_key}")
+
+        file_info = self.DOWNLOADABLE_FILES[file_key]
+        file_path = (
+            self.get_abspath(self.paths[file_info["path"]]) / file_info["filename"]
+        )
+
+        if not file_path.exists():
+            self.download_file(file_key)
+
+        return file_path
+
+    def download_file(self, file_key):
+        """
+        Download a file if it doesn't exist.
+        """
+        file_info = self.DOWNLOADABLE_FILES[file_key]
+        file_path = (
+            self.get_abspath(self.paths[file_info["path"]]) / file_info["filename"]
+        )
+
+        print(f"Downloading {file_info['filename']}...")
+        response = requests.get(file_info["url"], stream=True)
+        total_size = int(response.headers.get("content-length", 0))
+
+        with open(file_path, "wb") as file, tqdm(
+            desc=file_info["filename"],
+            total=total_size,
+            unit="iB",
+            unit_scale=True,
+            unit_divisor=1024,
+        ) as progress_bar:
+            for data in response.iter_content(chunk_size=1024):
+                size = file.write(data)
+                progress_bar.update(size)
+
+        print(f"Downloaded {file_info['filename']} to {file_path}")
+
     def find_lcm_lora(self):
-        path = Path(self.model_paths["lorafile_path"])
-        filename = "lcm-lora-sdxl.safetensors"
-        for child in path.rglob(filename):
-            if child.name == filename:
-                return child.relative_to(path)
+        return self.get_file_path("lcm_lora")
