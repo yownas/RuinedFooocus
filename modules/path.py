@@ -31,6 +31,71 @@ class PathManager:
             "path": "path_loras",
             "filename": "lcm-lora-sdxl.safetensors",
         },
+        "clip/clip_l.safetensors": {
+            "url": "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors",
+            "path": "path_clip",
+            "filename": "clip_l.safetensors"
+        },
+        "clip/t5-v1_1-xxl-encoder-Q3_K_L.gguf": {
+            "url": "https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-Q3_K_L.gguf",
+            "path": "path_clip",
+            "filename": "t5-v1_1-xxl-encoder-Q3_K_L.gguf",
+        },
+        "clip/t5-v1_1-xxl-encoder-Q3_K_M.gguf": {
+            "url": "https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-Q3_K_M.gguf",
+            "path": "path_clip",
+            "filename": "t5-v1_1-xxl-encoder-Q3_K_M.gguf",
+        },
+        "clip/t5-v1_1-xxl-encoder-Q3_K_S.gguf": {
+            "url": "https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-Q3_K_S.gguf",
+            "path": "path_clip",
+            "filename": "t5-v1_1-xxl-encoder-Q3_K_S.gguf",
+        },
+        "clip/t5-v1_1-xxl-encoder-Q4_K_M.gguf": {
+            "url": "https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-Q4_K_M.gguf",
+            "path": "path_clip",
+            "filename": "t5-v1_1-xxl-encoder-Q4_K_M.gguf",
+        },
+        "clip/t5-v1_1-xxl-encoder-Q4_K_S.gguf": {
+            "url": "https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-Q4_K_S.gguf",
+            "path": "path_clip",
+            "filename": "t5-v1_1-xxl-encoder-Q4_K_S.gguf",
+        },
+        "clip/t5-v1_1-xxl-encoder-Q5_K_M.gguf": {
+            "url": "https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-Q5_K_M.gguf",
+            "path": "path_clip",
+            "filename": "t5-v1_1-xxl-encoder-Q5_K_M.gguf",
+        },
+        "clip/t5-v1_1-xxl-encoder-Q5_K_S.gguf": {
+            "url": "https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-Q5_K_S.gguf",
+            "path": "path_clip",
+            "filename": "t5-v1_1-xxl-encoder-Q5_K_S.gguf",
+        },
+        "clip/t5-v1_1-xxl-encoder-Q6_K.gguf": {
+            "url": "https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-Q6_K.gguf",
+            "path": "path_clip",
+            "filename": "t5-v1_1-xxl-encoder-Q6_K.gguf",
+        },
+        "clip/t5-v1_1-xxl-encoder-Q8_0.gguf": {
+            "url": "https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-Q8_0.gguf",
+            "path": "path_clip",
+            "filename": "t5-v1_1-xxl-encoder-Q8_0.gguf",
+        },
+        "clip/t5-v1_1-xxl-encoder-f16.gguf": {
+            "url": "https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-f16.gguf",
+            "path": "path_clip",
+            "filename": "t5-v1_1-xxl-encoder-f16.gguf",
+        },
+        "clip/t5-v1_1-xxl-encoder-f32.gguf": {
+            "url": "https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-f32.gguf",
+            "path": "path_clip",
+            "filename": "t5-v1_1-xxl-encoder-f32.gguf",
+        },
+        "vae/ae.safetensors": {
+            "url": "https://huggingface.co/black-forest-labs/FLUX.1-schnell/resolve/main/ae.safetensors",
+            "path": "path_vae",
+            "filename": "ae.safetensors",
+        },
         # Add more downloadable files here
     }
 
@@ -149,12 +214,15 @@ class PathManager:
             self.model_paths["upscaler_path"]
         )
 
-    def get_file_path(self, file_key):
+    def get_file_path(self, file_key, default=None):
         """
         Get the path for a file, downloading it if it doesn't exist.
         """
         if file_key not in self.DOWNLOADABLE_FILES:
-            raise ValueError(f"Unknown file key: {file_key}")
+            if default is None:
+                raise ValueError(f"Unknown file key: {file_key}")
+            else:
+                return default
 
         file_info = self.DOWNLOADABLE_FILES[file_key]
         file_path = (
@@ -165,6 +233,9 @@ class PathManager:
             self.download_file(file_key)
 
         return file_path
+
+    def get_folder_file_path(self, folder, filename, default=None):
+        return self.get_file_path(f"{folder}/{filename}", default=default)
 
     def download_file(self, file_key):
         """

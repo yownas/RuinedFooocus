@@ -228,12 +228,20 @@ class pipeline:
 
                     # https://huggingface.co/comfyanonymous/flux_text_encoders/tree/main
                     clip_name1 = default_settings.get("gguf_clip1", "clip_l.safetensors")
-                    clip_path1 = os.path.join(path_manager.model_paths["clip_path"], clip_name1)
+                    clip_path1 = path_manager.get_folder_file_path(
+                        "clip",
+                        clip_name1,
+                        default = os.path.join(path_manager.model_paths["clip_path"], clip_name1)
+                    )
                     # https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/tree/main
                     clip_name2 = default_settings.get("gguf_clip2", "t5-v1_1-xxl-encoder-Q3_K_S.gguf")
-                    clip_path2 = os.path.join(path_manager.model_paths["clip_path"], clip_name2)
+                    clip_path2 = path_manager.get_folder_file_path(
+                        "clip",
+                        clip_name2,
+                        default = os.path.join(path_manager.model_paths["clip_path"], clip_name2)
+                    )
 
-                    clip_paths = (clip_path1, clip_path2)
+                    clip_paths = (str(clip_path1), str(clip_path2))
                     clip_loader = DualCLIPLoaderGGUF()
                     clip_type = comfy.sd.CLIPType.FLUX
                     print(f"Loading CLIP {clip_name1} and {clip_name2}")
@@ -241,9 +249,13 @@ class pipeline:
 
                     # https://huggingface.co/black-forest-labs/FLUX.1-schnell/tree/main
                     vae_name = default_settings.get("gguf_vae", "ae.safetensors")
-                    vae_path = os.path.join(path_manager.model_paths["vae_path"], vae_name)
+                    vae_path = path_manager.get_folder_file_path(
+                        "vae",
+                        vae_name,
+                        default = os.path.join(path_manager.model_paths["vae_path"], vae_name)
+                    )
                     print(f"Loading VAE {vae_name}")
-                    sd = comfy.utils.load_torch_file(vae_path)
+                    sd = comfy.utils.load_torch_file(str(vae_path))
                     vae = comfy.sd.VAE(sd=sd)
 
                     clip_vision = None
