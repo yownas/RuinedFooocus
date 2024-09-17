@@ -11,7 +11,9 @@ from transformers.dynamic_module_utils import get_imports
 from unittest.mock import patch
 
 def look(image, prompt, gr):
-    if prompt.strip() == "clip:":
+    if prompt.strip() == "brainblip:":
+        text = brainblip_look(image, prompt, gr)
+    elif prompt.strip() == "clip:":
         text = clip_look(image, prompt, gr)
     elif prompt.strip() == "florence:":
         text = florence_look(image, prompt, gr)
@@ -34,7 +36,7 @@ def clip_look(image, prompt, gr):
 
     # Unload models, if needed?
     #state["pipeline"] = None
-    gr.Info("Clip is reating Your Prompt")
+    gr.Info("Clip is reading Your Prompt")
 
     conf = Config(
         device=torch.device("cuda"),
@@ -93,4 +95,19 @@ def florence_look(image, prompt, gr):
 
     return text
 
-# Add flash_attflash_attn-2.6.3
+def brainblip_look(image, prompt, gr):
+    from transformers import AutoProcessor, BlipForConditionalGeneration
+    from PIL import Image
+
+    gr.Info("BrainBlip is creating Your Prompt")
+    print(f"Loading BrainBlip.")
+    processor = AutoProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
+    model = BlipForConditionalGeneration.from_pretrained("braintacles/brainblip").to("cpu")
+
+    print(f"Processing...")
+    inputs = processor(image, return_tensors="pt").to("cpu")
+    out = model.generate(**inputs, min_length=40, max_new_tokens=75, num_beams=5, repetition_penalty=1.40)
+    caption = processor.decode(out[0], skip_special_tokens=True)
+
+    return caption
+
