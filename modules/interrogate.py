@@ -2,34 +2,30 @@ import torch
 from clip_interrogator import Config, Interrogator
 from PIL import Image
 import json
-from shared import state, path_manager
+from shared import path_manager
 from transformers import AutoProcessor, AutoModelForCausalLM 
 from modules.util import TimeIt
+from modules.settings import default_settings
 
 import os
 from transformers.dynamic_module_utils import get_imports
 from unittest.mock import patch
 
-def look(image, prompt, gr):
-    if prompt.strip() == "brainblip:":
-        text = brainblip_look(image, prompt, gr)
-    elif prompt.strip() == "clip:":
-        text = clip_look(image, prompt, gr)
-    elif prompt.strip() == "florence:":
-        text = florence_look(image, prompt, gr)
-    else:
-        if prompt != "":
-            return prompt
+def brainblip_look(image, prompt, gr):
+    from transformers import AutoProcessor, BlipForConditionalGeneration
+    from PIL import Image
 
-        try:
-            info = image.info
-            params = info.get("parameters", "")
-            text = json.dumps(json.loads(params))
-        except:
-            # Default interrogator
-            text = florence_look(image, prompt, gr)
+    gr.Info("BrainBlip is creating Your Prompt")
+    print(f"Loading BrainBlip.")
+    processor = AutoProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
+    model = BlipForConditionalGeneration.from_pretrained("braintacles/brainblip").to("cpu")
 
-    return text
+    print(f"Processing...")
+    inputs = processor(image, return_tensors="pt").to("cpu")
+    out = model.generate(**inputs, min_length=40, max_new_tokens=75, num_beams=5, repetition_penalty=1.40)
+    caption = processor.decode(out[0], skip_special_tokens=True)
+
+    return caption
 
 def clip_look(image, prompt, gr):
     text = "Lets interrogate"
@@ -95,19 +91,25 @@ def florence_look(image, prompt, gr):
 
     return text
 
-def brainblip_look(image, prompt, gr):
-    from transformers import AutoProcessor, BlipForConditionalGeneration
-    from PIL import Image
+looks = {
+    "brainblip:": brainblip_look,
+    "clip:": clip_look,
+    "florence:": florence_look,
+}
 
-    gr.Info("BrainBlip is creating Your Prompt")
-    print(f"Loading BrainBlip.")
-    processor = AutoProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
-    model = BlipForConditionalGeneration.from_pretrained("braintacles/brainblip").to("cpu")
+def look(image, prompt, gr):
+    if prompt.strip() in looks:
+        text = looks[prompt.strip()](image, prompt, gr)
+    else:
+        if prompt != "":
+            return prompt
+        try:
+            info = image.info
+            params = info.get("parameters", "")
+            text = json.dumps(json.loads(params))
+        except:
+            # Default interrogator
+            interrogator = default_settings.get("interrogator", "florence") + ":"
+            text = looks[interrogator](image, prompt, gr)
 
-    print(f"Processing...")
-    inputs = processor(image, return_tensors="pt").to("cpu")
-    out = model.generate(**inputs, min_length=40, max_new_tokens=75, num_beams=5, repetition_penalty=1.40)
-    caption = processor.decode(out[0], skip_special_tokens=True)
-
-    return caption
-
+    return text
