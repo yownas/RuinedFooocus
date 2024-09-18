@@ -37,10 +37,6 @@ torch_index_url = "https://download.pytorch.org/whl/cu121"
 requirements_file = "requirements_versions.txt"
 launch_pip_file = "pip_modules.txt"
 
-comfy_repo = ("https://github.com/comfyanonymous/ComfyUI", "935ae153e154813ace36db4c4656a5e96f403eba")
-sf3d_repo = ("https://github.com/Stability-AI/stable-fast-3d.git", "070ece138459e38e1fe9f54aa19edb834bced85e")
-gguf_repo = ("https://github.com/city96/ComfyUI-GGUF.git", "ac96699b7a451c645d5d8643f27dd3d389f83c92")
-
 git_repos = [
     {
         "name": "ComfyUI",
