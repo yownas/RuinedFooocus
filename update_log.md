@@ -1,3 +1,7 @@
+### 1.57.0
+* Added BrainBlip interrogator
+* StabilityMatrix compatibility
+ 
 ### 1.56.0
 * Support for Flux GGUF unet models
 * RemBG

@@ -33,99 +33,62 @@ from modules.launch_util import (
     dir_repos,
 )
 
-comfy_repo = (
-    os.environ.get("COMFY_REPO", "https://github.com/comfyanonymous/ComfyUI"),
-    os.environ.get("COMFY_COMMIT_HASH", "935ae153e154813ace36db4c4656a5e96f403eba"),
-)
-sf3d_repo = (
-    os.environ.get("SF3D_REPO", "https://github.com/Stability-AI/stable-fast-3d.git"),
-    os.environ.get("SF3D_COMMIT_HASH", "070ece138459e38e1fe9f54aa19edb834bced85e"),
-)
-gguf_repo = (
-    os.environ.get("GGUF_REPO", "https://github.com/city96/ComfyUI-GGUF.git"),
-    os.environ.get("GGUF_COMMIT_HASH", "ac96699b7a451c645d5d8643f27dd3d389f83c92"),
-)
+torch_index_url = "https://download.pytorch.org/whl/cu121"
+requirements_file = "requirements_versions.txt"
+launch_pip_file = "pip_modules.txt"
+
+comfy_repo = ("https://github.com/comfyanonymous/ComfyUI", "935ae153e154813ace36db4c4656a5e96f403eba")
+sf3d_repo = ("https://github.com/Stability-AI/stable-fast-3d.git", "070ece138459e38e1fe9f54aa19edb834bced85e")
+gguf_repo = ("https://github.com/city96/ComfyUI-GGUF.git", "ac96699b7a451c645d5d8643f27dd3d389f83c92")
+
+git_repos = [
+    {
+        "name": "ComfyUI",
+        "path": "ComfyUI",
+        "url": "https://github.com/comfyanonymous/ComfyUI",
+        "hash": "935ae153e154813ace36db4c4656a5e96f403eba",
+        "add_path": "ComfyUI",
+    },
+    {
+        "name": "Stable Fast 3D",
+        "path": "stable-fast-3d",
+        "url": "https://github.com/Stability-AI/stable-fast-3d.git",
+        "hash": "070ece138459e38e1fe9f54aa19edb834bced85e",
+        "add_path": "stable-fast-3d",
+    },
+    {
+        "name": "ComfyUI-GGUF",
+        "path": "comfyui_gguf",
+        "url": "https://github.com/city96/ComfyUI-GGUF.git",
+        "hash": "ac96699b7a451c645d5d8643f27dd3d389f83c92",
+        "add_path": "",
+    },
+]
 
 REINSTALL_ALL = False
 if os.path.exists("reinstall"):
     REINSTALL_ALL = True
 
 def prepare_environment():
-    torch_index_url = os.environ.get(
-        "TORCH_INDEX_URL", "https://download.pytorch.org/whl/cu121"
-    )
-    torch_command = os.environ.get(
-        "TORCH_COMMAND",
-        f"pip install torch==2.2.2 torchvision==0.17.2 --extra-index-url {torch_index_url}",
-    )
-    requirements_file = os.environ.get("REQS_FILE", "requirements_versions.txt")
-
-    xformers_package = os.environ.get("XFORMERS_PACKAGE", "xformers==0.0.25.post1")
-
     print(f"Python {sys.version}")
     print(f"RuinedFooocus version: {version.version}")
 
-    run(f'"{python}" -m pip install --upgrade pip', "Check pip", "Couldn't check pip", live=True)
+    run(f'"{python}" -m pip install --upgrade pip', "Check pip", "Couldn't check pip", live=False)
+    run(f'"{python}" -m pip install -r "{requirements_file}"', "Check pre-requirements", "Couldn't check pre-reqs", live=False)
 
-    if not is_installed("wheel"):
-        run(f'"{python}" -m pip install wheel', "Installing wheel", "Couldn't install wheel", live=True)
-
-    if not is_installed("packaging"):
-        run(f'"{python}" -m pip install packaging', "Installing packaging", "Couldn't install packaging", live=True)
-
-    if REINSTALL_ALL or not is_installed("torch") or not is_installed("torchvision"):
-        run(
-            f'"{python}" -m {torch_command}',
-            "Installing torch and torchvision",
-            "Couldn't install torch",
-            live=True,
-        )
-
-    if REINSTALL_ALL or not is_installed("xformers"):
-        if platform.system() == "Windows":
-            if platform.python_version().startswith("3.10"):
-                run_pip(
-                    f"install -U -I --no-deps {xformers_package}", "xformers", live=True
-                )
-            else:
-                print(
-                    "Installation of xformers is not supported in this version of Python."
-                )
-                print(
-                    "You can also check this and build manually: https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Xformers#building-xformers-on-windows-by-duckness"
-                )
-                if not is_installed("xformers"):
-                    exit(0)
-        elif platform.system() == "Linux":
-            run_pip(f"install -U -I --no-deps {xformers_package}", "xformers")
-
-    if REINSTALL_ALL or not requirements_met(requirements_file):
+    if REINSTALL_ALL or not requirements_met(launch_pip_file):
         print("This next step may take a while")
         os.environ["FLASH_ATTENTION_SKIP_CUDA_BUILD"] = "TRUE"
-        run_pip(f'install -r "{requirements_file}" --extra-index-url {torch_index_url}', "requirements")
-
-    return
+        run_pip(f'install -r "{launch_pip_file}" --extra-index-url {torch_index_url}', "required modules")
 
 def clone_git_repos():
     from modules.launch_util import git_clone
 
-    comfyui_name = "ComfyUI-from-StabilityAI-Official"
-    git_clone(comfy_repo[0], repo_dir(comfyui_name), "Comfy Backend", comfy_repo[1])
-    path = Path(script_path) / dir_repos / comfyui_name
-    sys.path.append(str(path))
-
-    sf3d_name = "stable-fast-3d"
-    git_clone(sf3d_repo[0], repo_dir(sf3d_name), "Stable Fast 3D", sf3d_repo[1])
-    path = Path(script_path) / dir_repos / sf3d_name
-    sys.path.append(str(path))
-
-    gguf_name = "comfyui_gguf"
-    git_clone(gguf_repo[0], repo_dir(gguf_name), "ComfyUI-GGUF", gguf_repo[1])
-    path = Path(script_path) / dir_repos
-    sys.path.append(str(path))
-
-    return
-
+    for repo in git_repos:
+        git_clone(repo["url"], repo_dir(repo["path"]), repo["name"], repo["hash"])
+        add_path = str(Path(script_path) / dir_repos / repo["add_path"])
+        if add_path not in sys.path:
+            sys.path.append(add_path)
 
 def download_models():
     from modules.util import load_file_from_url
@@ -185,8 +148,6 @@ def download_models():
             model_dir=model_dir,
             file_name=file_name,
         )
-    return
-
 
 def clear_comfy_args():
     argv = sys.argv
@@ -195,18 +156,16 @@ def clear_comfy_args():
 
     sys.argv = argv
 
-
-def cuda_malloc():
-    import cuda_malloc
-
-
 prepare_environment()
 if os.path.exists("reinstall"):
     os.remove("reinstall")
-clone_git_repos()
+
+try:
+    clone_git_repos()
+except:
+    print(f"WARNING: Failed checking git-repos. Trying to start without update.")
 
 clear_comfy_args()
-# cuda_malloc()
 
 download_models()
 
