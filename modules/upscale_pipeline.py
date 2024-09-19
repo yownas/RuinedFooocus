@@ -15,8 +15,11 @@ class pipeline:
     model_hash = ""
 
     def load_upscaler_model(self, model_name):
-        model_path = os.path.join(path_manager.model_paths["upscaler_path"], model_name)
-        sd = comfy.utils.load_torch_file(model_path, safe_load=True)
+        model_path = path_manager.get_file_path(
+            model_name,
+            default = os.path.join(path_manager.model_paths["upscaler_path"], model_name)
+        )
+        sd = comfy.utils.load_torch_file(str(model_path), safe_load=True)
         if "module.layers.0.residual_group.blocks.0.norm1.weight" in sd:
             sd = comfy.utils.state_dict_prefix_replace(sd, {"module.": ""})
         out = model_loading.load_state_dict(sd).eval()

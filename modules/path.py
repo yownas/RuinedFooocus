@@ -111,6 +111,11 @@ class PathManager:
             "path": "path_controlnet",
             "filename": "control-lora-sketch-rank128-metadata.safetensors",
         },
+        "4x-UltraSharp.pth": {
+            "url": "https://huggingface.co/lokCX/4x-Ultrasharp/resolve/main/4x-UltraSharp.pth",
+            "path": "path_upscalers",
+            "filename": "4x-UltraSharp.pth",
+        },
         "vae/ae.safetensors": {
             "url": "https://huggingface.co/black-forest-labs/FLUX.1-schnell/resolve/main/ae.safetensors",
             "path": "path_vae",

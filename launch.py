@@ -117,11 +117,6 @@ def download_models():
             "https://github.com/madebyollin/taesd/raw/main/taesdxl_decoder.pth",
         ),
         (
-            path_manager.model_paths["upscaler_path"],
-            "4x-UltraSharp.pth",
-            "https://huggingface.co/lokCX/4x-Ultrasharp/resolve/main/4x-UltraSharp.pth",
-        ),
-        (
             "prompt_expansion",
             "pytorch_model.bin",
             "https://huggingface.co/lllyasviel/misc/resolve/main/fooocus_expansion.bin",
