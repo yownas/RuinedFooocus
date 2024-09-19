@@ -22,7 +22,7 @@ def brainblip_look(image, prompt, gr):
 
     print(f"Processing...")
     inputs = processor(image, return_tensors="pt").to("cpu")
-    out = model.generate(**inputs, min_length=40, max_new_tokens=75, num_beams=5, repetition_penalty=1.40)
+    out = model.generate(**inputs, min_length=40, max_new_tokens=150, num_beams=5, repetition_penalty=1.40)
     caption = processor.decode(out[0], skip_special_tokens=True)
 
     return caption
