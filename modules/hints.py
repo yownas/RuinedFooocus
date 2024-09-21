@@ -8,7 +8,7 @@ def get_hint():
     hintfiles = glob.glob("hints/*.txt")
     hints = []
     for hintfile in hintfiles:
-        lines = open(hintfile).read().splitlines()
+        lines = open(hintfile, encoding='utf8').read().splitlines()
         hints += lines
 
     hint = f"**LPT:** *{random.choice(hints)}*"
