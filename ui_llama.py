@@ -14,11 +14,15 @@ def add_llama_tab(prompt):
             system_prompt = re.sub("system: *", "", system.group(0), flags=re.M|re.I)
             prompt = re.sub(sys_pat, "", prompt)
 
-        res = llm.create_chat_completion(
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt}
-            ])["choices"][0]["message"]["content"]
+        try:
+            res = llm.create_chat_completion(
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": prompt}
+                ])["choices"][0]["message"]["content"]
+        except Exception as e:
+            print(f"LLAMA ERROR: {e}")
+            res = prompt
         return gr.update(value=res)
 
     llama_btn = gr.Button(
