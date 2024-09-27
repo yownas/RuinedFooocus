@@ -1,6 +1,7 @@
 ### 1.57.0
 * Added BrainBlip interrogator
 * StabilityMatrix compatibility
+* Added Llama 3.2 button
  
 ### 1.56.0
 * Support for Flux GGUF unet models

@@ -8,7 +8,7 @@ from modules.controlnet import (
 import gradio as gr
 from shared import add_ctrl, path_manager
 import ui_evolve
-
+import ui_llama
 
 def add_controlnet_tab(main_view, inpaint_view, prompt, image_number, run_event):
     with gr.Tab(label="PowerUp"):
@@ -213,6 +213,8 @@ def add_controlnet_tab(main_view, inpaint_view, prompt, image_number, run_event)
                 }
 
         ui_evolve.add_evolve_tab(prompt, image_number, run_event)
+
+        ui_llama.add_llama_tab(prompt)
 
     return inpaint_toggle
 
