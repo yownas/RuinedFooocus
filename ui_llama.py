@@ -23,6 +23,10 @@ def add_llama_tab(prompt):
         except Exception as e:
             print(f"LLAMA ERROR: {e}")
             res = prompt
+
+        llm._stack.close()
+        llm.close()
+
         return gr.update(value=res)
 
     llama_btn = gr.Button(
