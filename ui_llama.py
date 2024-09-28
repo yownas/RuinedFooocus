@@ -14,7 +14,7 @@ def add_llama_tab(prompt):
         sys_pat = "system:.*\n\n"
         system = re.match(sys_pat, prompt, flags=re.M|re.I)
         if system is not None:
-            system_prompt = re.sub("system: *", "", system.group(0), flags=re.M|re.I)
+            system_prompt = re.sub("^[^:]*: *", "", system.group(0), flags=re.M|re.I)
             prompt = re.sub(sys_pat, "", prompt)
 
         print("Thinking...")
@@ -28,6 +28,10 @@ def add_llama_tab(prompt):
             except Exception as e:
                 print(f"LLAMA ERROR: {e}")
                 res = prompt
+
+            print(f"# System:\n{system_prompt.strip()}\n")
+            print(f"# User:\n{prompt.strip()}\n")
+            print(f"# Assistant:\n{res.strip()}\n")
 
         llm._stack.close()
         llm.close()
