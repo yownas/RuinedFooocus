@@ -62,7 +62,7 @@ from modules.pipleline_utils import (
     set_timestep_range,
 )
 
-from comfyui_gguf.nodes import gguf_clip_loader, gguf_sd_loader, DualCLIPLoaderGGUF
+from comfyui_gguf.nodes import gguf_clip_loader, gguf_sd_loader, DualCLIPLoaderGGUF, GGUFModelPatcher
 from comfyui_gguf.ops import GGMLOps
 
 class pipeline:
@@ -218,9 +218,13 @@ class pipeline:
                 try:
                     if filename.endswith(".gguf"):
                         sd = gguf_sd_loader(filename)
+                        self.ggml_ops.Linear.dequant_dtype = "target"
+                        self.ggml_ops.Linear.patch_dtype = "target"
                         unet = comfy.sd.load_diffusion_model_state_dict(
                             sd, model_options={"custom_operations": self.ggml_ops}
                         )
+                        unet = GGUFModelPatcher.clone(unet)
+                        unet.patch_on_device = True
                     else:
                         model_options = {}
                         model_options["dtype"] = torch.float8_e4m3fn # FIXME should be a setting
