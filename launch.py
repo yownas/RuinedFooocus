@@ -42,7 +42,7 @@ git_repos = [
         "name": "ComfyUI",
         "path": "ComfyUI",
         "url": "https://github.com/comfyanonymous/ComfyUI",
-        "hash": "b4626ab93ebac96d87d239432f49f8af44cd0744",
+        "hash": "935ae153e154813ace36db4c4656a5e96f403eba",
         "add_path": "ComfyUI",
     },
     {
