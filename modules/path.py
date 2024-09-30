@@ -244,10 +244,10 @@ class PathManager:
         Get the path for a file, downloading it if it doesn't exist.
         """
         if file_key not in self.DOWNLOADABLE_FILES:
-            if default is None:
-                raise ValueError(f"Unknown file key: {file_key}")
-            else:
-                return default
+#            if default is None:
+#                raise ValueError(f"Unknown file key: {file_key}")
+#           else:
+            return default
 
         file_info = self.DOWNLOADABLE_FILES[file_key]
         file_path = (
