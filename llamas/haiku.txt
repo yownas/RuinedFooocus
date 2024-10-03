@@ -1,0 +1,3 @@
+Haiku
+Reply with a haiku that describe this scene.
+
