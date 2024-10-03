@@ -6,11 +6,6 @@ from pathlib import Path
 
 def add_llama_tab(prompt):
     def run_llama_run(system_file, prompt):
-        repo = "hugging-quants/Llama-3.2-3B-Instruct-Q8_0-GGUF"
-        print(f"Loading {repo}")
-        llm = Llama.from_pretrained(repo_id=repo , filename="*q8_0.gguf", verbose=False)
-
-
         sys_pat = "system:.*\n\n"
         system = re.match(sys_pat, prompt, flags=re.M|re.I)
         if system is not None: # Llama system-prompt provided in the ui-prompt
@@ -18,9 +13,17 @@ def add_llama_tab(prompt):
             system_prompt = re.sub("^[^:]*: *", "", system.group(0), flags=re.M|re.I)
             prompt = re.sub(sys_pat, "", prompt)
         else:
-            file = open(system_file, "r")
-            name = file.readline().strip()
-            system_prompt = file.read().strip()
+            try:
+                file = open(system_file, "r")
+                name = file.readline().strip()
+                system_prompt = file.read().strip()
+            except:
+                print(f"LLAMA ERROR: Could not open file {system_file}")
+                return gr.update(value=prompt)
+
+        repo = "hugging-quants/Llama-3.2-3B-Instruct-Q8_0-GGUF"
+        print(f"Loading {repo}")
+        llm = Llama.from_pretrained(repo_id=repo , filename="*q8_0.gguf", verbose=False)
 
         with TimeIt(""):
             print(f"# System:\n{system_prompt.strip()}\n")
