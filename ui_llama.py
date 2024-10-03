@@ -51,7 +51,7 @@ def add_llama_tab(prompt):
                 f = open(path, "r")
                 name = f.readline().strip()
                 names.append((name, path))
-
+        names.sort(key=lambda x: x[0])
         return names
 
     with gr.Group(), gr.Row():
