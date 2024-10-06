@@ -53,7 +53,7 @@ def add_llama_tab(prompt):
             if path.suffix.lower() in [".txt"]:
                 f = open(path, "r")
                 name = f.readline().strip()
-                names.append((name, path))
+                names.append((name, str(path)))
         names.sort(key=lambda x: x[0])
         return names
 
