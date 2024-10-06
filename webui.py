@@ -86,7 +86,7 @@ def parse_args():
 def launch_app(args):
     inbrowser = not args.nobrowser
     favicon_path = "logo.ico"
-    shared.gradio_root.queue(concurrency_count=4)
+    shared.gradio_root.queue()
     shared.gradio_root.launch(
         inbrowser=inbrowser,
         server_name=args.listen,
@@ -179,7 +179,15 @@ def generate_clicked(*args):
     for key, val in zip(state["ctrls_name"], args):
         gen_data[key] = val
 
-    if int(gen_data["image_number"]) == 0:
+    # FIXME this is _ugly_ run_event gets triggerd once at page load
+    #   not really gradios fault, we are doing silly things there. :)
+    print(f"DEBUG: it got clicked {gen_data['run_event']}")
+    print(gen_data["run_event"])
+    if gen_data["run_event"] < 1:
+        yield update_results(["logo.png"])
+        return
+
+    if int(gen_data["image_number"]) == -1:
         generate_forever = True
     else:
         generate_forever = False
@@ -235,12 +243,12 @@ shared.gradio_root = gr.Blocks(
     theme=theme,
     css=modules.html.css,
     analytics_enabled=True,
-    concurrency_count=4,
 ).queue()
 
 with shared.gradio_root as block:
-    block.load(_js=modules.html.scripts)
+    block.load(js=modules.html.scripts)
     run_event = gr.Number(visible=False, value=0)
+    add_ctrl("run_event", run_event)
     with gr.Row():
         with gr.Column(scale=5):
             main_view = gr.Image(
@@ -256,10 +264,10 @@ with shared.gradio_root as block:
                 height=680,
                 type="numpy",
                 elem_id="inpaint_sketch",
-                tool="sketch",
                 visible=False,
                 image_mode="RGBA",
             )
+            # FIxME    tool="sketch",
             add_ctrl("inpaint_view", inpaint_view)
 
             progress_html = gr.HTML(
@@ -357,7 +365,8 @@ with shared.gradio_root as block:
                         return {prompt: gr.update(value=newtext)}
 
                 with gr.Column(scale=1, min_width=0):
-                    run_button = gr.Button(value="Generate", elem_id="generate", api_name="generate")
+                    # FIXME run_button = gr.Button(value="Generate", elem_id="generate", api_name="generate")
+                    run_button = gr.Button(value="Generate", elem_id="generate")
                     stop_button = gr.Button(
                         value="Stop", interactive=False, visible=False
                     )
@@ -612,9 +621,9 @@ with shared.gradio_root as block:
                 with gr.Tab(label="Model"):
                     model_current = gr.HTML(
                         value=f"{settings['base_model']}",
-                        container=False,
-                        interactive=False,
                     )
+                    # FIXME    container=False,
+                    # FIXME    interactive=False,
                     with gr.Group():
                         modelfilter = gr.Textbox(
                             placeholder="Model name",

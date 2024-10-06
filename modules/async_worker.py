@@ -88,7 +88,7 @@ def worker():
 
         loras = []
 
-        for lora_data in gen_data["loras"]:
+        for lora_data in gen_data["loras"] if gen_data["loras"] is not None else []:
             w, l  = lora_data[1].split(" - ", 1)
             loras.append((l, float(w)))
 

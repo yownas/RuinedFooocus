@@ -324,6 +324,7 @@ if(generatelandscape or generatelocation or generatelocationfantasy or generatel
         subjects.append("landscape - city")
 
 if(generateevent or generateconcepts or generatepoemline or generatesongline or generatecardname or generateepisodetitle or generateconceptmixer):
+    subjects.append("concept") # FIXME?
     subjects.append("--- concept - all")
     if(generateevent):
         subjects.append("concept - event")
