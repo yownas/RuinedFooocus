@@ -26,6 +26,8 @@ from superprompter.superprompter import *
 from random_prompt.one_button_presets import OneButtonPresets
 OBPresets = OneButtonPresets()
 
+from modules.llama_pipeline import run_llama, llama_names
+
 #builds a prompt dynamically
 # insanity level controls randomness of propmt 0-10
 # forcesubject van be used to force a certain type of subject
@@ -42,10 +44,13 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
         forcesubject = "all"
 
     superprompter = False
+    llamaprompter = False
     prompt_enhancer = prompt_enhancer.lower()
     if(prompt_enhancer == "superprompter" or prompt_enhancer == "superprompt" or prompt_enhancer == "superprompt-v1" or prompt_enhancer == "hyperprompt"):
         superprompter = True
-    if(superprompter==True):
+    if(prompt_enhancer == "llama" or prompt_enhancer=="🦙"):
+        llamaprompter = True
+    if(superprompter==True or llamaprompter==True):
         base_model = "Stable Cascade"
 
     # new method of subject choosing from the interface, lets translate this:
@@ -3698,6 +3703,18 @@ def build_dynamic_prompt(insanitylevel = 5, forcesubject = "all", artists = "all
         superpromptresult = one_button_superprompt(insanitylevel=insanitylevel, prompt=subjectprompt, seed=seed, override_subject=givensubject, override_outfit=overrideoutfit, chosensubject=subjectchooser, gender=gender, restofprompt = startprompt + endprompt)
         completeprompt = startprompt + ", " + superpromptresult + ", " + endprompt
         prompt_g = superpromptresult
+        prompt_l = completeprompt
+
+    if("@@@" in completeprompt and llamaprompter == True):
+        #load_models()
+        promptlist = completeprompt.split("@@@")
+        subjectprompt = cleanup(promptlist[1], advancedprompting, insanitylevel)
+        startprompt = cleanup(promptlist[0], advancedprompting, insanitylevel)
+        endprompt = cleanup(promptlist[2], advancedprompting, insanitylevel)
+        randomllama = random.choice(llama_names())[1]
+        llamapromptresult = run_llama(randomllama, subjectprompt)
+        completeprompt = startprompt + ", " + llamapromptresult + ", " + endprompt
+        prompt_g = llamapromptresult
         prompt_l = completeprompt
     elif(prompt_g_and_l == True):
         prompt_g = completeprompt

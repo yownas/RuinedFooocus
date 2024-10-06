@@ -137,7 +137,7 @@ genders = ["all", "male", "female"]
 qualitymodelist = ["highest", "gated"]
 qualitykeeplist = ["keep used", "keep all"]
 
-promptenhancelist = ["none", "hyperprompt"]
+promptenhancelist = ["none", "hyperprompt", "llama"]
 
 generatevehicle = True
 generateobject = True
