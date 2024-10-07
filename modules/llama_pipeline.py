@@ -32,7 +32,7 @@ def run_llama(system_file, prompt):
 
         repo = "hugging-quants/Llama-3.2-3B-Instruct-Q8_0-GGUF"
         print(f"Loading {repo}")
-        llm = Llama.from_pretrained(repo_id=repo , filename="*q8_0.gguf", verbose=False)
+        llm = Llama.from_pretrained(repo_id=repo , filename="*q8_0.gguf", verbose=False, n_ctx=4096)
 
         with TimeIt(""):
             print(f"# System:\n{system_prompt.strip()}\n")
