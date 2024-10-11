@@ -242,7 +242,7 @@ shared.gradio_root = gr.Blocks(
     title="RuinedFooocus " + version.version,
     theme=theme,
     css=modules.html.css,
-    analytics_enabled=True,
+    analytics_enabled=False,
 ).queue()
 
 with shared.gradio_root as block:
@@ -670,12 +670,11 @@ with shared.gradio_root as block:
                         return gr.update(value=newlist)
 
                     def update_model_select(evt: gr.SelectData):
-
-                        model_name = f"{evt.value[1]}"
+                        model_name = f"{evt.value['caption']}"
                         models = civit_checkpoints.get_models_by_path(path_manager.model_paths["modelfile_path"] / Path(model_name))
                         model_base = civit_checkpoints.get_model_base(models)
 
-                        txt = f"{evt.value[1]}<br>Model type: {model_base}"
+                        txt = f"{evt.value['caption']}<br>Model type: {model_base}"
 
                         return {
                             model_current: gr.update(value=txt),
@@ -752,10 +751,12 @@ with shared.gradio_root as block:
                                 value="+",
                                 scale=1,
                             )
-                            lora_del_btn = gr.Button(
-                                value="-",
-                                scale=1,
-                            )
+                            
+# FIXME use gradios X to remove lora?
+#                            lora_del_btn = gr.Button(
+#                                value="-",
+#                                scale=1,
+#                            )
 
                         lora_keywords = gr.Textbox(
                             label="LoRA Trigger Words", interactive=False
@@ -878,17 +879,17 @@ with shared.gradio_root as block:
                     w = 1.0
 
                     keywords = ""
-                    for lora_data in gallery:
-                        w, l = lora_data[1].split(" - ", 1)
-                        keywords = f"{keywords}, {load_keywords(l)} "
-                    keywords = f"{keywords}, {load_keywords(evt.value[1])} "
-
                     loras = []
-                    for lora_data in gallery:
-                        loras.append((lora_data[0]["name"], lora_data[1]))
+                    if gallery is not None:
+                        for lora_data in gallery:
+                            w, l = lora_data[1].split(" - ", 1)
+                            keywords = f"{keywords}, {load_keywords(l)} "
+
+                            loras.append((lora_data[0], lora_data[1]))
+                    keywords = f"{keywords}, {load_keywords(evt.value['caption'])} "
 
                     loras.append(
-                        (get_lora_thumbnail(evt.value[1]), f"{w} - {evt.value[1]}")
+                        (get_lora_thumbnail(evt.value['caption']), f"{w} - {evt.value['caption']}")
                     )
                     return {
                         lora_add: gr.update(visible=False),
@@ -902,14 +903,11 @@ with shared.gradio_root as block:
                 def lora_active_select(gallery, evt: gr.SelectData):
                     global lora_active_selected
                     lora_active_selected = evt.index
-                    loras = []
-                    for lora_data in gallery:
-                        loras.append((lora_data[0]["name"], lora_data[1]))
                     return {
                         lora_active: gr.update(),
                         lora_active_gallery: gr.update(),
                         lora_weight_slider: gr.update(
-                            value=float(loras[evt.index][1].split(" - ", 1)[0])
+                            value=float(evt.value['caption'].split(" - ", 1)[0])
                         ),
                     }
 
@@ -923,7 +921,7 @@ with shared.gradio_root as block:
                     loras = []
                     for lora_data in gallery:
                         w, l = lora_data[1].split(" - ", 1)
-                        loras.append((lora_data[0]["name"], lora_data[1]))
+                        loras.append((lora_data[0], lora_data[1]))
                         keywords = f"{keywords}, {load_keywords(l)} "
                     return {
                         lora_active_gallery: gr.update(value=loras),
@@ -937,7 +935,7 @@ with shared.gradio_root as block:
 
                     loras = []
                     for lora_data in gallery:
-                        loras.append((lora_data[0]["name"], lora_data[1]))
+                        loras.append((lora_data[0], lora_data[1]))
                     l = gallery[lora_active_selected][1].split(" - ")[1]
                     loras[lora_active_selected] = (get_lora_thumbnail(l), f"{w} - {l}")
 
