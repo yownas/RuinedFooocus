@@ -242,11 +242,12 @@ shared.gradio_root = gr.Blocks(
     title="RuinedFooocus " + version.version,
     theme=theme,
     css=modules.html.css,
+    js=modules.html.scripts,
     analytics_enabled=False,
 ).queue()
 
 with shared.gradio_root as block:
-    block.load(js=modules.html.scripts)
+    block.load()
     run_event = gr.Number(visible=False, value=0)
     add_ctrl("run_event", run_event)
     with gr.Row():
