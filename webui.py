@@ -259,6 +259,8 @@ with shared.gradio_root as block:
                 visible=True,
                 show_label=False,
                 image_mode="RGBA",
+                show_fullscreen_button=True,
+                show_download_button=True,
             )
             add_ctrl("main_view", main_view)
             inpaint_view = gr.Image(
@@ -267,6 +269,7 @@ with shared.gradio_root as block:
                 elem_id="inpaint_sketch",
                 visible=False,
                 image_mode="RGBA",
+                show_fullscreen_button=False,
             )
             # FIxME    tool="sketch",
             add_ctrl("inpaint_view", inpaint_view)
@@ -287,6 +290,7 @@ with shared.gradio_root as block:
                 preview=True,
                 visible=True,
                 show_download_button=False,
+                show_fullscreen_button=False,
             )
 
             @gallery.select(

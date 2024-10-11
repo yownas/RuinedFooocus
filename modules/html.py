@@ -3,6 +3,8 @@ css = """
   display: flex; /* Use flex to align items horizontally */
   align-items: center; /* Center items vertically within the container */
   white-space: nowrap; /* Prevent line breaks within the container */
+  overflow-x:hidden;
+  overflow-y:hidden;
 }
 
 .loader {
