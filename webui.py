@@ -294,13 +294,13 @@ with shared.gradio_root as block:
                 show_progress="hidden",
             )
             def gallery_change(files, sd: gr.SelectData):
-                names = files[sd.index]["name"]
-                with Image.open(files[sd.index]["name"]) as im:
+                name = sd.value["image"]["path"]
+                with Image.open(name) as im:
                     if im.info.get("parameters"):
                         metadata = im.info["parameters"]
                     else:
                         metadata = {"Data": "Preview Grid"}
-                return [names] + [gr.update(value=metadata)]
+                return [name] + [gr.update(value=metadata)]
 
             with gr.Row(elem_classes="type_row"):
                 with gr.Column(scale=5):
