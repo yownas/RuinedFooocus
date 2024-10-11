@@ -956,11 +956,11 @@ with shared.gradio_root as block:
                     fn=gallery_toggle,
                     outputs=[lora_active, lora_add],
                 )
-                lora_del_btn.click(
-                    fn=lora_delete,
-                    inputs=lora_active_gallery,
-                    outputs=[lora_active_gallery, lora_keywords],
-                )
+#                lora_del_btn.click(
+#                    fn=lora_delete,
+#                    inputs=lora_active_gallery,
+#                    outputs=[lora_active_gallery, lora_keywords],
+#                )
                 lora_gallery.select(
                     fn=lora_select,
                     inputs=[lora_active_gallery],
