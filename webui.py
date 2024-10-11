@@ -752,11 +752,10 @@ with shared.gradio_root as block:
                                 scale=1,
                             )
                             
-# FIXME use gradios X to remove lora?
-#                            lora_del_btn = gr.Button(
-#                                value="-",
-#                                scale=1,
-#                            )
+                            lora_del_btn = gr.Button(
+                                value="-",
+                                scale=1,
+                            )
 
                         lora_keywords = gr.Textbox(
                             label="LoRA Trigger Words", interactive=False
@@ -956,11 +955,11 @@ with shared.gradio_root as block:
                     fn=gallery_toggle,
                     outputs=[lora_active, lora_add],
                 )
-#                lora_del_btn.click(
-#                    fn=lora_delete,
-#                    inputs=lora_active_gallery,
-#                    outputs=[lora_active_gallery, lora_keywords],
-#                )
+                lora_del_btn.click(
+                    fn=lora_delete,
+                    inputs=lora_active_gallery,
+                    outputs=[lora_active_gallery, lora_keywords],
+                )
                 lora_gallery.select(
                     fn=lora_select,
                     inputs=[lora_active_gallery],
