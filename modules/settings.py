@@ -14,7 +14,7 @@ DEFAULT_SETTINGS = {
     "performance": "Speed",
     "resolution": "1152x896 (4:3)",
     "base_model": path_manager.default_model_names["default_base_model_name"],
-    "lora_1_model": path_manager.default_model_names["default_lora_name"],
+    "lora_1_model": "None",
     "lora_1_weight": path_manager.default_model_names["default_lora_weight"],
     "lora_2_model": "None",
     "lora_2_weight": path_manager.default_model_names["default_lora_weight"],
