@@ -257,7 +257,6 @@ with shared.gradio_root as block:
                 type="filepath",
                 visible=True,
                 show_label=False,
-                image_mode="RGBA",
                 show_fullscreen_button=True,
                 show_download_button=True,
             )
@@ -267,7 +266,6 @@ with shared.gradio_root as block:
                 type="numpy",
                 elem_id="inpaint_sketch",
                 visible=False,
-                image_mode="RGBA",
                 show_fullscreen_button=False,
             )
             # FIxME    tool="sketch",
