@@ -2,7 +2,6 @@ import threading
 import gc
 import torch
 import math
-from playsound import playsound
 import modules.controlnet
 import pathlib
 from pathlib import Path
@@ -344,8 +343,6 @@ def worker():
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
                 torch.cuda.ipc_collect()
-            if Path("notification.mp3").exists():
-                playsound("notification.mp3")
 
 
 threading.Thread(target=worker, daemon=True).start()

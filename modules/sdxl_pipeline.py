@@ -54,7 +54,6 @@ from comfy_extras.nodes_freelunch import FreeU
 from comfy.model_patcher import ModelPatcher
 from comfy.utils import load_torch_file
 from comfy.sd import save_checkpoint
-from modules.layerdiffuse import TransparentVAEDecoder, ImageRenderer
 
 from modules.pipleline_utils import (
     get_previewer,
@@ -100,6 +99,7 @@ class pipeline:
 
     ggml_ops = GGMLOps()
 
+    # FIXME move this to separate file
     def merge_models(self, name):
         print(f"Loading merge: {name}")
 
@@ -383,26 +383,6 @@ class pipeline:
         update = True
         return update
 
-    # From https://github.com/huchenlei/ComfyUI-layerdiffuse/blob/main/lib_layerdiffusion/utils.py#L118
-    def to_lora_patch_dict(self, state_dict: dict) -> dict:
-        """Convert raw lora state_dict to patch_dict that can be applied on
-        modelpatcher."""
-        patch_dict = {}
-        for k, w in state_dict.items():
-            model_key, patch_type, weight_index = k.split("::")
-            if model_key not in patch_dict:
-                patch_dict[model_key] = {}
-            if patch_type not in patch_dict[model_key]:
-                patch_dict[model_key][patch_type] = [None] * 16
-            patch_dict[model_key][patch_type][int(weight_index)] = w
-
-        patch_flat = {}
-        for model_key, v in patch_dict.items():
-            for patch_type, weight_list in v.items():
-                patch_flat[model_key] = (patch_type, weight_list)
-
-        return patch_flat
-
     @torch.inference_mode()
     def process(
         self,
@@ -460,37 +440,6 @@ class pipeline:
         if self.textencode("-", negative_prompt, clip_skip):
             updated_conditions = True
 
-        prompt_switch_mode = False
-        if "[" in positive_prompt and "]" in positive_prompt:
-            prompt_switch_mode = True
-
-        if prompt_switch_mode and controlnet is not None and input_image is not None:
-            print(
-                "ControlNet and [prompt|switching] do not work well together. ControlNet will be applied to the first prompt only."
-            )
-
-        if prompt_switch_mode:
-            prompt_switch_mode = True
-            prompt_per_step = pp.prompt_switch_per_step(positive_prompt, steps)
-
-            perc_per_step = round(100 / steps, 2)
-            positive_complete = []
-            for i in range(len(prompt_per_step)):
-                if self.textencode("switch", prompt_per_step[i], clip_skip):
-                    updated_conditions = True
-                positive_switch = convert_cond(self.conditions["switch"]["cache"])
-                start_perc = round((perc_per_step * i) / 100, 2)
-                end_perc = round((perc_per_step * (i + 1)) / 100, 2)
-                if end_perc >= 0.99:
-                    end_perc = 1
-                positive_switch = set_timestep_range(
-                    positive_switch, start_perc, end_perc
-                )
-
-                positive_complete += positive_switch
-
-            positive_switch = convert_cond(self.conditions["switch"]["cache"])
-
         device = comfy.model_management.get_torch_device()
 
         if controlnet is not None and "type" in controlnet and input_image is not None:
@@ -513,36 +462,20 @@ class pipeline:
                 case "depth":
                     updated_conditions = True
             if self.xl_controlnet:
-                if prompt_switch_mode:
-                    (
-                        self.conditions["+"]["cache"],
-                        self.conditions["-"]["cache"],
-                    ) = ControlNetApplyAdvanced().apply_controlnet(
-                        positive=positive_complete,
-                        negative=self.conditions["-"]["cache"],
-                        control_net=self.xl_controlnet,
-                        image=input_image,
-                        strength=float(controlnet["strength"]),
-                        start_percent=float(controlnet["start"]),
-                        end_percent=float(controlnet["stop"]),
-                    )
-                    self.conditions["+"]["text"] = None
-                    self.conditions["-"]["text"] = None
-                else:
-                    (
-                        self.conditions["+"]["cache"],
-                        self.conditions["-"]["cache"],
-                    ) = ControlNetApplyAdvanced().apply_controlnet(
-                        positive=self.conditions["+"]["cache"],
-                        negative=self.conditions["-"]["cache"],
-                        control_net=self.xl_controlnet,
-                        image=input_image,
-                        strength=float(controlnet["strength"]),
-                        start_percent=float(controlnet["start"]),
-                        end_percent=float(controlnet["stop"]),
-                    )
-                    self.conditions["+"]["text"] = None
-                    self.conditions["-"]["text"] = None
+                (
+                    self.conditions["+"]["cache"],
+                    self.conditions["-"]["cache"],
+                ) = ControlNetApplyAdvanced().apply_controlnet(
+                    positive=self.conditions["+"]["cache"],
+                    negative=self.conditions["-"]["cache"],
+                    control_net=self.xl_controlnet,
+                    image=input_image,
+                    strength=float(controlnet["strength"]),
+                    start_percent=float(controlnet["start"]),
+                    end_percent=float(controlnet["stop"]),
+                )
+                self.conditions["+"]["text"] = None
+                self.conditions["-"]["text"] = None
 
             if controlnet["type"].lower() == "img2img":
                 latent = VAEEncode().encode(
@@ -551,42 +484,6 @@ class pipeline:
                 force_full_denoise = False
                 denoise = float(controlnet.get("denoise", controlnet.get("strength")))
                 img2img_mode = True
-
-        if controlnet is not None and "type" in controlnet:
-            if controlnet["type"].lower() == "layerdiffuse":
-                if not "layerdiffuse" in self.xl_base_patched_extra:
-                    tmodel = ModelPatcher(
-                        self.xl_base_patched.unet, device, "cpu", size=1
-                    )
-                    layer_lora_state_dict = load_torch_file(
-                        "models/layerdiffuse/layer_xl_transparent_attn.safetensors"
-                    )
-                    layer_lora_patch_dict = self.to_lora_patch_dict(
-                        layer_lora_state_dict
-                    )
-                    # weight = 1.0
-                    tmodel.model.add_patches(layer_lora_patch_dict)
-                    self.xl_base_patched.unet = tmodel.model
-                    self.xl_base_patched_extra.add("layerdiffuse")
-
-                    # load transparent vae
-                    self.xl_base_patched.tvae = TransparentVAEDecoder(
-                        load_torch_file(
-                            "models/layerdiffuse/vae_transparent_decoder.safetensors"
-                        ),
-                        device=comfy.model_management.get_torch_device(),
-                        dtype=(
-                            torch.float16
-                            if comfy.model_management.should_use_fp16()
-                            else torch.float32
-                        ),
-                    )
-                layerdiffuse_mode = True
-            else:
-                # FIXME try reloading model? (and loras)
-                if "layerdiffuse" in self.xl_base_patched_extra:
-                    self.xl_base_patched_extra.remove("layerdiffuse")
-                # self.xl_base_patched.tvae = None
 
         if not img2img_mode:
             if isinstance(self.xl_base.unet.model, SDXL):
@@ -659,13 +556,6 @@ class pipeline:
         noise = noise.to(device)
         latent_image = latent_image.to(device)
 
-        # FIXME: convert_cond() doesn't seem to be used anymore, will probably break prompt_switch_mode
-        #        if prompt_switch_mode:
-        #            positive_copy = positive_complete
-        #        else:
-        #            positive_copy = convert_cond(self.conditions["+"]["cache"])
-        #        negative_copy = convert_cond(self.conditions["-"]["cache"])
-
         # Use FluxGuidance for Flux
         if isinstance(self.xl_base.unet.model, Flux):
             positive_cond = conditioning_set_values(self.conditions["+"]["cache"], {"guidance": cfg})
@@ -724,16 +614,7 @@ class pipeline:
             for y in decoded_latent
         ]
 
-        preview = None
-        if layerdiffuse_mode:
-            renderer = ImageRenderer(self.xl_base_patched)
-            preview, img = renderer.render_diffuse_image(
-                input_image_pil, samples, decoded_latent
-            )
-
-            images = [img]
-
         if callback is not None:
-            callback(steps, 0, 0, steps, images[0] if preview is None else preview)
+            callback(steps, 0, 0, steps, images[0])
 
         return images

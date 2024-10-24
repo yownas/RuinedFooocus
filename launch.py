@@ -121,16 +121,6 @@ def download_models():
             "pytorch_model.bin",
             "https://huggingface.co/lllyasviel/misc/resolve/main/fooocus_expansion.bin",
         ),
-        (
-            "models/layerdiffuse/",
-            "layer_xl_transparent_attn.safetensors",
-            "https://huggingface.co/LayerDiffusion/layerdiffusion-v1/resolve/main/layer_xl_transparent_attn.safetensors",
-        ),
-        (
-            "models/layerdiffuse/",
-            "vae_transparent_decoder.safetensors",
-            "https://huggingface.co/LayerDiffusion/layerdiffusion-v1/resolve/main/vae_transparent_decoder.safetensors",
-        ),
     ]
 
     for model_dir, file_name, url in model_filenames:

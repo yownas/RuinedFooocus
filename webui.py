@@ -182,8 +182,6 @@ def generate_clicked(*args):
 
     # FIXME this is _ugly_ run_event gets triggerd once at page load
     #   not really gradios fault, we are doing silly things there. :)
-    print(f"DEBUG: it got clicked {gen_data['run_event']}")
-    print(gen_data["run_event"])
     if gen_data["run_event"] < 1:
         yield update_results(["logo.png"])
         return
