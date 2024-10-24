@@ -37,15 +37,6 @@ def worker():
     if not pipeline == None:
         pipeline.load_base_model(default_settings["base_model"])
 
-    try:
-        async_gradio_app = shared.gradio_root
-        flag = f"""App started successful. Use the app with {str(async_gradio_app.local_url)} or {str(async_gradio_app.server_name)}:{str(async_gradio_app.server_port)}"""
-        if async_gradio_app.share:
-            flag += f""" or {async_gradio_app.share_url}"""
-        print(flag)
-    except Exception as e:
-        print(e)
-
     def handler(gen_data):
         match gen_data["task_type"]:
             case "start":
