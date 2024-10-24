@@ -1223,11 +1223,11 @@ with shared.gradio_root as block:
             )
             def performance_changed(selection):
                 if selection == performance_settings.CUSTOM_PERFORMANCE:
-                    return [perf_name.update(value="")] + [
+                    return [gr.update(value="")] + [
                         gr.update(visible=True)
                     ] * len(performance_outputs)
                 else:
-                    return [perf_name.update(visible=False)] + [
+                    return [gr.update(visible=False)] + [
                         gr.update(visible=False)
                     ] * len(performance_outputs)
 
@@ -1267,12 +1267,12 @@ with shared.gradio_root as block:
                 selected_width, selected_height = resolution_settings.get_aspect_ratios(
                     selection
                 )
-                return [
-                    ratio_name.update(visible=False),
-                    custom_width.update(visible=False, value=selected_width),
-                    custom_height.update(visible=False, value=selected_height),
-                    ratio_save.update(visible=False),
-                ]
+                return {
+                    ratio_name: gr.update(visible=False),
+                    custom_width: gr.update(visible=False, value=selected_width),
+                    custom_height: gr.update(visible=False, value=selected_height),
+                    ratio_save: gr.update(visible=False),
+                }
 
         def update_token_visibility(x):
             return [gr.update(visible=x), gr.update(visible=x)]
