@@ -41,12 +41,13 @@ inpaint_toggle = None
 path_manager = PathManager()
 civit_checkpoints = Civit(
     model_dir=Path(path_manager.model_paths["modelfile_path"]),
-    cache_path=Path(path_manager.model_paths["cache_path"] / "checkpoints")
+    cache_path=Path(path_manager.model_paths["cache_path"] / "checkpoints"),
 )
 civit_loras = Civit(
     model_dir=Path(path_manager.model_paths["lorafile_path"]),
-    cache_path=Path(path_manager.model_paths["cache_path"] / "loras")
+    cache_path=Path(path_manager.model_paths["cache_path"] / "loras"),
 )
+
 
 def find_unclosed_markers(s):
     markers = re.findall(r"__", s)
@@ -639,10 +640,12 @@ with shared.gradio_root as block:
                         model_gallery = gr.Gallery(
                             label=f"SDXL model: {settings['base_model']}",
                             show_label=False,
-                            object_fit="scale-down",
-                            height=550,
+                            height="auto",
                             allow_preview=False,
                             preview=False,
+                            columns=[2],
+                            rows=[3],
+                            object_fit="contain",
                             visible=True,
                             show_download_button=False,
                             min_width=60,
@@ -676,7 +679,10 @@ with shared.gradio_root as block:
 
                     def update_model_select(evt: gr.SelectData):
                         model_name = f"{evt.value['caption']}"
-                        models = civit_checkpoints.get_models_by_path(path_manager.model_paths["modelfile_path"] / Path(model_name))
+                        models = civit_checkpoints.get_models_by_path(
+                            path_manager.model_paths["modelfile_path"]
+                            / Path(model_name)
+                        )
                         model_base = civit_checkpoints.get_model_base(models)
 
                         txt = f"{evt.value['caption']}<br>Model type: {model_base}"
@@ -720,7 +726,7 @@ with shared.gradio_root as block:
                         )
 
                     default_active = []
-                    for i in range(1,6):
+                    for i in range(1, 6):
                         m = default_settings.get(f"lora_{i}_model", "None")
                         w = default_settings.get(f"lora_{i}_weight", 0.0)
                         if m != "" and m != "None":
@@ -756,7 +762,7 @@ with shared.gradio_root as block:
                                 value="+",
                                 scale=1,
                             )
-                            
+
                             lora_del_btn = gr.Button(
                                 value="-",
                                 scale=1,
@@ -806,7 +812,8 @@ with shared.gradio_root as block:
                                     lambda x: (get_checkpoint_thumbnail(x), f"C:{x}"),
                                     path_manager.model_filenames,
                                 )
-                            ) + list (
+                            )
+                            + list(
                                 map(
                                     lambda x: (get_lora_thumbnail(x), f"L:{x}"),
                                     path_manager.lora_filenames,
@@ -893,7 +900,10 @@ with shared.gradio_root as block:
                     keywords = f"{keywords}, {load_keywords(evt.value['caption'])} "
 
                     loras.append(
-                        (get_lora_thumbnail(evt.value['caption']), f"{w} - {evt.value['caption']}")
+                        (
+                            get_lora_thumbnail(evt.value["caption"]),
+                            f"{w} - {evt.value['caption']}",
+                        )
                     )
                     return {
                         lora_add: gr.update(visible=False),
@@ -911,7 +921,7 @@ with shared.gradio_root as block:
                         lora_active: gr.update(),
                         lora_active_gallery: gr.update(),
                         lora_weight_slider: gr.update(
-                            value=float(evt.value['caption'].split(" - ", 1)[0])
+                            value=float(evt.value["caption"].split(" - ", 1)[0])
                         ),
                     }
 
@@ -996,14 +1006,13 @@ with shared.gradio_root as block:
                             lambda x: (get_checkpoint_thumbnail(x), f"C:{x}"),
                             filtered_models,
                         )
-                    ) + list (
+                    ) + list(
                         map(
                             lambda x: (get_lora_thumbnail(x), f"L:{x}"),
                             filtered_loras,
                         )
                     )
                     return gr.update(value=newlist)
-
 
                 def mm_select(gallery, evt: gr.SelectData):
                     w = 1.0
@@ -1014,9 +1023,7 @@ with shared.gradio_root as block:
 
                     m = evt.value[1]
                     n = re.sub("[CL]:", "", m)
-                    mm.append(
-                        (get_model_thumbnail(n), f"{w} - {m}")
-                    )
+                    mm.append((get_model_thumbnail(n), f"{w} - {m}"))
                     return {
                         mm_add: gr.update(visible=False),
                         mm_active: gr.update(visible=True),
@@ -1038,7 +1045,6 @@ with shared.gradio_root as block:
                             value=float(mm[evt.index][1].split(" - ", 1)[0])
                         ),
                     }
-
 
                 def mm_delete(gallery):
                     global mm_active_selected
@@ -1095,21 +1101,26 @@ with shared.gradio_root as block:
                     dict["base"] = {"name": base[0], "weight": float(base[1])}
                     dict["models"] = []
                     for model in models:
-                        dict["models"].append({"name": model[0], "weight": float(model[1])})
+                        dict["models"].append(
+                            {"name": model[0], "weight": float(model[1])}
+                        )
                     dict["loras"] = []
                     for lora in loras:
-                        dict["loras"].append({"name": lora[0], "weight": float(lora[1])})
+                        dict["loras"].append(
+                            {"name": lora[0], "weight": float(lora[1])}
+                        )
                     dict["normalize"] = 1.0
                     dict["cache"] = cache
 
-                    filename = Path(path_manager.model_paths["modelfile_path"] / name).with_suffix(".merge")
+                    filename = Path(
+                        path_manager.model_paths["modelfile_path"] / name
+                    ).with_suffix(".merge")
                     if filename.exists():
                         gr.Info("Not saving, file already exists.")
                     else:
-                        with open(filename, "w") as outfile: 
+                        with open(filename, "w") as outfile:
                             json.dump(dict, outfile, indent=2)
                         gr.Info(f"Saved {Path(name).with_suffix('.merge')}")
-
 
                 mm_weight_slider.release(
                     fn=mm_weight_slider_update,
@@ -1154,7 +1165,15 @@ with shared.gradio_root as block:
 
             @model_refresh.click(
                 inputs=[],
-                outputs=[modelfilter, model_gallery, lorafilter, lora_gallery, style_selection, mm_filter, mm_gallery]
+                outputs=[
+                    modelfilter,
+                    model_gallery,
+                    lorafilter,
+                    lora_gallery,
+                    style_selection,
+                    mm_filter,
+                    mm_gallery,
+                ],
             )
             def model_refresh_clicked():
                 path_manager.update_all_model_names()
@@ -1202,20 +1221,17 @@ with shared.gradio_root as block:
 
             @performance_selection.change(
                 inputs=[performance_selection],
-                outputs=[perf_name]
-                + performance_outputs
+                outputs=[perf_name] + performance_outputs,
             )
             def performance_changed(selection):
                 if selection == performance_settings.CUSTOM_PERFORMANCE:
-                    return (
-                        [perf_name.update(value="")]
-                        + [gr.update(visible=True)] * len(performance_outputs)
-                    )
+                    return [perf_name.update(value="")] + [
+                        gr.update(visible=True)
+                    ] * len(performance_outputs)
                 else:
-                    return (
-                        [perf_name.update(visible=False)]
-                        + [gr.update(visible=False)] * len(performance_outputs)
-                    )
+                    return [perf_name.update(visible=False)] + [
+                        gr.update(visible=False)
+                    ] * len(performance_outputs)
 
             @performance_selection.change(
                 inputs=[performance_selection],
