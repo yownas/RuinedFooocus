@@ -7,20 +7,6 @@ css = """
   overflow-y:hidden;
 }
 
-.loader {
-  border: 8px solid #f3f3f3; /* Light grey */
-  border-top: 8px solid #3498db; /* Blue */
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  animation: spin 2s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
 /* Style the progress bar */
 progress {
   appearance: none; /* Remove default styling */
@@ -128,7 +114,6 @@ div.prose.tokenCounter {
 """
 progress_html = """
 <div class="loader-container">
-  <div class="loader"></div>
   <div class="progress-container">
     <progress value="*number*" max="100"></progress>
   </div>
