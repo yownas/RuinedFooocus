@@ -31,10 +31,11 @@ def add_controlnet_tab(main_view, inpaint_view, prompt, image_number, run_event)
             visible=False,
         )
 
+        type_choices=list(map(lambda x: x.capitalize(), controlnet.controlnet_models.keys()))
         cn_type = gr.Dropdown(
             label="Type",
-            choices=map(lambda x: x.capitalize(), controlnet.controlnet_models.keys()),
-            value=list(controlnet.controlnet_models.keys())[0].capitalize(),
+            choices=type_choices,
+            value=type_choices[0],
             visible=False,
         )
         add_ctrl("cn_type", cn_type)
