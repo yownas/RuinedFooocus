@@ -279,7 +279,7 @@ with shared.gradio_root as block:
             )
 
             gallery = gr.Gallery(
-                label="Gallery",
+                label=None,
                 show_label=False,
                 object_fit="scale-down",
                 height=60,
@@ -706,10 +706,12 @@ with shared.gradio_root as block:
                         lora_gallery = gr.Gallery(
                             label=f"LoRA model",
                             show_label=False,
-                            object_fit="scale-down",
-                            height=510,
+                            height="auto",
                             allow_preview=False,
                             preview=False,
+                            columns=[2],
+                            rows=[3],
+                            object_fit="contain",
                             show_download_button=False,
                             min_width=60,
                             value=list(
@@ -745,10 +747,12 @@ with shared.gradio_root as block:
                         lora_active_gallery = gr.Gallery(
                             label=f"LoRA model",
                             show_label=False,
-                            object_fit="scale-down",
-                            height=510,
+                            height="auto",
                             allow_preview=False,
                             preview=False,
+                            columns=[2],
+                            rows=[3],
+                            object_fit="contain",
                             visible=True,
                             show_download_button=False,
                             min_width=60,
@@ -800,10 +804,12 @@ with shared.gradio_root as block:
                         mm_gallery = gr.Gallery(
                             label=f"Models",
                             show_label=False,
-                            object_fit="scale-down",
-                            height=410,
+                            height="auto",
                             allow_preview=False,
                             preview=False,
+                            columns=[2],
+                            rows=[3],
+                            object_fit="contain",
                             show_download_button=False,
                             min_width=60,
                             value=list(
@@ -838,10 +844,12 @@ with shared.gradio_root as block:
                         mm_active_gallery = gr.Gallery(
                             label=f"Models",
                             show_label=False,
-                            object_fit="scale-down",
-                            height=410,
+                            height="auto",
                             allow_preview=False,
                             preview=False,
+                            columns=[2],
+                            rows=[3],
+                            object_fit="contain",
                             visible=True,
                             show_download_button=False,
                             min_width=60,
@@ -1017,10 +1025,11 @@ with shared.gradio_root as block:
                     w = 1.0
 
                     mm = []
-                    for mm_data in gallery:
-                        mm.append((mm_data[0]["name"], mm_data[1]))
+                    if gallery is not None:
+                        for mm_data in gallery:
+                            mm.append((mm_data[0], mm_data[1]))
 
-                    m = evt.value[1]
+                    m = evt.value['caption']
                     n = re.sub("[CL]:", "", m)
                     mm.append((get_model_thumbnail(n), f"{w} - {m}"))
                     return {
@@ -1036,7 +1045,8 @@ with shared.gradio_root as block:
                     mm_active_selected = evt.index
                     mm = []
                     for mm_data in gallery:
-                        mm.append((mm_data[0]["name"], mm_data[1]))
+                        mm.append((mm_data[0], mm_data[1]))
+
                     return {
                         mm_active: gr.update(),
                         mm_active_gallery: gr.update(),
@@ -1053,8 +1063,7 @@ with shared.gradio_root as block:
                             mm_active_selected = None
                     mm = []
                     for mm_data in gallery:
-                        w, l = mm_data[1].split(" - ", 1)
-                        mm.append((mm_data[0]["name"], mm_data[1]))
+                        mm.append((mm_data[0], mm_data[1]))
                     return {
                         mm_active_gallery: gr.update(value=mm),
                     }
