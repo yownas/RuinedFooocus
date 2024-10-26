@@ -302,7 +302,10 @@ with shared.gradio_root as block:
                         metadata = im.info["parameters"]
                     else:
                         metadata = {"Data": "Preview Grid"}
-                return [name] + [gr.update(value=metadata)]
+                return {
+                    main_view: gr.update(value=name),
+                    metadata_json: gr.update(value=metadata),
+                }
 
             with gr.Row(elem_classes="type_row"):
                 with gr.Column(scale=5):
