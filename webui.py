@@ -1247,13 +1247,13 @@ with shared.gradio_root as block:
 
                 # Update Custom values based on selected Performance mode
                 selected_perf_options = performance_settings.get_perf_options(selection)
-                return [
-                    custom_steps.update(value=selected_perf_options["custom_steps"]),
-                    cfg.update(value=selected_perf_options["cfg"]),
-                    sampler_name.update(value=selected_perf_options["sampler_name"]),
-                    scheduler.update(value=selected_perf_options["scheduler"]),
-                    clip_skip.update(value=selected_perf_options["clip_skip"]),
-                ]
+                return {
+                    custom_steps: gr.update(value=selected_perf_options["custom_steps"]),
+                    cfg: gr.update(value=selected_perf_options["cfg"]),
+                    sampler_name: gr.update(value=selected_perf_options["sampler_name"]),
+                    scheduler: gr.update(value=selected_perf_options["scheduler"]),
+                    clip_skip: gr.update(value=selected_perf_options["clip_skip"]),
+                }
 
             @aspect_ratios_selection.change(
                 inputs=[aspect_ratios_selection],
