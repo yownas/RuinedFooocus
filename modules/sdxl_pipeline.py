@@ -573,6 +573,7 @@ class pipeline:
             "sigmas": None,
             "disable_pbar": False,
             "seed": seed,
+            "callback": callback_function,
         }
         sampler = KSampler(
             self.xl_base_patched.unet,
@@ -583,10 +584,6 @@ class pipeline:
             denoise=denoise,
             model_options=self.xl_base_patched.unet.model_options,
         )
-        extra_kwargs = {
-            "callback": callback_function,
-        }
-        kwargs.update(extra_kwargs)
 
         worker.outputs.append(["preview", (-1, f"Start sampling ...", None)])
         samples = sampler.sample(
@@ -596,7 +593,8 @@ class pipeline:
             **kwargs,
         )
 
-        samples = samples.cpu()
+# FIXME: needed?
+#        samples = samples.cpu()
 
         cleanup_additional_models(self.models)
 
