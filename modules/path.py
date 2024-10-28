@@ -32,7 +32,7 @@ class PathManager:
             "filename": "lcm-lora-sdxl.safetensors",
         },
         "clip/clip_g.safetensors": {
-            "url", "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/text_encoder_2/model.fp16.safetensors",
+            "url": "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/text_encoder_2/model.fp16.safetensors",
             "path": "path_clip",
             "filename": "clip_g.safetensors"
         },
