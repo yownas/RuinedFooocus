@@ -231,14 +231,20 @@ class pipeline:
                         unet = comfy.sd.load_diffusion_model(filename, model_options=model_options)
 
                     # https://huggingface.co/comfyanonymous/flux_text_encoders/tree/main
-                    clip_name1 = default_settings.get("gguf_clip1", "clip_l.safetensors")
+                    clip_name1 = default_settings.get("clip_l", "clip_l.safetensors")
                     clip_path1 = path_manager.get_folder_file_path(
                         "clip",
                         clip_name1,
                         default = os.path.join(path_manager.model_paths["clip_path"], clip_name1)
                     )
-                    # https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/tree/main
-                    clip_name2 = default_settings.get("gguf_clip2", "t5-v1_1-xxl-encoder-Q3_K_S.gguf")
+                    if isinstance(unet.model, Flux):
+                        # https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/tree/main
+                        clip_name2 = default_settings.get("clip_t5", "t5-v1_1-xxl-encoder-Q3_K_S.gguf")
+                        clip_type = comfy.sd.CLIPType.FLUX
+                    else: # SDXL
+                        clip_name2 = default_settings.get("clip_g", "clip_g.safetensors")
+                        clip_type = comfy.sd.CLIPType.STABLE_DIFFUSION
+
                     clip_path2 = path_manager.get_folder_file_path(
                         "clip",
                         clip_name2,
@@ -247,12 +253,15 @@ class pipeline:
 
                     clip_paths = (str(clip_path1), str(clip_path2))
                     clip_loader = DualCLIPLoaderGGUF()
-                    clip_type = comfy.sd.CLIPType.FLUX
                     print(f"Loading CLIP {clip_name1} and {clip_name2}")
                     clip = clip_loader.load_patcher(clip_paths, clip_type, clip_loader.load_data(clip_paths))
 
-                    # https://huggingface.co/black-forest-labs/FLUX.1-schnell/tree/main
-                    vae_name = default_settings.get("gguf_vae", "ae.safetensors")
+                    if isinstance(unet.model, Flux):
+                        # https://huggingface.co/black-forest-labs/FLUX.1-schnell/tree/main
+                        vae_name = default_settings.get("vae_flux", "ae.safetensors")
+                    else:
+                        vae_name = default_settings.get("vae_sdxl", "sdxl_vae.safetensors")
+
                     vae_path = path_manager.get_folder_file_path(
                         "vae",
                         vae_name,

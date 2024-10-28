@@ -28,8 +28,9 @@ DEFAULT_SETTINGS = {
     "auto_negative_prompt": False,
     "OBP_preset": "Standard",
     "hint_chance": 25,
-    "gguf_clip1": "clip_l.safetensors",
-    "gguf_clip2": "t5-v1_1-xxl-encoder-Q3_K_S.gguf",
+    "clip_g": "clip_g.safetensors",
+    "clip_l": "clip_l.safetensors",
+    "clip_t5": "t5-v1_1-xxl-encoder-Q3_K_S.gguf",
 }
 
 
