@@ -32,7 +32,11 @@ class PathManager:
             "filename": "lcm-lora-sdxl.safetensors",
         },
         "clip/clip_g.safetensors": {
+<<<<<<< HEAD
             "url": "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/text_encoder_2/model.fp16.safetensors",
+=======
+            "url", "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/text_encoder_2/model.fp16.safetensors",
+>>>>>>> 432c3ca (sdxl/pony gguf support)
             "path": "path_clip",
             "filename": "clip_g.safetensors"
         },
