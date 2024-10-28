@@ -31,6 +31,11 @@ class PathManager:
             "path": "path_loras",
             "filename": "lcm-lora-sdxl.safetensors",
         },
+        "clip/clip_g.safetensors": {
+            "url", "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/text_encoder_2/model.fp16.safetensors",
+            "path": "path_clip",
+            "filename": "clip_g.safetensors"
+        },
         "clip/clip_l.safetensors": {
             "url": "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors",
             "path": "path_clip",
@@ -120,6 +125,11 @@ class PathManager:
             "url": "https://huggingface.co/black-forest-labs/FLUX.1-schnell/resolve/main/ae.safetensors",
             "path": "path_vae",
             "filename": "ae.safetensors",
+        },
+        "vae/sdxl_vae.safetensors": {
+            "url": "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/vae/diffusion_pytorch_model.safetensors",
+            "path": "path_vae",
+            "filename": "sdxl_vae.safetensors",
         },
         # Add more downloadable files here
     }
