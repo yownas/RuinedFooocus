@@ -2,6 +2,7 @@ import re
 from llama_cpp import Llama
 from modules.util import TimeIt
 from pathlib import Path
+from modules.settings import default_settings
 
 def llama_names():
         names = []
@@ -30,10 +31,9 @@ def run_llama(system_file, prompt):
                 print(f"LLAMA ERROR: Could not open file {system_file}")
                 return prompt
 
-        repo = "hugging-quants/Llama-3.2-3B-Instruct-Q8_0-GGUF"
-        file = "*q8_0.gguf"
-        repo = "mradermacher/Llama-3.2-3B-Instruct-uncensored-GGUF"
-        file = "*Q8_0.gguf"
+        repo = default_settings.get("llama_repo", "hugging-quants/Llama-3.2-3B-Instruct-Q8_0-GGUF")
+        file = default_settings.get("llama_file", "*q8_0.gguf")
+
         print(f"Loading {repo}")
         llm = Llama.from_pretrained(repo_id=repo , filename=file, verbose=False, n_ctx=4096)
 
