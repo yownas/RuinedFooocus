@@ -12,7 +12,7 @@ def llama_names():
                 f = open(path, "r")
                 name = f.readline().strip()
                 names.append((name, str(path)))
-        names.sort(key=lambda x: x[0])
+        names.sort(key=lambda x: x[0].casefold())
         return names
 
 def run_llama(system_file, prompt):
