@@ -131,6 +131,11 @@ class PathManager:
             "path": "path_vae",
             "filename": "sdxl_vae.safetensors",
         },
+        "vae/sd3_vae.safetensors": {
+            "url": "https://civitai.com/api/download/models/568480?type=Model&format=SafeTensor",
+            "path": "path_vae",
+            "filename": "sd3_vae.safetensors",
+        }
         # Add more downloadable files here
     }
 
