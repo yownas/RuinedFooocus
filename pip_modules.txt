@@ -14,11 +14,10 @@ diffusers==0.31.0
 ftfy==6.1.1
 clip_interrogator==0.6.0
 opencv-python==4.8.1.78
-kornia==0.7.2
+kornia==0.7.3
 sentencepiece==0.2.0
 spandrel==0.3.4
 imageio[pyav]==2.34.1 
-xformers==0.0.28.post3
 beautifulsoup4==4.12.3
 protobuf==4.25.4
 rembg==2.0.58
