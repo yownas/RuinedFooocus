@@ -230,44 +230,76 @@ class pipeline:
                         model_options["dtype"] = torch.float8_e4m3fn # FIXME should be a setting
                         unet = comfy.sd.load_diffusion_model(filename, model_options=model_options)
 
+                    clip_paths = []
+                    clip_names = []
+
                     # https://huggingface.co/comfyanonymous/flux_text_encoders/tree/main
-                    clip_name1 = default_settings.get("clip_l", "clip_l.safetensors")
-                    clip_path1 = path_manager.get_folder_file_path(
+                    clip_name = default_settings.get("clip_l", "clip_l.safetensors")
+                    clip_names.append(str(clip_name))
+                    clip_path = path_manager.get_folder_file_path(
                         "clip",
-                        clip_name1,
-                        default = os.path.join(path_manager.model_paths["clip_path"], clip_name1)
+                        clip_name,
+                        default = os.path.join(path_manager.model_paths["clip_path"], clip_name)
                     )
+                    clip_paths.append(str(clip_path))
+
                     if isinstance(unet.model, Flux):
                         # https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/tree/main
-                        clip_name2 = default_settings.get("clip_t5", "t5-v1_1-xxl-encoder-Q3_K_S.gguf")
+                        clip_name = default_settings.get("clip_t5", "t5-v1_1-xxl-encoder-Q3_K_S.gguf")
+                        clip_names.append(str(clip_name))
+                        clip_path = path_manager.get_folder_file_path(
+                            "clip",
+                            clip_name,
+                            default = os.path.join(path_manager.model_paths["clip_path"], clip_name)
+                        )
+                        clip_paths.append(str(clip_path))
                         clip_type = comfy.sd.CLIPType.FLUX
-                    else: # SDXL
-                        clip_name2 = default_settings.get("clip_g", "clip_g.safetensors")
-                        clip_type = comfy.sd.CLIPType.STABLE_DIFFUSION
-
-                    clip_path2 = path_manager.get_folder_file_path(
-                        "clip",
-                        clip_name2,
-                        default = os.path.join(path_manager.model_paths["clip_path"], clip_name2)
-                    )
-
-                    clip_paths = (str(clip_path1), str(clip_path2))
-                    clip_loader = DualCLIPLoaderGGUF()
-                    print(f"Loading CLIP {clip_name1} and {clip_name2}")
-                    clip = clip_loader.load_patcher(clip_paths, clip_type, clip_loader.load_data(clip_paths))
-
-                    if isinstance(unet.model, Flux):
                         # https://huggingface.co/black-forest-labs/FLUX.1-schnell/tree/main
                         vae_name = default_settings.get("vae_flux", "ae.safetensors")
-                    else:
+
+                    elif isinstance(unet.model, SD3):
+                        clip_name = default_settings.get("clip_g", "clip_g.safetensors")
+                        clip_names.append(str(clip_name))
+                        clip_path = path_manager.get_folder_file_path(
+                            "clip",
+                            clip_name,
+                            default = os.path.join(path_manager.model_paths["clip_path"], clip_name)
+                        )
+                        clip_paths.append(str(clip_path))
+                        clip_name = default_settings.get("clip_t5", "t5-v1_1-xxl-encoder-Q3_K_S.gguf")
+                        clip_names.append(str(clip_name))
+                        clip_path = path_manager.get_folder_file_path(
+                            "clip",
+                            clip_name,
+                            default = os.path.join(path_manager.model_paths["clip_path"], clip_name)
+                        )
+                        clip_paths.append(str(clip_path))
+                        clip_type = comfy.sd.CLIPType.SD3
+                        # https://civitai.com/models/511494/sd3-vae
+                        vae_name = default_settings.get("vae_sd3", "sd3_vae.safetensors")
+
+                    else: # SDXL
+                        clip_name = default_settings.get("clip_g", "clip_g.safetensors")
+                        clip_names.append(str(clip_name))
+                        clip_path = path_manager.get_folder_file_path(
+                            "clip",
+                            clip_name,
+                            default = os.path.join(path_manager.model_paths["clip_path"], clip_name)
+                        )
+                        clip_paths.append(str(clip_path))
+                        clip_type = comfy.sd.CLIPType.STABLE_DIFFUSION
                         vae_name = default_settings.get("vae_sdxl", "sdxl_vae.safetensors")
+
+                    clip_loader = DualCLIPLoaderGGUF()
+                    print(f"Loading CLIP: {clip_names}")
+                    clip = clip_loader.load_patcher(clip_paths, clip_type, clip_loader.load_data(clip_paths))
 
                     vae_path = path_manager.get_folder_file_path(
                         "vae",
                         vae_name,
                         default = os.path.join(path_manager.model_paths["vae_path"], vae_name)
                     )
-                    print(f"Loading VAE {vae_name}")
+                    print(f"Loading VAE: {vae_name}")
                     sd = comfy.utils.load_torch_file(str(vae_path))
                     vae = comfy.sd.VAE(sd=sd)
 
