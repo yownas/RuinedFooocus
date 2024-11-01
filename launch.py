@@ -33,7 +33,7 @@ from modules.launch_util import (
     dir_repos,
 )
 
-torch_index_url = "https://download.pytorch.org/whl/cu121"
+torch_index_url = "https://download.pytorch.org/whl/cu124"
 requirements_file = "requirements_versions.txt"
 launch_pip_file = "pip_modules.txt"
 
