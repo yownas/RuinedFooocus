@@ -738,8 +738,8 @@ with shared.gradio_root as block:
                             lora_weight_slider = gr.Slider(
                                 label="Weight",
                                 show_label=True,
-                                minimum=0,
-                                maximum=2,
+                                minimum=default_settings.get("lora_min", 0),
+                                maximum=default_settings.get("lora_max", 2),
                                 step=0.05,
                                 value=1.0,
                                 interactive=True,
@@ -835,8 +835,8 @@ with shared.gradio_root as block:
                             mm_weight_slider = gr.Slider(
                                 label="Weight",
                                 show_label=True,
-                                minimum=0,
-                                maximum=2,
+                                minimum=default_settings.get("lora_min", 0),
+                                maximum=default_settings.get("lora_max", 2),
                                 step=0.05,
                                 value=1.0,
                                 interactive=True,
