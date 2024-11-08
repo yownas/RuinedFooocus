@@ -203,10 +203,14 @@ class pipeline:
 
         print(f"Loading base {'unet' if unet_only else 'model'}: {name}")
 
+        self.xl_base = None
+        self.xl_base_hash = ""
+        self.conditions = None
         self.xl_base_patched = None
         self.xl_base_patched_hash = ""
         self.xl_base_patched_extra = set()
         self.conditions = None
+        gc.collect(generation=2)
 
         comfy.model_management.cleanup_models()
         comfy.model_management.soft_empty_cache()
