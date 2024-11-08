@@ -1075,7 +1075,7 @@ with shared.gradio_root as block:
 
                     mm = []
                     for mm_data in gallery:
-                        mm.append((mm_data[0]["name"], mm_data[1]))
+                        mm.append((mm_data[0], mm_data[1]))
                     l = gallery[mm_active_selected][1].split(" - ")[1]
                     n = re.sub("[CL]:", "", l)
                     mm[mm_active_selected] = (get_model_thumbnail(n), f"{w} - {l}")
