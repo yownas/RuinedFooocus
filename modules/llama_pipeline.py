@@ -16,6 +16,7 @@ def llama_names():
         return names
 
 def run_llama(system_file, prompt):
+        name = None
         sys_pat = "system:.*\n\n"
         system = re.match(sys_pat, prompt, flags=re.M|re.I)
         if system is not None: # Llama system-prompt provided in the ui-prompt
@@ -25,7 +26,7 @@ def run_llama(system_file, prompt):
         else:
             try:
                 file = open(system_file, "r")
-                name = file.readline().strip()
+                name = name if name is not None else file.readline().strip()
                 system_prompt = file.read().strip()
             except:
                 print(f"LLAMA ERROR: Could not open file {system_file}")
