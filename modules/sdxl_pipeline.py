@@ -11,7 +11,7 @@ import modules.prompt_processing as pp
 
 from PIL import Image, ImageOps
 
-from comfy.model_base import SDXL, SD3, Flux
+from comfy.model_base import BaseModel, SDXL, SD3, Flux
 from modules.settings import default_settings
 from shared import path_manager
 
@@ -338,6 +338,7 @@ class pipeline:
                 unet=unet, clip=clip, vae=vae, clip_vision=clip_vision
             )
             if not (
+                isinstance(self.xl_base.unet.model, BaseModel) or
                 isinstance(self.xl_base.unet.model, SDXL) or
                 isinstance(self.xl_base.unet.model, SD3) or
                 isinstance(self.xl_base.unet.model, Flux)
@@ -451,6 +452,7 @@ class pipeline:
     ):
         try:
             if self.xl_base_patched == None or not (
+                isinstance(self.xl_base_patched.unet.model, BaseModel) or
                 isinstance(self.xl_base_patched.unet.model, SDXL) or
                 isinstance(self.xl_base_patched.unet.model, SD3) or
                 isinstance(self.xl_base_patched.unet.model, Flux)
@@ -531,15 +533,15 @@ class pipeline:
                 img2img_mode = True
 
         if not img2img_mode:
-            if isinstance(self.xl_base.unet.model, SDXL):
-                latent = EmptyLatentImage().generate(
-                    width=width, height=height, batch_size=1
-                )[0]
-            elif (
+            if (
                 isinstance(self.xl_base.unet.model, SD3) or
                 isinstance(self.xl_base.unet.model, Flux)
             ):
                 latent = EmptySD3LatentImage().generate(
+                    width=width, height=height, batch_size=1
+                )[0]
+            else: # SDXL and unknown
+                latent = EmptyLatentImage().generate(
                     width=width, height=height, batch_size=1
                 )[0]
             force_full_denoise = False
