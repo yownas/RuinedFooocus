@@ -8,7 +8,7 @@ Press enter to continue...
 EOF
 read junk
 
-. $(dirname "$(readlink -f "$0")")/../venv/bin/activate
+#. $(dirname "$(readlink -f "$0")")/../venv/bin/activate
 
 pip install insightface==0.7.3 gfpgan==1.3.8 --require-virtualenv
 

@@ -704,11 +704,13 @@ with shared.gradio_root as block:
                             container=False,
                         )
                         lora_gallery = gr.Gallery(
-                            label=f"LoRA model",
+                            label=None,
                             show_label=False,
                             height="auto",
                             allow_preview=False,
                             preview=False,
+                            interactive=False,
+                            selected_index=None,
                             columns=[2],
                             rows=[3],
                             object_fit="contain",
@@ -745,7 +747,7 @@ with shared.gradio_root as block:
                                 interactive=True,
                             )
                         lora_active_gallery = gr.Gallery(
-                            label=f"LoRA model",
+                            label=None,
                             show_label=False,
                             height="auto",
                             allow_preview=False,
@@ -897,25 +899,39 @@ with shared.gradio_root as block:
                     w = 1.0
 
                     keywords = ""
-                    loras = []
+                    active = []
                     if gallery is not None:
                         for lora_data in gallery:
                             w, l = lora_data[1].split(" - ", 1)
                             keywords = f"{keywords}, {load_keywords(l)} "
-
-                            loras.append((lora_data[0], lora_data[1]))
+                            active.append(l)
+                    else:
+                        gallery = []
                     keywords = f"{keywords}, {load_keywords(evt.value['caption'])} "
-
-                    loras.append(
+                    gallery.append(
                         (
                             get_lora_thumbnail(evt.value["caption"]),
                             f"{w} - {evt.value['caption']}",
                         )
                     )
+                    active.append(f"{evt.value['caption']}")
+                    inactive = [
+                        x for x in map(
+                            lambda x: (get_lora_thumbnail(x), x),
+                            path_manager.lora_filenames,
+                        ) if x[1] not in active
+                    ]
                     return {
                         lora_add: gr.update(visible=False),
+                        lora_gallery: gr.update(
+                            value=inactive,
+                            selected_index=None,
+                        ),
                         lora_active: gr.update(visible=True),
-                        lora_active_gallery: gr.update(value=loras),
+                        lora_active_gallery: gr.update(
+                            value=gallery,
+                            selected_index=None,
+                        ),
                         lora_keywords: gr.update(value=keywords),
                     }
 
@@ -939,13 +955,26 @@ with shared.gradio_root as block:
                         if lora_active_selected >= len(gallery):
                             lora_active_selected = None
                     keywords = ""
-                    loras = []
+                    active = []
                     for lora_data in gallery:
                         w, l = lora_data[1].split(" - ", 1)
-                        loras.append((lora_data[0], lora_data[1]))
+                        active.append(l)
                         keywords = f"{keywords}, {load_keywords(l)} "
+                    inactive = [
+                        x for x in map(
+                            lambda x: (get_lora_thumbnail(x), x),
+                            path_manager.lora_filenames,
+                        ) if x[1] not in active
+                    ]
                     return {
-                        lora_active_gallery: gr.update(value=loras),
+                        lora_gallery: gr.update(
+                            value=inactive,
+                            selected_index=None,
+                        ),
+                        lora_active_gallery: gr.update(
+                            value=gallery,
+                            selected_index=None,
+                        ),
                         lora_keywords: gr.update(value=keywords),
                     }
 
@@ -980,12 +1009,12 @@ with shared.gradio_root as block:
                 lora_del_btn.click(
                     fn=lora_delete,
                     inputs=lora_active_gallery,
-                    outputs=[lora_active_gallery, lora_keywords],
+                    outputs=[lora_gallery, lora_active_gallery, lora_keywords],
                 )
                 lora_gallery.select(
                     fn=lora_select,
                     inputs=[lora_active_gallery],
-                    outputs=[lora_add, lora_active, lora_active_gallery, lora_keywords],
+                    outputs=[lora_add, lora_gallery, lora_active, lora_active_gallery, lora_keywords],
                 )
                 lora_active_gallery.select(
                     fn=lora_active_select,

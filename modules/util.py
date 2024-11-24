@@ -6,7 +6,7 @@ from pathlib import Path
 from contextlib import contextmanager
 from typing import Optional
 from urllib.parse import urlparse
-from shared import path_manager
+from shared import path_manager, shared_cache
 import json
 
 
@@ -115,11 +115,14 @@ def get_lora_hashes(model):
     )
 
 def _get_model_thumbnail(cache_path, not_found="html/warning.png"):
+    if cache_path in shared_cache:
+        return shared_cache[cache_path]
     suffixes = [".jpeg", ".jpg", ".png", ".gif"]
     for suffix in suffixes:
         filename = cache_path.with_suffix(suffix)
         if Path(filename).is_file():
-            return filename
+            shared_cache[cache_path] = str(filename)
+            return str(filename)
     else:
         return not_found
 
@@ -135,7 +138,7 @@ def get_model_thumbnail(model):
         not_found=None
     )
     if res is not None:
-        return res
+        return str(res)
     else:
         return "html/warning.png"
 

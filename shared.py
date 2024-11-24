@@ -22,6 +22,7 @@ resolution_settings = ResolutionSettings()
 
 path_manager = PathManager()
 
+shared_cache = {}
 
 def add_ctrl(name, obj):
     state["ctrls_name"] += [name]
