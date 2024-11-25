@@ -37,7 +37,7 @@ from modules.civit import Civit
 
 from PIL import Image
 
-inpaint_toggle = None
+repaint_toggle = None
 path_manager = PathManager()
 civit_checkpoints = Civit(
     model_dir=Path(path_manager.model_paths["modelfile_path"]),
@@ -111,8 +111,14 @@ def update_clicked():
             value=modules.html.make_progress_html(0, "Please wait ..."),
         ),
         gallery: gr.update(visible=False),
-        main_view: gr.update(visible=True, value="init_image.png"),
-        inpaint_view: gr.update(visible=False),
+        main_view: gr.update(
+            visible=True,
+            value={
+                'background': 'init_image.png',
+                'layers': None,
+                'composite': None,
+            }
+        ),
         hint_text: gr.update(visible=True, value=modules.hints.get_hint()),
     }
 
@@ -126,7 +132,14 @@ def update_preview(product):
             visible=True, value=modules.html.make_progress_html(percentage, title)
         ),
         main_view: (
-            gr.update(visible=True, value=image) if image is not None else gr.update()
+            gr.update(
+                visible=True,
+                value={
+                    'background': image,
+                    'layers': None,
+                    'composite': None,
+                }
+            ) if image is not None else gr.update()
         ),
     }
 
@@ -142,8 +155,13 @@ def update_results(product):
         run_button: gr.update(interactive=True, visible=True),
         stop_button: gr.update(interactive=False, visible=False),
         progress_html: gr.update(visible=False),
-        main_view: gr.update(value=product[0]) if len(product) > 0 else gr.update(),
-        inpaint_toggle: gr.update(value=False),
+        main_view: gr.update(
+            value={
+                'background': product[0],
+                'layers': None,
+                'composite': None,
+            }
+        ) if len(product) > 0 else gr.update(),
         gallery: gr.update(
             visible=True, allow_preview=True, preview=True, value=product
         ),
@@ -251,25 +269,24 @@ with shared.gradio_root as block:
     add_ctrl("run_event", run_event)
     with gr.Row():
         with gr.Column(scale=5):
-            main_view = gr.Image(
-                value="init_image.png",
+            main_view = gr.ImageMask(
+                value={
+                    'background': 'init_image.png',
+                    'layers': None,
+                    'composite': None,
+                },
                 height=680,
                 type="filepath",
                 visible=True,
                 show_label=False,
                 show_fullscreen_button=True,
                 show_download_button=True,
+                transforms=[],
+                eraser=False,
+                brush=False,
+                layers=False,
             )
             add_ctrl("main_view", main_view)
-            inpaint_view = gr.Image(
-                height=680,
-                type="numpy",
-                elem_id="inpaint_sketch",
-                visible=False,
-                show_fullscreen_button=False,
-            )
-            # FIxME    tool="sketch",
-            add_ctrl("inpaint_view", inpaint_view)
 
             progress_html = gr.HTML(
                 value=modules.html.make_progress_html(32, "Progress 32%"),
@@ -303,7 +320,13 @@ with shared.gradio_root as block:
                     else:
                         metadata = {"Data": "Preview Grid"}
                 return {
-                    main_view: gr.update(value=name),
+                    main_view: gr.update(
+                        value={
+                            'background': name,
+                            'layers': None,
+                            'composite': None,
+                        }
+                    ),
                     metadata_json: gr.update(value=metadata),
                 }
 
@@ -370,19 +393,22 @@ with shared.gradio_root as block:
                         return {prompt: gr.update(value=newtext)}
 
                 with gr.Column(scale=1, min_width=0):
-                    # FIXME run_button = gr.Button(value="Generate", elem_id="generate", api_name="generate")
                     run_button = gr.Button(value="Generate", elem_id="generate")
                     stop_button = gr.Button(
                         value="Stop", interactive=False, visible=False
                     )
 
-                    @main_view.upload(
-                        inputs=[main_view, prompt], outputs=[prompt, gallery]
+                    # FIXME: triggers on change??? Use apply as workaround
+                    @main_view.apply(
+                        inputs=[main_view, prompt],
+                        outputs=[prompt, gallery],
+                        trigger_mode='once',
                     )
                     def load_images_handler(file, prompt):
-                        image = Image.open(file)
+                        image = Image.open(file['composite'])
                         params = look(image, prompt, gr)
-                        return params, [file]
+                        print("Done...")
+                        return params, [file['composite']]
 
             with gr.Row():
                 advanced_checkbox = gr.Checkbox(
@@ -1234,8 +1260,8 @@ with shared.gradio_root as block:
 
             ui_onebutton.ui_onebutton(prompt, run_event)
 
-            inpaint_toggle = ui_controlnet.add_controlnet_tab(
-                main_view, inpaint_view, prompt, image_number, run_event
+            repaint_toggle = ui_controlnet.add_controlnet_tab(
+                main_view, prompt, image_number, run_event
             )
 
             with gr.Tab(label="Info"):
@@ -1332,8 +1358,6 @@ with shared.gradio_root as block:
                 stop_button,
                 progress_html,
                 main_view,
-                inpaint_view,
-                inpaint_toggle,
                 gallery,
                 metadata_json,
                 hint_text,

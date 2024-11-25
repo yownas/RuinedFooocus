@@ -101,8 +101,10 @@ def look(image, prompt, gr):
     if prompt.strip() in looks:
         text = looks[prompt.strip()](image, prompt, gr)
     else:
-        if prompt != "":
-            return prompt
+        # In gradio5 we trigger this with a 'apply',
+        # assume the user know what they are doing.
+        #if prompt != "":
+        #    return prompt
         try:
             info = image.info
             params = info.get("parameters", "")
