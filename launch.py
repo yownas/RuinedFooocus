@@ -47,13 +47,6 @@ git_repos = [
         "add_path": "ComfyUI",
     },
     {
-        "name": "Stable Fast 3D",
-        "path": "stable-fast-3d",
-        "url": "https://github.com/Stability-AI/stable-fast-3d.git",
-        "hash": "070ece138459e38e1fe9f54aa19edb834bced85e",
-        "add_path": "stable-fast-3d",
-    },
-    {
         "name": "ComfyUI-GGUF",
         "path": "comfyui_gguf",
         "url": "https://github.com/city96/ComfyUI-GGUF.git",
