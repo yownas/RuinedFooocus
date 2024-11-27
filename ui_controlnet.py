@@ -10,7 +10,7 @@ from shared import add_ctrl, path_manager
 import ui_evolve
 import ui_llama
 
-def add_controlnet_tab(main_view, prompt, image_number, run_event):
+def add_controlnet_tab(main_view, inpaint_view, prompt, image_number, run_event):
     with gr.Tab(label="PowerUp"):
         with gr.Row():
             cn_selection = gr.Dropdown(
@@ -194,38 +194,28 @@ def add_controlnet_tab(main_view, prompt, image_number, run_event):
             visible=True,
         )
         add_ctrl("input_image", input_image)
-        repaint_toggle = gr.Checkbox(label="Repainting", value=False)
+        inpaint_toggle = gr.Checkbox(label="Inpainting", value=False)
 
-        add_ctrl("repaint_toggle", repaint_toggle)
+        add_ctrl("inpaint_toggle", inpaint_toggle)
 
-        @repaint_toggle.change(
-            inputs=[repaint_toggle], outputs=[main_view]
+        @inpaint_toggle.change(
+            inputs=[inpaint_toggle, main_view], outputs=[main_view, inpaint_view]
         )
-        def repaint_checked(r, test):
+        def inpaint_checked(r, test):
             if r:
-                # Enable tools
                 return {
-                    main_view: gr.update(
-                        transforms=[],
-                        eraser=True,
-                        brush=True,
-                        layers=False,
-                    ),
+                    main_view: gr.update(visible=False),
+                    inpaint_view: gr.update(visible=True, value=test),
                 }
             else:
-                # Disable tools
                 return {
-                    main_view: gr.update(
-                        transforms=[],
-                        eraser=False,
-                        brush=False,
-                        layers=False,
-                    ),
+                    main_view: gr.update(visible=True),
+                    inpaint_view: gr.update(visible=False),
                 }
 
         ui_evolve.add_evolve_tab(prompt, image_number, run_event)
 
         ui_llama.add_llama_tab(prompt)
 
-    return repaint_toggle
+    return inpaint_toggle
 

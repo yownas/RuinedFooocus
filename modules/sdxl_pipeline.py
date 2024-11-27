@@ -474,6 +474,7 @@ class pipeline:
 
         img2img_mode = False
         input_image_pil = None
+        layerdiffuse_mode = False
         seed = image_seed if isinstance(image_seed, int) else random.randint(1, 2**32)
 
         worker.outputs.append(["preview", (-1, f"Processing text encoding ...", None)])
@@ -539,31 +540,27 @@ class pipeline:
                 latent = EmptySD3LatentImage().generate(
                     width=width, height=height, batch_size=1
                 )[0]
-            else: # SDXL and BaseModel
+            else: # SDXL and unknown
                 latent = EmptyLatentImage().generate(
                     width=width, height=height, batch_size=1
                 )[0]
             force_full_denoise = False
             denoise = None
 
-        if gen_data["repaint_toggle"]:
-            mask = np.array(Image.open(gen_data['main_view']['layers'][0]))
+        if gen_data["inpaint_toggle"]:
+            mask = gen_data["inpaint_view"]["mask"]
             mask = mask[:, :, 0]
             mask = torch.from_numpy(mask)[None,] / 255.0
 
-            image = np.array(Image.open(gen_data['main_view']['composite']))
+            image = gen_data["inpaint_view"]["image"]
             image = image[..., :-1]
             image = torch.from_numpy(image)[None,] / 255.0
 
-#            latent = VAEEncodeForInpaint().encode(
-#                vae=self.xl_base_patched.vae,
-#                pixels=image,
-#                mask=mask,
-#                grow_mask_by=20,
-#            )[0]
-            latent = VAEEncode().encode(
+            latent = VAEEncodeForInpaint().encode(
                 vae=self.xl_base_patched.vae,
                 pixels=image,
+                mask=mask,
+                grow_mask_by=20,
             )[0]
 
         latent_image = latent["samples"]
