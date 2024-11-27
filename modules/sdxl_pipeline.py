@@ -13,7 +13,7 @@ from PIL import Image, ImageOps
 
 from comfy.model_base import BaseModel, SDXL, SD3, Flux
 from modules.settings import default_settings
-from shared import path_manager
+from shared import path_manager, shared_cache
 
 from pathlib import Path
 import json
@@ -546,14 +546,40 @@ class pipeline:
             force_full_denoise = False
             denoise = None
 
+        latent_image = latent["samples"]
+        batch_inds = latent["batch_index"] if "batch_index" in latent else None
+        noise = comfy.sample.prepare_noise(latent_image, seed, batch_inds)
         if gen_data["repaint_toggle"]:
-            mask = np.array(Image.open(gen_data['main_view']['layers'][0]))
-            mask = mask[:, :, 0]
+            if 'repaint_noise' in shared_cache:
+                # Add masked noise
+                if 'repaint_seed' in shared_cache:
+                    seed = shared_cache['repaint_seed']
+                noise = shared_cache['repaint_noise']
+                print(f"DEBUG: Reuse noise. noise shape: {noise.shape}")
+            else:
+                # Remember new noise
+                shared_cache['repaint_seed'] = seed
+                print(f"DEBUG: New noise. Seed: {seed}")
+
+            print(f"DEBUG: gen_data {gen_data['main_view']}")
+            mask = np.array(Image.open(gen_data['main_view']['layers'][0]).split()[-1])
+            mask = mask[:, 0]
             mask = torch.from_numpy(mask)[None,] / 255.0
 
-            image = np.array(Image.open(gen_data['main_view']['composite']))
-            image = image[..., :-1]
-            image = torch.from_numpy(image)[None,] / 255.0
+#
+#            image = np.array(Image.open(gen_data['main_view']['composite']))
+#            image = image[..., :-1]
+#            image = torch.from_numpy(image)[None,] / 255.0
+
+            print(f"DEBUG: mask shape: {mask.shape}")
+            mask = prepare_mask(mask, noise.shape, device)
+            print(f"DEBUG:             {mask}")
+            noise2 = comfy.sample.prepare_noise(latent_image, random.randint(1, 2**32), batch_inds)
+            a = torch.mul(noise.to(device), mask.to(device))
+            b = torch.mul(noise2.to(device), 1.0 - mask.to(device))
+            noise = torch.add(a, b).to(device)
+            print(f"DEBUG: noise       {noise.shape}")
+            shared_cache['repaint_noise'] = noise.clone()
 
 #            latent = VAEEncodeForInpaint().encode(
 #                vae=self.xl_base_patched.vae,
@@ -561,14 +587,19 @@ class pipeline:
 #                mask=mask,
 #                grow_mask_by=20,
 #            )[0]
-            latent = VAEEncode().encode(
-                vae=self.xl_base_patched.vae,
-                pixels=image,
-            )[0]
+#            latent = VAEEncode().encode(
+#                vae=self.xl_base_patched.vae,
+#                pixels=image,
+#            )[0]
+        else:
+            noise = comfy.sample.prepare_noise(latent_image, seed, batch_inds)
+            # Clean up unused noise
+            if 'repaint_noise' in shared_cache:
+                del shared_cache['repaint_noise']
+#            if 'repaint_seed' in shared_cache:
+#                del shared_cache['repaint_seed']
 
-        latent_image = latent["samples"]
-        batch_inds = latent["batch_index"] if "batch_index" in latent else None
-        noise = comfy.sample.prepare_noise(latent_image, seed, batch_inds)
+        print(f"DEBUG: {noise}")
 
         noise_mask = None
         if "noise_mask" in latent:
@@ -612,6 +643,9 @@ class pipeline:
             cfg = 1.0
         else:
             positive_cond = self.conditions["+"]["cache"]
+
+        # "Reset" torch randomizer... Without this KSampler might return different results depending on previous use.
+        torch.manual_seed(seed)
 
         kwargs = {
             "cfg": cfg,

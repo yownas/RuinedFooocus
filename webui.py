@@ -204,6 +204,9 @@ def generate_clicked(*args):
         yield update_results(["logo.png"])
         return
 
+    if state['repaint_mode']:
+        gen_data["image_number"] = 1
+
     if int(gen_data["image_number"]) == -1:
         generate_forever = True
     else:
@@ -399,16 +402,17 @@ with shared.gradio_root as block:
                     )
 
                     # FIXME: triggers on change??? Use apply as workaround
-                    @main_view.apply(
-                        inputs=[main_view, prompt],
-                        outputs=[prompt, gallery],
-                        trigger_mode='once',
-                    )
-                    def load_images_handler(file, prompt):
-                        image = Image.open(file['composite'])
-                        params = look(image, prompt, gr)
-                        print("Done...")
-                        return params, [file['composite']]
+                    # Move to input image under PowerUp
+#                    @main_view.apply(
+#                        inputs=[main_view, prompt],
+#                        outputs=[prompt, gallery],
+#                        trigger_mode='once',
+#                    )
+#                    def load_images_handler(file, prompt):
+#                        image = Image.open(file['composite'])
+#                        params = look(image, prompt, gr)
+#                        print("Done...")
+#                        return params, [file['composite']]
 
             with gr.Row():
                 advanced_checkbox = gr.Checkbox(
