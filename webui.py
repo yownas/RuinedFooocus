@@ -332,7 +332,6 @@ with shared.gradio_root as block:
                             )
 
                         prompt_token_counter = gr.HTML(
-                            visible=settings["advanced_mode"],
                             value=str(
                                 calculateTokenCounter(settings["prompt"])
                             ),  # start with token count for default prompt
@@ -384,14 +383,7 @@ with shared.gradio_root as block:
                         params = look(image, prompt, gr)
                         return params, [file]
 
-            with gr.Row():
-                advanced_checkbox = gr.Checkbox(
-                    label="Hurt me plenty",
-                    value=settings["advanced_mode"],
-                    container=False,
-                    elem_id="hurtme",
-                )
-        with gr.Column(scale=2, visible=settings["advanced_mode"]) as right_col:
+        with gr.Column(scale=2) as right_col:
             with gr.Tab(label="Setting"):
                 performance_selection = gr.Dropdown(
                     label="Performance",
@@ -1315,12 +1307,6 @@ with shared.gradio_root as block:
 
         def update_token_visibility(x):
             return [gr.update(visible=x), gr.update(visible=x)]
-
-        advanced_checkbox.change(
-            update_token_visibility,
-            inputs=advanced_checkbox,
-            outputs=[right_col, prompt_token_counter],
-        )
 
         run_event.change(
             fn=refresh_seed, inputs=[seed_random, image_seed], outputs=image_seed
