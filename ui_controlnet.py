@@ -6,7 +6,7 @@ from modules.controlnet import (
     NEWCN,
 )
 import gradio as gr
-from shared import add_ctrl, path_manager, state, shared_cache
+from shared import add_ctrl, path_manager
 import ui_evolve
 import ui_llama
 
@@ -202,10 +202,7 @@ def add_controlnet_tab(main_view, prompt, image_number, run_event):
             inputs=[repaint_toggle], outputs=[main_view]
         )
         def repaint_checked(r, test):
-            # TODO: enable: set shared-flag, force 1 image, @gen: copy gen_data
-            # disable: unset shared-flag, @gen: clear shared gen-data
             if r:
-                state['repaint_mode'] = True
                 # Enable tools
                 return {
                     main_view: gr.update(
@@ -216,8 +213,6 @@ def add_controlnet_tab(main_view, prompt, image_number, run_event):
                     ),
                 }
             else:
-                state['repaint_mode'] = False
-                shared_cache['repaint_noise'] = None
                 # Disable tools
                 return {
                     main_view: gr.update(
