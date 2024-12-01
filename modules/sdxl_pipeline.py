@@ -320,7 +320,7 @@ class pipeline:
                 if clip == None or vae == None:
                     raise
             except:
-                print(f"Failed. Trying to load as Flux unet.")
+                print(f"Failed. Trying to load as unet.")
                 self.load_base_model(
                     filename,
                     unet_only=True
