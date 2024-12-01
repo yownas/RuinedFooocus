@@ -1,3 +1,7 @@
+### 1.58.0
+* Support SD1
+* Fixes when loading gguf-models
+
 ### 1.57.0
 * Added BrainBlip interrogator
 * StabilityMatrix compatibility

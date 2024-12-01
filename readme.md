@@ -110,6 +110,7 @@ Or if you want to open a remote port, use
 49. Support for GGUF Flux files and safetensors containing only Unet.
 50. Florence for image Interrogation
 51. Llama 3.2
+52. Support "BaseModel"
 
 ## Thanks
 
