@@ -120,8 +120,10 @@ def apply_style(style, prompt, negative_prompt, lora_keywords):
 
     for s in style:
         p, n = styles.get(s, default_style)
-        output_prompt = p + ", "
-        output_negative_prompt += n + ", "
+        if p is not None:
+            output_prompt = p + ", "
+        if n is not None:
+            output_negative_prompt += n + ", "
 
         temp_style_prompt = output_prompt.replace("{prompt}", temp_style_prompt)
         output_prompt = temp_style_prompt.replace(", ,", ", ")
