@@ -1,5 +1,5 @@
-import argparse
 import shared
+from argparser import args
 from pathlib import Path
 from shared import (
     state,
@@ -55,33 +55,6 @@ def find_unclosed_markers(s):
         if s.count(marker) % 2 != 0:
             return s.split(marker)[-1]
     return None
-
-
-def get_parser():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--port", type=int, default=None, help="Set the listen port.")
-    parser.add_argument(
-        "--share", action="store_true", help="Set whether to share on Gradio."
-    )
-    parser.add_argument("--auth", type=str, help="Set credentials username/password.")
-    parser.add_argument(
-        "--listen",
-        type=str,
-        default=None,
-        metavar="IP",
-        nargs="?",
-        const="0.0.0.0",
-        help="Set the listen interface.",
-    )
-    parser.add_argument(
-        "--nobrowser", action="store_true", help="Do not launch in browser."
-    )
-    return parser
-
-
-def parse_args():
-    parser = get_parser()
-    return parser.parse_args()
 
 
 def launch_app(args):
@@ -1351,7 +1324,7 @@ with shared.gradio_root as block:
     last_image = gr.Button(visible=False)
     last_image.click(get_last_image, outputs=[last_image], api_name="last_image")
 
-args = parse_args()
+
 if isinstance(args.auth, str) and not "/" in args.auth:
     if len(args.auth):
         print(

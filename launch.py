@@ -5,6 +5,7 @@ import version
 import warnings
 from pathlib import Path
 import ssl
+import argparse
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
@@ -124,12 +125,11 @@ def download_models():
             file_name=file_name,
         )
 
-def clear_comfy_args():
-    argv = sys.argv
-    sys.argv = [sys.argv[0]]
-    import comfy.cli_args
+from argparser import args
 
-    sys.argv = argv
+if args.gpu_device_id is not None:
+    os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu_device_id)
+    print("Set device to:", args.gpu_device_id)
 
 prepare_environment()
 if os.path.exists("reinstall"):
@@ -139,8 +139,6 @@ try:
     clone_git_repos()
 except:
     print(f"WARNING: Failed checking git-repos. Trying to start without update.")
-
-clear_comfy_args()
 
 download_models()
 
