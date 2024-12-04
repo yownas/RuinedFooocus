@@ -20,6 +20,9 @@ class Civit:
         if folder_path in self.civit_worker_folders:
             # Already working on this folder
             return
+        if not Path(cache_path).is_dir():
+            print(f"WARNING: Can't find {cache_path}  Will not update thumbnails.")
+            return
 
         self.civit_worker_folders.append(folder_path)
         for path in folder_path.rglob("*"):
@@ -107,6 +110,9 @@ class Civit:
         data = None
         if cache_path is None:
             cache_path = Path(self.cache_path) / Path(Path(path).name)
+        if not cache_path.is_dir():
+            # Give up
+            return {}
         json_path = Path(cache_path).with_suffix(".json")
 
         if json_path.exists():
