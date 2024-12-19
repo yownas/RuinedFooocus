@@ -1,4 +1,5 @@
 import os
+import traceback
 import numpy as np
 import torch
 import modules.async_worker as worker
@@ -8,6 +9,7 @@ import comfy.utils
 from comfy_extras.chainner_models import model_loading
 from comfy_extras.nodes_upscale_model import ImageUpscaleWithModel
 from PIL import Image
+Image.MAX_IMAGE_PIXELS = None
 
 class pipeline:
     pipeline_type = ["template"]
@@ -77,17 +79,30 @@ class pipeline:
         input_image = np.array(input_image).astype(np.float32) / 255.0
         input_image = torch.from_numpy(input_image)[None,]
 
-        worker.outputs.append(["preview", (-1, f"Upscaling image ...", None)])
-        upscaler_model = self.load_upscaler_model(controlnet["upscaler"])
-        decoded_latent = ImageUpscaleWithModel().upscale(
-            upscaler_model, input_image
-        )[0]
+        upscaler_name = controlnet["upscaler"]
+        worker.outputs.append(["preview", (-1, f"Load upscaling model {upscaler_name}...", None)])
+        print(f"Upscale: Loading model {upscaler_name}")
+        upscale_path = path_manager.get_file_path(upscaler_name)
+        if upscale_path == None:
+            upscale_path = path_manager.get_file_path("4x-UltraSharp.pth")
 
-        worker.outputs.append(["preview", (-1, f"Done ...", None)])
+        try:
+            upscaler_model = self.load_upscaler_model(upscale_path)
 
-        images = [
-            np.clip(255.0 * y.cpu().numpy(), 0, 255).astype(np.uint8)
-            for y in decoded_latent
-        ]
+            worker.outputs.append(["preview", (-1, f"Upscaling image ...", None)])
+            decoded_latent = ImageUpscaleWithModel().upscale(
+                upscaler_model, input_image
+            )[0]
+
+            worker.outputs.append(["preview", (-1, f"Converting ...", None)])
+            images = [
+                np.clip(255.0 * y.cpu().numpy(), 0, 255).astype(np.uint8)
+                for y in decoded_latent
+            ]
+            worker.outputs.append(["preview", (-1, f"Done ...", None)])
+        except:
+            traceback.print_exc()
+            worker.outputs.append(["preview", (-1, f"Oops ...", "error.png")])
+            images =  []
 
         return images
