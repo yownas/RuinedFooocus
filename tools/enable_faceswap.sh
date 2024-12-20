@@ -4,13 +4,13 @@ cat <<EOF
 Some systems fail to install the insightface module, which is why this is not
 part of the default install.
 
+Make sure you have a proper pyenv/virtualenv activated.
+
 Press enter to continue...
 EOF
 read junk
 
-#. $(dirname "$(readlink -f "$0")")/../venv/bin/activate
-
-pip install insightface==0.7.3 gfpgan==1.3.8 --require-virtualenv
+pip install insightface==0.7.3 gfpgan==1.3.8 git+https://github.com/rodjjo/filterpy.git --require-virtualenv
 
 cat <<EOF
 pip done...
