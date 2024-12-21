@@ -110,7 +110,7 @@ class Civit:
         data = None
         if cache_path is None:
             cache_path = Path(self.cache_path) / Path(Path(path).name)
-        if not cache_path.is_dir():
+        if cache_path.is_dir():
             # Give up
             return {}
         json_path = Path(cache_path).with_suffix(".json")
