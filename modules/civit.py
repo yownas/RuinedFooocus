@@ -172,23 +172,25 @@ class Civit:
             return
 
         import imageio.v3 as iio
-
-        max = 166  # Max width or height
+        from modules.settings import default_settings
+        if "model_preview" in default_settings:
+            opts = default_settings["model_preview"].split(",")
+            if "caption" in opts:
+                caption=True
+            if "nogifzoom" in opts:
+                nogifzoom=True
+            if "zoom" in opts:
+                zoom=True
+        else:
+            caption=False
+            nogifzoom=False
+            zoom=False
 
         def make_thumbnail(image, text, zoom=False, caption=False):
+            max = 166  # Max width or height
+
             if image is None:
                 return None
-
-            from modules.settings import default_settings
-
-            res = None
-
-            if "model_preview" in default_settings:
-                opts = default_settings["model_preview"].split(",")
-                if "zoom" in opts:
-                    zoom=True
-                if "caption" in opts:
-                    caption=True
 
             if zoom:
                 oh = image.shape[0]
@@ -207,7 +209,7 @@ class Civit:
 
                 org = (3, 10)
                 color = (25, 15, 11) # BGR
-                res = cv2.putText(
+                image = cv2.putText(
                     image,
                     text,
                     org,
@@ -219,7 +221,7 @@ class Civit:
                 )
                 org = (3, 10)
                 color = (255, 215, 185) # BGR
-                res = cv2.putText(
+                image = cv2.putText(
                     image,
                     text,
                     org,
@@ -230,24 +232,24 @@ class Civit:
                     cv2.LINE_AA
                 )
 
-            return res
+            return image
 
         path = path.with_suffix(".jpeg")
-        caption = f"{path.with_suffix('').name}"
+        caption_text = f"{path.with_suffix('').name}"
 
         image_url = None
         for preview in model.get("images", [{}]):
             url = preview.get("url")
             format = preview.get("type")
             if url:
-                print(f"Updating preview for {caption}.")
+                print(f"Updating preview for {caption_text}.")
                 image_url = url
                 response = self.session.get(image_url)
                 if response.status_code != 200:
                     print(f"WARNING: get_image() - {response.status_code} : {response.reason}")
                     break
                 image = np.asarray(bytearray(response.content), dtype="uint8") 
-                out = make_thumbnail(cv2.imdecode(image, cv2.IMREAD_COLOR), caption)
+                out = make_thumbnail(cv2.imdecode(image, cv2.IMREAD_COLOR), caption_text, caption=caption, zoom=zoom)
                 if out is not None:
                     out = cv2.imencode('.jpg', out)[1] 
                 else:
@@ -262,7 +264,7 @@ class Civit:
                     fps = iio.immeta(tmp_path)["fps"]
                     video_out = []
                     for i in video:
-                        out = make_thumbnail(i, caption, zoom=True)
+                        out = make_thumbnail(i, caption_text, caption=caption, zoom=not nogifzoom)
                         if out is None:
                             out = i
                         video_out.append(out)
