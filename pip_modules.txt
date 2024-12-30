@@ -10,7 +10,7 @@ tqdm==4.66.6
 psutil==6.1.0
 pytorch_lightning==1.9.4
 omegaconf==2.2.3
-gradio==5.8.0
+gradio==5.9.1
 diffusers==0.31.0
 ftfy==6.1.1
 clip_interrogator==0.6.0
@@ -22,12 +22,8 @@ imageio[pyav]==2.34.1
 beautifulsoup4==4.12.3
 protobuf==4.25.4
 rembg==2.0.58
-trimesh==4.4.4
 jaxtyping==0.2.33
 gpytoolbox==0.3.2
-pynim==1.0.5
-numpy-stl==3.1.2
-pyrender==0.1.45
 gguf==0.10.0
 typing-extensions==4.12.2
 diskcache==5.6.3
