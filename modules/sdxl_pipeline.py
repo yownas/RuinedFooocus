@@ -474,7 +474,6 @@ class pipeline:
 
         img2img_mode = False
         input_image_pil = None
-        layerdiffuse_mode = False
         seed = image_seed if isinstance(image_seed, int) else random.randint(1, 2**32)
 
         worker.outputs.append(["preview", (-1, f"Processing text encoding ...", None)])
@@ -486,6 +485,27 @@ class pipeline:
             updated_conditions = True
         if self.textencode("-", negative_prompt, clip_skip):
             updated_conditions = True
+
+        switched_prompt = []
+        if "[" in positive_prompt and "]" in positive_prompt:
+            if controlnet is not None and input_image is not None:
+                print("ControlNet and [prompt|switching] do not work well together.")
+                print("ControlNet will only be applied to the first prompt.")
+
+            prompt_per_step = pp.prompt_switch_per_step(positive_prompt, steps)
+            perc_per_step = round(100 / steps, 2)
+            for i in range(len(prompt_per_step)):
+                if self.textencode("switch", prompt_per_step[i], clip_skip):
+                    updated_conditions = True
+                positive_switch = self.conditions["switch"]["cache"]
+                start_perc = round((perc_per_step * i) / 100, 2)
+                end_perc = round((perc_per_step * (i + 1)) / 100, 2)
+                if end_perc >= 0.99:
+                    end_perc = 1
+                positive_switch = set_timestep_range(
+                    positive_switch, start_perc, end_perc
+                )
+                switched_prompt += positive_switch
 
         device = comfy.model_management.get_torch_device()
 
@@ -608,7 +628,7 @@ class pipeline:
             positive_cond = conditioning_set_values(self.conditions["+"]["cache"], {"guidance": cfg})
             cfg = 1.0
         else:
-            positive_cond = self.conditions["+"]["cache"]
+            positive_cond = switched_prompt if switched_prompt else self.conditions["+"]["cache"]
 
         kwargs = {
             "cfg": cfg,
@@ -639,9 +659,6 @@ class pipeline:
             self.conditions["-"]["cache"],
             **kwargs,
         )
-
-# FIXME: needed?
-#        samples = samples.cpu()
 
         cleanup_additional_models(self.models)
 
