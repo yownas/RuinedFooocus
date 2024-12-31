@@ -624,11 +624,10 @@ class pipeline:
         latent_image = latent_image.to(device)
 
         # Use FluxGuidance for Flux
+        positive_cond = switched_prompt if switched_prompt else self.conditions["+"]["cache"]
         if isinstance(self.xl_base.unet.model, Flux):
-            positive_cond = conditioning_set_values(self.conditions["+"]["cache"], {"guidance": cfg})
+            positive_cond = conditioning_set_values(positive_cond, {"guidance": cfg})
             cfg = 1.0
-        else:
-            positive_cond = switched_prompt if switched_prompt else self.conditions["+"]["cache"]
 
         kwargs = {
             "cfg": cfg,
