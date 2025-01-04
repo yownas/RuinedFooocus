@@ -192,13 +192,6 @@ def generate_clicked(*args):
     worker.buffer.append({"task_type": "stop"})
     shared.state["interrupted"] = False
 
-
-def calculateTokenCounter(text):
-    if len(text) < 1:
-        return 0
-    return len(shared.tokenizer.tokenize(text))
-
-
 settings = default_settings
 
 if settings["theme"] == "None":
@@ -305,21 +298,9 @@ with shared.gradio_root as block:
                                 scale=1,
                             )
 
-                        prompt_token_counter = gr.HTML(
-                            value=str(
-                                calculateTokenCounter(settings["prompt"])
-                            ),  # start with token count for default prompt
-                            elem_classes=["tokenCounter"],
-                        )
-
-                    @prompt.change(inputs=prompt, outputs=prompt_token_counter)
-                    def updatePromptTokenCount(text):
-                        return calculateTokenCounter(text)
-
                     @prompt.input(inputs=prompt, outputs=spellcheck)
                     def checkforwildcards(text):
                         test = find_unclosed_markers(text)
-                        tokencount = len(shared.tokenizer.tokenize(text))
                         if test is not None:
                             filtered = [s for s in shared.wildcards if test in s]
                             filtered.append(" ")
@@ -1291,9 +1272,6 @@ with shared.gradio_root as block:
                     custom_height: gr.update(visible=False, value=selected_height),
                     ratio_save: gr.update(visible=False),
                 }
-
-        def update_token_visibility(x):
-            return [gr.update(visible=x), gr.update(visible=x)]
 
         run_event.change(
             fn=refresh_seed, inputs=[seed_random, image_seed], outputs=image_seed
