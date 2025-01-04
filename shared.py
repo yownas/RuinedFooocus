@@ -19,7 +19,7 @@ except:
 
 performance_settings = PerformanceSettings()
 resolution_settings = ResolutionSettings()
-
+civit_worker_folders = []
 path_manager = PathManager()
 
 shared_cache = {}

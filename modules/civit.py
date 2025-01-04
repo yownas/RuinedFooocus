@@ -8,6 +8,7 @@ import threading
 import time
 from pathlib import Path
 import numpy as np
+from shared import civit_worker_folders
 
 class Civit:
     def civit_update_worker(self, folder_path, cache_path):
@@ -15,16 +16,19 @@ class Civit:
             import imageio.v3
         except:
             # Skip updates if we are missing imageio
-            print(f"DEBUG: Skip CivitAI update")
+            print(f"Can't find imageio.v3 module: Skip CivitAI update")
             return
-        if folder_path in self.civit_worker_folders:
+        if str(folder_path) in civit_worker_folders:
             # Already working on this folder
+            print(f"Skip CivitAI check. Update for {folder_path} already running.")
             return
         if not Path(cache_path).is_dir():
             print(f"WARNING: Can't find {cache_path}  Will not update thumbnails.")
             return
 
-        self.civit_worker_folders.append(folder_path)
+        civit_worker_folders.append(str(folder_path))
+        updated = 0
+
         for path in folder_path.rglob("*"):
             if path.suffix.lower() in self.EXTENSIONS:
 
@@ -43,6 +47,7 @@ class Civit:
                 if not has_preview:
                     #print(f"Downloading model thumbnail for {Path(path).name} ({self.get_model_base(models)} - {self.get_model_type(models)})")
                     self.get_image(models, thumbcheck)
+                    updated += 1
                     time.sleep(1)
 
                 txtcheck = cache_file.with_suffix(".txt")
@@ -51,8 +56,11 @@ class Civit:
                     keywords = self.get_keywords(models)
                     with open(txtcheck, "w") as f:
                         f.write(", ".join(keywords))
+                    updated += 1
 
-        self.civit_worker_folders.remove(folder_path)
+        if updated > 0:
+            print(f"CivitAI update for {folder_path} done.")
+        civit_worker_folders.remove(str(folder_path))
 
     def __init__(self, model_dir=None, base_url="https://civitai.com/api/v1/", cache_path="cache"):
         self.model_dir = model_dir
@@ -60,8 +68,7 @@ class Civit:
         self.base_url = base_url
         self.headers = {"Content-Type": "application/json"}
         self.session = requests.Session()
-        self.civit_worker_folders = []
-        self.EXTENSIONS = [".pth", ".ckpt", ".bin", ".safetensors", ".gguf", ".merge"]
+        self.EXTENSIONS = [".pth", ".ckpt", ".bin", ".safetensors", ".gguf"]
 
         if model_dir:
             threading.Thread(

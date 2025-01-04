@@ -1182,7 +1182,17 @@ with shared.gradio_root as block:
                 ],
             )
             def model_refresh_clicked():
+                global civit_checkpoints, civit_loras
                 path_manager.update_all_model_names()
+
+                civit_checkpoints = Civit(
+                    model_dir=Path(path_manager.model_paths["modelfile_path"]),
+                    cache_path=Path(path_manager.model_paths["cache_path"] / "checkpoints"),
+                )
+                civit_loras = Civit(
+                    model_dir=Path(path_manager.model_paths["lorafile_path"]),
+                    cache_path=Path(path_manager.model_paths["cache_path"] / "loras"),
+                )
 
                 # model_filter
                 results = [gr.update(value="")]
