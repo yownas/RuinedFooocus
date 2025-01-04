@@ -1,3 +1,6 @@
+### 2.0.0
+* RF2!
+
 ### 1.57.0
 * Added BrainBlip interrogator
 * StabilityMatrix compatibility
