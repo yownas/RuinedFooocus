@@ -60,7 +60,9 @@ def find_unclosed_markers(s):
 def launch_app(args):
     inbrowser = not args.nobrowser
     favicon_path = "logo.ico"
-    shared.gradio_root.queue()
+    shared.gradio_root.queue(
+        api_open = True,
+    )
     shared.gradio_root.launch(
         inbrowser=inbrowser,
         server_name=args.listen,
@@ -72,6 +74,7 @@ def launch_app(args):
             else None
         ),
         favicon_path=favicon_path,
+        allowed_paths=["html", "outputs"],
     )
 
 
@@ -1204,9 +1207,9 @@ with shared.gradio_root as block:
                 with gr.Row():
                     gr.HTML(
                         value="""
-                        <a href="https://discord.gg/CvpAFya9Rr"><img src="file=html/icon_clyde_white_RGB.svg" height="16" width="16" style="display:inline-block;">&nbsp;Discord</a><br>
-                        <a href="https://github.com/runew0lf/RuinedFooocus"><img src="file=html/github-mark-white.svg" height="16" width="16" style="display:inline-block;">&nbsp;Github</a><br>
-                        <a href="file=html/slideshow.html" style="color: gray; text-decoration: none" target="_blank">&pi;</a>
+                        <a href="https://discord.gg/CvpAFya9Rr"><img src="gradio_api/file=html/icon_clyde_white_RGB.svg" height="16" width="16" style="display:inline-block;">&nbsp;Discord</a><br>
+                        <a href="https://github.com/runew0lf/RuinedFooocus"><img src="gradio_api/file=html/github-mark-white.svg" height="16" width="16" style="display:inline-block;">&nbsp;Github</a><br>
+                        <a href="gradio_api/file=html/slideshow.html" style="color: gray; text-decoration: none" target="_blank">&pi;</a>
                         """,
                     )
 
