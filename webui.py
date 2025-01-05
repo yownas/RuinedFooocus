@@ -87,7 +87,7 @@ def update_clicked():
             value=modules.html.make_progress_html(0, "Please wait ..."),
         ),
         gallery: gr.update(visible=False),
-        main_view: gr.update(visible=True, value="init_image.png"),
+        main_view: gr.update(visible=True, value="html/init_image.png"),
         inpaint_view: gr.update(visible=False),
         hint_text: gr.update(visible=True, value=modules.hints.get_hint()),
     }
@@ -159,7 +159,7 @@ def generate_clicked(*args):
     # FIXME this is _ugly_ run_event gets triggerd once at page load
     #   not really gradios fault, we are doing silly things there. :)
     if gen_data["run_event"] < 1:
-        yield update_results(["logo.png"])
+        yield update_results(["html/logo.png"])
         return
 
     if int(gen_data["image_number"]) == -1:
@@ -221,7 +221,7 @@ with shared.gradio_root as block:
     with gr.Row():
         with gr.Column(scale=5):
             main_view = gr.Image(
-                value="init_image.png",
+                value="html/init_image.png",
                 height=680,
                 type="filepath",
                 visible=True,
@@ -1310,7 +1310,7 @@ with shared.gradio_root as block:
         if "last_image" in state:
             return state["last_image"]
         else:
-            return "logo.png"
+            return "html/logo.png"
 
     last_image = gr.Button(visible=False)
     last_image.click(get_last_image, outputs=[last_image], api_name="last_image")

@@ -65,7 +65,7 @@ class pipeline:
     ):
         worker.outputs.append(["preview", (-1, f"Generating ...", None)])
 
-        images = Image.open("logo.png")
+        images = Image.open("html/logo.png")
 
         # Return finished image to preview
         if callback is not None:

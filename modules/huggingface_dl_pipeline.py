@@ -79,6 +79,6 @@ class pipeline:
             resume_download=True,
         )
 
-        images = ["logo.png"]
+        images = ["html/logo.png"]
 
         return images
