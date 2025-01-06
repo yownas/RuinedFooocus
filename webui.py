@@ -834,21 +834,22 @@ with shared.gradio_root as block:
                     return result
 
                 # LoRA
-                @lorafilter.input(inputs=lorafilter, outputs=[lora_gallery])
-                def update_lora_filter(filtered):
-                    filtered_filenames = filter(
-                        lambda filename: filtered.lower() in filename.lower(),
-                        path_manager.lora_filenames,
-                    )
-                    newlist = list(
-                        map(
+                @lorafilter.input(inputs=[lorafilter, lora_active_gallery], outputs=[lora_gallery])
+                def update_lora_filter(lorafilter, lora_active_gallery):
+                    filtered_filenames = [
+                        x for x in map(
                             lambda x: (get_lora_thumbnail(x), x),
-                            filtered_filenames,
-                        )
-                    )
-                    return gr.update(value=newlist)
+                            filter(
+                                lambda filename: lorafilter.lower() in filename.lower(),
+                                path_manager.lora_filenames,
+                            )
+                        ) if x[1] not in list(map(lambda x: x[1].split(" - ", 1)[1], lora_active_gallery))
+                    ]
+                    # Sorry for this. It is supposed to show all LoRAs matching the filter and is not currently used.
 
-                def lora_select(gallery, evt: gr.SelectData):
+                    return gr.update(value=filtered_filenames)
+
+                def lora_select(gallery, lorafilter, evt: gr.SelectData):
                     w = 1.0
 
                     keywords = ""
@@ -871,19 +872,22 @@ with shared.gradio_root as block:
                     inactive = [
                         x for x in map(
                             lambda x: (get_lora_thumbnail(x), x),
-                            path_manager.lora_filenames,
+                            filter(
+                                lambda filename: lorafilter.lower() in filename.lower(),
+                                path_manager.lora_filenames,
+                            )
                         ) if x[1] not in active
                     ]
                     return {
                         lora_add: gr.update(visible=False),
                         lora_gallery: gr.update(
                             value=inactive,
-                            selected_index=None,
+                            selected_index=65535,
                         ),
                         lora_active: gr.update(visible=True),
                         lora_active_gallery: gr.update(
                             value=gallery,
-                            selected_index=None,
+                            selected_index=65535,
                         ),
                         lora_keywords: gr.update(value=keywords),
                     }
@@ -922,11 +926,11 @@ with shared.gradio_root as block:
                     return {
                         lora_gallery: gr.update(
                             value=inactive,
-                            selected_index=None,
+                            selected_index=65535,
                         ),
                         lora_active_gallery: gr.update(
                             value=gallery,
-                            selected_index=None,
+                            selected_index=65535,
                         ),
                         lora_keywords: gr.update(value=keywords),
                     }
@@ -966,7 +970,7 @@ with shared.gradio_root as block:
                 )
                 lora_gallery.select(
                     fn=lora_select,
-                    inputs=[lora_active_gallery],
+                    inputs=[lora_active_gallery, lorafilter],
                     outputs=[lora_add, lora_gallery, lora_active, lora_active_gallery, lora_keywords],
                 )
                 lora_active_gallery.select(
@@ -975,7 +979,7 @@ with shared.gradio_root as block:
                     outputs=[lora_active, lora_active_gallery, lora_weight_slider],
                 )
 
-                # MM
+                # MergeMaker
                 @mm_filter.input(inputs=mm_filter, outputs=[mm_gallery])
                 def update_mm_filter(filtered):
                     filtered_models = filter(
