@@ -836,6 +836,10 @@ with shared.gradio_root as block:
                 # LoRA
                 @lorafilter.input(inputs=[lorafilter, lora_active_gallery], outputs=[lora_gallery])
                 def update_lora_filter(lorafilter, lora_active_gallery):
+                    if lora_active_gallery:
+                        active = list(map(lambda x: x[1].split(" - ", 1)[1], lora_active_gallery))
+                    else:
+                        active = []
                     filtered_filenames = [
                         x for x in map(
                             lambda x: (get_lora_thumbnail(x), x),
@@ -843,7 +847,7 @@ with shared.gradio_root as block:
                                 lambda filename: lorafilter.lower() in filename.lower(),
                                 path_manager.lora_filenames,
                             )
-                        ) if x[1] not in list(map(lambda x: x[1].split(" - ", 1)[1], lora_active_gallery))
+                        ) if x[1] not in active
                     ]
                     # Sorry for this. It is supposed to show all LoRAs matching the filter and is not currently used.
 
