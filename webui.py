@@ -909,7 +909,7 @@ with shared.gradio_root as block:
                         ),
                     }
 
-                def lora_delete(gallery):
+                def lora_delete(gallery, lorafilter):
                     global lora_active_selected
                     if lora_active_selected is not None:
                         del gallery[lora_active_selected]
@@ -924,7 +924,10 @@ with shared.gradio_root as block:
                     inactive = [
                         x for x in map(
                             lambda x: (get_lora_thumbnail(x), x),
-                            path_manager.lora_filenames,
+                            filter(
+                                lambda filename: lorafilter.lower() in filename.lower(),
+                                path_manager.lora_filenames,
+                            )
                         ) if x[1] not in active
                     ]
                     return {
@@ -969,7 +972,7 @@ with shared.gradio_root as block:
                 )
                 lora_del_btn.click(
                     fn=lora_delete,
-                    inputs=lora_active_gallery,
+                    inputs=[lora_active_gallery, lorafilter],
                     outputs=[lora_gallery, lora_active_gallery, lora_keywords],
                 )
                 lora_gallery.select(
@@ -1193,7 +1196,7 @@ with shared.gradio_root as block:
                 # lorafilter
                 results += [gr.update(value="")]
                 # lora_gallery
-                results += [update_lora_filter("")]
+                results += [update_lora_filter("", lora_active_gallery.value)]
                 # style_selection
                 results += [gr.update(choices=list(load_styles().keys()))]
                 # mm_filter

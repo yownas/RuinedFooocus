@@ -460,7 +460,7 @@ class pipeline:
                 print(f"ERROR: Can only use SDXL, SD3 or Flux models")
                 worker.interrupt_ruined_processing = True
                 worker.outputs.append(
-                    ["preview", (-1, f"Can only use SDXL, SD3 or Flux models ...", "error.png")]
+                    ["preview", (-1, f"Can only use SDXL, SD3 or Flux models ...", "html/error.png")]
                 )
                 return []
         except Exception as e:
@@ -468,7 +468,7 @@ class pipeline:
             print(f"ERROR: {e}")
             worker.interrupt_ruined_processing = True
             worker.outputs.append(
-                ["preview", (-1, f"Error when trying to use model ...", "error.png")]
+                ["preview", (-1, f"Error when trying to use model ...", "html/error.png")]
             )
             return []
 

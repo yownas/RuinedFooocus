@@ -105,7 +105,7 @@ class pipeline:
             worker.outputs.append(["preview", (-1, f"Done ...", None)])
         except:
             traceback.print_exc()
-            worker.outputs.append(["preview", (-1, f"Oops ...", "error.png")])
+            worker.outputs.append(["preview", (-1, f"Oops ...", "html/error.png")])
             images =  []
 
         return images
