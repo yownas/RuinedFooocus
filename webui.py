@@ -917,9 +917,11 @@ with shared.gradio_root as block:
                             lora_active_selected = None
                     keywords = ""
                     active = []
+                    active_names = []
                     for lora_data in gallery:
                         w, l = lora_data[1].split(" - ", 1)
-                        active.append(l)
+                        active.append(lora_data)
+                        active_names.append(l)
                         keywords = f"{keywords}, {load_keywords(l)} "
                     inactive = [
                         x for x in map(
@@ -928,7 +930,7 @@ with shared.gradio_root as block:
                                 lambda filename: lorafilter.lower() in filename.lower(),
                                 path_manager.lora_filenames,
                             )
-                        ) if x[1] not in active
+                        ) if x[1] not in active_names
                     ]
                     return {
                         lora_gallery: gr.update(
@@ -936,7 +938,7 @@ with shared.gradio_root as block:
                             selected_index=65535,
                         ),
                         lora_active_gallery: gr.update(
-                            value=gallery,
+                            value=active,
                             selected_index=65535,
                         ),
                         lora_keywords: gr.update(value=keywords),
@@ -1165,7 +1167,7 @@ with shared.gradio_root as block:
                     )
 
             @model_refresh.click(
-                inputs=[],
+                inputs=[lora_active_gallery],
                 outputs=[
                     modelfilter,
                     model_gallery,
@@ -1176,7 +1178,7 @@ with shared.gradio_root as block:
                     mm_gallery,
                 ],
             )
-            def model_refresh_clicked():
+            def model_refresh_clicked(lora_active_gallery):
                 global civit_checkpoints, civit_loras
                 path_manager.update_all_model_names()
 
@@ -1189,20 +1191,15 @@ with shared.gradio_root as block:
                     cache_path=Path(path_manager.model_paths["cache_path"] / "loras"),
                 )
 
-                # model_filter
-                results = [gr.update(value="")]
-                # model_gallery
-                results += [update_model_filter("")]
-                # lorafilter
-                results += [gr.update(value="")]
-                # lora_gallery
-                results += [update_lora_filter("", lora_active_gallery.value)]
-                # style_selection
-                results += [gr.update(choices=list(load_styles().keys()))]
-                # mm_filter
-                results += [gr.update(value="")]
-                # mm_gallery
-                results += [update_mm_filter("")]
+                results = {
+                    modelfilter: gr.update(value=""),
+                    model_gallery: update_model_filter(""),
+                    lorafilter: gr.update(value=""),
+                    lora_gallery: update_lora_filter("", lora_active_gallery),
+                    style_selection: gr.update(choices=list(load_styles().keys())),
+                    mm_filter: gr.update(value=""),
+                    mm_gallery: update_mm_filter(""),
+                }
 
                 return results
 
