@@ -1,0 +1,7 @@
+The format for search is `search: [date] [max:<number>] [skip:<number>] [+<number of extra results to skip>] [<words1>[, <words2>]]`.
+You can use json as a prompt.
+The wiki at https://github.com/runew0lf/RuinedFooocus/wiki is your friend.
+Some models like SD3 and Flux need Performance presets that is different from the defaults.
+Model previews can be changed. Just replace the image in cache-folder.
+You can add your own llama agents in the llamas-folder.
+If you make/improve a llama agent. Please share it with us in the Discord or on Github.

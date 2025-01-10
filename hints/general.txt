@@ -1,0 +1,98 @@
+Detail is key: The more specific your prompt, the better the AI can interpret your vision.
+Use adjectives liberally: Words like "vibrant", "mysterious", or "serene" can shape the mood.
+Think like an artist: Imagine how a human artist would interpret your words.
+Experiment with synonyms: If one word doesn't work, try another with similar meaning.
+Reference known works: Mentioning a style or artist can guide the AI's output.
+Use numbers: Specify quantities like "three cats" or "several trees" for more accurate depiction.
+Time of day: Mention morning, dusk, or night for a specific light effect.
+Weather conditions: Adding "foggy", "rainy", or "clear" can change the scene's atmosphere.
+Focus on foreground and background: Describe what's near and far to create depth.
+Specify camera angles: Use terms like "low angle" or "overhead" for perspective.
+Consider framing: Think about how the image is composed within the frame.
+Emphasize emotions: If it's a portrait, describe the emotional state of the subject.
+Cultural elements: Include cultural specifics for authenticity in scenes.
+Mix genres: Combine elements from different styles or times for unique results.
+Test various resolutions: Some details might appear better at different image sizes.
+Apply post-processing: Sometimes, the raw AI output needs enhancement.
+Contrast settings: Play with contrast in your description for dramatic effects.
+Include textures: Mention "smooth", "rough", or "textured" to get the right feel.
+Specify materials: Describe objects with materials like "glass", "wood", or "metal".
+Use sensory descriptions: Beyond sight, think about sounds, smells, or even touch in your prompt.
+Character age and appearance: Be clear about age, ethnicity, and clothing for human figures.
+Animal specifics: Don't just say "dog", specify breed, size, or color.
+Facial expressions: Describe what you want the characters' faces to convey.
+Lighting direction: Mention "backlit", "side-lit", or "front-lit" for effect.
+Seasonal settings: Mentioning seasons can change the whole scene's appearance.
+Historical accuracy: If depicting a historical event, research details to include.
+Geographical accuracy: Mention real locations for more grounded images.
+Avoid ambiguity: Be precise to avoid misinterpretation by the AI.
+Use quotes for emphasis: "A dark, stormy night" might get more focus than without quotes.
+Combine concepts: Create surreal or abstract art by merging unexpected elements.
+Specify action: Describe what characters are doing for dynamic scenes.
+Include scale: Mention size comparisons for clarity on object proportions.
+Use technical terms: If you know photography or art terms, use them for precision.
+Cultural symbolism: Incorporate symbols that have specific meanings in cultures.
+Temporal elements: Mention time periods like "Victorian era" or "future".
+Limit palette: Describe a color scheme for a more cohesive image.
+Specify camera lens: Mention "wide-angle" or "telephoto" for effect.
+Use metaphors: Sometimes, metaphorical descriptions can yield surprising results.
+Include motion: Describe movement for more dynamic images.
+Architecture specifics: Be detailed about buildings or structures.
+Nature specifics: Describe flora and fauna in detail for natural scenes.
+Reference art movements: Terms like "Impressionism" or "Cubism" can guide style.
+Use conjunctions: Link different ideas with "and" or "but" for complex scenes.
+Be playful: Sometimes, whimsical prompts can lead to creative outcomes.
+Avoid clichés: Generic prompts often lead to generic results.
+Think about shadows: Mention how shadows should appear for mood.
+Specify reflections: If there's water or glass, describe what should reflect.
+Use contrast: Describe contrasts in light, color, or texture for impact.
+Mention sound: Even though it's visual, sound descriptions can influence mood.
+Include weather phenomena: Like rainbows, lightning, or auroras for drama.
+Use scientific terms: For accuracy in depicting natural or cosmic scenes.
+Specify camera movement: If it feels like a video, describe how the camera moves.
+Consider the rule of thirds: Mention placement of key elements for balance.
+Add a narrative: A small story can guide the AI towards a cohesive image.
+Use alliteration: Sometimes, it helps in creating memorable, thematic images.
+Be concise: Too many details can confuse the AI; focus on what's crucial.
+Experiment with abstraction: Don't always aim for realism.
+Specify visual effects: Like blur, distortion, or glitch for modern art.
+Play with focus: Describe what should be sharp vs. what can be blurred.
+Think about framing elements: What's in or out of frame can tell a story.
+Use symmetry or asymmetry: Influence the composition's feel.
+Mention the horizon: Its placement can change the perspective dramatically.
+Avoid over-specification: Sometimes, less is more to let the AI interpret.
+Use sensory cross-references: Describe how something might smell or feel.
+Include cultural dress: For authenticity in character depiction.
+Think in layers: Describe foreground, midground, and background distinctly.
+Consider the golden ratio: For aesthetic balance in composition.
+Mention filters: If you want effects like sepia or black and white.
+Use literary references: If you're aiming for a scene from a book or poem.
+Specify textures: For surfaces that should stand out or blend in.
+Include weather dynamics: Movement in clouds, rain, or leaves.
+Use directional prompts: Describe where things are in relation to each other.
+Mention landmarks: For recognizable settings or for scale.
+Consider the light source: Where light comes from affects shadows and mood.
+Add visual paradoxes: For thought-provoking or humorous images.
+Speculate on future tech: For sci-fi or futuristic scenes.
+Use emotional cues: Describe the emotional response you want from viewers.
+Include small details: Sometimes, the devil is in the details for realism.
+Think about negative space: What's not there can be as important as what is.
+Use idioms: They can sometimes evoke unique or culturally rich images.
+Consider the viewer's perspective: What are they supposed to feel or think?
+Mention time of year: Holidays or seasonal events for thematic images.
+Use comparative descriptions: "Like a Van Gogh painting" for reference.
+Play with scale: Make things disproportionately large or small for effect.
+Include elements of surprise: For images that intrigue or shock.
+Specify the subject's mood: Beyond action, the internal state is key.
+Use onomatopoeia: For sound-visual associations like "buzzing" or "hissing".
+Consider the image's purpose: Is it for storytelling, education, or decoration?
+Mention cultural festivals: For festive or specific cultural scenes.
+Include historical context: For scenes set in particular times.
+Think about the end-user: What will they do with this image?
+Use architectural styles: For setting or mood, like "Gothic" or "Art Deco".
+Experiment with minimalism: Sometimes, simplicity is powerful.
+Contrast old and new: For images that blend different eras or technologies.
+Specify the viewpoint: From above, below, through something, etc.
+Mention the medium: If the image should look like a specific art medium.
+Include tactile elements: Describe how things might feel to touch.
+Remember your goal: Always align your prompts with what you aim to achieve with the image.
