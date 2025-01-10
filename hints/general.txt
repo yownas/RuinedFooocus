@@ -96,3 +96,4 @@ Specify the viewpoint: From above, below, through something, etc.
 Mention the medium: If the image should look like a specific art medium.
 Include tactile elements: Describe how things might feel to touch.
 Remember your goal: Always align your prompts with what you aim to achieve with the image.
+On the 16th August 2023 was the first ever image was generated in ruinedfooocus
