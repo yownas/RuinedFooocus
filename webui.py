@@ -41,12 +41,13 @@ inpaint_toggle = None
 path_manager = PathManager()
 civit_checkpoints = Civit(
     model_dir=Path(path_manager.model_paths["modelfile_path"]),
-    cache_path=Path(path_manager.model_paths["cache_path"] / "checkpoints")
+    cache_path=Path(path_manager.model_paths["cache_path"] / "checkpoints"),
 )
 civit_loras = Civit(
     model_dir=Path(path_manager.model_paths["lorafile_path"]),
-    cache_path=Path(path_manager.model_paths["cache_path"] / "loras")
+    cache_path=Path(path_manager.model_paths["cache_path"] / "loras"),
 )
+
 
 def find_unclosed_markers(s):
     markers = re.findall(r"__", s)
@@ -59,7 +60,9 @@ def find_unclosed_markers(s):
 def launch_app(args):
     inbrowser = not args.nobrowser
     favicon_path = "logo.ico"
-    shared.gradio_root.queue(concurrency_count=4)
+    shared.gradio_root.queue(
+        api_open = True,
+    )
     shared.gradio_root.launch(
         inbrowser=inbrowser,
         server_name=args.listen,
@@ -71,6 +74,7 @@ def launch_app(args):
             else None
         ),
         favicon_path=favicon_path,
+        allowed_paths=["html", "outputs"],
     )
 
 
@@ -83,7 +87,7 @@ def update_clicked():
             value=modules.html.make_progress_html(0, "Please wait ..."),
         ),
         gallery: gr.update(visible=False),
-        main_view: gr.update(visible=True, value="init_image.png"),
+        main_view: gr.update(visible=True, value="html/init_image.png"),
         inpaint_view: gr.update(visible=False),
         hint_text: gr.update(visible=True, value=modules.hints.get_hint()),
     }
@@ -152,7 +156,13 @@ def generate_clicked(*args):
     for key, val in zip(state["ctrls_name"], args):
         gen_data[key] = val
 
-    if int(gen_data["image_number"]) == 0:
+    # FIXME this is _ugly_ run_event gets triggerd once at page load
+    #   not really gradios fault, we are doing silly things there. :)
+    if gen_data["run_event"] < 1:
+        yield update_results(["html/logo.png"])
+        return
+
+    if int(gen_data["image_number"]) == -1:
         generate_forever = True
     else:
         generate_forever = False
@@ -185,13 +195,6 @@ def generate_clicked(*args):
     worker.buffer.append({"task_type": "stop"})
     shared.state["interrupted"] = False
 
-
-def calculateTokenCounter(text):
-    if len(text) < 1:
-        return 0
-    return len(shared.tokenizer.tokenize(text))
-
-
 settings = default_settings
 
 if settings["theme"] == "None":
@@ -207,32 +210,34 @@ shared.gradio_root = gr.Blocks(
     title="RuinedFooocus " + version.version,
     theme=theme,
     css=modules.html.css,
-    analytics_enabled=True,
-    concurrency_count=4,
+    js=modules.html.scripts,
+    analytics_enabled=False,
 ).queue()
 
 with shared.gradio_root as block:
-    block.load(_js=modules.html.scripts)
+    block.load()
     run_event = gr.Number(visible=False, value=0)
+    add_ctrl("run_event", run_event)
     with gr.Row():
         with gr.Column(scale=5):
             main_view = gr.Image(
-                value="init_image.png",
+                value="html/init_image.png",
                 height=680,
                 type="filepath",
                 visible=True,
                 show_label=False,
-                image_mode="RGBA",
+                show_fullscreen_button=True,
+                show_download_button=True,
             )
             add_ctrl("main_view", main_view)
             inpaint_view = gr.Image(
                 height=680,
                 type="numpy",
                 elem_id="inpaint_sketch",
-                tool="sketch",
                 visible=False,
-                image_mode="RGBA",
+                show_fullscreen_button=False,
             )
+            # FIxME    tool="sketch",
             add_ctrl("inpaint_view", inpaint_view)
 
             progress_html = gr.HTML(
@@ -243,14 +248,16 @@ with shared.gradio_root as block:
             )
 
             gallery = gr.Gallery(
-                label="Gallery",
+                label=None,
                 show_label=False,
                 object_fit="scale-down",
                 height=60,
-                allow_preview=True,
-                preview=True,
+                allow_preview=False,
+                preview=False,
+                interactive=False,
                 visible=True,
                 show_download_button=False,
+                show_fullscreen_button=False,
             )
 
             @gallery.select(
@@ -259,13 +266,16 @@ with shared.gradio_root as block:
                 show_progress="hidden",
             )
             def gallery_change(files, sd: gr.SelectData):
-                names = files[sd.index]["name"]
-                with Image.open(files[sd.index]["name"]) as im:
+                name = sd.value["image"]["path"]
+                with Image.open(name) as im:
                     if im.info.get("parameters"):
                         metadata = im.info["parameters"]
                     else:
                         metadata = {"Data": "Preview Grid"}
-                return [names] + [gr.update(value=metadata)]
+                return {
+                    main_view: gr.update(value=name),
+                    metadata_json: gr.update(value=metadata),
+                }
 
             with gr.Row(elem_classes="type_row"):
                 with gr.Column(scale=5):
@@ -291,22 +301,9 @@ with shared.gradio_root as block:
                                 scale=1,
                             )
 
-                        prompt_token_counter = gr.HTML(
-                            visible=settings["advanced_mode"],
-                            value=str(
-                                calculateTokenCounter(settings["prompt"])
-                            ),  # start with token count for default prompt
-                            elem_classes=["tokenCounter"],
-                        )
-
-                    @prompt.change(inputs=prompt, outputs=prompt_token_counter)
-                    def updatePromptTokenCount(text):
-                        return calculateTokenCounter(text)
-
                     @prompt.input(inputs=prompt, outputs=spellcheck)
                     def checkforwildcards(text):
                         test = find_unclosed_markers(text)
-                        tokencount = len(shared.tokenizer.tokenize(text))
                         if test is not None:
                             filtered = [s for s in shared.wildcards if test in s]
                             filtered.append(" ")
@@ -330,7 +327,8 @@ with shared.gradio_root as block:
                         return {prompt: gr.update(value=newtext)}
 
                 with gr.Column(scale=1, min_width=0):
-                    run_button = gr.Button(value="Generate", elem_id="generate", api_name="generate")
+                    # FIXME run_button = gr.Button(value="Generate", elem_id="generate", api_name="generate")
+                    run_button = gr.Button(value="Generate", elem_id="generate")
                     stop_button = gr.Button(
                         value="Stop", interactive=False, visible=False
                     )
@@ -343,14 +341,7 @@ with shared.gradio_root as block:
                         params = look(image, prompt, gr)
                         return params, [file]
 
-            with gr.Row():
-                advanced_checkbox = gr.Checkbox(
-                    label="Hurt me plenty",
-                    value=settings["advanced_mode"],
-                    container=False,
-                    elem_id="hurtme",
-                )
-        with gr.Column(scale=2, visible=settings["advanced_mode"]) as right_col:
+        with gr.Column(scale=2) as right_col:
             with gr.Tab(label="Setting"):
                 performance_selection = gr.Dropdown(
                     label="Performance",
@@ -585,9 +576,9 @@ with shared.gradio_root as block:
                 with gr.Tab(label="Model"):
                     model_current = gr.HTML(
                         value=f"{settings['base_model']}",
-                        container=False,
-                        interactive=False,
                     )
+                    # FIXME    container=False,
+                    # FIXME    interactive=False,
                     with gr.Group():
                         modelfilter = gr.Textbox(
                             placeholder="Model name",
@@ -598,10 +589,12 @@ with shared.gradio_root as block:
                         model_gallery = gr.Gallery(
                             label=f"SDXL model: {settings['base_model']}",
                             show_label=False,
-                            object_fit="scale-down",
-                            height=550,
+                            height="auto",
                             allow_preview=False,
                             preview=False,
+                            columns=[2],
+                            rows=[3],
+                            object_fit="contain",
                             visible=True,
                             show_download_button=False,
                             min_width=60,
@@ -634,12 +627,14 @@ with shared.gradio_root as block:
                         return gr.update(value=newlist)
 
                     def update_model_select(evt: gr.SelectData):
-
-                        model_name = f"{evt.value[1]}"
-                        models = civit_checkpoints.get_models_by_path(path_manager.model_paths["modelfile_path"] / Path(model_name))
+                        model_name = f"{evt.value['caption']}"
+                        models = civit_checkpoints.get_models_by_path(
+                            path_manager.model_paths["modelfile_path"]
+                            / Path(model_name)
+                        )
                         model_base = civit_checkpoints.get_model_base(models)
 
-                        txt = f"{evt.value[1]}<br>Model type: {model_base}"
+                        txt = f"{evt.value['caption']}<br>Model type: {model_base}"
 
                         return {
                             model_current: gr.update(value=txt),
@@ -659,12 +654,16 @@ with shared.gradio_root as block:
                             container=False,
                         )
                         lora_gallery = gr.Gallery(
-                            label=f"LoRA model",
+                            label=None,
                             show_label=False,
-                            object_fit="scale-down",
-                            height=510,
+                            height="auto",
                             allow_preview=False,
                             preview=False,
+                            interactive=False,
+                            selected_index=None,
+                            columns=[2],
+                            rows=[3],
+                            object_fit="contain",
                             show_download_button=False,
                             min_width=60,
                             value=list(
@@ -680,7 +679,7 @@ with shared.gradio_root as block:
                         )
 
                     default_active = []
-                    for i in range(1,6):
+                    for i in range(1, 6):
                         m = default_settings.get(f"lora_{i}_model", "None")
                         w = default_settings.get(f"lora_{i}_weight", 0.0)
                         if m != "" and m != "None":
@@ -698,12 +697,15 @@ with shared.gradio_root as block:
                                 interactive=True,
                             )
                         lora_active_gallery = gr.Gallery(
-                            label=f"LoRA model",
+                            label=None,
                             show_label=False,
-                            object_fit="scale-down",
-                            height=510,
+                            height="auto",
                             allow_preview=False,
                             preview=False,
+                            interactive=False,
+                            columns=[2],
+                            rows=[3],
+                            object_fit="contain",
                             visible=True,
                             show_download_button=False,
                             min_width=60,
@@ -716,6 +718,7 @@ with shared.gradio_root as block:
                                 value="+",
                                 scale=1,
                             )
+
                             lora_del_btn = gr.Button(
                                 value="-",
                                 scale=1,
@@ -754,10 +757,13 @@ with shared.gradio_root as block:
                         mm_gallery = gr.Gallery(
                             label=f"Models",
                             show_label=False,
-                            object_fit="scale-down",
-                            height=410,
+                            height="auto",
                             allow_preview=False,
                             preview=False,
+                            interactive=False,
+                            columns=[2],
+                            rows=[3],
+                            object_fit="contain",
                             show_download_button=False,
                             min_width=60,
                             value=list(
@@ -765,7 +771,8 @@ with shared.gradio_root as block:
                                     lambda x: (get_checkpoint_thumbnail(x), f"C:{x}"),
                                     path_manager.model_filenames,
                                 )
-                            ) + list (
+                            )
+                            + list(
                                 map(
                                     lambda x: (get_lora_thumbnail(x), f"L:{x}"),
                                     path_manager.lora_filenames,
@@ -791,10 +798,13 @@ with shared.gradio_root as block:
                         mm_active_gallery = gr.Gallery(
                             label=f"Models",
                             show_label=False,
-                            object_fit="scale-down",
-                            height=410,
+                            height="auto",
                             allow_preview=False,
                             preview=False,
+                            interactive=False,
+                            columns=[2],
+                            rows=[3],
+                            object_fit="contain",
                             visible=True,
                             show_download_button=False,
                             min_width=60,
@@ -824,40 +834,65 @@ with shared.gradio_root as block:
                     return result
 
                 # LoRA
-                @lorafilter.input(inputs=lorafilter, outputs=[lora_gallery])
-                def update_lora_filter(filtered):
-                    filtered_filenames = filter(
-                        lambda filename: filtered.lower() in filename.lower(),
-                        path_manager.lora_filenames,
-                    )
-                    newlist = list(
-                        map(
+                @lorafilter.input(inputs=[lorafilter, lora_active_gallery], outputs=[lora_gallery])
+                def update_lora_filter(lorafilter, lora_active_gallery):
+                    if lora_active_gallery:
+                        active = list(map(lambda x: x[1].split(" - ", 1)[1], lora_active_gallery))
+                    else:
+                        active = []
+                    filtered_filenames = [
+                        x for x in map(
                             lambda x: (get_lora_thumbnail(x), x),
-                            filtered_filenames,
-                        )
-                    )
-                    return gr.update(value=newlist)
+                            filter(
+                                lambda filename: lorafilter.lower() in filename.lower(),
+                                path_manager.lora_filenames,
+                            )
+                        ) if x[1] not in active
+                    ]
+                    # Sorry for this. It is supposed to show all LoRAs matching the filter and is not currently used.
 
-                def lora_select(gallery, evt: gr.SelectData):
+                    return gr.update(value=filtered_filenames)
+
+                def lora_select(gallery, lorafilter, evt: gr.SelectData):
                     w = 1.0
 
                     keywords = ""
-                    for lora_data in gallery:
-                        w, l = lora_data[1].split(" - ", 1)
-                        keywords = f"{keywords}, {load_keywords(l)} "
-                    keywords = f"{keywords}, {load_keywords(evt.value[1])} "
-
-                    loras = []
-                    for lora_data in gallery:
-                        loras.append((lora_data[0]["name"], lora_data[1]))
-
-                    loras.append(
-                        (get_lora_thumbnail(evt.value[1]), f"{w} - {evt.value[1]}")
+                    active = []
+                    if gallery is not None:
+                        for lora_data in gallery:
+                            w, l = lora_data[1].split(" - ", 1)
+                            keywords = f"{keywords}, {load_keywords(l)} "
+                            active.append(l)
+                    else:
+                        gallery = []
+                    keywords = f"{keywords}, {load_keywords(evt.value['caption'])} "
+                    gallery.append(
+                        (
+                            get_lora_thumbnail(evt.value["caption"]),
+                            f"{w} - {evt.value['caption']}",
+                        )
                     )
+                    active.append(f"{evt.value['caption']}")
+                    inactive = [
+                        x for x in map(
+                            lambda x: (get_lora_thumbnail(x), x),
+                            filter(
+                                lambda filename: lorafilter.lower() in filename.lower(),
+                                path_manager.lora_filenames,
+                            )
+                        ) if x[1] not in active
+                    ]
                     return {
                         lora_add: gr.update(visible=False),
+                        lora_gallery: gr.update(
+                            value=inactive,
+                            selected_index=65535,
+                        ),
                         lora_active: gr.update(visible=True),
-                        lora_active_gallery: gr.update(value=loras),
+                        lora_active_gallery: gr.update(
+                            value=gallery,
+                            selected_index=65535,
+                        ),
                         lora_keywords: gr.update(value=keywords),
                     }
 
@@ -866,31 +901,46 @@ with shared.gradio_root as block:
                 def lora_active_select(gallery, evt: gr.SelectData):
                     global lora_active_selected
                     lora_active_selected = evt.index
-                    loras = []
-                    for lora_data in gallery:
-                        loras.append((lora_data[0]["name"], lora_data[1]))
                     return {
                         lora_active: gr.update(),
                         lora_active_gallery: gr.update(),
                         lora_weight_slider: gr.update(
-                            value=float(loras[evt.index][1].split(" - ", 1)[0])
+                            value=float(evt.value["caption"].split(" - ", 1)[0])
                         ),
                     }
 
-                def lora_delete(gallery):
+                def lora_delete(gallery, lorafilter):
                     global lora_active_selected
                     if lora_active_selected is not None:
                         del gallery[lora_active_selected]
                         if lora_active_selected >= len(gallery):
                             lora_active_selected = None
                     keywords = ""
-                    loras = []
+                    active = []
+                    active_names = []
                     for lora_data in gallery:
                         w, l = lora_data[1].split(" - ", 1)
-                        loras.append((lora_data[0]["name"], lora_data[1]))
+                        active.append(lora_data)
+                        active_names.append(l)
                         keywords = f"{keywords}, {load_keywords(l)} "
+                    inactive = [
+                        x for x in map(
+                            lambda x: (get_lora_thumbnail(x), x),
+                            filter(
+                                lambda filename: lorafilter.lower() in filename.lower(),
+                                path_manager.lora_filenames,
+                            )
+                        ) if x[1] not in active_names
+                    ]
                     return {
-                        lora_active_gallery: gr.update(value=loras),
+                        lora_gallery: gr.update(
+                            value=inactive,
+                            selected_index=65535,
+                        ),
+                        lora_active_gallery: gr.update(
+                            value=active,
+                            selected_index=65535,
+                        ),
                         lora_keywords: gr.update(value=keywords),
                     }
 
@@ -901,7 +951,7 @@ with shared.gradio_root as block:
 
                     loras = []
                     for lora_data in gallery:
-                        loras.append((lora_data[0]["name"], lora_data[1]))
+                        loras.append((lora_data[0], lora_data[1]))
                     l = gallery[lora_active_selected][1].split(" - ")[1]
                     loras[lora_active_selected] = (get_lora_thumbnail(l), f"{w} - {l}")
 
@@ -924,13 +974,13 @@ with shared.gradio_root as block:
                 )
                 lora_del_btn.click(
                     fn=lora_delete,
-                    inputs=lora_active_gallery,
-                    outputs=[lora_active_gallery, lora_keywords],
+                    inputs=[lora_active_gallery, lorafilter],
+                    outputs=[lora_gallery, lora_active_gallery, lora_keywords],
                 )
                 lora_gallery.select(
                     fn=lora_select,
-                    inputs=[lora_active_gallery],
-                    outputs=[lora_add, lora_active, lora_active_gallery, lora_keywords],
+                    inputs=[lora_active_gallery, lorafilter],
+                    outputs=[lora_add, lora_gallery, lora_active, lora_active_gallery, lora_keywords],
                 )
                 lora_active_gallery.select(
                     fn=lora_active_select,
@@ -938,7 +988,7 @@ with shared.gradio_root as block:
                     outputs=[lora_active, lora_active_gallery, lora_weight_slider],
                 )
 
-                # MM
+                # MergeMaker
                 @mm_filter.input(inputs=mm_filter, outputs=[mm_gallery])
                 def update_mm_filter(filtered):
                     filtered_models = filter(
@@ -958,7 +1008,7 @@ with shared.gradio_root as block:
                             lambda x: (get_checkpoint_thumbnail(x), f"C:{x}"),
                             filtered_models,
                         )
-                    ) + list (
+                    ) + list(
                         map(
                             lambda x: (get_lora_thumbnail(x), f"L:{x}"),
                             filtered_loras,
@@ -966,19 +1016,17 @@ with shared.gradio_root as block:
                     )
                     return gr.update(value=newlist)
 
-
                 def mm_select(gallery, evt: gr.SelectData):
                     w = 1.0
 
                     mm = []
-                    for mm_data in gallery:
-                        mm.append((mm_data[0]["name"], mm_data[1]))
+                    if gallery is not None:
+                        for mm_data in gallery:
+                            mm.append((mm_data[0], mm_data[1]))
 
-                    m = evt.value[1]
+                    m = evt.value['caption']
                     n = re.sub("[CL]:", "", m)
-                    mm.append(
-                        (get_model_thumbnail(n), f"{w} - {m}")
-                    )
+                    mm.append((get_model_thumbnail(n), f"{w} - {m}"))
                     return {
                         mm_add: gr.update(visible=False),
                         mm_active: gr.update(visible=True),
@@ -992,7 +1040,8 @@ with shared.gradio_root as block:
                     mm_active_selected = evt.index
                     mm = []
                     for mm_data in gallery:
-                        mm.append((mm_data[0]["name"], mm_data[1]))
+                        mm.append((mm_data[0], mm_data[1]))
+
                     return {
                         mm_active: gr.update(),
                         mm_active_gallery: gr.update(),
@@ -1000,7 +1049,6 @@ with shared.gradio_root as block:
                             value=float(mm[evt.index][1].split(" - ", 1)[0])
                         ),
                     }
-
 
                 def mm_delete(gallery):
                     global mm_active_selected
@@ -1010,8 +1058,7 @@ with shared.gradio_root as block:
                             mm_active_selected = None
                     mm = []
                     for mm_data in gallery:
-                        w, l = mm_data[1].split(" - ", 1)
-                        mm.append((mm_data[0]["name"], mm_data[1]))
+                        mm.append((mm_data[0], mm_data[1]))
                     return {
                         mm_active_gallery: gr.update(value=mm),
                     }
@@ -1023,7 +1070,7 @@ with shared.gradio_root as block:
 
                     mm = []
                     for mm_data in gallery:
-                        mm.append((mm_data[0]["name"], mm_data[1]))
+                        mm.append((mm_data[0], mm_data[1]))
                     l = gallery[mm_active_selected][1].split(" - ")[1]
                     n = re.sub("[CL]:", "", l)
                     mm[mm_active_selected] = (get_model_thumbnail(n), f"{w} - {l}")
@@ -1057,21 +1104,26 @@ with shared.gradio_root as block:
                     dict["base"] = {"name": base[0], "weight": float(base[1])}
                     dict["models"] = []
                     for model in models:
-                        dict["models"].append({"name": model[0], "weight": float(model[1])})
+                        dict["models"].append(
+                            {"name": model[0], "weight": float(model[1])}
+                        )
                     dict["loras"] = []
                     for lora in loras:
-                        dict["loras"].append({"name": lora[0], "weight": float(lora[1])})
+                        dict["loras"].append(
+                            {"name": lora[0], "weight": float(lora[1])}
+                        )
                     dict["normalize"] = 1.0
                     dict["cache"] = cache
 
-                    filename = Path(path_manager.model_paths["modelfile_path"] / name).with_suffix(".merge")
+                    filename = Path(
+                        path_manager.model_paths["modelfile_path"] / name
+                    ).with_suffix(".merge")
                     if filename.exists():
                         gr.Info("Not saving, file already exists.")
                     else:
-                        with open(filename, "w") as outfile: 
+                        with open(filename, "w") as outfile:
                             json.dump(dict, outfile, indent=2)
                         gr.Info(f"Saved {Path(name).with_suffix('.merge')}")
-
 
                 mm_weight_slider.release(
                     fn=mm_weight_slider_update,
@@ -1115,26 +1167,39 @@ with shared.gradio_root as block:
                     )
 
             @model_refresh.click(
-                inputs=[],
-                outputs=[modelfilter, model_gallery, lorafilter, lora_gallery, style_selection, mm_filter, mm_gallery]
+                inputs=[lora_active_gallery],
+                outputs=[
+                    modelfilter,
+                    model_gallery,
+                    lorafilter,
+                    lora_gallery,
+                    style_selection,
+                    mm_filter,
+                    mm_gallery,
+                ],
             )
-            def model_refresh_clicked():
+            def model_refresh_clicked(lora_active_gallery):
+                global civit_checkpoints, civit_loras
                 path_manager.update_all_model_names()
 
-                # model_filter
-                results = [gr.update(value="")]
-                # model_gallery
-                results += [update_model_filter("")]
-                # lorafilter
-                results += [gr.update(value="")]
-                # lora_gallery
-                results += [update_lora_filter("")]
-                # style_selection
-                results += [gr.update(choices=list(load_styles().keys()))]
-                # mm_filter
-                results += [gr.update(value="")]
-                # mm_gallery
-                results += [update_mm_filter("")]
+                civit_checkpoints = Civit(
+                    model_dir=Path(path_manager.model_paths["modelfile_path"]),
+                    cache_path=Path(path_manager.model_paths["cache_path"] / "checkpoints"),
+                )
+                civit_loras = Civit(
+                    model_dir=Path(path_manager.model_paths["lorafile_path"]),
+                    cache_path=Path(path_manager.model_paths["cache_path"] / "loras"),
+                )
+
+                results = {
+                    modelfilter: gr.update(value=""),
+                    model_gallery: update_model_filter(""),
+                    lorafilter: gr.update(value=""),
+                    lora_gallery: update_lora_filter("", lora_active_gallery),
+                    style_selection: gr.update(choices=list(load_styles().keys())),
+                    mm_filter: gr.update(value=""),
+                    mm_gallery: update_mm_filter(""),
+                }
 
                 return results
 
@@ -1150,9 +1215,9 @@ with shared.gradio_root as block:
                 with gr.Row():
                     gr.HTML(
                         value="""
-                        <a href="https://discord.gg/CvpAFya9Rr"><img src="file=html/icon_clyde_white_RGB.svg" height="16" width="16" style="display:inline-block;">&nbsp;Discord</a><br>
-                        <a href="https://github.com/runew0lf/RuinedFooocus"><img src="file=html/github-mark-white.svg" height="16" width="16" style="display:inline-block;">&nbsp;Github</a><br>
-                        <a href="file=html/slideshow.html" style="color: gray; text-decoration: none" target="_blank">&pi;</a>
+                        <a href="https://discord.gg/CvpAFya9Rr"><img src="gradio_api/file=html/icon_clyde_white_RGB.svg" height="16" width="16" style="display:inline-block;">&nbsp;Discord</a><br>
+                        <a href="https://github.com/runew0lf/RuinedFooocus"><img src="gradio_api/file=html/github-mark-white.svg" height="16" width="16" style="display:inline-block;">&nbsp;Github</a><br>
+                        <a href="gradio_api/file=html/slideshow.html" style="color: gray; text-decoration: none" target="_blank">&pi;</a>
                         """,
                     )
 
@@ -1164,20 +1229,17 @@ with shared.gradio_root as block:
 
             @performance_selection.change(
                 inputs=[performance_selection],
-                outputs=[perf_name]
-                + performance_outputs
+                outputs=[perf_name] + performance_outputs,
             )
             def performance_changed(selection):
                 if selection == performance_settings.CUSTOM_PERFORMANCE:
-                    return (
-                        [perf_name.update(value="")]
-                        + [gr.update(visible=True)] * len(performance_outputs)
-                    )
+                    return [gr.update(value="")] + [
+                        gr.update(visible=True)
+                    ] * len(performance_outputs)
                 else:
-                    return (
-                        [perf_name.update(visible=False)]
-                        + [gr.update(visible=False)] * len(performance_outputs)
-                    )
+                    return [gr.update(visible=False)] + [
+                        gr.update(visible=False)
+                    ] * len(performance_outputs)
 
             @performance_selection.change(
                 inputs=[performance_selection],
@@ -1194,13 +1256,13 @@ with shared.gradio_root as block:
 
                 # Update Custom values based on selected Performance mode
                 selected_perf_options = performance_settings.get_perf_options(selection)
-                return [
-                    custom_steps.update(value=selected_perf_options["custom_steps"]),
-                    cfg.update(value=selected_perf_options["cfg"]),
-                    sampler_name.update(value=selected_perf_options["sampler_name"]),
-                    scheduler.update(value=selected_perf_options["scheduler"]),
-                    clip_skip.update(value=selected_perf_options["clip_skip"]),
-                ]
+                return {
+                    custom_steps: gr.update(value=selected_perf_options["custom_steps"]),
+                    cfg: gr.update(value=selected_perf_options["cfg"]),
+                    sampler_name: gr.update(value=selected_perf_options["sampler_name"]),
+                    scheduler: gr.update(value=selected_perf_options["scheduler"]),
+                    clip_skip: gr.update(value=selected_perf_options["clip_skip"]),
+                }
 
             @aspect_ratios_selection.change(
                 inputs=[aspect_ratios_selection],
@@ -1215,21 +1277,12 @@ with shared.gradio_root as block:
                 selected_width, selected_height = resolution_settings.get_aspect_ratios(
                     selection
                 )
-                return [
-                    ratio_name.update(visible=False),
-                    custom_width.update(visible=False, value=selected_width),
-                    custom_height.update(visible=False, value=selected_height),
-                    ratio_save.update(visible=False),
-                ]
-
-        def update_token_visibility(x):
-            return [gr.update(visible=x), gr.update(visible=x)]
-
-        advanced_checkbox.change(
-            update_token_visibility,
-            inputs=advanced_checkbox,
-            outputs=[right_col, prompt_token_counter],
-        )
+                return {
+                    ratio_name: gr.update(visible=False),
+                    custom_width: gr.update(visible=False, value=selected_width),
+                    custom_height: gr.update(visible=False, value=selected_height),
+                    ratio_save: gr.update(visible=False),
+                }
 
         run_event.change(
             fn=refresh_seed, inputs=[seed_random, image_seed], outputs=image_seed
@@ -1265,7 +1318,7 @@ with shared.gradio_root as block:
         if "last_image" in state:
             return state["last_image"]
         else:
-            return "logo.png"
+            return "html/logo.png"
 
     last_image = gr.Button(visible=False)
     last_image.click(get_last_image, outputs=[last_image], api_name="last_image")

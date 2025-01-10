@@ -22,11 +22,16 @@ def clean_prompt_cond_caches():
 def set_timestep_range(conditioning, start, end):
     c = []
     for t in conditioning:
-        if "pooled_output" in t:
-            t["start_percent"] = start
-            t["end_percent"] = end
+        n = [t[0], t[1].copy()]
 
-    return conditioning
+        if "pooled_output" in n[1]:
+            n[1]["start_percent"] = start
+            n[1]["end_percent"] = end
+
+        c.append(n)
+
+    return c
+
 
 def get_previewer(device, latent_format):
     previewer = Latent2RGBPreviewer(latent_format.latent_rgb_factors)

@@ -98,7 +98,7 @@ Or if you want to open a remote port, use
 37. Automatically downloads your Lora triggerwords from civit and displays them for you
 38. Automatic Negative prompt, save yourself the heartache and hassle of writing negative prompts!
 39. If the file `reinstall` exists upgrade xformers and torch to 2.1.2 (to upgrade simply create a blank file called `reinstall`)
-40. Support [LayerDiffuse](https://github.com/huchenlei/ComfyUI-layerdiffuse) PowerUp.
+40. Support [LayerDiffuse](https://github.com/huchenlei/ComfyUI-layerdiffuse) PowerUp. (Removed in favor of RemBG)
 41. New model/LoRA select with support for animated thumbnails.
 42. SD3 Support, make sure to use `sd3_medium_incl_clips.safetensors` - Note: *If the pictures look "strange" change to euler and simple*
 43. Use [merge-files](https://github.com/runew0lf/RuinedFooocus/wiki/Checkpoint-merges) as checkpoints.

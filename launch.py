@@ -11,6 +11,7 @@ ssl._create_default_https_context = ssl._create_unverified_context
 
 warnings.filterwarnings("ignore", category=FutureWarning, module="insightface")
 warnings.filterwarnings("ignore", category=FutureWarning, module="transformers")
+warnings.filterwarnings("ignore", category=FutureWarning, module="kornia")
 warnings.filterwarnings("ignore", category=UserWarning, module="torchvision")
 warnings.filterwarnings("ignore", category=UserWarning, module="gradio")
 warnings.filterwarnings("ignore", category=UserWarning, module="torchsde")
@@ -34,7 +35,7 @@ from modules.launch_util import (
     dir_repos,
 )
 
-torch_index_url = "https://download.pytorch.org/whl/cu121"
+torch_index_url = "https://download.pytorch.org/whl/cu124"
 requirements_file = "requirements_versions.txt"
 launch_pip_file = "pip_modules.txt"
 
@@ -43,15 +44,8 @@ git_repos = [
         "name": "ComfyUI",
         "path": "ComfyUI",
         "url": "https://github.com/comfyanonymous/ComfyUI",
-        "hash": "935ae153e154813ace36db4c4656a5e96f403eba",
+        "hash": "5e29e7a488b3f48afc6c4a3cb8ed110976d0ebb8",
         "add_path": "ComfyUI",
-    },
-    {
-        "name": "Stable Fast 3D",
-        "path": "stable-fast-3d",
-        "url": "https://github.com/Stability-AI/stable-fast-3d.git",
-        "hash": "070ece138459e38e1fe9f54aa19edb834bced85e",
-        "add_path": "stable-fast-3d",
     },
     {
         "name": "ComfyUI-GGUF",
@@ -121,16 +115,6 @@ def download_models():
             "prompt_expansion",
             "pytorch_model.bin",
             "https://huggingface.co/lllyasviel/misc/resolve/main/fooocus_expansion.bin",
-        ),
-        (
-            "models/layerdiffuse/",
-            "layer_xl_transparent_attn.safetensors",
-            "https://huggingface.co/LayerDiffusion/layerdiffusion-v1/resolve/main/layer_xl_transparent_attn.safetensors",
-        ),
-        (
-            "models/layerdiffuse/",
-            "vae_transparent_decoder.safetensors",
-            "https://huggingface.co/LayerDiffusion/layerdiffusion-v1/resolve/main/vae_transparent_decoder.safetensors",
         ),
     ]
 

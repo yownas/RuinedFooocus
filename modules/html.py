@@ -3,20 +3,8 @@ css = """
   display: flex; /* Use flex to align items horizontally */
   align-items: center; /* Center items vertically within the container */
   white-space: nowrap; /* Prevent line breaks within the container */
-}
-
-.loader {
-  border: 8px solid #f3f3f3; /* Light grey */
-  border-top: 8px solid #3498db; /* Blue */
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  animation: spin 2s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  overflow-x:hidden;
+  overflow-y:hidden;
 }
 
 /* Style the progress bar */
@@ -103,30 +91,10 @@ progress::after {
   opacity: 0.01;
 }
 
-div.block.tokenCounter {
-  width: auto;
-  position: absolute;
-  right: 0.4em;
-  bottom: 0.4em;
-  padding: 0 0.5em;
-  opacity: 0.5;
-  background-color: var(--neutral-900);
-  border-radius: var(--radius-md);
-}
-
-div.block.tokenCounter div.wrap.center.full {
-  display: none !important;
-}
-
-div.prose.tokenCounter {
-  min-height: auto;
-}
-
 #inpaint_sketch { overflow: overlay !important; resize: auto; background: var(--panel-background-fill); z-index: 5; }
 """
 progress_html = """
 <div class="loader-container">
-  <div class="loader"></div>
   <div class="progress-container">
     <progress value="*number*" max="100"></progress>
   </div>

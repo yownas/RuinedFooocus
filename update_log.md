@@ -1,3 +1,6 @@
+### 2.0.0
+* RF2!
+
 ### 1.58.0
 * Support SD1
 * Fixes when loading gguf-models

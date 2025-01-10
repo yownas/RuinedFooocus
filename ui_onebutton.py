@@ -803,16 +803,16 @@ def ui_onebutton(prompt, run_event):
         
         def obppreset_changed(selection):
                 if selection == OBPresets.CUSTOM_OBP:
-                    return (
-                        [obp_preset_name.update(value="", visible=True)]
-                        + [maingroup.update(visible=True)]
-                    )
+                    return {
+                        obp_preset_name: gr.update(value="", visible=True),
+                        maingroup: gr.update(visible=True),
+                    }
     
                 else:
-                    return (
-                        [obp_preset_name.update(visible=False)]
-                        + [maingroup.update(visible=False)]
-                    )
+                    return {
+                        obp_preset_name: gr.update(visible=False),
+                        maingroup: gr.update(visible=False),
+                    }
         OBP_preset.change(obppreset_changed,
                 inputs=[OBP_preset],
                 outputs=[obp_preset_name] + [maingroup]
@@ -831,24 +831,24 @@ def ui_onebutton(prompt, run_event):
                     selected_opb_preset = OBPresets.get_obp_preset("Standard")
                 else:     
                     selected_opb_preset = OBPresets.get_obp_preset(selection)
-                return [
-                    insanitylevel.update(value=selected_opb_preset["insanitylevel"]),
-                    subject.update(value=selected_opb_preset["subject"]),
-                    artist.update(value=selected_opb_preset["artist"]),
-                    chosensubjectsubtypeobject.update(value=selected_opb_preset["chosensubjectsubtypeobject"]),
-                    chosensubjectsubtypehumanoid.update(value=selected_opb_preset["chosensubjectsubtypehumanoid"]),
-                    chosensubjectsubtypeconcept.update(value=selected_opb_preset["chosensubjectsubtypeconcept"]),
-                    chosengender.update(value=selected_opb_preset["chosengender"]),
-                    imagetype.update(value=selected_opb_preset["imagetype"]),
-                    imagemodechance.update(value=selected_opb_preset["imagemodechance"]),
-                    givensubject.update(value=selected_opb_preset["givensubject"]),
-                    smartsubject.update(value=selected_opb_preset["smartsubject"]),
-                    givenoutfit.update(value=selected_opb_preset["givenoutfit"]),
-                    prefixprompt.update(value=selected_opb_preset["prefixprompt"]),
-                    suffixprompt.update(value=selected_opb_preset["suffixprompt"]),
-                    giventypeofimage.update(value=selected_opb_preset["giventypeofimage"]),
-                    antistring.update(value=selected_opb_preset["antistring"]),
-                ]
+                return {
+                    insanitylevel: gr.update(value=selected_opb_preset["insanitylevel"]),
+                    subject: gr.update(value=selected_opb_preset["subject"]),
+                    artist: gr.update(value=selected_opb_preset["artist"]),
+                    chosensubjectsubtypeobject: gr.update(value=selected_opb_preset["chosensubjectsubtypeobject"]),
+                    chosensubjectsubtypehumanoid: gr.update(value=selected_opb_preset["chosensubjectsubtypehumanoid"]),
+                    chosensubjectsubtypeconcept: gr.update(value=selected_opb_preset["chosensubjectsubtypeconcept"]),
+                    chosengender: gr.update(value=selected_opb_preset["chosengender"]),
+                    imagetype: gr.update(value=selected_opb_preset["imagetype"]),
+                    imagemodechance: gr.update(value=selected_opb_preset["imagemodechance"]),
+                    givensubject: gr.update(value=selected_opb_preset["givensubject"]),
+                    smartsubject: gr.update(value=selected_opb_preset["smartsubject"]),
+                    givenoutfit: gr.update(value=selected_opb_preset["givenoutfit"]),
+                    prefixprompt: gr.update(value=selected_opb_preset["prefixprompt"]),
+                    suffixprompt: gr.update(value=selected_opb_preset["suffixprompt"]),
+                    giventypeofimage: gr.update(value=selected_opb_preset["giventypeofimage"]),
+                    antistring: gr.update(value=selected_opb_preset["antistring"]),
+                }
         OBP_preset.change(OBPPreset_changed_update_custom,
                 inputs=[OBP_preset],
                 outputs=[insanitylevel] + 

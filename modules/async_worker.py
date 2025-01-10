@@ -2,7 +2,6 @@ import threading
 import gc
 import torch
 import math
-from playsound import playsound
 import modules.controlnet
 import pathlib
 from pathlib import Path
@@ -37,15 +36,6 @@ def worker():
     )
     if not pipeline == None:
         pipeline.load_base_model(default_settings["base_model"])
-
-    try:
-        async_gradio_app = shared.gradio_root
-        flag = f"""App started successful. Use the app with {str(async_gradio_app.local_url)} or {str(async_gradio_app.server_name)}:{str(async_gradio_app.server_port)}"""
-        if async_gradio_app.share:
-            flag += f""" or {async_gradio_app.share_url}"""
-        print(flag)
-    except Exception as e:
-        print(e)
 
     def handler(gen_data):
         match gen_data["task_type"]:
@@ -88,7 +78,7 @@ def worker():
 
         loras = []
 
-        for lora_data in gen_data["loras"]:
+        for lora_data in gen_data["loras"] if gen_data["loras"] is not None else []:
             w, l  = lora_data[1].split(" - ", 1)
             loras.append((l, float(w)))
 
@@ -344,8 +334,6 @@ def worker():
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
                 torch.cuda.ipc_collect()
-            if Path("notification.mp3").exists():
-                playsound("notification.mp3")
 
 
 threading.Thread(target=worker, daemon=True).start()

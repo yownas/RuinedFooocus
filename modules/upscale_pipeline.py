@@ -103,4 +103,15 @@ class pipeline:
             worker.outputs.append(["preview", (-1, f"Oops ...", "error.png")])
             images =  []
 
+            worker.outputs.append(["preview", (-1, f"Converting ...", None)])
+            images = [
+                np.clip(255.0 * y.cpu().numpy(), 0, 255).astype(np.uint8)
+                for y in decoded_latent
+            ]
+            worker.outputs.append(["preview", (-1, f"Done ...", None)])
+        except:
+            traceback.print_exc()
+            worker.outputs.append(["preview", (-1, f"Oops ...", "html/error.png")])
+            images =  []
+
         return images

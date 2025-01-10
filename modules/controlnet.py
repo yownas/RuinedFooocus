@@ -17,8 +17,8 @@ controlnet_models = {
     "sketch": "control-lora-sketch-rank128-metadata.safetensors",
     "img2img": None,
     "upscale": None,
-    "layerdiffusion": None,
-    # "faceswap": None,
+    "rembg": None,
+    "faceswap": None,
 }
 
 import json
@@ -49,6 +49,11 @@ def load_cnsettings():
     if settings_updated:
         with open(CNSETTINGS_FILE, "w") as f:
             json.dump(settings, f, indent=2)
+
+    # Ignore unknown settings
+    for key in list(settings.keys()):
+        if settings[key]["type"] not in controlnet_models:
+            del settings[key]
 
     return settings
 

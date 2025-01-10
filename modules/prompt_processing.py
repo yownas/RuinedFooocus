@@ -327,9 +327,6 @@ def prompt_switch_per_step(prompt, steps):
 
                 for switchpattern in allswitchpatterns:
                     switchpattern = "[" + switchpattern + "]"
-                    # print("switchpattern")
-                    # print(switchpattern)
-
                     matchfound = False
 
                     # start with basic matching [bla:bla2:16]
@@ -370,8 +367,6 @@ def prompt_switch_per_step(prompt, steps):
                         )
 
                         prompt_per_step[i] = prompt_to_append
-                        # print("basic matching")
-                        # print(prompt_per_step[i])
                         matchfound = True
 
                     # Now do basic closing with [text::16]
@@ -432,8 +427,6 @@ def prompt_switch_per_step(prompt, steps):
                             )
 
                             prompt_per_step[i] = prompt_to_append
-                            # print("basic closing")
-                            # print(prompt_per_step[i])
                             matchfound = True
 
                     # Now do basic starting with [text:16]
@@ -468,8 +461,6 @@ def prompt_switch_per_step(prompt, steps):
                             )
 
                             prompt_per_step[i] = prompt_to_append
-                            # print("basic starting")
-                            # print(prompt_per_step[i])
                             matchfound = True
 
                     # do long swapping
@@ -513,8 +504,6 @@ def prompt_switch_per_step(prompt, steps):
                                 )
 
                             prompt_per_step[i] = prompt_to_append
-                            # print("long swapping")
-                            # print(prompt_per_step[i])
 
                     # do lerp flip swapping
                     if "^" in switchpattern:
@@ -559,8 +548,6 @@ def prompt_switch_per_step(prompt, steps):
                                 )
 
                             prompt_per_step[i] = prompt_to_append
-                            # print("lerp flip swapping")
-                            # print(prompt_per_step[i])
 
                     # do starting half lerp flip swapping
                     if "/" in switchpattern:
@@ -605,8 +592,6 @@ def prompt_switch_per_step(prompt, steps):
                                 )
 
                             prompt_per_step[i] = prompt_to_append
-                            # print("starting half lerp flip swapping")
-                            # print(prompt_per_step[i])
 
                     # do closing half lerp flip swapping
                     if "\\" in switchpattern:
@@ -654,8 +639,6 @@ def prompt_switch_per_step(prompt, steps):
                                 )
 
                             prompt_per_step[i] = prompt_to_append
-                            # print("closing half lerp flip swapping")
-                            # print(prompt_per_step[i])
 
                     # do random prompt swapping
                     if "?" in switchpattern:
@@ -696,8 +679,6 @@ def prompt_switch_per_step(prompt, steps):
                                 )
 
                             prompt_per_step[i] = prompt_to_append
-                            # print("random swapping")
-                            # print(prompt_per_step[i])
 
                     # do prompt swapping
                     if "|" in switchpattern:
@@ -737,8 +718,6 @@ def prompt_switch_per_step(prompt, steps):
                                 )
 
                             prompt_per_step[i] = prompt_to_append
-                            # print("basic swapping")
-                            # print(prompt_per_step[i])
 
                     # if there is no pattern, then just replace the value?
                     if (
@@ -764,9 +743,9 @@ def prompt_switch_per_step(prompt, steps):
             print("There seems to be a mistake in the prompt.")
             break
 
-    print("All prompts generated after applying logic:")
-    for i in range(0, steps):
-        print("Step:" + str(i + 1))
-        print(prompt_per_step[i])
-    print("")
+#    print("All prompts generated after applying logic:")
+#    for i in range(0, steps):
+#        print("Step:" + str(i + 1))
+#        print(prompt_per_step[i])
+#    print("")
     return prompt_per_step
