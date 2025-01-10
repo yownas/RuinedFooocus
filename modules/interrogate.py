@@ -52,7 +52,10 @@ def florence_look(image, prompt, gr):
         if os.path.basename(filename) != "modeling_florence2.py":
             return get_imports(filename)
         imports = get_imports(filename)
-        imports.remove("flash_attn")
+        try:
+            imports.remove("flash_attn")
+        except:
+            pass
         return imports
 
     text = "Lets interrogate"
