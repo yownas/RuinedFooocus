@@ -273,11 +273,14 @@ class pipeline:
             )
         else:
             output_image = cv2.imread(main_view)
-            output_faces = sorted(
-                self.analyser_model.get(output_image), key=lambda x: x.bbox[0]
-            )
-            result_image = self.swap_faces(output_image, input_faces, output_faces)
-            result_image = self.restore_faces(result_image)
-            images = Image.fromarray(cv2.cvtColor(result_image, cv2.COLOR_BGR2RGB))
+            if output_image is None:
+                images = "html/error.png"
+            else:
+                output_faces = sorted(
+                    self.analyser_model.get(output_image), key=lambda x: x.bbox[0]
+                )
+                result_image = self.swap_faces(output_image, input_faces, output_faces)
+                result_image = self.restore_faces(result_image)
+                images = Image.fromarray(cv2.cvtColor(result_image, cv2.COLOR_BGR2RGB))
 
         return [images]
