@@ -613,6 +613,7 @@ with shared.gradio_root as block:
                     add_ctrl("base_model_name", base_model)
 
                     @modelfilter.input(inputs=modelfilter, outputs=[model_gallery])
+                    @modelfilter.submit(inputs=modelfilter, outputs=[model_gallery])
                     def update_model_filter(filtered):
                         filtered_filenames = filter(
                             lambda filename: filtered.lower() in filename.lower(),
@@ -835,6 +836,7 @@ with shared.gradio_root as block:
 
                 # LoRA
                 @lorafilter.input(inputs=[lorafilter, lora_active_gallery], outputs=[lora_gallery])
+                @lorafilter.submit(inputs=[lorafilter, lora_active_gallery], outputs=[lora_gallery])
                 def update_lora_filter(lorafilter, lora_active_gallery):
                     if lora_active_gallery:
                         active = list(map(lambda x: x[1].split(" - ", 1)[1], lora_active_gallery))
@@ -990,6 +992,7 @@ with shared.gradio_root as block:
 
                 # MergeMaker
                 @mm_filter.input(inputs=mm_filter, outputs=[mm_gallery])
+                @mm_filter.submit(inputs=mm_filter, outputs=[mm_gallery])
                 def update_mm_filter(filtered):
                     filtered_models = filter(
                         lambda filename: ".merge" not in filename.lower(),
