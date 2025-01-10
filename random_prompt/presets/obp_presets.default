@@ -1,7 +1,7 @@
 {
     "Standard": {
       "insanitylevel": 5,
-      "subject": "------ all",
+      "subject": "all",
       "artist": "all",
       "chosensubjectsubtypeobject": "all",
       "chosensubjectsubtypehumanoid": "all",
