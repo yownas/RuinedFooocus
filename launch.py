@@ -67,6 +67,9 @@ def prepare_environment():
     run(f'"{python}" -m pip install --upgrade pip', "Check pip", "Couldn't check pip", live=False)
     run(f'"{python}" -m pip install -r "{requirements_file}"', "Check pre-requirements", "Couldn't check pre-reqs", live=False)
 
+    # Remove module if installed from older version
+    run(f'"{python}" -m pip uninstall -y flash-attn', "", "", live=False)
+
     if REINSTALL_ALL or not requirements_met(launch_pip_file):
         print("This next step may take a while")
         os.environ["FLASH_ATTENTION_SKIP_CUDA_BUILD"] = "TRUE"
