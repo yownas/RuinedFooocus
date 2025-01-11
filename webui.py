@@ -61,7 +61,7 @@ def launch_app(args):
     inbrowser = not args.nobrowser
     favicon_path = "logo.ico"
     shared.gradio_root.queue(
-        api_open = True,
+        api_open=True,
     )
     shared.gradio_root.launch(
         inbrowser=inbrowser,
@@ -162,7 +162,7 @@ def generate_clicked(*args):
         yield update_results(["html/logo.png"])
         return
 
-    if int(gen_data["image_number"]) == -1:
+    if int(gen_data["image_number"]) == 0:
         generate_forever = True
     else:
         generate_forever = False
@@ -194,6 +194,7 @@ def generate_clicked(*args):
 
     worker.buffer.append({"task_type": "stop"})
     shared.state["interrupted"] = False
+
 
 settings = default_settings
 
@@ -835,21 +836,29 @@ with shared.gradio_root as block:
                     return result
 
                 # LoRA
-                @lorafilter.input(inputs=[lorafilter, lora_active_gallery], outputs=[lora_gallery])
-                @lorafilter.submit(inputs=[lorafilter, lora_active_gallery], outputs=[lora_gallery])
+                @lorafilter.input(
+                    inputs=[lorafilter, lora_active_gallery], outputs=[lora_gallery]
+                )
+                @lorafilter.submit(
+                    inputs=[lorafilter, lora_active_gallery], outputs=[lora_gallery]
+                )
                 def update_lora_filter(lorafilter, lora_active_gallery):
                     if lora_active_gallery:
-                        active = list(map(lambda x: x[1].split(" - ", 1)[1], lora_active_gallery))
+                        active = list(
+                            map(lambda x: x[1].split(" - ", 1)[1], lora_active_gallery)
+                        )
                     else:
                         active = []
                     filtered_filenames = [
-                        x for x in map(
+                        x
+                        for x in map(
                             lambda x: (get_lora_thumbnail(x), x),
                             filter(
                                 lambda filename: lorafilter.lower() in filename.lower(),
                                 path_manager.lora_filenames,
-                            )
-                        ) if x[1] not in active
+                            ),
+                        )
+                        if x[1] not in active
                     ]
                     # Sorry for this. It is supposed to show all LoRAs matching the filter and is not currently used.
 
@@ -876,13 +885,15 @@ with shared.gradio_root as block:
                     )
                     active.append(f"{evt.value['caption']}")
                     inactive = [
-                        x for x in map(
+                        x
+                        for x in map(
                             lambda x: (get_lora_thumbnail(x), x),
                             filter(
                                 lambda filename: lorafilter.lower() in filename.lower(),
                                 path_manager.lora_filenames,
-                            )
-                        ) if x[1] not in active
+                            ),
+                        )
+                        if x[1] not in active
                     ]
                     return {
                         lora_add: gr.update(visible=False),
@@ -926,13 +937,15 @@ with shared.gradio_root as block:
                         active_names.append(l)
                         keywords = f"{keywords}, {load_keywords(l)} "
                     inactive = [
-                        x for x in map(
+                        x
+                        for x in map(
                             lambda x: (get_lora_thumbnail(x), x),
                             filter(
                                 lambda filename: lorafilter.lower() in filename.lower(),
                                 path_manager.lora_filenames,
-                            )
-                        ) if x[1] not in active_names
+                            ),
+                        )
+                        if x[1] not in active_names
                     ]
                     return {
                         lora_gallery: gr.update(
@@ -982,7 +995,13 @@ with shared.gradio_root as block:
                 lora_gallery.select(
                     fn=lora_select,
                     inputs=[lora_active_gallery, lorafilter],
-                    outputs=[lora_add, lora_gallery, lora_active, lora_active_gallery, lora_keywords],
+                    outputs=[
+                        lora_add,
+                        lora_gallery,
+                        lora_active,
+                        lora_active_gallery,
+                        lora_keywords,
+                    ],
                 )
                 lora_active_gallery.select(
                     fn=lora_active_select,
@@ -1027,7 +1046,7 @@ with shared.gradio_root as block:
                         for mm_data in gallery:
                             mm.append((mm_data[0], mm_data[1]))
 
-                    m = evt.value['caption']
+                    m = evt.value["caption"]
                     n = re.sub("[CL]:", "", m)
                     mm.append((get_model_thumbnail(n), f"{w} - {m}"))
                     return {
@@ -1187,7 +1206,9 @@ with shared.gradio_root as block:
 
                 civit_checkpoints = Civit(
                     model_dir=Path(path_manager.model_paths["modelfile_path"]),
-                    cache_path=Path(path_manager.model_paths["cache_path"] / "checkpoints"),
+                    cache_path=Path(
+                        path_manager.model_paths["cache_path"] / "checkpoints"
+                    ),
                 )
                 civit_loras = Civit(
                     model_dir=Path(path_manager.model_paths["lorafile_path"]),
@@ -1236,9 +1257,9 @@ with shared.gradio_root as block:
             )
             def performance_changed(selection):
                 if selection == performance_settings.CUSTOM_PERFORMANCE:
-                    return [gr.update(value="")] + [
-                        gr.update(visible=True)
-                    ] * len(performance_outputs)
+                    return [gr.update(value="")] + [gr.update(visible=True)] * len(
+                        performance_outputs
+                    )
                 else:
                     return [gr.update(visible=False)] + [
                         gr.update(visible=False)
@@ -1260,9 +1281,13 @@ with shared.gradio_root as block:
                 # Update Custom values based on selected Performance mode
                 selected_perf_options = performance_settings.get_perf_options(selection)
                 return {
-                    custom_steps: gr.update(value=selected_perf_options["custom_steps"]),
+                    custom_steps: gr.update(
+                        value=selected_perf_options["custom_steps"]
+                    ),
                     cfg: gr.update(value=selected_perf_options["cfg"]),
-                    sampler_name: gr.update(value=selected_perf_options["sampler_name"]),
+                    sampler_name: gr.update(
+                        value=selected_perf_options["sampler_name"]
+                    ),
                     scheduler: gr.update(value=selected_perf_options["scheduler"]),
                     clip_skip: gr.update(value=selected_perf_options["clip_skip"]),
                 }
