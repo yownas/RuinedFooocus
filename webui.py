@@ -19,6 +19,7 @@ import modules.html
 import modules.hints
 import ui_onebutton
 import ui_controlnet
+from modules.api import add_api
 from modules.interrogate import look
 
 from comfy.samplers import KSampler
@@ -1341,16 +1342,7 @@ with shared.gradio_root as block:
 
         stop_button.click(fn=stop_clicked, queue=False)
 
-    def get_last_image():
-        global state
-        if "last_image" in state:
-            return state["last_image"]
-        else:
-            return "html/logo.png"
-
-    last_image = gr.Button(visible=False)
-    last_image.click(get_last_image, outputs=[last_image], api_name="last_image")
-
+    add_api()
 
 if isinstance(args.auth, str) and not "/" in args.auth:
     if len(args.auth):
