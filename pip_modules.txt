@@ -14,7 +14,7 @@ diffusers==0.32.1
 imageio-ffmpeg==0.5.1
 ftfy==6.1.1
 clip_interrogator==0.6.0
-opencv-python==4.8.1.78
+opencv-python==4.10.0.84
 kornia==0.7.3
 sentencepiece==0.2.0
 spandrel==0.3.4
@@ -22,9 +22,7 @@ imageio[pyav]==2.34.1
 beautifulsoup4==4.12.3
 protobuf==4.25.4
 rembg==2.0.58
-jaxtyping==0.2.33
-gpytoolbox==0.3.2
-gguf==0.10.0
+gguf==0.14.0
 typing-extensions==4.12.2
 diskcache==5.6.3
 jinja2==3.1.4
