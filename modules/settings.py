@@ -8,7 +8,7 @@ DEFAULT_SETTINGS = {
     "image_number": 1,
     "seed_random": True,
     "seed": 0,
-    "style": "Style: sai-cinematic",
+    "style": ["Style: sai-cinematic"],
     "prompt": "",
     "negative_prompt": "",
     "performance": "Speed",
@@ -47,6 +47,10 @@ def load_settings():
         if key not in settings:
             settings[key] = value
             changed = True
+
+    # Some sanity checks
+    if not isinstance(settings["style"], list):
+        settings["style"] = []
 
     if changed:
         with open("settings/settings.json", "w") as f:
