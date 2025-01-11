@@ -20,6 +20,11 @@ class OneButtonPresets:
             if name not in data:
                 data[name] = settings
 
+        # Sanity check
+        for name, settings in data.items():
+            if settings['subject'] == '------ all':
+                settings['subject'] = 'all'
+
         self._save_data(self.OBP_FILE, data)
         return data
 
