@@ -74,7 +74,7 @@ def launch_app(args):
             else None
         ),
         favicon_path=favicon_path,
-        allowed_paths=["html", "outputs"],
+        allowed_paths=["html", path_manager.model_paths["temp_outputs_path"]],
     )
 
 
