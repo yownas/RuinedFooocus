@@ -1,3 +1,7 @@
+### 2.0.1
+* Post-upgrade bugfixes
+* llama and image generation API
+
 ### 2.0.0
 * RF2!
 
