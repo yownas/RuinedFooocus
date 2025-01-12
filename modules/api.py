@@ -50,7 +50,7 @@ def add_api():
             'image_number': 1,
         }
 
-        # Wait until queue is empty?
+        # TODO: Wait until queue is empty?
         # Add work
         worker.buffer.append({"task_type": "start", "image_total": 1})
         worker.buffer.append(tmp_data.copy())
