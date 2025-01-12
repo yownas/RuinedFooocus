@@ -22,14 +22,6 @@ def process_metadata(gen_data):
 
         if "steps" in meta:
             gen_data["custom_steps"] = int(meta["steps"])
-
-        if "loras" in meta:
-            idx = 1
-            for lora in re.findall(r"<(.*?):(.*?)>", meta["loras"]):
-                l, w = lora
-                gen_data[f"l{idx}"] = l
-                gen_data[f"w{idx}"] = float(w)
-                idx += 1
     except:
         pass
     return gen_data
