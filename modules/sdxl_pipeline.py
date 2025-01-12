@@ -459,24 +459,27 @@ class pipeline:
                 ):
                 print(f"ERROR: Can only use SDXL, SD3 or Flux models")
                 worker.interrupt_ruined_processing = True
-                worker.outputs.append(
-                    ["preview", (-1, f"Can only use SDXL, SD3 or Flux models ...", "html/error.png")]
-                )
+                if callback is not None:
+                    worker.outputs.append(
+                        ["preview", (-1, f"Can only use SDXL, SD3 or Flux models ...", "html/error.png")]
+                    )
                 return []
         except Exception as e:
             # Something went very wrong
             print(f"ERROR: {e}")
             worker.interrupt_ruined_processing = True
-            worker.outputs.append(
-                ["preview", (-1, f"Error when trying to use model ...", "html/error.png")]
-            )
+            if callback is not None:
+                worker.outputs.append(
+                    ["preview", (-1, f"Error when trying to use model ...", "html/error.png")]
+                )
             return []
 
         img2img_mode = False
         input_image_pil = None
         seed = image_seed if isinstance(image_seed, int) else random.randint(1, 2**32)
 
-        worker.outputs.append(["preview", (-1, f"Processing text encoding ...", None)])
+        if callback is not None:
+            worker.outputs.append(["preview", (-1, f"Processing text encoding ...", None)])
         updated_conditions = False
         if self.conditions is None:
             self.conditions = clean_prompt_cond_caches()
@@ -510,7 +513,8 @@ class pipeline:
         device = comfy.model_management.get_torch_device()
 
         if controlnet is not None and "type" in controlnet and input_image is not None:
-            worker.outputs.append(["preview", (-1, f"Powering up ...", None)])
+            if callback is not None:
+                worker.outputs.append(["preview", (-1, f"Powering up ...", None)])
             input_image_pil = input_image.convert("RGB")
             input_image = np.array(input_image_pil).astype(np.float32) / 255.0
             input_image = torch.from_numpy(input_image)[None,]
@@ -567,7 +571,7 @@ class pipeline:
             force_full_denoise = False
             denoise = None
 
-        if gen_data["inpaint_toggle"]:
+        if "inpaint_toggle" in gen_data and gen_data["inpaint_toggle"]:
             mask = gen_data["inpaint_view"]["mask"]
             mask = mask[:, :, 0]
             mask = torch.from_numpy(mask)[None,] / 255.0
@@ -606,7 +610,8 @@ class pipeline:
         if noise_mask is not None:
             noise_mask = prepare_mask(noise_mask, noise.shape, device)
 
-        worker.outputs.append(["preview", (-1, f"Prepare models ...", None)])
+        if callback is not None:
+            worker.outputs.append(["preview", (-1, f"Prepare models ...", None)])
         if updated_conditions:
             conds = {
                 0: self.conditions["+"]["cache"],
@@ -651,7 +656,8 @@ class pipeline:
             model_options=self.xl_base_patched.unet.model_options,
         )
 
-        worker.outputs.append(["preview", (-1, f"Start sampling ...", None)])
+        if callback is not None:
+            worker.outputs.append(["preview", (-1, f"Start sampling ...", None)])
         samples = sampler.sample(
             noise,
             positive_cond,
@@ -664,7 +670,8 @@ class pipeline:
         sampled_latent = latent.copy()
         sampled_latent["samples"] = samples
 
-        worker.outputs.append(["preview", (-1, f"VAE decoding ...", None)])
+        if callback is not None:
+            worker.outputs.append(["preview", (-1, f"VAE decoding ...", None)])
 
         decoded_latent = VAEDecode().decode(
             samples=sampled_latent, vae=self.xl_base_patched.vae

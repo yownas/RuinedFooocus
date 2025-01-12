@@ -11,6 +11,8 @@ from random_prompt.build_dynamic_prompt import (
 
 
 def process_metadata(gen_data):
+    gen_data["prompt"] = str(gen_data["prompt"])
+    gen_data["negative"] = str(gen_data["negative"])
     try:
         meta = json.loads(gen_data["prompt"])
         meta = dict((k.lower(), v) for k, v in meta.items())
@@ -229,7 +231,7 @@ def process_wildcards(wildcard_text, directory="wildcards"):
 
 
 def process_prompt(style, prompt, negative, gen_data=[]):
-    if gen_data["obp_assume_direct_control"]:
+    if "obp_assume_direct_control" in gen_data and gen_data["obp_assume_direct_control"]:
         prompt = build_dynamic_prompt(
             insanitylevel=gen_data["obp_insanitylevel"],
             forcesubject=gen_data["obp_subject"],
@@ -259,7 +261,11 @@ def process_prompt(style, prompt, negative, gen_data=[]):
     for match in re.finditer(pattern, prompt):
         styles += [f"Style: {match.group(1)}"]
     prompt = re.sub(pattern, "", prompt)
-    p_txt, n_txt = apply_style(styles, prompt, negative, gen_data["lora_keywords"])
+    if "lora_keywords" in gen_data:
+        keywords = gen_data["lora_keywords"]
+    else:
+        keywords = ""
+    p_txt, n_txt = apply_style(styles, prompt, negative, keywords)
 
     # wildcards
     wildcard_pattern = r"__([\w\-:]+)__"
@@ -271,7 +277,7 @@ def process_prompt(style, prompt, negative, gen_data=[]):
         p_txt = process_wildcards(p_txt)
 
     # apply auto negative prompt if enabled
-    if gen_data["auto_negative"] == True:
+    if "auto_negative" in gen_data and gen_data["auto_negative"] == True:
         n_txt = build_dynamic_negative(
             positive_prompt=p_txt, existing_negative_prompt=n_txt, base_model="SDXL"
         )

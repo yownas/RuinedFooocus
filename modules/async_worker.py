@@ -45,6 +45,9 @@ def worker():
                 job_stop()
             case "process":
                 process(gen_data)
+            case "api_process":
+                gen_data["silent"] = True
+                process(gen_data)
             case _:
                 print(f"WARN: Unknown task_type: {gen_data['task_type']}")
 
@@ -87,14 +90,16 @@ def worker():
         )
         loras.extend(parsed_loras)
 
-        outputs.append(
-            [
-                "preview",
-                (-1, f"Loading base model: {gen_data['base_model_name']}", None),
-            ]
-        )
+        if "silent" not in gen_data:
+            outputs.append(
+                [
+                    "preview",
+                    (-1, f"Loading base model: {gen_data['base_model_name']}", None),
+                ]
+            )
         gen_data["modelhash"] = pipeline.load_base_model(gen_data["base_model_name"])
-        outputs.append(["preview", (-1, f"Loading LoRA models ...", None)])
+        if "silent" not in gen_data:
+            outputs.append(["preview", (-1, f"Loading LoRA models ...", None)])
         pipeline.load_loras(loras)
 
         if (
@@ -218,6 +223,12 @@ def worker():
                 ]
             )
 
+        # TODO: this should be an "inital ok gen_data" at the beginning of the function
+        if "input_image" not in gen_data:
+            gen_data["input_image"] = None
+        if "main_view" not in gen_data:
+            gen_data["main_view"] = None
+
         stop_batch = False
         for i in range(max(image_number, 1)):
             p_txt, n_txt = process_prompt(
@@ -243,7 +254,7 @@ def worker():
                         gen_data["sampler_name"],
                         gen_data["scheduler"],
                         gen_data["clip_skip"],
-                        callback=callback,
+                        callback=callback if "silent" not in gen_data else None,
                         gen_data=gen_data,
                     )
                 except InterruptProcessingException as iex:
@@ -294,6 +305,8 @@ def worker():
                 # else:
                 metadata.add_text("parameters", json.dumps(prompt))
 
+                if "preview_count" not in shared.state:
+                    shared.state["preview_count"] = 0
                 shared.state["preview_count"] += 1
                 if isinstance(x, str) or isinstance(
                     x, (pathlib.WindowsPath, pathlib.PosixPath)
@@ -313,6 +326,7 @@ def worker():
 
         if len(buffer) == 0:
             if (
+                "preview_grid" in shared.state and 
                 shared.state["preview_grid"] is not None
                 and shared.state["preview_total"] > 1
                 and ("show_preview" not in gen_data or gen_data["show_preview"] == True)
