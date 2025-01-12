@@ -11,10 +11,11 @@ from random_prompt.build_dynamic_prompt import (
 
 
 def process_metadata(gen_data):
-    gen_data["prompt"] = str(gen_data["prompt"])
-    gen_data["negative"] = str(gen_data["negative"])
     try:
-        meta = json.loads(gen_data["prompt"])
+        if isinstance(gen_data["prompt"], dict):
+            meta = gen_data["prompt"]
+        else:
+            meta = json.loads(gen_data["prompt"])
         meta = dict((k.lower(), v) for k, v in meta.items())
         gen_data.update(meta)
         if "prompt" in meta:
