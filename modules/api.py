@@ -32,7 +32,7 @@ def add_api():
 
     # process
     import modules.async_worker as worker
-    def api_process(prompt: str) -> str:
+    def _api_process(prompt: str) -> str:
         tmp_data = {
             'task_type': "api_process",
             'prompt': prompt,
@@ -65,19 +65,22 @@ def add_api():
 
             flag, product = worker.outputs.pop(0)
 
-# Ingore previews
-#            if flag == "preview":
-#                yield update_preview(product)
-
             if flag == "results":
                 finished = True
 
         worker.buffer.append({"task_type": "stop"})
+        return product[0]
 
-        with open(product[0], 'rb') as image:
+    def api_prompt2url(prompt: str) -> str:
+        file = _api_process(prompt)
+        return str(file.relative_to(file.cwd()))
+
+    def api_prompt2img(prompt: str) -> str:
+        file = _api_process(prompt)
+        with open(file, 'rb') as image:
             image_data = base64.b64encode(image.read())
-            results = image_data.decode('ascii')
+            result = image_data.decode('ascii')
+        return result
 
-        return results
-
-    gr.api(api_process, api_name="process")
+    gr.api(api_prompt2url, api_name="prompt2url")
+    gr.api(api_prompt2img, api_name="prompt2img")
