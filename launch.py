@@ -51,7 +51,7 @@ git_repos = [
         "name": "ComfyUI-GGUF",
         "path": "comfyui_gguf",
         "url": "https://github.com/city96/ComfyUI-GGUF.git",
-        "hash": "5875c52f59baca3a9372d68c43a3775e21846fe0",
+        "hash": "8d1b56c5e2517219de12a01b742ed53cbaee463e", # Later commits seem to break some gguf models
         "add_path": "",
     },
 ]
