@@ -13,8 +13,13 @@ Image.MAX_IMAGE_PIXELS = None
 
 class pipeline:
     pipeline_type = ["template"]
-
     model_hash = ""
+
+    def parse_gen_data(self, gen_data):
+        gen_data["original_image_number"] = gen_data["image_number"]
+        gen_data["image_number"] = 1
+        gen_data["show_preview"] = False
+        return gen_data
 
     def load_upscaler_model(self, model_name):
         model_path = path_manager.get_file_path(
