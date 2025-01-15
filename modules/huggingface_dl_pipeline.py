@@ -71,7 +71,11 @@ class pipeline:
         repo_id = re.sub(r"\s.*$", "", repo_id, count=1)
         repo_id = repo_id.replace(",", "")
 
-        worker.outputs.append(["preview", (-1, f"Downloading {repo_id}...", None)])
+        worker.add_result(
+            gen_data["task_id"],
+            "preview",
+            (-1, f"Downloading {repo_id}...", None)
+        )
 
         snapshot_download(
             repo_id=repo_id,

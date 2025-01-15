@@ -222,7 +222,11 @@ class pipeline:
         callback,
         gen_data=None,
     ):
-        worker.outputs.append(["preview", (-1, f"Generating ...", None)])
+        worker.add_result(
+            gen_data["task_id"],
+            "preview",
+            (-1, f"Generating ...", None)
+        )
 
         input_image = cv2.cvtColor(np.asarray(input_image), cv2.COLOR_RGB2BGR)
         input_faces = sorted(

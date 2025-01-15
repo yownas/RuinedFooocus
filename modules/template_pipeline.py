@@ -63,7 +63,11 @@ class pipeline:
         callback,
         gen_data=None,
     ):
-        worker.outputs.append(["preview", (-1, f"Generating ...", None)])
+        worker.add_result(
+            gen_data["task_id"],
+            "preview",
+            (-1, f"Generating ...", None)
+        )
 
         images = Image.open("html/logo.png")
 

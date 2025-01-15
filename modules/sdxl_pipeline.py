@@ -460,8 +460,10 @@ class pipeline:
                 print(f"ERROR: Can only use SDXL, SD3 or Flux models")
                 worker.interrupt_ruined_processing = True
                 if callback is not None:
-                    worker.outputs.append(
-                        ["preview", (-1, f"Can only use SDXL, SD3 or Flux models ...", "html/error.png")]
+                    worker.add_results(
+                        gen_data["task_id"],
+                        "preview",
+                        (-1, f"Can only use SDXL, SD3 or Flux models ...", "html/error.png")
                     )
                 return []
         except Exception as e:
@@ -469,8 +471,10 @@ class pipeline:
             print(f"ERROR: {e}")
             worker.interrupt_ruined_processing = True
             if callback is not None:
-                worker.outputs.append(
-                    ["preview", (-1, f"Error when trying to use model ...", "html/error.png")]
+                worker.add_result(
+                    gen_data["task_id"],
+                    "preview",
+                    (-1, f"Error when trying to use model ...", "html/error.png")
                 )
             return []
 
@@ -479,7 +483,11 @@ class pipeline:
         seed = image_seed if isinstance(image_seed, int) else random.randint(1, 2**32)
 
         if callback is not None:
-            worker.outputs.append(["preview", (-1, f"Processing text encoding ...", None)])
+            worker.add_result(
+                gen_data["task_id"],
+                "preview",
+                (-1, f"Processing text encoding ...", None)
+            )
         updated_conditions = False
         if self.conditions is None:
             self.conditions = clean_prompt_cond_caches()
@@ -514,7 +522,11 @@ class pipeline:
 
         if controlnet is not None and "type" in controlnet and input_image is not None:
             if callback is not None:
-                worker.outputs.append(["preview", (-1, f"Powering up ...", None)])
+                worker.add_result(
+                    gen_data["task_id"],
+                    "preview",
+                    (-1, f"Powering up ...", None)
+                )
             input_image_pil = input_image.convert("RGB")
             input_image = np.array(input_image_pil).astype(np.float32) / 255.0
             input_image = torch.from_numpy(input_image)[None,]
@@ -611,7 +623,11 @@ class pipeline:
             noise_mask = prepare_mask(noise_mask, noise.shape, device)
 
         if callback is not None:
-            worker.outputs.append(["preview", (-1, f"Prepare models ...", None)])
+            worker.add_result(
+                gen_data["task_id"],
+                "preview",
+                (-1, f"Prepare models ...", None)
+            )
         if updated_conditions:
             conds = {
                 0: self.conditions["+"]["cache"],
@@ -657,7 +673,11 @@ class pipeline:
         )
 
         if callback is not None:
-            worker.outputs.append(["preview", (-1, f"Start sampling ...", None)])
+            worker.add_result(
+                gen_data["task_id"],
+                "preview",
+                (-1, f"Start sampling ...", None)
+            )
         samples = sampler.sample(
             noise,
             positive_cond,
@@ -671,7 +691,11 @@ class pipeline:
         sampled_latent["samples"] = samples
 
         if callback is not None:
-            worker.outputs.append(["preview", (-1, f"VAE decoding ...", None)])
+            worker.add_result(
+                gen_data["task_id"],
+                "preview",
+                (-1, f"VAE decoding ...", None)
+            )
 
         decoded_latent = VAEDecode().decode(
             samples=sampled_latent, vae=self.xl_base_patched.vae

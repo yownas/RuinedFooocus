@@ -79,7 +79,11 @@ class pipeline:
         callback,
         gen_data=None,
     ):
-        worker.outputs.append(["preview", (-1, f"Searching ...", None)])
+        worker.add_result(
+            gen_data["task_id"],
+            "preview",
+            (-1, f"Searching ...", None)
+        )
         images = []
         maxresults = gen_data["original_image_number"]
         maxresults = 100 if maxresults <= 1 else maxresults # 0 and 1 is 100 matches (max)

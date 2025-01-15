@@ -77,14 +77,22 @@ class pipeline:
         input_image = np.array(input_image).astype(np.float32) / 255.0
         input_image = torch.from_numpy(input_image)[None,]
 
-        worker.outputs.append(["preview", (-1, f"Load upscaling model ...", None)])
+        worker.add_result(
+            gen_data["task_id"],
+            "preview",
+            (-1, f"Load upscaling model ...", None)
+        )
         upscaler_name = controlnet["upscaler"]
         upscale_path = path_manager.get_file_path(upscaler_name)
         if upscale_path == None:
             upscale_path = path_manager.get_file_path("4x-UltraSharp.pth")
         upscaler_model = self.load_upscaler_model(upscale_path)
 
-        worker.outputs.append(["preview", (-1, f"Upscaling image ...", None)])
+        worker.add_result(
+            gen_data["task_id"],
+            "preview",
+            (-1, f"Upscaling image ...", None)
+        )
         decoded_latent = ImageUpscaleWithModel().upscale(
             upscaler_model, input_image
         )[0]
@@ -92,20 +100,36 @@ class pipeline:
         try:
             upscaler_model = self.load_upscaler_model(upscale_path)
 
-            worker.outputs.append(["preview", (-1, f"Upscaling image ...", None)])
+            worker.add_result(
+                gen_data["task_id"],
+                "preview",
+                (-1, f"Upscaling image ...", None)
+            )
             decoded_latent = ImageUpscaleWithModel().upscale(
                 upscaler_model, input_image
             )[0]
 
-            worker.outputs.append(["preview", (-1, f"Converting ...", None)])
+            worker.add_result(
+                gen_data["task_id"],
+                "preview",
+                (-1, f"Converting ...", None)
+            )
             images = [
                 np.clip(255.0 * y.cpu().numpy(), 0, 255).astype(np.uint8)
                 for y in decoded_latent
             ]
-            worker.outputs.append(["preview", (-1, f"Done ...", None)])
+            worker.add_result(
+                gen_data["task_id"],
+                "preview",
+                (-1, f"Done ...", None)
+            )
         except:
             traceback.print_exc()
-            worker.outputs.append(["preview", (-1, f"Oops ...", "html/error.png")])
+            worker.add_result(
+                gen_data["task_id"],
+                "preview",
+                (-1, f"Oops ...", "html/error.png")
+            )
             images =  []
 
         return images

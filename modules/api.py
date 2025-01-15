@@ -50,25 +50,17 @@ def add_api():
             'image_number': 1,
         }
 
-        # TODO: Wait until queue is empty?
         # Add work
-        worker.buffer.append({"task_type": "start", "image_total": 1})
-        worker.buffer.append(tmp_data.copy())
+        task_id = worker.add_task(tmp_data.copy())
 
         # Wait for result
         finished = False
         while not finished:
-            time.sleep(0.1)
-
-            if not worker.outputs:
-                continue
-
-            flag, product = worker.outputs.pop(0)
+            flag, product = worker.task_result(task_id)
 
             if flag == "results":
                 finished = True
 
-        worker.buffer.append({"task_type": "stop"})
         return product[0]
 
     def api_prompt2url(prompt: str) -> str:

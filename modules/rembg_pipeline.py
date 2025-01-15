@@ -75,7 +75,11 @@ class pipeline:
         gen_data=None,
     ):
 
-        worker.outputs.append(["preview", (-1, f"Removing background ...", None)])
+        worker.add_result(
+            gen_data["task_id"],
+            "preview",
+            (-1, f"Removing background ...", None)
+        )
 
         rembg_session = rembg.new_session()
         input_image = self.remove_background(input_image, rembg_session)

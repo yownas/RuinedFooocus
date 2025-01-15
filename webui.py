@@ -137,16 +137,15 @@ def append_work(gen_data):
         prompts = get_promptlist(tmp_data)
     idx = 0
 
-    worker.buffer.append(
-        {"task_type": "start", "image_total": len(prompts) * tmp_data["image_number"]}
-    )
+    tmp_data["image_total"] = len(prompts) * tmp_data["image_number"]
+    tmp_data["task_type"] = "process"
+    if len(prompts) == 1:
+        tmp_data["prompt"] = prompts[0]
+    else:
+        tmp_data["prompt"] = prompts
 
-    for prompt in prompts:
-        tmp_data["task_type"] = "process"
-        tmp_data["prompt"] = prompt
-        tmp_data["index"] = (idx, len(prompts))
-        idx += 1
-        worker.buffer.append(tmp_data.copy())
+    task_id = worker.add_task(tmp_data.copy())
+    return task_id
 
 
 def generate_clicked(*args):
@@ -163,37 +162,24 @@ def generate_clicked(*args):
         yield update_results(["html/logo.png"])
         return
 
-    if int(gen_data["image_number"]) == 0:
-        generate_forever = True
-    else:
-        generate_forever = False
-    gen_data["generate_forever"] = generate_forever
+    gen_data["generate_forever"] = int(gen_data["image_number"]) == 0
 
-    append_work(gen_data)
+    task_id = append_work(gen_data)
 
     shared.state["interrupted"] = False
     finished = False
+
+
     while not finished:
-        time.sleep(0.1)
-
-        if not worker.outputs:
-            continue
-
-        flag, product = worker.outputs.pop(0)
+        flag, product = worker.task_result(task_id)
 
         if flag == "preview":
             yield update_preview(product)
 
         elif flag == "results":
+            yield update_results(product)
+            finished = True
 
-            if generate_forever and shared.state["interrupted"] == False:
-                worker.buffer.append({"task_type": "stop"})
-                append_work(gen_data)
-            else:
-                yield update_results(product)
-                finished = True
-
-    worker.buffer.append({"task_type": "stop"})
     shared.state["interrupted"] = False
 
 

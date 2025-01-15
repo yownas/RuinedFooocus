@@ -2,7 +2,7 @@ import threading
 import gc
 import torch
 import math
-import modules.controlnet
+import time
 import pathlib
 from pathlib import Path
 
@@ -10,6 +10,7 @@ buffer = []
 outputs = []
 results = []
 metadatastrings = []
+current_task = 0
 
 interrupt_ruined_processing = False
 
@@ -19,7 +20,6 @@ def worker():
 
     import json
     import os
-    import time
     import shared
     import random
 
@@ -37,20 +37,6 @@ def worker():
     if not pipeline == None:
         pipeline.load_base_model(default_settings["base_model"])
 
-    def handler(gen_data):
-        match gen_data["task_type"]:
-            case "start":
-                job_start(gen_data)
-            case "stop":
-                job_stop()
-            case "process":
-                process(gen_data)
-            case "api_process":
-                gen_data["silent"] = True
-                process(gen_data)
-            case _:
-                print(f"WARN: Unknown task_type: {gen_data['task_type']}")
-
     def job_start(gen_data):
         shared.state["preview_grid"] = None
         shared.state["preview_total"] = max(gen_data["image_total"], 1)
@@ -61,7 +47,7 @@ def worker():
         shared.state["preview_total"] = 0
         shared.state["preview_count"] = 0
 
-    def process(gen_data):
+    def _process(gen_data):
         global results, metadatastrings
 
         gen_data = process_metadata(gen_data)
@@ -93,13 +79,14 @@ def worker():
         if "silent" not in gen_data:
             outputs.append(
                 [
+                    gen_data["task_id"],
                     "preview",
                     (-1, f"Loading base model: {gen_data['base_model_name']}", None),
                 ]
             )
         gen_data["modelhash"] = pipeline.load_base_model(gen_data["base_model_name"])
         if "silent" not in gen_data:
-            outputs.append(["preview", (-1, f"Loading LoRA models ...", None)])
+            outputs.append([gen_data["task_id"], "preview", (-1, f"Loading LoRA models ...", None)])
         pipeline.load_loras(loras)
 
         if (
@@ -210,12 +197,13 @@ def worker():
 
             outputs.append(
                 [
+                    gen_data["task_id"],
                     "preview",
                     (
                         int(
                             100
                             * (gen_data["index"][0] + done_steps / all_steps)
-                            / gen_data["index"][1]
+                            / max(gen_data["index"][1], 1)
                         ),
                         f"{status} - {step}/{total_steps}",
                         shared.path_manager.model_paths["temp_preview_path"],
@@ -323,21 +311,69 @@ def worker():
             seed += 1
             if stop_batch:
                 break
-
-        if len(buffer) == 0:
-            if (
-                "preview_grid" in shared.state and 
-                shared.state["preview_grid"] is not None
-                and shared.state["preview_total"] > 1
-                and ("show_preview" not in gen_data or gen_data["show_preview"] == True)
-            ):
-                results = [
-                    shared.path_manager.model_paths["temp_preview_path"]
-                ] + results
-            outputs.append(["results", results])
-            results = []
-            metadatastrings = []
         return
+
+    def reset_preview():
+        shared.state["preview_grid"] = None
+        shared.state["preview_count"] = 0
+
+    def process(gen_data):
+        global results, metadatastrings
+
+        # Check some needed items
+        if not "image_total" in gen_data:
+            gen_data["image_total"] = 1
+        if not "generate_forever" in gen_data:
+            gen_data["generate_forever"] = False
+
+        shared.state["preview_total"] = max(gen_data["image_total"], 1)
+
+        while True:
+            reset_preview()
+            results = []
+            gen_data["index"] = (0, (gen_data["image_total"]))
+            if isinstance(gen_data["prompt"], list):
+                tmp_data = gen_data.copy()
+                for prompt in gen_data["prompt"]:
+                    tmp_data["prompt"] = prompt
+                    if gen_data["generate_forever"]:
+                        reset_preview()
+                    _process(tmp_data)
+                    tmp_data["index"] = (tmp_data["index"][0] + 1, tmp_data["index"][1])
+            else:
+                gen_data["index"] = (0, 1)
+                _process(gen_data)
+
+            metadatastrings = []
+
+            if not (gen_data["generate_forever"] and shared.state["interrupted"] == False):
+                break
+
+        # Prepend preview-grid (maybe)
+        if (
+            "preview_grid" in shared.state and 
+            shared.state["preview_grid"] is not None
+            and shared.state["preview_total"] > 1
+            and ("show_preview" not in gen_data or gen_data["show_preview"] == True)
+            and not gen_data["generate_forever"]
+        ):
+            results = [
+                shared.path_manager.model_paths["temp_preview_path"]
+            ] + results
+
+        outputs.append([gen_data["task_id"], "results", results])
+
+
+
+    def handler(gen_data):
+        match gen_data["task_type"]:
+            case "process":
+                process(gen_data)
+            case "api_process":
+                gen_data["silent"] = True
+                process(gen_data)
+            case _:
+                print(f"WARN: Unknown task_type: {gen_data['task_type']}")
 
     while True:
         time.sleep(0.1)
@@ -348,6 +384,38 @@ def worker():
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
                 torch.cuda.ipc_collect()
+
+# Use this to add a task, then use task_result() to get data from the pipeline
+def add_task(gen_data):
+    global current_task, buffer
+
+    current_task += 1
+    task_id = current_task 
+    gen_data["task_id"] = task_id
+    buffer.append(gen_data.copy())
+    return task_id
+
+# Pipelines use this to add results
+def add_result(task_id, flag, product):
+    global outputs
+
+    outputs.append([task_id, flag, product])
+
+# Use the task_id from add_task() to wait for data
+def task_result(task_id):
+    global outputs
+
+    while True:
+        time.sleep(0.1)
+
+        if not outputs:
+            continue
+
+        if outputs[0][0] == task_id:
+            id, flag, product = outputs.pop(0)
+            break
+
+    return (flag, product)
 
 
 threading.Thread(target=worker, daemon=True).start()
