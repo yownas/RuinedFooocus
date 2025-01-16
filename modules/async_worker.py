@@ -339,6 +339,8 @@ def worker():
                     if gen_data["generate_forever"]:
                         reset_preview()
                     _process(tmp_data)
+                    if shared.state["interrupted"]:
+                        break
                     tmp_data["index"] = (tmp_data["index"][0] + 1, tmp_data["index"][1])
             else:
                 gen_data["index"] = (0, 1)
