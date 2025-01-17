@@ -28,33 +28,27 @@
         <script type="module">
             import { client } from "https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js";
             const app = await client(window.location.origin);
-	    var images = [];
-	    var currentimage = 0;
-	    var updateperiod = 10000;
+            var images = [];
+            var updateperiod = 10000;
             async function getimages() {
                 try {
-		    var result = await app.predict("/search", {text: "max:1000"});
-		    images = result.data[0];    
-		    currentimage = 0;
+                    var result = await app.predict("/search", {text: "max:1000"});
+                    images = result.data[0];    
                     // Update list after 10 minutes
                     setTimeout(getimages, 10*60*1000);
                 } catch (error) {
                     // Error... Wait a while
-                   setTimeout(getimages, 10*60*1000);
+                    setTimeout(getimages, 10*60*1000);
                 }
             }
-	    async function showimage() {
-	    	if (images.length >= 1) {
-                    document.getElementById("image").src = "/gradio_api/file/" + images[currentimage];
-		    currentimage++;
-		    if (currentimage >= images.length) {
-		    	currentimage = 0;
-		    }
-		}
-	        setTimeout(showimage, updateperiod);
-	    }
-            setTimeout(getimages, 1000);
-	    setTimeout(showimage, updateperiod);
+        async function showimage() {
+            if (images.length >= 1) {
+                document.getElementById("image").src = "/gradio_api/file/" + images[Math.floor(Math.random() * images.length)];
+            }
+            setTimeout(showimage, updateperiod);
+        }
+        setTimeout(getimages, 10);
+        setTimeout(showimage, 3000);
         </script>
     </head>
     <body bgcolor=black>
