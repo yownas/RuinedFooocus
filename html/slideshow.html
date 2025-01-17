@@ -1,0 +1,63 @@
+<html>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        #wrapper{
+            background-size: contain; /* scales the image */
+            background-position: center; /* centers the image */
+        }
+        img{
+            max-width: 100%;
+            max-height: 100%;
+            bottom: 0;
+            left: 0;
+            margin: auto;
+            overflow: auto;
+            position: fixed;
+            right: 0;
+            top: 0;
+            -o-object-fit: contain;
+            object-fit: contain;
+            zoom: 10;
+        }
+    </style>
+    <head>
+        <script type="module">
+            import { client } from "https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js";
+            const app = await client(window.location.origin);
+	    var images = [];
+	    var currentimage = 0;
+	    var updateperiod = 10000;
+            async function getimages() {
+                try {
+		    var result = await app.predict("/search", {text: "max:1000"});
+		    images = result.data[0];    
+		    currentimage = 0;
+                    // Update list after 10 minutes
+                    setTimeout(getimages, 10*60*1000);
+                } catch (error) {
+                    // Error... Wait a while
+                   setTimeout(getimages, 10*60*1000);
+                }
+            }
+	    async function showimage() {
+	    	if (images.length >= 1) {
+                    document.getElementById("image").src = "/gradio_api/file/" + images[currentimage];
+		    currentimage++;
+		    if (currentimage >= images.length) {
+		    	currentimage = 0;
+		    }
+		}
+	        setTimeout(showimage, updateperiod);
+	    }
+            setTimeout(getimages, 1000);
+	    setTimeout(showimage, updateperiod);
+        </script>
+    </head>
+    <body bgcolor=black>
+            <img id="image" src="/gradio_api/file/html/logo.png">
+    </body>
+</html>
