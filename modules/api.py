@@ -2,6 +2,7 @@ import time
 import gradio as gr
 from typing import Any
 import base64
+from pathlib import Path
 from shared import (
     state,
     performance_settings,
@@ -32,7 +33,7 @@ def add_api():
 
     # process
     import modules.async_worker as worker
-    def _api_process(prompt: str) -> str:
+    def _api_process(prompt: str) -> list:
         tmp_data = {
             'task_type': "api_process",
             'prompt': prompt,
@@ -57,18 +58,17 @@ def add_api():
         finished = False
         while not finished:
             flag, product = worker.task_result(task_id)
-
             if flag == "results":
                 finished = True
 
-        return product[0]
+        return product
 
     def api_prompt2url(prompt: str) -> str:
-        file = _api_process(prompt)
+        file = Path(_api_process(prompt)[0])
         return str(file.relative_to(file.cwd()))
 
     def api_prompt2img(prompt: str) -> str:
-        file = _api_process(prompt)
+        file = _api_process(prompt)[0]
         with open(file, 'rb') as image:
             image_data = base64.b64encode(image.read())
             result = image_data.decode('ascii')
@@ -76,3 +76,15 @@ def add_api():
 
     gr.api(api_prompt2url, api_name="prompt2url")
     gr.api(api_prompt2img, api_name="prompt2img")
+
+    # Search
+    def api_search(text: str) -> str:
+        prompt = f"search: max:10 {text}"
+        files = _api_process(prompt)
+        result = []
+        for file in files:
+            file = Path(file)
+            result.append(str(file.relative_to(file.cwd())))
+        return result
+
+    gr.api(api_search, api_name="search")
