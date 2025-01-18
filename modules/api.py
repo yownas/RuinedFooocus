@@ -10,6 +10,7 @@ from shared import (
     path_manager,
 )
 from modules.settings import default_settings
+import modules.search_pipeline as search_pipeline
 
 def add_api():
 
@@ -80,7 +81,7 @@ def add_api():
     # Search
     def api_search(text: str) -> str:
         prompt = f"search: max:10 {text}"
-        files = _api_process(prompt)
+        files = search_pipeline.search(prompt)
         result = []
         for file in files:
             file = Path(file)
