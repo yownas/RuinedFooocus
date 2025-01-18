@@ -47,6 +47,14 @@ def search(search_string, maxresults=10, callback=None):
             searchfor = re.sub(matchstr, "", searchfor)
             chomp = True
 
+        # All Dates
+        matchstr = r"^all:\s?"
+        match = re.match(matchstr, searchfor, re.IGNORECASE)
+        if match is not None:
+            daystr = "*"
+            searchfor = re.sub(matchstr, "", searchfor)
+            chomp = True
+
         # Skip
         matchstr = r"^skip:\s?(?P<skip>[0-9]+)\s?"
         match = re.match(matchstr, searchfor, re.IGNORECASE)

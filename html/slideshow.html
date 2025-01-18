@@ -47,7 +47,7 @@
 
             async function getImages() {
                 try {
-                    var result = await app.predict("/search", {text: "max:1000"});
+                    var result = await app.predict("/search", {text: "max:10000 all:"});
                     images = result.data[0];    
                     // Update list after 10 minutes
                     setTimeout(getImages, 10*60*1000);
