@@ -73,12 +73,13 @@
                 setTimeout(showImage, updateperiod);
             }
             setTimeout(getImages, 10);
-            setTimeout(showImage, 3000);
+            setTimeout(showImage, 5000);
+            displays[1].classList.add('fade'); // Initial fade in of logo
         </script>
     </head>
     <body bgcolor=black>
         <div class="imgbox">
-            <img id="display1" src="/gradio_api/file/html/logo.png">
+            <img id="display1">
             <img id="display2" src="/gradio_api/file/html/logo.png">
         </div>
     </body>
