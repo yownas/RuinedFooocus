@@ -56,30 +56,33 @@ git_repos = [
     },
 ]
 
-REINSTALL_ALL = False
-if os.path.exists("reinstall"):
-    REINSTALL_ALL = True
-
-def prepare_environment():
+def prepare_environment(offline=False):
     print(f"Python {sys.version}")
     print(f"RuinedFooocus version: {version.version}")
 
-    run(f'"{python}" -m pip install --upgrade pip', "Check pip", "Couldn't check pip", live=False)
-    run(f'"{python}" -m pip install -r "{requirements_file}"', "Check pre-requirements", "Couldn't check pre-reqs", live=False)
+    if offline:
+        print("Skip pip check.")
+    else:
+        run(f'"{python}" -m pip install --upgrade pip', "Check pip", "Couldn't check pip", live=False)
+        run(f'"{python}" -m pip install -r "{requirements_file}"', "Check pre-requirements", "Couldn't check pre-reqs", live=False)
 
     # Remove module if installed from older version
     run(f'"{python}" -m pip uninstall -y flash-attn', "", "", live=False)
 
-    if REINSTALL_ALL or not requirements_met(launch_pip_file):
-        print("This next step may take a while")
-        os.environ["FLASH_ATTENTION_SKIP_CUDA_BUILD"] = "TRUE"
-        run_pip(f'install -r "{launch_pip_file}" --extra-index-url {torch_index_url}', "required modules")
+    if offline:
+        print("Skip check of required modules.")
+    else:
+        if REINSTALL_ALL or not requirements_met(launch_pip_file):
+            print("This next step may take a while")
+            os.environ["FLASH_ATTENTION_SKIP_CUDA_BUILD"] = "TRUE"
+            run_pip(f'install -r "{launch_pip_file}" --extra-index-url {torch_index_url}', "required modules")
 
-def clone_git_repos():
+def clone_git_repos(offline=False):
     from modules.launch_util import git_clone
 
     for repo in git_repos:
-        git_clone(repo["url"], repo_dir(repo["path"]), repo["name"], repo["hash"])
+        if not offline:
+            git_clone(repo["url"], repo_dir(repo["path"]), repo["name"], repo["hash"])
         add_path = str(Path(script_path) / dir_repos / repo["add_path"])
         if add_path not in sys.path:
             sys.path.append(add_path)
@@ -130,19 +133,31 @@ def download_models():
 
 from argparser import args
 
+REINSTALL_ALL = False
+if os.path.exists("reinstall"):
+    REINSTALL_ALL = True
+
 if args.gpu_device_id is not None:
     os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu_device_id)
     print("Set device to:", args.gpu_device_id)
 
-prepare_environment()
+offline = os.environ.get("RF_OFFLINE") == "1"
+
+if offline:
+    print("Skip checking python modules.")
+
+prepare_environment(offline)
+
 if os.path.exists("reinstall"):
     os.remove("reinstall")
 
 try:
-    clone_git_repos()
+    clone_git_repos(offline)
 except:
     print(f"WARNING: Failed checking git-repos. Trying to start without update.")
 
-download_models()
+if not offline:
+    download_models()
 
+print("Starting webui")
 from webui import *
