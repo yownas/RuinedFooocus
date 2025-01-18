@@ -22,36 +22,65 @@
             -o-object-fit: contain;
             object-fit: contain;
             zoom: 10;
+            -webkit-transition: opacity 2s;
+            -moz-transition: opacity 2s;
+            transition: opacity 2s;
+            position: absolute;
+            opacity: 0;
+        }
+        img.fade{
+            opacity: 1;
+        }
+        .imgbox {
+            display: grid;
+            height: 100%;
         }
     </style>
     <head>
         <script type="module">
             import { client } from "https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js";
             const app = await client(window.location.origin);
+            const displays = [document.getElementById('display1'),document.getElementById('display2')];
+            var currentdisplay = 0;
+            const updateperiod = 10000;
             var images = [];
-            var updateperiod = 10000;
-            async function getimages() {
+
+            async function getImages() {
                 try {
                     var result = await app.predict("/search", {text: "max:1000"});
                     images = result.data[0];    
                     // Update list after 10 minutes
-                    setTimeout(getimages, 10*60*1000);
+                    setTimeout(getImages, 10*60*1000);
                 } catch (error) {
                     // Error... Wait a while
-                    setTimeout(getimages, 10*60*1000);
+                    setTimeout(getImages, 10*60*1000);
                 }
             }
-        async function showimage() {
-            if (images.length >= 1) {
-                document.getElementById("image").src = "/gradio_api/file/" + images[Math.floor(Math.random() * images.length)];
+
+            function loaded() {
+                console.log("Loaded:" + currentdisplay)
+                displays[currentdisplay].classList.add('fade');
+                currentdisplay = (currentdisplay + 1)%2;
+                displays[currentdisplay].classList.remove('fade');
             }
-            setTimeout(showimage, updateperiod);
-        }
-        setTimeout(getimages, 10);
-        setTimeout(showimage, 3000);
+            displays[0].classList.add('fade');
+            displays[0].addEventListener("load", loaded);
+            displays[1].addEventListener("load", loaded);
+
+            async function showImage() {
+                if (images.length >= 1) {
+                    displays[currentdisplay].src = "/gradio_api/file/" + images[Math.floor(Math.random() * images.length)];
+                }
+                setTimeout(showImage, updateperiod);
+            }
+            setTimeout(getImages, 10);
+            setTimeout(showImage, 3000);
         </script>
     </head>
     <body bgcolor=black>
-            <img id="image" src="/gradio_api/file/html/logo.png">
+        <div class="imgbox">
+            <img id="display1" src="/gradio_api/file/html/logo.png">
+            <img id="display2" src="/gradio_api/file/html/logo.png">
+        </div>
     </body>
 </html>
