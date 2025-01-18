@@ -122,7 +122,11 @@ def update_results(product):
         main_view: gr.update(value=product[0]) if len(product) > 0 else gr.update(),
         inpaint_toggle: gr.update(value=False),
         gallery: gr.update(
-            visible=True, allow_preview=True, preview=True, value=product
+            visible=True,
+            selected_index=0,
+            allow_preview=True,
+            preview=True,
+            value=product
         ),
         metadata_json: gr.update(value=metadata),
     }
