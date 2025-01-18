@@ -58,7 +58,6 @@
             }
 
             function loaded() {
-                console.log("Loaded:" + currentdisplay)
                 displays[currentdisplay].classList.add('fade');
                 currentdisplay = (currentdisplay + 1)%2;
                 displays[currentdisplay].classList.remove('fade');
