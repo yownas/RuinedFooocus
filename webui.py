@@ -927,14 +927,19 @@ with shared.gradio_root as block:
                         active.append(lora_data)
                         active_names.append(l)
                         keywords = f"{keywords}, {load_keywords(l)} "
+
+                    loras = list(filter(
+                                lambda filename: lorafilter.lower() in filename.lower(),
+                                path_manager.lora_filenames,
+                            ))
+                    if len(loras) == 0:
+                        loras = path_manager.lora_filenames
+
                     inactive = [
                         x
                         for x in map(
                             lambda x: (get_lora_thumbnail(x), x),
-                            filter(
-                                lambda filename: lorafilter.lower() in filename.lower(),
-                                path_manager.lora_filenames,
-                            ),
+                            loras
                         )
                         if x[1] not in active_names
                     ]
