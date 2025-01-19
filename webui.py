@@ -856,6 +856,8 @@ with shared.gradio_root as block:
                     return gr.update(value=filtered_filenames)
 
                 def lora_select(gallery, lorafilter, evt: gr.SelectData):
+                    global lora_active_selected
+
                     w = 1.0
 
                     keywords = ""
@@ -874,6 +876,7 @@ with shared.gradio_root as block:
                             f"{w} - {evt.value['caption']}",
                         )
                     )
+                    lora_active_selected = len(gallery)
                     active.append(f"{evt.value['caption']}")
                     inactive = [
                         x
@@ -895,7 +898,7 @@ with shared.gradio_root as block:
                         lora_active: gr.update(visible=True),
                         lora_active_gallery: gr.update(
                             value=gallery,
-                            selected_index=65535,
+                            selected_index=lora_active_selected,
                         ),
                         lora_keywords: gr.update(value=keywords),
                     }
@@ -915,10 +918,15 @@ with shared.gradio_root as block:
 
                 def lora_delete(gallery, lorafilter):
                     global lora_active_selected
-                    if lora_active_selected is not None:
+                    if gallery == None or len(gallery) == 0:
+                        return {
+                            lora_gallery: gr.update(),
+                            lora_active_gallery: gr.update(),
+                            lora_keywords: gr.update(),
+                        }
+                    if lora_active_selected is not None and lora_active_selected < len(gallery):
                         del gallery[lora_active_selected]
-                        if lora_active_selected >= len(gallery):
-                            lora_active_selected = None
+                    lora_active_selected = min(lora_active_selected, len(gallery) - 1)
                     keywords = ""
                     active = []
                     active_names = []
@@ -950,7 +958,7 @@ with shared.gradio_root as block:
                         ),
                         lora_active_gallery: gr.update(
                             value=active,
-                            selected_index=65535,
+                            selected_index=lora_active_selected,
                         ),
                         lora_keywords: gr.update(value=keywords),
                     }
