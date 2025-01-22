@@ -35,10 +35,12 @@ from modules.util import (
 )
 from modules.path import PathManager
 from modules.civit import Civit
+from modules.imagebrowser import ImageBrowser
 
 from PIL import Image
 
 inpaint_toggle = None
+browser = ImageBrowser()
 path_manager = PathManager()
 civit_checkpoints = Civit(
     model_dir=Path(path_manager.model_paths["modelfile_path"]),
@@ -66,11 +68,56 @@ def launch_app(args):
     shared.gradio_root.queue(
         api_open=True,
     )
-    app_image_browser = gr.Interface(lambda name: "Hello " + name, "text", "text")
+    with gr.Blocks(theme=gr.themes.Soft()) as app_image_browser:
+        gr.Markdown("# PNG Image Gallery with Metadata")
+        with gr.Row():
+            folder_input = gr.Textbox(
+                label="Folder Path",
+                placeholder="Enter path to folder containing PNG images",
+                scale=3,
+            )
+            load_btn = gr.Button("Load Folder", scale=1)
+            status_output = gr.Markdown()
 
+        with gr.Row():
+            # Left side for gallery
+            with gr.Column(scale=2):
+                gallery = gr.Gallery(
+                    label="Images",
+                    show_label=False,
+                    columns=[3],
+                    height="600px",
+                    object_fit="contain",
+                )
+
+            # Right side for metadata and search
+            with gr.Column(scale=1):
+                metadata_output = gr.Textbox(
+                    label="Image Metadata", interactive=False, lines=15
+                )
+                search_input = gr.Textbox(
+                    label="Search Metadata", placeholder="Enter search term"
+                )
+                search_btn = gr.Button("Search")
+
+        # Event handlers
+        load_btn.click(
+            browser.load_images, inputs=[folder_input], outputs=[gallery, status_output]
+        )
+        gallery.select(browser.get_image_metadata, None, metadata_output)
+        search_btn.click(
+            browser.search_metadata,
+            inputs=[search_input],
+            outputs=[gallery, status_output],
+        )
+
+    # Create theme for main interface
     theme = gr.themes.Base(
-        spacing_size=gr.themes.Size(lg="8px", md="6px", sm="4px", xl="10px", xs="2px", xxl="1px", xxs="1px"),
+        spacing_size=gr.themes.Size(
+            lg="8px", md="6px", sm="4px", xl="10px", xs="2px", xxl="1px", xxs="1px"
+        ),
     )
+
     main_tabs = gr.TabbedInterface(
         [shared.gradio_root, app_image_browser],
         ["Main", "Image browser"],
@@ -139,7 +186,7 @@ def update_results(product):
             selected_index=0,
             allow_preview=True,
             preview=True,
-            value=product
+            value=product,
         ),
         metadata_json: gr.update(value=metadata),
     }
@@ -185,7 +232,6 @@ def generate_clicked(*args):
 
     shared.state["interrupted"] = False
     finished = False
-
 
     while not finished:
         flag, product = worker.task_result(task_id)
@@ -937,7 +983,9 @@ with shared.gradio_root as block:
                             lora_active_gallery: gr.update(),
                             lora_keywords: gr.update(),
                         }
-                    if lora_active_selected is not None and lora_active_selected < len(gallery):
+                    if lora_active_selected is not None and lora_active_selected < len(
+                        gallery
+                    ):
                         del gallery[lora_active_selected]
                     lora_active_selected = min(lora_active_selected, len(gallery) - 1)
                     keywords = ""
@@ -949,19 +997,18 @@ with shared.gradio_root as block:
                         active_names.append(l)
                         keywords = f"{keywords}, {load_keywords(l)} "
 
-                    loras = list(filter(
-                                lambda filename: lorafilter.lower() in filename.lower(),
-                                path_manager.lora_filenames,
-                            ))
+                    loras = list(
+                        filter(
+                            lambda filename: lorafilter.lower() in filename.lower(),
+                            path_manager.lora_filenames,
+                        )
+                    )
                     if len(loras) == 0:
                         loras = path_manager.lora_filenames
 
                     inactive = [
                         x
-                        for x in map(
-                            lambda x: (get_lora_thumbnail(x), x),
-                            loras
-                        )
+                        for x in map(lambda x: (get_lora_thumbnail(x), x), loras)
                         if x[1] not in active_names
                     ]
                     return {
