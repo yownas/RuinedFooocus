@@ -61,10 +61,22 @@ def find_unclosed_markers(s):
 def launch_app(args):
     inbrowser = not args.nobrowser
     favicon_path = "logo.ico"
+
+    # Tabs
     shared.gradio_root.queue(
         api_open=True,
     )
-    shared.gradio_root.launch(
+    app_image_browser = gr.Interface(lambda name: "Hello " + name, "text", "text")
+
+    theme = gr.themes.Base(
+        spacing_size=gr.themes.Size(lg="8px", md="6px", sm="4px", xl="10px", xs="2px", xxl="1px", xxs="1px"),
+    )
+    main_tabs = gr.TabbedInterface(
+        [shared.gradio_root, app_image_browser],
+        ["Main", "Image browser"],
+        theme=theme,
+    )
+    main_tabs.launch(
         inbrowser=inbrowser,
         server_name=args.listen,
         server_port=args.port,
@@ -76,6 +88,7 @@ def launch_app(args):
         ),
         favicon_path=favicon_path,
         allowed_paths=["html", path_manager.model_paths["temp_outputs_path"]],
+        enable_monitoring=False,
     )
 
 
@@ -227,9 +240,9 @@ with shared.gradio_root as block:
                 type="numpy",
                 elem_id="inpaint_sketch",
                 visible=False,
-                show_fullscreen_button=False,
+                show_label=False,
+                show_fullscreen_button=True,
             )
-            # FIxME    tool="sketch",
             add_ctrl("inpaint_view", inpaint_view)
 
             progress_html = gr.HTML(
@@ -279,7 +292,7 @@ with shared.gradio_root as block:
                                 container=False,
                                 autofocus=True,
                                 elem_classes="type_row",
-                                lines=1024,
+                                lines=5,
                                 value=settings["prompt"],
                                 scale=4,
                             )
