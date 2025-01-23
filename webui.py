@@ -123,6 +123,9 @@ def launch_app(args):
         [shared.gradio_root, app_image_browser],
         ["Main", "Image browser"],
         theme=theme,
+        css=modules.html.css,
+        js=modules.html.scripts,
+        analytics_enabled=False,
     )
     main_tabs.launch(
         inbrowser=inbrowser,
@@ -261,9 +264,6 @@ shared.wildcards = get_wildcard_files()
 shared.gradio_root = gr.Blocks(
     title="RuinedFooocus " + version.version,
     theme=theme,
-    css=modules.html.css,
-    js=modules.html.scripts,
-    analytics_enabled=False,
 ).queue()
 
 with shared.gradio_root as block:
