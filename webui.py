@@ -74,6 +74,7 @@ def launch_app(args):
             folder_input = gr.Textbox(
                 label="Folder Path",
                 placeholder="Enter path to folder containing PNG images",
+                value=path_manager.model_paths["temp_outputs_path"],
                 scale=3,
             )
             load_btn = gr.Button("Load Folder", scale=1)
