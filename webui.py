@@ -115,7 +115,7 @@ def launch_app(args):
     # Create theme for main interface
     theme = gr.themes.Base(
         spacing_size=gr.themes.Size(
-            lg="8px", md="6px", sm="4px", xl="10px", xs="2px", xxl="1px", xxs="1px"
+            lg="8px", md="6px", sm="4px", xl="8px", xs="2px", xxl="2px", xxs="1px"
         ),
     )
 
@@ -282,14 +282,19 @@ with shared.gradio_root as block:
                 show_download_button=True,
             )
             add_ctrl("main_view", main_view)
-            inpaint_view = gr.Image(
+            inpaint_view = gr.ImageEditor(
                 height=680,
                 type="numpy",
-                elem_id="inpaint_sketch",
                 visible=False,
                 show_label=False,
                 show_fullscreen_button=True,
+                show_download_button=True,
+                layers=False,
+                interactive=True,
+                transforms=(),
+                brush=gr.Brush(colors=["#000000"], color_mode="fixed"),
             )
+#                elem_id="inpaint_sketch",
             add_ctrl("inpaint_view", inpaint_view)
 
             progress_html = gr.HTML(

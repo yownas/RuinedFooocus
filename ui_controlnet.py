@@ -9,6 +9,7 @@ import gradio as gr
 from shared import add_ctrl, path_manager
 import ui_evolve
 import ui_llama
+from PIL import Image
 
 def add_controlnet_tab(main_view, inpaint_view, prompt, image_number, run_event):
     with gr.Tab(label="PowerUp"):
@@ -201,11 +202,24 @@ def add_controlnet_tab(main_view, inpaint_view, prompt, image_number, run_event)
         @inpaint_toggle.change(
             inputs=[inpaint_toggle, main_view], outputs=[main_view, inpaint_view]
         )
-        def inpaint_checked(r, test):
+        def inpaint_checked(r, image):
             if r:
+                base_height = 600
+                img = Image.open(image)
+                scale = (base_height / float(img.size[1]))
+                width = int((float(img.size[0]) * float(scale)))
+                img = img.resize((width, base_height), Image.Resampling.LANCZOS)
+
                 return {
                     main_view: gr.update(visible=False),
-                    inpaint_view: gr.update(visible=True, value=test),
+                    inpaint_view: gr.update(
+                        visible=True,
+                        value={
+                            'background': img,
+                            'layers': [Image.new("RGBA", (width, base_height))],
+                            'composite': None,
+                        },
+                    )
                 }
             else:
                 return {

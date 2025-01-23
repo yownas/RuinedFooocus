@@ -584,13 +584,13 @@ class pipeline:
             denoise = None
 
         if "inpaint_toggle" in gen_data and gen_data["inpaint_toggle"]:
-            mask = gen_data["inpaint_view"]["mask"]
-            mask = mask[:, :, 0]
-            mask = torch.from_numpy(mask)[None,] / 255.0
-
-            image = gen_data["inpaint_view"]["image"]
+            image = gen_data["inpaint_view"]["background"] # FIXME: this should be main_view
             image = image[..., :-1]
             image = torch.from_numpy(image)[None,] / 255.0
+
+            mask = gen_data["inpaint_view"]["layers"][0] # FIXME: upscale this to fit image
+            mask = mask[:, :, 3]
+            mask = torch.from_numpy(mask)[None,] / 255.0
 
             latent = VAEEncodeForInpaint().encode(
                 vae=self.xl_base_patched.vae,
