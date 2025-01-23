@@ -584,12 +584,18 @@ class pipeline:
             denoise = None
 
         if "inpaint_toggle" in gen_data and gen_data["inpaint_toggle"]:
-            image = gen_data["inpaint_view"]["background"] # FIXME: this should be main_view
-            image = image[..., :-1]
+            # This is a _very_ ugly workaround since we had to shrink the inpaint image
+            # to not break the ui.
+            main_image = Image.open(gen_data["main_view"])
+            image = np.asarray(main_image)
+#            image = image[..., :-1]
             image = torch.from_numpy(image)[None,] / 255.0
 
-            mask = gen_data["inpaint_view"]["layers"][0] # FIXME: upscale this to fit image
-            mask = mask[:, :, 3]
+            inpaint_view = Image.fromarray(gen_data["inpaint_view"]["layers"][0])
+            red, green, blue, mask = inpaint_view.split()
+            mask = mask.resize((main_image.width, main_image.height), Image.Resampling.LANCZOS)
+            mask = np.asarray(mask)
+#            mask = mask[:, :, 0]
             mask = torch.from_numpy(mask)[None,] / 255.0
 
             latent = VAEEncodeForInpaint().encode(
