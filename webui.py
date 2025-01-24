@@ -300,6 +300,7 @@ with shared.gradio_root as block:
             progress_html = gr.HTML(
                 value=modules.html.make_progress_html(32, "Progress 32%"),
                 visible=False,
+                padding=False,
                 elem_id="progress-bar",
                 elem_classes="progress-bar",
             )
