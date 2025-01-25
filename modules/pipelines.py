@@ -20,6 +20,7 @@ import modules.search_pipeline as search_pipeline
 import modules.huggingface_dl_pipeline as huggingface_dl_pipeline
 import modules.diffusers_pipeline as diffusers_pipeline
 import modules.rembg_pipeline as rembg_pipeline
+import modules.llama_pipeline as llama_pipeline
 import modules.controlnet as controlnet
 
 class NoPipeLine:
@@ -31,7 +32,14 @@ def update(gen_data):
     cn_type = cn_settings["type"] if "type" in cn_settings else ""
 
     try:
-        if prompt.lower() == "ruinedfooocuslogo":
+        if "task_type" in gen_data and gen_data["task_type"] == "llama":
+            if (
+                state["pipeline"] is None
+                or "llama" not in state["pipeline"].pipeline_type
+            ):
+                state["pipeline"] = llama_pipeline.pipeline()
+
+        elif prompt.lower() == "ruinedfooocuslogo":
             if (
                 state["pipeline"] is None
                 or "template" not in state["pipeline"].pipeline_type

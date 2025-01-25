@@ -38,6 +38,7 @@ from modules.civit import Civit
 from modules.imagebrowser import ImageBrowser
 
 import ui_image_gallery
+import ui_llama_chat
 
 from PIL import Image
 
@@ -77,10 +78,11 @@ def launch_app(args):
 
     # Create the image gallery from the new module
     app_image_browser = ui_image_gallery.create_image_gallery()
+    app_llama_chat = ui_llama_chat.create_chat()
 
     main_tabs = gr.TabbedInterface(
-        [shared.gradio_root, app_image_browser],
-        ["Main", "Image browser"],
+        [shared.gradio_root, app_image_browser, app_llama_chat],
+        ["Main", "Image browser", "Chat bot"],
         theme=theme,
         css=modules.html.css,
         js=modules.html.scripts,

@@ -366,6 +366,23 @@ def worker():
         outputs.append([gen_data["task_id"], "results", results])
 
 
+    def txt2txt_process(gen_data):
+
+        pipeline = modules.pipelines.update(gen_data)
+        if pipeline == None:
+            print(f"ERROR: No pipeline")
+            return
+
+        try:
+            # See if pipeline wants to pre-parse gen_data
+            gen_data = pipeline.parse_gen_data(gen_data)
+        except:
+            pass
+
+        results = pipeline.process(gen_data)
+
+        outputs.append([gen_data["task_id"], "results", results])
+
 
     def handler(gen_data):
         match gen_data["task_type"]:
@@ -374,6 +391,8 @@ def worker():
             case "api_process":
                 gen_data["silent"] = True
                 process(gen_data)
+            case "llama":
+                txt2txt_process(gen_data)
             case _:
                 print(f"WARN: Unknown task_type: {gen_data['task_type']}")
 

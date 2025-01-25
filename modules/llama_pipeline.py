@@ -36,7 +36,7 @@ def run_llama(system_file, prompt):
         file = default_settings.get("llama_file", "*q8_0.gguf")
 
         print(f"Loading {repo}")
-        llm = Llama.from_pretrained(repo_id=repo , filename=file, verbose=False, n_ctx=4096)
+        llm = Llama.from_pretrained(repo_id=repo , filename=file, verbose=False, n_ctx=2048)
 
         with TimeIt(""):
             print(f"# System:\n{system_prompt.strip()}\n")
@@ -58,3 +58,40 @@ def run_llama(system_file, prompt):
         llm.close()
 
         return res
+
+class pipeline:
+    pipeline_type = ["llama"]
+
+    llm = None
+
+    def parse_gen_data(self, gen_data):
+        return gen_data
+
+    def load_base_model(self):
+        repo = default_settings.get("llama_repo", "hugging-quants/Llama-3.2-3B-Instruct-Q8_0-GGUF")
+        file = default_settings.get("llama_file", "*q8_0.gguf")
+        print(f"Loading {repo}")
+        with TimeIt("Load LLM"):
+            self.llm = Llama.from_pretrained(
+                repo_id=repo,
+                filename=file,
+                verbose=False,
+                n_ctx=2048,
+                n_gpu_layers=-1,
+                offload_kqv=True,
+                flash_attn=True,
+            )
+
+    def process(self, gen_data):
+        if self.llm == None:
+            self.load_base_model()
+
+        print(f"Thinking...")
+        with TimeIt("LLM thinking"):
+            response = self.llm.create_chat_completion(
+                messages = gen_data["history"]
+            )["choices"][0]["message"]["content"]
+            
+
+        return response
+
