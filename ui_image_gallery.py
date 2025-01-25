@@ -7,12 +7,6 @@ browser = ImageBrowser()
 
 def create_image_gallery():
     with gr.Blocks(theme=gr.themes.Soft()) as app_image_browser:
-        gr.Markdown("# PNG Image Gallery with Metadata")
-
-        with gr.Row():
-            update_btn = gr.Button("Update DB", scale=1)
-            status_output = gr.Markdown()
-
         with gr.Row():
             # Left side for gallery
             with gr.Column(scale=2):
@@ -35,6 +29,9 @@ def create_image_gallery():
 
             # Right side for metadata and search
             with gr.Column(scale=1):
+                with gr.Row():
+                    update_btn = gr.Button("Update DB", scale=5)
+                    gr.HTML(value="""<a href="gradio_api/file/html/slideshow.html" style="color: gray; text-decoration: none" target="_blank">🛝</a>""")
                 metadata_output = gr.Textbox(
                     label="Image Metadata", interactive=False, lines=15
                 )
@@ -42,6 +39,7 @@ def create_image_gallery():
                     label="Search Metadata", placeholder="Enter search term"
                 )
                 search_btn = gr.Button("Search")
+                status_output = gr.Markdown()
 
         # Event handlers
         update_btn.click(
@@ -56,6 +54,12 @@ def create_image_gallery():
             inputs=[search_input],
             outputs=[gallery, ib_page, status_output],
         )
+        search_input.submit(
+            browser.search_metadata,
+            inputs=[search_input],
+            outputs=[gallery, ib_page, status_output],
+        )
+
 
     return app_image_browser
 
