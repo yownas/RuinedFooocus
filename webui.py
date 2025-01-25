@@ -71,13 +71,7 @@ def launch_app(args):
     with gr.Blocks(theme=gr.themes.Soft()) as app_image_browser:
         gr.Markdown("# PNG Image Gallery with Metadata")
         with gr.Row():
-            folder_input = gr.Textbox(
-                label="Folder Path",
-                placeholder="Enter path to folder containing PNG images",
-                value=path_manager.model_paths["temp_outputs_path"],
-                scale=3,
-            )
-            load_btn = gr.Button("Load Folder", scale=1)
+            update_btn = gr.Button("Update DB", scale=1)
             status_output = gr.Markdown()
 
         with gr.Row():
@@ -89,6 +83,14 @@ def launch_app(args):
                     columns=[3],
                     height="600px",
                     object_fit="contain",
+                    value=browser.load_images(1),
+                )
+                ib_page = gr.Slider(
+                    label="Page",
+                    value=1,
+                    step=1,
+                    minimum=1,
+                    maximum=browser.num_pages(),
                 )
 
             # Right side for metadata and search
@@ -102,14 +104,17 @@ def launch_app(args):
                 search_btn = gr.Button("Search")
 
         # Event handlers
-        load_btn.click(
-            browser.load_images, inputs=[folder_input], outputs=[gallery, status_output]
+        update_btn.click(
+            browser.update_images, inputs=[], outputs=[gallery, ib_page, status_output]
+        )
+        ib_page.change(
+            browser.load_images, inputs=[ib_page], outputs=[gallery]
         )
         gallery.select(browser.get_image_metadata, None, metadata_output)
         search_btn.click(
             browser.search_metadata,
             inputs=[search_input],
-            outputs=[gallery, status_output],
+            outputs=[gallery, ib_page, status_output],
         )
 
     # Create theme for main interface

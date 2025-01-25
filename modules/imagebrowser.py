@@ -5,7 +5,8 @@ from PIL.PngImagePlugin import PngImageFile
 import json
 from typing import Dict, List, Tuple, Optional
 from pathlib import Path
-
+import sqlite3
+from modules.path import PathManager
 
 def format_metadata(metadata: Dict) -> Dict:
     """Format metadata into a more readable structure."""
@@ -130,80 +131,122 @@ def get_png_metadata(image_path: str) -> Dict:
         return {}
 
 
+def connect_database(path="cache/images.db"):
+    # Connect to an SQLite database (or create it if it doesn't exist)
+    conn = sqlite3.connect(path, check_same_thread=False)
+
+    cursor = conn.cursor()
+    # FIXME!!! need more columns for prompt and size etc
+    cursor.execute('''CREATE TABLE IF NOT EXISTS images (path text, json text)''')
+    conn.commit()
+
+    return conn
+
+
 class ImageBrowser:
     def __init__(self):
-        self.images = []
         self.base_path = None
         self.current_display_paths = []  # Track currently displayed images
+        self.sql_conn = connect_database()
+        self.path_manager = PathManager()
+        self.images_per_page = 99 # FIXME!!! should be a setting
+        self.filter = ""
 
-    def load_images(self, folder_path: str) -> Tuple[List[str], str]:
-        """Load all PNG images and return paths and status message."""
-        if not folder_path:
-            return [], "Please enter a folder path"
+    def num_pages(self):
+        result = self.sql_conn.execute(f"SELECT count(*) FROM images WHERE json LIKE '%{self.filter}%'") # FIXME!!! should only match prompt?
+        image_cnt = result.fetchone()[0]
+        pages = int(image_cnt/self.images_per_page) + 1
+        return pages
+
+    def load_images(self, page: int) -> List[str]:
+        result = self.sql_conn.execute(
+            f"SELECT path FROM images WHERE json LIKE '%{self.filter}%' ORDER BY path LIMIT ? OFFSET ?",
+            (
+                str(self.images_per_page),
+                str((page-1)*self.images_per_page),
+            )
+        )
+        image_paths = result.fetchall()
+        self.current_display_paths = image_paths  # Store current display order
+
+        if image_paths:
+            return list(zip(*image_paths))[0]
+        return []
+
+    def update_images(self) -> Tuple[List[str], str]:
+        """Check all images and update database"""
+        folder_path = self.path_manager.model_paths["temp_outputs_path"]
 
         try:
             self.base_path = Path(folder_path)
             if not self.base_path.exists():
                 return [], f"Folder not found: {folder_path}"
 
-            image_paths = []
-            self.images = []  # Reset images list
+            image_cnt = 0
+            self.sql_conn.execute("DROP TABLE images")
+            self.sql_conn = connect_database() # Re-connect and re-create database
+            self.sql_conn.cursor()
 
             # Walk through directory and all subdirectories
             for root, _, files in os.walk(self.base_path):
                 for filename in files:
+                    #if filename.lower().endswith((".png", ".gif")):
                     if filename.lower().endswith(".png"):
                         full_path = Path(root) / filename
                         rel_path = str(full_path.relative_to(self.base_path))
-                        metadata = get_png_metadata(str(full_path))
+                        if filename.lower().endswith(".png"):
+                            metadata = get_png_metadata(str(full_path))
+                        else:
+                            metadata = {} # FIXME fake data for non-png images
                         metadata["file_path"] = rel_path
 
-                        image_paths.append(str(full_path))
-                        self.images.append((str(full_path), metadata))
+                        self.sql_conn.execute(
+                            "INSERT INTO images(path, json) VALUES (?,?)",
+                            (str(full_path), json.dumps(metadata))
+                        )
+                        image_cnt += 1
 
-            self.current_display_paths = image_paths  # Store current display order
+            self.sql_conn.commit()
 
-            if image_paths:
+            if image_cnt:
                 return (
-                    image_paths,
-                    f"Loaded {len(image_paths)} images from {folder_path} and its subdirectories",
+                    gr.update(value=self.load_images(1)),
+                    gr.update(
+                        value=1,
+                        maximum=int(image_cnt/self.images_per_page) + 1,
+                    ),
+                    gr.update(
+                        value=f"Found {image_cnt} images from {folder_path} and its subdirectories",
+                    )
                 )
-            return [], f"No PNG images found in {folder_path} or its subdirectories"
+            return (
+                gr.update(value=[]),
+                gr.update(value=1, maximum=1),
+                gr.update(value=f"No images found in {folder_path} or its subdirectories")
+            )
 
         except Exception as e:
-            return [], f"Error loading folder: {e}"
+            return (
+                gr.update(value=self.load_images(1)),
+                gr.update(value=1, maximum=1),
+                gr.update(value=f"Error updating folder: {e}")
+            )
 
     def get_image_metadata(self, evt: gr.SelectData) -> str:
         """Get metadata for selected image."""
         try:
             selected_path = self.current_display_paths[evt.index]
-            matching_metadata = next(
-                metadata for path, metadata in self.images if path == selected_path
-            )
-            return format_metadata_string(matching_metadata)
+            result = self.sql_conn.execute("SELECT json FROM images WHERE path = ?", selected_path)
+            data = json.loads(result.fetchone()[0])
+            return format_metadata_string(data)
         except Exception as e:
             return f"Error getting metadata: {e}"
 
     def search_metadata(self, search_term: str) -> Tuple[List[str], str]:
-        """Filter images based on metadata search."""
-        if not search_term:
-            self.current_display_paths = [path for path, _ in self.images]
-            return self.current_display_paths, "Showing all images"
-
-        search_term = search_term.lower()
-        matching_paths = []
-
-        for image_path, metadata in self.images:
-            # Search in formatted metadata
-            formatted = format_metadata(metadata)
-            metadata_str = json.dumps(formatted).lower()
-            if search_term in metadata_str:
-                matching_paths.append(image_path)
-
-        self.current_display_paths = (
-            matching_paths if matching_paths else [path for path, _ in self.images]
+        self.filter = search_term
+        text = "" # FIXME
+        return (
+            gr.update(value=self.load_images(1)),
+            gr.update(value=1, maximum=self.num_pages()),
+            gr.update(value=text)
         )
-
-        if matching_paths:
-            return matching_paths, f"Found {len(matching_paths)} matching images"
-        return self.current_display_paths, "No matches found - showing all images"
