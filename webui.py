@@ -68,12 +68,10 @@ def launch_app(args):
 
     shared.gradio_root.queue(api_open=True)
 
-    # Create theme for main interface
-    theme = gr.themes.Base(
-        spacing_size=gr.themes.Size(
+    # Set some sizes for the ui
+    theme.spacing_size=gr.themes.Size(
             lg="8px", md="6px", sm="4px", xl="8px", xs="2px", xxl="2px", xxs="1px"
-        ),
-    )
+        )
 
     # Create the image gallery from the new module
     app_image_browser = ui_image_gallery.create_image_gallery()
@@ -1271,7 +1269,6 @@ with shared.gradio_root as block:
                         value="""
                         <a href="https://discord.gg/CvpAFya9Rr"><img src="gradio_api/file=html/icon_clyde_white_RGB.svg" height="16" width="16" style="display:inline-block;">&nbsp;Discord</a><br>
                         <a href="https://github.com/runew0lf/RuinedFooocus"><img src="gradio_api/file=html/github-mark-white.svg" height="16" width="16" style="display:inline-block;">&nbsp;Github</a><br>
-                        <a href="gradio_api/file/html/slideshow.html" style="color: gray; text-decoration: none" target="_blank">🛝</a><br>
                         <a href="gradio_api/file/html/last_image.html" style="color: gray; text-decoration: none" target="_blank">&pi;</a>
                         """,
                     )
