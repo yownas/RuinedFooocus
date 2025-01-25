@@ -152,7 +152,7 @@ class ImageBrowser:
         self.base_path = Path(self.path_manager.model_paths["temp_outputs_path"])
         self.current_display_paths = []  # Track currently displayed images
         self.sql_conn = connect_database()
-        self.images_per_page = default_settings.get("images_per_page", 99)
+        self.images_per_page = default_settings.get("images_per_page", 100)
         self.filter = ""
 
     def num_images_pages(self):
