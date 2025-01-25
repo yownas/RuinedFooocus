@@ -7,6 +7,8 @@ from typing import Dict, List, Tuple, Optional
 from pathlib import Path
 import sqlite3
 from modules.path import PathManager
+from modules.util import TimeIt
+
 
 def format_metadata(metadata: Dict) -> Dict:
     """Format metadata into a more readable structure."""
@@ -158,7 +160,7 @@ class ImageBrowser:
         pages = int(image_cnt/self.images_per_page) + 1
         return pages
 
-    def load_images(self, page: int) -> List[str]:
+    def load_images(self, page: int) -> Tuple[List[str], str]:
         text = ""
         if page == None:
             page = 1
@@ -191,46 +193,47 @@ class ImageBrowser:
             self.sql_conn.cursor()
 
             # Walk through directory and all subdirectories
-            for root, _, files in os.walk(self.base_path):
-                for filename in files:
-                    #if filename.lower().endswith((".png", ".gif")):
-                    if filename.lower().endswith(".png"):
-                        full_path = Path(root) / filename
-                        rel_path = str(full_path.relative_to(self.base_path))
+            with TimeIt("Update DB"):
+                for root, _, files in os.walk(self.base_path):
+                    for filename in files:
+                        #if filename.lower().endswith((".png", ".gif")):
                         if filename.lower().endswith(".png"):
-                            metadata = get_png_metadata(str(full_path))
-                        else:
-                            metadata = {} # FIXME fake data for non-png images
-                        metadata["file_path"] = rel_path
+                            full_path = Path(root) / filename
+                            rel_path = str(full_path.relative_to(self.base_path))
+                            if filename.lower().endswith(".png"):
+                                metadata = get_png_metadata(str(full_path))
+                            else:
+                                metadata = {} # FIXME fake data for non-png images
+                            metadata["file_path"] = rel_path
 
-                        self.sql_conn.execute(
-                            "INSERT INTO images(path, json) VALUES (?,?)",
-                            (str(full_path), json.dumps(metadata))
-                        )
-                        image_cnt += 1
+                            self.sql_conn.execute(
+                                "INSERT INTO images(path, json) VALUES (?,?)",
+                                (str(full_path), json.dumps(metadata))
+                            )
+                            image_cnt += 1
 
             self.sql_conn.commit()
 
             if image_cnt:
                 return (
-                    gr.update(value=self.load_images(1)),
+                    gr.update(value=self.load_images(1)[0]),
                     gr.update(
                         value=1,
                         maximum=int(image_cnt/self.images_per_page) + 1,
                     ),
                     gr.update(
-                        value=f"Found {image_cnt} images from {folder_path} and its subdirectories",
+                        value=f"Found {image_cnt} images from {self.base_path} and its subdirectories",
                     )
                 )
             return (
                 gr.update(value=[]),
                 gr.update(value=1, maximum=1),
-                gr.update(value=f"No images found in {folder_path} or its subdirectories")
+                gr.update(value=f"No images found in {self.base_path} or its subdirectories")
             )
 
         except Exception as e:
             return (
-                gr.update(value=self.load_images(1)),
+                gr.update(value=self.load_images(1)[0]),
                 gr.update(value=1, maximum=1),
                 gr.update(value=f"Error updating folder: {e}")
             )
@@ -247,9 +250,10 @@ class ImageBrowser:
 
     def search_metadata(self, search_term: str) -> Tuple[List[str], str]:
         self.filter = search_term
-        text = "" # FIXME
+        images = self.load_images(1)[0]
+        text = f"Found {len(images)} images"
         return (
-            gr.update(value=self.load_images(1)),
+            gr.update(value=images),
             gr.update(value=1, maximum=self.num_pages()),
             gr.update(value=text)
         )
