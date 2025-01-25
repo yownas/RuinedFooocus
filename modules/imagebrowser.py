@@ -8,6 +8,7 @@ from pathlib import Path
 import sqlite3
 from modules.path import PathManager
 from modules.util import TimeIt
+from modules.settings import default_settings
 
 
 def format_metadata(metadata: Dict) -> Dict:
@@ -151,7 +152,7 @@ class ImageBrowser:
         self.base_path = Path(self.path_manager.model_paths["temp_outputs_path"])
         self.current_display_paths = []  # Track currently displayed images
         self.sql_conn = connect_database()
-        self.images_per_page = 99 # FIXME!!! should be a setting
+        self.images_per_page = default_settings.get("images_per_page", 99)
         self.filter = ""
 
     def num_images_pages(self):
