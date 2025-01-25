@@ -37,6 +37,8 @@ from modules.path import PathManager
 from modules.civit import Civit
 from modules.imagebrowser import ImageBrowser
 
+import ui_image_gallery
+
 from PIL import Image
 
 inpaint_toggle = None
@@ -64,59 +66,7 @@ def launch_app(args):
     inbrowser = not args.nobrowser
     favicon_path = "logo.ico"
 
-    # Tabs
-    shared.gradio_root.queue(
-        api_open=True,
-    )
-    with gr.Blocks(theme=gr.themes.Soft()) as app_image_browser:
-        gr.Markdown("# PNG Image Gallery with Metadata")
-        with gr.Row():
-            update_btn = gr.Button("Update DB", scale=1)
-            status_output = gr.Markdown()
-
-        with gr.Row():
-            # Left side for gallery
-            with gr.Column(scale=2):
-                gallery = gr.Gallery(
-                    label="Images",
-                    show_label=False,
-                    columns=[3],
-                    height="600px",
-                    object_fit="contain",
-                    value=browser.load_images(1)[0],
-                )
-                ib_page = gr.Slider(
-                    label="Page",
-                    value=1,
-                    step=1,
-                    minimum=1,
-                    maximum=browser.num_images_pages()[1],
-                )
-                ib_range = gr.Markdown()
-
-            # Right side for metadata and search
-            with gr.Column(scale=1):
-                metadata_output = gr.Textbox(
-                    label="Image Metadata", interactive=False, lines=15
-                )
-                search_input = gr.Textbox(
-                    label="Search Metadata", placeholder="Enter search term"
-                )
-                search_btn = gr.Button("Search")
-
-        # Event handlers
-        update_btn.click(
-            browser.update_images, inputs=[], outputs=[gallery, ib_page, status_output]
-        )
-        ib_page.change(
-            browser.load_images, inputs=[ib_page], outputs=[gallery, ib_range]
-        )
-        gallery.select(browser.get_image_metadata, None, metadata_output)
-        search_btn.click(
-            browser.search_metadata,
-            inputs=[search_input],
-            outputs=[gallery, ib_page, status_output],
-        )
+    shared.gradio_root.queue(api_open=True)
 
     # Create theme for main interface
     theme = gr.themes.Base(
@@ -124,6 +74,9 @@ def launch_app(args):
             lg="8px", md="6px", sm="4px", xl="8px", xs="2px", xxl="2px", xxs="1px"
         ),
     )
+
+    # Create the image gallery from the new module
+    app_image_browser = ui_image_gallery.create_image_gallery()
 
     main_tabs = gr.TabbedInterface(
         [shared.gradio_root, app_image_browser],
@@ -133,6 +86,7 @@ def launch_app(args):
         js=modules.html.scripts,
         analytics_enabled=False,
     )
+
     main_tabs.launch(
         inbrowser=inbrowser,
         server_name=args.listen,
