@@ -83,7 +83,7 @@ def launch_app(args):
                     columns=[3],
                     height="600px",
                     object_fit="contain",
-                    value=browser.load_images(1),
+                    value=browser.load_images(1)[0],
                 )
                 ib_page = gr.Slider(
                     label="Page",
@@ -108,7 +108,7 @@ def launch_app(args):
             browser.update_images, inputs=[], outputs=[gallery, ib_page, status_output]
         )
         ib_page.change(
-            browser.load_images, inputs=[ib_page], outputs=[gallery]
+            browser.load_images, inputs=[ib_page], outputs=[gallery, status_output]
         )
         gallery.select(browser.get_image_metadata, None, metadata_output)
         search_btn.click(

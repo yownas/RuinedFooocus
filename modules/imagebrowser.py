@@ -145,10 +145,10 @@ def connect_database(path="cache/images.db"):
 
 class ImageBrowser:
     def __init__(self):
-        self.base_path = None
+        self.path_manager = PathManager()
+        self.base_path = Path(self.path_manager.model_paths["temp_outputs_path"])
         self.current_display_paths = []  # Track currently displayed images
         self.sql_conn = connect_database()
-        self.path_manager = PathManager()
         self.images_per_page = 99 # FIXME!!! should be a setting
         self.filter = ""
 
@@ -159,6 +159,9 @@ class ImageBrowser:
         return pages
 
     def load_images(self, page: int) -> List[str]:
+        text = ""
+        if page == None:
+            page = 1
         result = self.sql_conn.execute(
             f"SELECT path FROM images WHERE json LIKE '%{self.filter}%' ORDER BY path LIMIT ? OFFSET ?",
             (
@@ -168,19 +171,19 @@ class ImageBrowser:
         )
         image_paths = result.fetchall()
         self.current_display_paths = image_paths  # Store current display order
+        path1 = str(Path(image_paths[0][0]).relative_to(self.base_path))
+        path2 = str(Path(image_paths[-1][0]).relative_to(self.base_path))
+        text = f"{path1} ... {path2}"
 
         if image_paths:
-            return list(zip(*image_paths))[0]
-        return []
+            return list(zip(*image_paths))[0], text
+        return [], text
 
     def update_images(self) -> Tuple[List[str], str]:
         """Check all images and update database"""
-        folder_path = self.path_manager.model_paths["temp_outputs_path"]
-
         try:
-            self.base_path = Path(folder_path)
             if not self.base_path.exists():
-                return [], f"Folder not found: {folder_path}"
+                return [], f"Folder not found: {self.base_path}"
 
             image_cnt = 0
             self.sql_conn.execute("DROP TABLE images")
