@@ -1,8 +1,5 @@
 import gradio as gr
-import browser
-import shared
-import modules.html
-import path_manager
+from shared import path_manager
 from modules.imagebrowser import ImageBrowser
 
 browser = ImageBrowser()
