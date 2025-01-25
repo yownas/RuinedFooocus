@@ -238,7 +238,7 @@ class ImageBrowser:
 
         except Exception as e:
             return (
-                gr.update(value=self.load_images(1)[0]),
+                gr.update(value=["html/error.png"]),
                 gr.update(value=1, maximum=1),
                 gr.update(value=f"Error updating folder: {e}")
             )

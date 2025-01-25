@@ -1,3 +1,7 @@
+### 25.01.25
+* Image Browser
+* Inpainting works again
+
 ### 2.0.1
 * Post-upgrade bugfixes
 * llama and image generation API
