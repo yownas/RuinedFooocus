@@ -300,7 +300,7 @@ with shared.gradio_root as block:
                 transforms=(),
                 brush=gr.Brush(colors=["#000000"], color_mode="fixed"),
             )
-#                elem_id="inpaint_sketch",
+            #                elem_id="inpaint_sketch",
             add_ctrl("inpaint_view", inpaint_view)
 
             progress_html = gr.HTML(
