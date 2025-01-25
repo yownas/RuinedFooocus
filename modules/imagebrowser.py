@@ -173,8 +173,12 @@ class ImageBrowser:
         )
         image_paths = result.fetchall()
         self.current_display_paths = image_paths  # Store current display order
-        path1 = str(Path(image_paths[0][0]).relative_to(self.base_path))
-        path2 = str(Path(image_paths[-1][0]).relative_to(self.base_path))
+        if image_paths:
+            path1 = str(Path(image_paths[0][0]).relative_to(self.base_path))
+            path2 = str(Path(image_paths[-1][0]).relative_to(self.base_path))
+        else:
+            path1 = "None"
+            path2 = "None"
         text = f"{path1} ... {path2}"
 
         if image_paths:
