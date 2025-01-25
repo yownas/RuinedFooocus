@@ -19,7 +19,7 @@ def create_image_gallery():
                 gallery = gr.Gallery(
                     label="Images",
                     show_label=False,
-                    columns=[3],
+                    columns=[4],
                     height="600px",
                     object_fit="contain",
                     value=browser.load_images(1)[0],
