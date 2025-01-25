@@ -71,3 +71,4 @@ prompt_expansion/pytorch_model.bin
 /superprompter/model_files
 models/upscale_models/*.jpeg
 .gradio/flagged/dataset1.csv
+cache/images.db
