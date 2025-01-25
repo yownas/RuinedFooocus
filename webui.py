@@ -90,8 +90,9 @@ def launch_app(args):
                     value=1,
                     step=1,
                     minimum=1,
-                    maximum=browser.num_pages(),
+                    maximum=browser.num_images_pages()[1],
                 )
+                ib_range = gr.Markdown()
 
             # Right side for metadata and search
             with gr.Column(scale=1):
@@ -108,7 +109,7 @@ def launch_app(args):
             browser.update_images, inputs=[], outputs=[gallery, ib_page, status_output]
         )
         ib_page.change(
-            browser.load_images, inputs=[ib_page], outputs=[gallery, status_output]
+            browser.load_images, inputs=[ib_page], outputs=[gallery, ib_range]
         )
         gallery.select(browser.get_image_metadata, None, metadata_output)
         search_btn.click(
@@ -390,7 +391,6 @@ with shared.gradio_root as block:
                         return {prompt: gr.update(value=newtext)}
 
                 with gr.Column(scale=1, min_width=0):
-                    # FIXME run_button = gr.Button(value="Generate", elem_id="generate", api_name="generate")
                     run_button = gr.Button(value="Generate", elem_id="generate")
                     stop_button = gr.Button(
                         value="Stop", interactive=False, visible=False

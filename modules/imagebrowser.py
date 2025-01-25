@@ -154,11 +154,11 @@ class ImageBrowser:
         self.images_per_page = 99 # FIXME!!! should be a setting
         self.filter = ""
 
-    def num_pages(self):
+    def num_images_pages(self):
         result = self.sql_conn.execute(f"SELECT count(*) FROM images WHERE json LIKE '%{self.filter}%'") # FIXME!!! should only match prompt?
         image_cnt = result.fetchone()[0]
         pages = int(image_cnt/self.images_per_page) + 1
-        return pages
+        return image_cnt, pages
 
     def load_images(self, page: int) -> Tuple[List[str], str]:
         text = ""
@@ -251,9 +251,10 @@ class ImageBrowser:
     def search_metadata(self, search_term: str) -> Tuple[List[str], str]:
         self.filter = search_term
         images = self.load_images(1)[0]
-        text = f"Found {len(images)} images"
+        num_images, num_pages = self.num_images_pages()
+        text = f"Found {num_images} images"
         return (
             gr.update(value=images),
-            gr.update(value=1, maximum=self.num_pages()),
+            gr.update(value=1, maximum=num_pages),
             gr.update(value=text)
         )
