@@ -166,7 +166,7 @@ class ImageBrowser:
         if page == None:
             page = 1
         result = self.sql_conn.execute(
-            f"SELECT path FROM images WHERE json LIKE '%{self.filter}%' ORDER BY path LIMIT ? OFFSET ?",
+            f"SELECT path FROM images WHERE json LIKE '%{self.filter}%' ORDER BY path DESC LIMIT ? OFFSET ?",
             (
                 str(self.images_per_page),
                 str((page-1)*self.images_per_page),
