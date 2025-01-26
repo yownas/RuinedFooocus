@@ -93,12 +93,14 @@ class pipeline:
         if self.llm == None:
             self.load_base_model()
 
-        chat = [{"role": "system", "content": gen_data["system"]}] + gen_data["history"]
+        h = gen_data["history"]
+        chat = [{"role": "system", "content": gen_data["system"]}] + h[-5 if len(h) > 5 else -len(h):] # Keep just the last 5 messages
 
         print(f"Thinking...")
         with TimeIt("LLM thinking"):
             response = self.llm.create_chat_completion(
                 messages = chat,
+                max_tokens=512,
                 stream=True,
             )
             #["choices"][0]["message"]["content"]
