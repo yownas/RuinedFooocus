@@ -86,10 +86,12 @@ class pipeline:
         if self.llm == None:
             self.load_base_model()
 
+        chat = [{"role": "system", "content": gen_data["system"]}] + gen_data["history"]
+
         print(f"Thinking...")
         with TimeIt("LLM thinking"):
             response = self.llm.create_chat_completion(
-                messages = gen_data["history"]
+                messages = chat
             )["choices"][0]["message"]["content"]
             
 

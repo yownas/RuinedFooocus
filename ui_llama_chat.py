@@ -4,13 +4,27 @@ import modules.async_worker as worker
 
 def create_chat():
     with gr.Blocks() as app_llama_chat:
-        with gr.Group():
-            llama_chat = gr.Chatbot(
-                label="Ruined Chatbot",
-                type="messages",
-            )
-            llama_msg = gr.Textbox(
-                show_label=False,
+        with gr.Row():
+            with gr.Column(scale=3), gr.Group():
+                llama_chat = gr.Chatbot(
+                    label="Ruined Chatbot",
+                    show_label=False,
+                    height=600,
+                    type="messages",
+                    value=[
+                        {"role": "assistant", "content": "How may I help you?"},
+                    ]
+                )
+                llama_msg = gr.Textbox(
+                    show_label=False,
+                )
+            llama_image = gr.Image(
+                value="html/error.png",
+                label="Ruined support-troll",
+                scale=2,
+                height=400,
+                width=400,
+                show_label=True,
             )
 
         def llama_respond(message, chat_history):
@@ -18,7 +32,7 @@ def create_chat():
 
             gen_data = {
                 "task_type": "llama",
-                "system": "",
+                "system": "You are the Ruined Fooocus error troll. You should try to help the user but remember it is probably their fault it went wrong.",
                 "history": chat_history,
             }
 
