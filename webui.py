@@ -208,6 +208,7 @@ def generate_clicked(*args):
         elif flag == "results":
             yield update_results(product)
             finished = True
+        time.sleep(0.1)
 
     shared.state["interrupted"] = False
 

@@ -1,4 +1,5 @@
 import gradio as gr
+import time
 from shared import path_manager
 import modules.async_worker as worker
 
@@ -43,11 +44,13 @@ def create_chat():
             finished = False
             while not finished:
                 flag, product = worker.task_result(task_id)
-                if flag == "results":
+                if flag == "preview":
+                    yield "", product
+                elif flag == "results":
                     finished = True
 
             chat_history.append({"role": "assistant", "content": product})
-            return "", chat_history
+            yield "", chat_history
 
 
         llama_msg.submit(llama_respond, [llama_msg, llama_chat], [llama_msg, llama_chat])

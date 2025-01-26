@@ -3,6 +3,7 @@ from llama_cpp import Llama
 from modules.util import TimeIt
 from pathlib import Path
 from modules.settings import default_settings
+import modules.async_worker as worker
 
 def llama_names():
         names = []
@@ -83,6 +84,12 @@ class pipeline:
             )
 
     def process(self, gen_data):
+        worker.add_result(
+            gen_data["task_id"],
+            "preview",
+            gen_data["history"]
+        )
+
         if self.llm == None:
             self.load_base_model()
 
@@ -91,9 +98,24 @@ class pipeline:
         print(f"Thinking...")
         with TimeIt("LLM thinking"):
             response = self.llm.create_chat_completion(
-                messages = chat
-            )["choices"][0]["message"]["content"]
-            
+                messages = chat,
+                stream=True,
+            )
+            #["choices"][0]["message"]["content"]
 
-        return response
+            text = ""
+            for chunk in response:
+                delta = chunk['choices'][0]['delta']
+                if 'role' in delta:
+                    print(delta['role'], end=': ', flush=True)
+                elif 'content' in delta:
+                    tokens = delta['content']
+                    for token in tokens:
+                        text += f"{token}"
+                        worker.add_result(
+                            gen_data["task_id"],
+                            "preview",
+                            gen_data["history"] + [{"role": "assistant", "content": text}]
+                        )
 
+        return text

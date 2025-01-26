@@ -460,7 +460,7 @@ class pipeline:
                 print(f"ERROR: Can only use SDXL, SD3 or Flux models")
                 worker.interrupt_ruined_processing = True
                 if callback is not None:
-                    worker.add_results(
+                    worker.add_result(
                         gen_data["task_id"],
                         "preview",
                         (-1, f"Can only use SDXL, SD3 or Flux models ...", "html/error.png")

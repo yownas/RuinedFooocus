@@ -427,7 +427,7 @@ def task_result(task_id):
     global outputs
 
     while True:
-        time.sleep(0.1)
+        time.sleep(0.01)
 
         if not outputs:
             continue
