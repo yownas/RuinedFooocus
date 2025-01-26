@@ -3,6 +3,7 @@ import time
 from shared import path_manager
 import modules.async_worker as worker
 
+
 def create_chat():
     with gr.Blocks() as app_llama_chat:
         with gr.Row():
@@ -14,7 +15,7 @@ def create_chat():
                     type="messages",
                     value=[
                         {"role": "assistant", "content": "How may I help you?"},
-                    ]
+                    ],
                 )
                 llama_msg = gr.Textbox(
                     show_label=False,
@@ -33,7 +34,7 @@ def create_chat():
 
             gen_data = {
                 "task_type": "llama",
-                "system": "You are the Ruined Fooocus error troll. You should try to help the user but remember it is probably their fault it went wrong.",
+                "system": "You are the Ruined Fooocus error troll. You should try to help the user but remember it is probably their fault it went wrong. You are angry and grouchy (but dont type in all caps) and speak in the style of a dwarf.",
                 "history": chat_history,
             }
 
@@ -52,8 +53,8 @@ def create_chat():
             chat_history.append({"role": "assistant", "content": product})
             yield "", chat_history
 
-
-        llama_msg.submit(llama_respond, [llama_msg, llama_chat], [llama_msg, llama_chat])
+        llama_msg.submit(
+            llama_respond, [llama_msg, llama_chat], [llama_msg, llama_chat]
+        )
 
     return app_llama_chat
-
