@@ -66,6 +66,7 @@ def create_chat():
                 llama_msg = gr.Textbox(
                     show_label=False,
                 )
+                llama_sent = gr.Textbox(visible=False)
             with gr.Column(scale=2), gr.Group():
                 llama_avatar = gr.Image(
                     value="html/error.png",
@@ -85,6 +86,9 @@ def create_chat():
                     value="You are the Ruined Fooocus error troll. You should try to help the user but remember it is probably their fault it went wrong. You are angry and grouchy (but dont type in all caps) and speak in the style of a dwarf.",
                 )
 
+        def llama_get_text(message):
+            return "", message
+
         def llama_respond(message, system, chat_history):
             chat_history.append({"role": "user", "content": message})
 
@@ -102,16 +106,23 @@ def create_chat():
             while not finished:
                 flag, product = worker.task_result(task_id)
                 if flag == "preview":
-                    yield "", product
+                    yield product
                 elif flag == "results":
                     finished = True
 
             chat_history.append({"role": "assistant", "content": product})
-            yield "", chat_history
+            yield chat_history
 
         llama_msg.submit(
-            llama_respond, [llama_msg, llama_system, llama_chat], [llama_msg, llama_chat]
+            llama_get_text,
+            [llama_msg],
+            [llama_msg, llama_sent]
+        ).then(
+            llama_respond,
+            [llama_sent, llama_system, llama_chat],
+            [llama_chat]
         )
+
         llama_assistants.select(llama_select_assistant, [llama_assistants], [llama_chat, llama_msg, llama_avatar, llama_system])
 
     return app_llama_chat
