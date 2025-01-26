@@ -106,9 +106,7 @@ class pipeline:
             text = ""
             for chunk in response:
                 delta = chunk['choices'][0]['delta']
-                if 'role' in delta:
-                    print(delta['role'], end=': ', flush=True)
-                elif 'content' in delta:
+                if 'content' in delta:
                     tokens = delta['content']
                     for token in tokens:
                         text += f"{token}"
