@@ -22,7 +22,14 @@ def create_chat():
         names.sort(key=lambda x: x[0].casefold())
         return names
 
-    def llama_select_assistant(dropdown):
+    def gr_llama_get_assistants():
+        return {
+            llama_assistants: gr.update(
+                choices=llama_get_assistants(),
+            )
+        }
+
+    def _llama_select_assistant(dropdown):
         folder = Path(dropdown)
         try:
             with open(folder / "info.json", "r") as f:
@@ -38,9 +45,13 @@ def create_chat():
                 "system": "Everything is broken.",
             }
             pass
-        greeting = [{"role": "assistant", "content": info["greeting"]}]
+        info["chatstart"] = [{"role": "assistant", "content": info["greeting"]}]
+        return info
+
+    def llama_select_assistant(dropdown):
+        info = _llama_select_assistant(dropdown)
         return {
-            llama_chat: gr.update(value=greeting),
+            llama_chat: gr.update(value=info["chatstart"]),
             llama_msg: gr.update(value=""),
             llama_avatar: gr.update(
                 value=info["avatar"],
@@ -54,14 +65,13 @@ def create_chat():
         with gr.Row():
             with gr.Column(scale=3), gr.Group():
                 # FIXME!!! start value should be read from some info.json
+                default_bot = "chatbots/rf_support_troll"
                 llama_chat = gr.Chatbot(
-                    label="Ruined Chatbot",
+                    label="",
                     show_label=False,
                     height=600,
                     type="messages",
-                    value=[
-                        {"role": "assistant", "content": "What did you break now?"},
-                    ],
+                    value=_llama_select_assistant(default_bot)["chatstart"] ,
                 )
                 llama_msg = gr.Textbox(
                     show_label=False,
@@ -69,21 +79,27 @@ def create_chat():
                 llama_sent = gr.Textbox(visible=False)
             with gr.Column(scale=2), gr.Group():
                 llama_avatar = gr.Image(
-                    value="html/error.png",
-                    label="Ruined support-troll",
+                    value=_llama_select_assistant(default_bot)["avatar"] ,
+                    label=_llama_select_assistant(default_bot)["name"] ,
                     height=400,
                     width=400,
                     show_label=True,
                 )
-                llama_assistants = gr.Dropdown(
-                    choices=llama_get_assistants(),
-                    value="Ruined support-troll",
-                    show_label=False,
-                    interactive=True,
-                )
+                with gr.Row():
+                    llama_assistants = gr.Dropdown(
+                        choices=llama_get_assistants(),
+                        value=_llama_select_assistant(default_bot)["name"] ,
+                        show_label=False,
+                        interactive=True,
+                        scale=7,
+                    )
+                    llama_reload = gr.Button(
+                        value="↻",
+                        scale=1,
+                    )
                 llama_system = gr.Textbox(
                     visible=False,
-                    value="You are the Ruined Fooocus error troll. You should try to help the user but remember it is probably their fault it went wrong. You are angry and grouchy (but dont type in all caps) and speak in the style of a dwarf.",
+                    value=_llama_select_assistant(default_bot)["system"] ,
                 )
 
         def llama_get_text(message):
@@ -124,5 +140,6 @@ def create_chat():
         )
 
         llama_assistants.select(llama_select_assistant, [llama_assistants], [llama_chat, llama_msg, llama_avatar, llama_system])
+        llama_reload.click(gr_llama_get_assistants, None, [llama_assistants])
 
     return app_llama_chat
