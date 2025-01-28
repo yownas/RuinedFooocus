@@ -307,11 +307,15 @@ def worker():
                     x.save(local_temp_filename, pnginfo=metadata)
 
                 try:
+                    metadata = {
+                        "parameters": json.dumps(prompt),
+                        "file_path": str(Path(local_temp_filename).relative_to(folder))
+                    }
                     if "browser" in shared.shared_cache:
                         shared.shared_cache["browser"].add_image(
                             local_temp_filename,
                             Path(local_temp_filename).relative_to(folder),
-                            prompt,
+                            metadata,
                             commit=True
                         )
                 except:

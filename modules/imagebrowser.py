@@ -222,8 +222,7 @@ class ImageBrowser:
 
     def update_images(self) -> Tuple[List[str], str]:
         """Check all images and update database"""
-        #try:
-        if True:
+        try:
             if not self.base_path.exists():
                 return [], f"Folder not found: {self.base_path}"
 
@@ -274,12 +273,12 @@ class ImageBrowser:
                 gr.update(value=f"No images found in {folders} or subdirectories")
             )
 
-        #except Exception as e:
-        #    return (
-        #        gr.update(value=["html/error.png"]),
-        #        gr.update(value=1, maximum=1),
-        #        gr.update(value=f"Error updating folder: {e}")
-        #    )
+        except Exception as e:
+            return (
+                gr.update(value=["html/error.png"]),
+                gr.update(value=1, maximum=1),
+                gr.update(value=f"Error updating folder: {e}")
+            )
 
     def get_image_metadata(self, evt: gr.SelectData) -> str:
         """Get metadata for selected image."""
