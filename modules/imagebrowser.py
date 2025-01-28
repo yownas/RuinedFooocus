@@ -210,6 +210,16 @@ class ImageBrowser:
             return list(Path(x[0]) for x in image_paths), text
         return [], text
 
+    def add_image(self, full_path, rel_path, metadata, commit=False):
+        if commit:
+            self.sql_conn.cursor()
+        self.sql_conn.execute(
+            "INSERT INTO images (fullpath, path, json) VALUES (?, ?, ?)",
+            (str(full_path), str(rel_path), json.dumps(metadata))
+        )
+        if commit:
+            self.sql_conn.commit()
+
     def update_images(self) -> Tuple[List[str], str]:
         """Check all images and update database"""
         #try:
@@ -225,11 +235,11 @@ class ImageBrowser:
             self.sql_conn.cursor()
 
             # Walk through directory and all subdirectories
+            print("Scanning folder to update DB:")
             with TimeIt("Update DB"):
                 for folder in [self.base_path] + default_settings.get("archive_folders", []):
-                    print(f"DEBUG: {folder}")
+                    print(f"    {folder}")
                     for root, _, files in os.walk(folder):
-                        print(f"DEBUG: {files}")
                         for filename in files:
                             #if filename.lower().endswith((".png", ".gif")):
                             if filename.lower().endswith(".png"):
@@ -241,10 +251,7 @@ class ImageBrowser:
                                     metadata = {} # FIXME fake data for non-png images
                                 metadata["file_path"] = rel_path
 
-                                self.sql_conn.execute(
-                                    "INSERT INTO images(fullpath, path, json) VALUES (?, ?,?)",
-                                    (str(full_path), str(rel_path), json.dumps(metadata))
-                                )
+                                self.add_image(str(full_path), str(rel_path), metadata)
                                 image_cnt += 1
 
             self.sql_conn.commit()

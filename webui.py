@@ -43,7 +43,7 @@ import ui_llama_chat
 from PIL import Image
 
 inpaint_toggle = None
-browser = ImageBrowser()
+shared.shared_cache["browser"] = ImageBrowser()
 path_manager = PathManager()
 civit_checkpoints = Civit(
     model_dir=Path(path_manager.model_paths["modelfile_path"]),

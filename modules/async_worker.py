@@ -250,8 +250,9 @@ def worker():
                     imgs = []
 
             for x in imgs:
+                folder=shared.path_manager.model_paths["temp_outputs_path"]
                 local_temp_filename = generate_temp_filename(
-                    folder=shared.path_manager.model_paths["temp_outputs_path"],
+                    folder=folder,
                     extension="png",
                 )
                 dir_path = Path(local_temp_filename).parent
@@ -304,6 +305,18 @@ def worker():
                     if not isinstance(x, Image.Image):
                         x = Image.fromarray(x)
                     x.save(local_temp_filename, pnginfo=metadata)
+
+                try:
+                    if "browser" in shared.shared_cache:
+                        shared.shared_cache["browser"].add_image(
+                            local_temp_filename,
+                            Path(local_temp_filename).relative_to(folder),
+                            prompt,
+                            commit=True
+                        )
+                except:
+                    pass
+
                 results.append(local_temp_filename)
                 metadatastrings.append(json.dumps(prompt))
                 shared.state["last_image"] = local_temp_filename
