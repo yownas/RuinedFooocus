@@ -1,3 +1,9 @@
+### ???
+* Borrow llama_cpp_python from oobaboga
+* Update ImageBrowser DB during generation
+* List for "archive_folders" in settings
+* Chatbots
+
 ### 25.01.25
 * Image Browser
 * Inpainting works again
