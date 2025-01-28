@@ -35,7 +35,6 @@ from modules.launch_util import (
     dir_repos,
 )
 
-torch_index_url = "https://download.pytorch.org/whl/cu124"
 requirements_file = "requirements_versions.txt"
 launch_pip_file = "pip_modules.txt"
 
@@ -75,7 +74,7 @@ def prepare_environment(offline=False):
         if REINSTALL_ALL or not requirements_met(launch_pip_file):
             print("This next step may take a while")
             os.environ["FLASH_ATTENTION_SKIP_CUDA_BUILD"] = "TRUE"
-            run_pip(f'install -r "{launch_pip_file}" --extra-index-url {torch_index_url}', "required modules")
+            run_pip(f'install -r "{launch_pip_file}"', "required modules")
 
 def clone_git_repos(offline=False):
     from modules.launch_util import git_clone
