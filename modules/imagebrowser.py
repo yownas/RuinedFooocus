@@ -256,6 +256,7 @@ class ImageBrowser:
 
             self.sql_conn.commit()
 
+            folders = ", ".join(map(str, [self.base_path] + default_settings.get("archive_folders", [])))
             if image_cnt:
                 return (
                     gr.update(value=self.load_images(1)[0]),
@@ -264,13 +265,13 @@ class ImageBrowser:
                         maximum=int(image_cnt/self.images_per_page) + 1,
                     ),
                     gr.update(
-                        value=f"Found {image_cnt} images from {self.base_path} and its subdirectories",
+                        value=f"Found {image_cnt} images from {folders} and subdirectories",
                     )
                 )
             return (
                 gr.update(value=[]),
                 gr.update(value=1, maximum=1),
-                gr.update(value=f"No images found in {self.base_path} or its subdirectories")
+                gr.update(value=f"No images found in {folders} or subdirectories")
             )
 
         #except Exception as e:
