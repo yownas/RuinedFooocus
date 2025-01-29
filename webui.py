@@ -904,7 +904,7 @@ with shared.gradio_root as block:
                             f"{w} - {evt.value['caption']}",
                         )
                     )
-                    lora_active_selected = len(gallery)
+                    lora_active_selected = len(gallery)-1
                     active.append(f"{evt.value['caption']}")
                     inactive = [
                         x
@@ -956,7 +956,10 @@ with shared.gradio_root as block:
                         gallery
                     ):
                         del gallery[lora_active_selected]
-                    lora_active_selected = min(lora_active_selected, len(gallery) - 1)
+                    if lora_active_selected is not None:
+                        lora_active_selected = min(lora_active_selected, len(gallery) - 1)
+                    else:
+                        lora_active_selected = len(gallery) - 1
                     keywords = ""
                     active = []
                     active_names = []
