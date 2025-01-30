@@ -1,4 +1,4 @@
-### ???
+### 25.01.30
 * Borrow llama_cpp_python from oobaboga
 * Update ImageBrowser DB during generation
 * List for "archive_folders" in settings
