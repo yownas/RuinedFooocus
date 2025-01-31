@@ -205,10 +205,9 @@ class ImageBrowser:
         if image_paths:
             path1 = str(Path(image_paths[0][1]))
             path2 = str(Path(image_paths[-1][1]))
+            text = f"{path1} ... {path2}"
         else:
-            path1 = "None"
-            path2 = "None"
-        text = f"{path1} ... {path2}"
+            text = ""
 
         if image_paths:
             return list(Path(x[0]) for x in image_paths), text
