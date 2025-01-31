@@ -159,6 +159,10 @@ def connect_database(path="cache/images.db"):
 
     if newdb:
         try:
+            conn.execute(
+                "UPDATE status SET version = ?, date = ?", 
+                (str(version.version), str(time.time()))
+            )
             conn.execute("DROP TABLE images")
         except:
             pass
