@@ -84,6 +84,7 @@ def launch_app(args):
         [shared.gradio_root, app_image_browser, app_llama_chat],
         ["Main", "Image browser", "Chat bot"],
         theme=theme,
+        title="RF2",
         css=modules.html.css,
         js=modules.html.scripts,
         analytics_enabled=False,
@@ -100,7 +101,8 @@ def launch_app(args):
             else None
         ),
         favicon_path=favicon_path,
-        allowed_paths=["html", path_manager.model_paths["temp_outputs_path"]] + default_settings.get("archive_folders", []),
+        allowed_paths=["html", path_manager.model_paths["temp_outputs_path"]]
+        + default_settings.get("archive_folders", []),
         enable_monitoring=False,
     )
 
@@ -904,7 +906,7 @@ with shared.gradio_root as block:
                             f"{w} - {evt.value['caption']}",
                         )
                     )
-                    lora_active_selected = len(gallery)-1
+                    lora_active_selected = len(gallery) - 1
                     active.append(f"{evt.value['caption']}")
                     inactive = [
                         x
@@ -957,7 +959,9 @@ with shared.gradio_root as block:
                     ):
                         del gallery[lora_active_selected]
                     if lora_active_selected is not None:
-                        lora_active_selected = min(lora_active_selected, len(gallery) - 1)
+                        lora_active_selected = min(
+                            lora_active_selected, len(gallery) - 1
+                        )
                     else:
                         lora_active_selected = len(gallery) - 1
                     keywords = ""
