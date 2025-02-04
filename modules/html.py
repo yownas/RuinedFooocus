@@ -110,19 +110,9 @@ function generate_shortcut(){
     } else if (e.keyCode !== undefined) {
       if ((e.keyCode === 13 && e.ctrlKey)) handle = 'run';
     }
-    if (e.key !== undefined) {
-      if ((e.key === 'Shift' && e.ctrlKey)) handle = 'hurtme';
-    } else if (e.keyCode !== undefined) {
-      if ((e.keyCode === 16 && e.ctrlKey)) handle = 'hurtme';
-    }
     if (handle == 'run') {
       const button = document.getElementById('generate');
       if (button) button.click();
-      e.preventDefault();
-    }
-    if (handle == 'hurtme') {
-      const ctrl = document.getElementById('hurtme').getElementsByTagName('INPUT')[0];
-      if (ctrl) ctrl.click();
       e.preventDefault();
     }
   });
