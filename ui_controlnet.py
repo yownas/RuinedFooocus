@@ -214,6 +214,7 @@ def add_controlnet_tab(main_view, inpaint_view, prompt, image_number, run_event)
                     main_view: gr.update(visible=False),
                     inpaint_view: gr.update(
                         visible=True,
+                        interactive=True,
                         value={
                             'background': img,
                             'layers': [Image.new("RGBA", (width, base_height))],
@@ -224,7 +225,10 @@ def add_controlnet_tab(main_view, inpaint_view, prompt, image_number, run_event)
             else:
                 return {
                     main_view: gr.update(visible=True),
-                    inpaint_view: gr.update(visible=False),
+                    inpaint_view: gr.update(
+                        visible=False,
+                        interactive=False,
+                    ),
                 }
 
         ui_evolve.add_evolve_tab(prompt, image_number, run_event)

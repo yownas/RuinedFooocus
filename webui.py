@@ -117,7 +117,10 @@ def update_clicked():
         ),
         gallery: gr.update(visible=False),
         main_view: gr.update(visible=True, value="html/init_image.png"),
-        inpaint_view: gr.update(visible=False),
+        inpaint_view: gr.update(
+            visible=False,
+            interactive=False,
+        ),
         hint_text: gr.update(visible=True, value=modules.hints.get_hint()),
     }
 
@@ -255,11 +258,10 @@ with shared.gradio_root as block:
                 show_fullscreen_button=True,
                 show_download_button=True,
                 layers=False,
-                interactive=True,
+                interactive=False,
                 transforms=(),
                 brush=gr.Brush(colors=["#000000"], color_mode="fixed"),
             )
-            #                elem_id="inpaint_sketch",
             add_ctrl("inpaint_view", inpaint_view)
 
             progress_html = gr.HTML(
@@ -1352,8 +1354,13 @@ with shared.gradio_root as block:
                     ratio_save: gr.update(visible=False),
                 }
 
+        def activate(): # UGLY workaround for https://github.com/gradio-app/gradio/issues/7586
+            return gr.update(interactive=True)
+
         run_event.change(
             fn=refresh_seed, inputs=[seed_random, image_seed], outputs=image_seed
+        ).then(
+            fn=activate, outputs=[inpaint_view]
         ).then(
             fn=generate_clicked,
             inputs=state["ctrls_obj"],
