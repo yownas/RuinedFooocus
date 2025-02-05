@@ -1,3 +1,10 @@
+### 25.02.06
+* Fix for browser high CPU usage
+* Code cleanup
+
+### 25.02.02
+* Fix for StabilityMatrix
+
 ### 25.01.30
 * Borrow llama_cpp_python from oobaboga
 * Update ImageBrowser DB during generation
