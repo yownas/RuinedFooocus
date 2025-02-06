@@ -104,6 +104,7 @@ def launch_app(args):
         allowed_paths=["html", "/", path_manager.model_paths["temp_outputs_path"]]
         + default_settings.get("archive_folders", []),
         enable_monitoring=False,
+        pwa=True,
     )
 
 
