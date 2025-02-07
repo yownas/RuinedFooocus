@@ -1,0 +1,8 @@
+{
+    "lcm_lora": {
+        "url": "https://huggingface.co/latent-consistency/lcm-lora-sdxl/resolve/main/lcm-lora-sdxl.safetensors",
+        "path": "path_loras",
+        "filename": "lcm-lora-sdxl.safetensors"
+    }
+}
+

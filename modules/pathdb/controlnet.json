@@ -1,0 +1,27 @@
+{
+    "cn_canny": {
+        "url": "https://huggingface.co/stabilityai/control-lora/resolve/main/control-LoRAs-rank128/control-lora-canny-rank128.safetensors",
+        "path": "path_controlnet",
+        "filename": "control-lora-canny-rank128.safetensors"
+    },
+    "cn_depth": {
+        "url": "https://huggingface.co/stabilityai/control-lora/resolve/main/control-LoRAs-rank128/control-lora-depth-rank128.safetensors",
+        "path": "path_controlnet",
+        "filename": "control-lora-depth-rank128.safetensors"
+    },
+    "cn_recolour": {
+        "url": "https://huggingface.co/stabilityai/control-lora/resolve/main/control-LoRAs-rank128/control-lora-recolor-rank128.safetensors",
+        "path": "path_controlnet",
+        "filename": "control-lora-recolor-rank128.safetensors"
+    },
+    "cn_sketch": {
+        "url": "https://huggingface.co/stabilityai/control-lora/resolve/main/control-LoRAs-rank128/control-lora-sketch-rank128-metadata.safetensors",
+        "path": "path_controlnet",
+        "filename": "control-lora-sketch-rank128-metadata.safetensors"
+    },
+    "4x-UltraSharp.pth": {
+        "url": "https://huggingface.co/lokCX/4x-Ultrasharp/resolve/main/4x-UltraSharp.pth",
+        "path": "path_upscalers",
+        "filename": "4x-UltraSharp.pth"
+    }
+}

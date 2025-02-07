@@ -1,6 +1,6 @@
 from pathlib import Path
 import json
-import time
+import os
 import requests
 from tqdm import tqdm
 
@@ -26,205 +26,28 @@ class PathManager:
     EXTENSIONS = [".pth", ".ckpt", ".bin", ".safetensors", ".gguf", ".merge"]
 
     # Add a dictionary to store file download information
-    DOWNLOADABLE_FILES = {
-        "lcm_lora": {
-            "url": "https://huggingface.co/latent-consistency/lcm-lora-sdxl/resolve/main/lcm-lora-sdxl.safetensors",
-            "path": "path_loras",
-            "filename": "lcm-lora-sdxl.safetensors",
-        },
-        "clip/clip_g.safetensors": {
-            "url": "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/text_encoder_2/model.fp16.safetensors",
-            "path": "path_clip",
-            "filename": "clip_g.safetensors"
-        },
-        "clip/clip_l.safetensors": {
-            "url": "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors",
-            "path": "path_clip",
-            "filename": "clip_l.safetensors"
-        },
-        "clip/t5-v1_1-xxl-encoder-Q3_K_L.gguf": {
-            "url": "https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-Q3_K_L.gguf",
-            "path": "path_clip",
-            "filename": "t5-v1_1-xxl-encoder-Q3_K_L.gguf",
-        },
-        "clip/t5-v1_1-xxl-encoder-Q3_K_M.gguf": {
-            "url": "https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-Q3_K_M.gguf",
-            "path": "path_clip",
-            "filename": "t5-v1_1-xxl-encoder-Q3_K_M.gguf",
-        },
-        "clip/t5-v1_1-xxl-encoder-Q3_K_S.gguf": {
-            "url": "https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-Q3_K_S.gguf",
-            "path": "path_clip",
-            "filename": "t5-v1_1-xxl-encoder-Q3_K_S.gguf",
-        },
-        "clip/t5-v1_1-xxl-encoder-Q4_K_M.gguf": {
-            "url": "https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-Q4_K_M.gguf",
-            "path": "path_clip",
-            "filename": "t5-v1_1-xxl-encoder-Q4_K_M.gguf",
-        },
-        "clip/t5-v1_1-xxl-encoder-Q4_K_S.gguf": {
-            "url": "https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-Q4_K_S.gguf",
-            "path": "path_clip",
-            "filename": "t5-v1_1-xxl-encoder-Q4_K_S.gguf",
-        },
-        "clip/t5-v1_1-xxl-encoder-Q5_K_M.gguf": {
-            "url": "https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-Q5_K_M.gguf",
-            "path": "path_clip",
-            "filename": "t5-v1_1-xxl-encoder-Q5_K_M.gguf",
-        },
-        "clip/t5-v1_1-xxl-encoder-Q5_K_S.gguf": {
-            "url": "https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-Q5_K_S.gguf",
-            "path": "path_clip",
-            "filename": "t5-v1_1-xxl-encoder-Q5_K_S.gguf",
-        },
-        "clip/t5-v1_1-xxl-encoder-Q6_K.gguf": {
-            "url": "https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-Q6_K.gguf",
-            "path": "path_clip",
-            "filename": "t5-v1_1-xxl-encoder-Q6_K.gguf",
-        },
-        "clip/t5-v1_1-xxl-encoder-Q8_0.gguf": {
-            "url": "https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-Q8_0.gguf",
-            "path": "path_clip",
-            "filename": "t5-v1_1-xxl-encoder-Q8_0.gguf",
-        },
-        "clip/t5-v1_1-xxl-encoder-f16.gguf": {
-            "url": "https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-f16.gguf",
-            "path": "path_clip",
-            "filename": "t5-v1_1-xxl-encoder-f16.gguf",
-        },
-        "clip/t5-v1_1-xxl-encoder-f32.gguf": {
-            "url": "https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-f32.gguf",
-            "path": "path_clip",
-            "filename": "t5-v1_1-xxl-encoder-f32.gguf",
-        },
-        "cn_canny": {
-            "url": "https://huggingface.co/stabilityai/control-lora/resolve/main/control-LoRAs-rank128/control-lora-canny-rank128.safetensors",
-            "path": "path_controlnet",
-            "filename": "control-lora-canny-rank128.safetensors",
-        },
-        "cn_depth": {
-            "url": "https://huggingface.co/stabilityai/control-lora/resolve/main/control-LoRAs-rank128/control-lora-depth-rank128.safetensors",
-            "path": "path_controlnet",
-            "filename": "control-lora-depth-rank128.safetensors",
-        },
-        "cn_recolour": {
-            "url": "https://huggingface.co/stabilityai/control-lora/resolve/main/control-LoRAs-rank128/control-lora-recolor-rank128.safetensors",
-            "path": "path_controlnet",
-            "filename": "control-lora-recolor-rank128.safetensors",
-        },
-        "cn_sketch": {
-            "url": "https://huggingface.co/stabilityai/control-lora/resolve/main/control-LoRAs-rank128/control-lora-sketch-rank128-metadata.safetensors",
-            "path": "path_controlnet",
-            "filename": "control-lora-sketch-rank128-metadata.safetensors",
-        },
-        "4x-UltraSharp.pth": {
-            "url": "https://huggingface.co/lokCX/4x-Ultrasharp/resolve/main/4x-UltraSharp.pth",
-            "path": "path_upscalers",
-            "filename": "4x-UltraSharp.pth",
-        },
-        "DAT-4x.pth": {"url": "https://huggingface.co/vladmandic/sdnext-upscalers/resolve/main/DAT-4x.pth","path": "path_upscalers","filename": "DAT-4x.pth",},
-        "DAT-Helaman-LSDIR-4x.pth": {"url": "https://huggingface.co/vladmandic/sdnext-upscalers/resolve/main/DAT-Helaman-LSDIR-4x.pth","path": "path_upscalers","filename": "DAT-Helaman-LSDIR-4x.pth",},
-        "DAT-Helaman-Nomos-4x.pth": {"url": "https://huggingface.co/vladmandic/sdnext-upscalers/resolve/main/DAT-Helaman-Nomos-4x.pth","path": "path_upscalers","filename": "DAT-Helaman-Nomos-4x.pth",},
-        "DAT-Helaman-SSDIR-4x.pth": {"url": "https://huggingface.co/vladmandic/sdnext-upscalers/resolve/main/DAT-Helaman-SSDIR-4x.pth","path": "path_upscalers","filename": "DAT-Helaman-SSDIR-4x.pth",},
-        "ESRGAN-BigFace-v3-4x.pth": {"url": "https://huggingface.co/vladmandic/sdnext-upscalers/resolve/main/ESRGAN-BigFace-v3-4x.pth","path": "path_upscalers","filename": "ESRGAN-BigFace-v3-4x.pth",},
-        "ESRGAN-Box-4x.pth": {"url": "https://huggingface.co/vladmandic/sdnext-upscalers/resolve/main/ESRGAN-Box-4x.pth","path": "path_upscalers","filename": "ESRGAN-Box-4x.pth",},
-        "ESRGAN-Helaman-HFA2k-4x.pth": {"url": "https://huggingface.co/vladmandic/sdnext-upscalers/resolve/main/ESRGAN-Helaman-HFA2k-4x.pth","path": "path_upscalers","filename": "ESRGAN-Helaman-HFA2k-4x.pth",},
-        "ESRGAN-Helaman-LSDIRplus-4x.pth": {"url": "https://huggingface.co/vladmandic/sdnext-upscalers/resolve/main/ESRGAN-Helaman-LSDIRplus-4x.pth","path": "path_upscalers","filename": "ESRGAN-Helaman-LSDIRplus-4x.pth",},
-        "ESRGAN-HugePaint-8x.pth": {"url": "https://huggingface.co/vladmandic/sdnext-upscalers/resolve/main/ESRGAN-HugePaint-8x.pth","path": "path_upscalers","filename": "ESRGAN-HugePaint-8x.pth",},
-        "ESRGAN-NMKD-Siax-4x.pth": {"url": "https://huggingface.co/vladmandic/sdnext-upscalers/resolve/main/ESRGAN-NMKD-Siax-4x.pth","path": "path_upscalers","filename": "ESRGAN-NMKD-Siax-4x.pth",},
-        "ESRGAN-NMKD-Superscale-4x.pth": {"url": "https://huggingface.co/vladmandic/sdnext-upscalers/resolve/main/ESRGAN-NMKD-Superscale-4x.pth","path": "path_upscalers","filename": "ESRGAN-NMKD-Superscale-4x.pth",},
-        "ESRGAN-NMKD-Superscale-8x.pth": {"url": "https://huggingface.co/vladmandic/sdnext-upscalers/resolve/main/ESRGAN-NMKD-Superscale-8x.pth","path": "path_upscalers","filename": "ESRGAN-NMKD-Superscale-8x.pth",},
-        "ESRGAN-NMKD-YandereNeoXL-4x.pth": {"url": "https://huggingface.co/vladmandic/sdnext-upscalers/resolve/main/ESRGAN-NMKD-YandereNeoXL-4x.pth","path": "path_upscalers","filename": "ESRGAN-NMKD-YandereNeoXL-4x.pth",},
-        "ESRGAN-Remacri-4x.pth": {"url": "https://huggingface.co/vladmandic/sdnext-upscalers/resolve/main/ESRGAN-Remacri-4x.pth","path": "path_upscalers","filename": "ESRGAN-Remacri-4x.pth",},
-        "ESRGAN-UltraSharp-4x.pth": {"url": "https://huggingface.co/vladmandic/sdnext-upscalers/resolve/main/ESRGAN-UltraSharp-4x.pth","path": "path_upscalers","filename": "ESRGAN-UltraSharp-4x.pth",},
-        "ESRGAN-Valar-4x.pth": {"url": "https://huggingface.co/vladmandic/sdnext-upscalers/resolve/main/ESRGAN-Valar-4x.pth","path": "path_upscalers","filename": "ESRGAN-Valar-4x.pth",},
-        "HAT-2x.pth": {"url": "https://huggingface.co/vladmandic/sdnext-upscalers/resolve/main/HAT-2x.pth","path": "path_upscalers","filename": "HAT-2x.pth",},
-        "HAT-3x.pth": {"url": "https://huggingface.co/vladmandic/sdnext-upscalers/resolve/main/HAT-3x.pth","path": "path_upscalers","filename": "HAT-3x.pth",},
-        "HAT-4x.pth": {"url": "https://huggingface.co/vladmandic/sdnext-upscalers/resolve/main/HAT-4x.pth","path": "path_upscalers","filename": "HAT-4x.pth",},
-        "HAT-Helaman-Lexica-4x.pth": {"url": "https://huggingface.co/vladmandic/sdnext-upscalers/resolve/main/HAT-Helaman-Lexica-4x.pth","path": "path_upscalers","filename": "HAT-Helaman-Lexica-4x.pth",},
-        "HAT-Helaman-Nomos8kL-4x.pth": {"url": "https://huggingface.co/vladmandic/sdnext-upscalers/resolve/main/HAT-Helaman-Nomos8kL-4x.pth","path": "path_upscalers","filename": "HAT-Helaman-Nomos8kL-4x.pth",},
-        "HAT-L-2x.pth": {"url": "https://huggingface.co/vladmandic/sdnext-upscalers/resolve/main/HAT-L-2x.pth","path": "path_upscalers","filename": "HAT-L-2x.pth",},
-        "HAT-L-3x.pth": {"url": "https://huggingface.co/vladmandic/sdnext-upscalers/resolve/main/HAT-L-3x.pth","path": "path_upscalers","filename": "HAT-L-3x.pth",},
-        "HAT-L-4x.pth": {"url": "https://huggingface.co/vladmandic/sdnext-upscalers/resolve/main/HAT-L-4x.pth","path": "path_upscalers","filename": "HAT-L-4x.pth",},
-        "OmniSR-Helaman-HFA2k-2x.pth": {"url": "https://huggingface.co/vladmandic/sdnext-upscalers/resolve/main/OmniSR-Helaman-HFA2k-2x.pth","path": "path_upscalers","filename": "OmniSR-Helaman-HFA2k-2x.pth",},
-        "README.md": {"url": "https://huggingface.co/vladmandic/sdnext-upscalers/resolve/main/README.md","path": "path_upscalers","filename": "README.md",},
-        "RRDBNet-4x.pth": {"url": "https://huggingface.co/vladmandic/sdnext-upscalers/resolve/main/RRDBNet-4x.pth","path": "path_upscalers","filename": "RRDBNet-4x.pth",},
-        "RealHAT-GAN-4x.pth": {"url": "https://huggingface.co/vladmandic/sdnext-upscalers/resolve/main/RealHAT-GAN-4x.pth","path": "path_upscalers","filename": "RealHAT-GAN-4x.pth",},
-        "RealHAT-Sharper-4x.pth": {"url": "https://huggingface.co/vladmandic/sdnext-upscalers/resolve/main/RealHAT-Sharper-4x.pth","path": "path_upscalers","filename": "RealHAT-Sharper-4x.pth",},
-        "SPSRNet-4x.pth": {"url": "https://huggingface.co/vladmandic/sdnext-upscalers/resolve/main/SPSRNet-4x.pth","path": "path_upscalers","filename": "SPSRNet-4x.pth",},
-        "SRFormer-Light-4x.pth": {"url": "https://huggingface.co/vladmandic/sdnext-upscalers/resolve/main/SRFormer-Light-4x.pth","path": "path_upscalers","filename": "SRFormer-Light-4x.pth",},
-        "SRFormer-Nomos-4x.pth": {"url": "https://huggingface.co/vladmandic/sdnext-upscalers/resolve/main/SRFormer-Nomos-4x.pth","path": "path_upscalers","filename": "SRFormer-Nomos-4x.pth",},
-        "SwiftSR-2x.pth": {"url": "https://huggingface.co/vladmandic/sdnext-upscalers/resolve/main/SwiftSR-2x.pth","path": "path_upscalers","filename": "SwiftSR-2x.pth",},
-        "SwiftSR-4x.pth": {"url": "https://huggingface.co/vladmandic/sdnext-upscalers/resolve/main/SwiftSR-4x.pth","path": "path_upscalers","filename": "SwiftSR-4x.pth",},
-        "SwinIR-Helaman-Lexica-2x.pth": {"url": "https://huggingface.co/vladmandic/sdnext-upscalers/resolve/main/SwinIR-Helaman-Lexica-2x.pth","path": "path_upscalers","filename": "SwinIR-Helaman-Lexica-2x.pth",},
-        "vae/ae.safetensors": {
-            "url": "https://huggingface.co/black-forest-labs/FLUX.1-schnell/resolve/main/ae.safetensors",
-            "path": "path_vae",
-            "filename": "ae.safetensors",
-        },
-        "vae/sdxl_vae.safetensors": {
-            "url": "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/vae/diffusion_pytorch_model.safetensors",
-            "path": "path_vae",
-            "filename": "sdxl_vae.safetensors",
-        },
-        "vae/sd3_vae.safetensors": {
-            "url": "https://civitai.com/api/download/models/568480?type=Model&format=SafeTensor",
-            "path": "path_vae",
-            "filename": "sd3_vae.safetensors",
-        },
-        "llm/DeepSeek-R1-Distill-Llama-8B-F16.gguf": {"url": "https://huggingface.co/unsloth/DeepSeek-R1-Distill-Llama-8B-GGUF/resolve/main/DeepSeek-R1-Distill-Llama-8B-F16.gguf", "path": "path_llm", "filename": "DeepSeek-R1-Distill-Llama-8B-F16.gguf"},
-        "llm/DeepSeek-R1-Distill-Llama-8B-Q2_K.gguf": {"url": "https://huggingface.co/unsloth/DeepSeek-R1-Distill-Llama-8B-GGUF/resolve/main/DeepSeek-R1-Distill-Llama-8B-Q2_K.gguf", "path": "path_llm", "filename": "DeepSeek-R1-Distill-Llama-8B-Q2_K.gguf"},
-        "llm/DeepSeek-R1-Distill-Llama-8B-Q2_K_L.gguf": {"url": "https://huggingface.co/unsloth/DeepSeek-R1-Distill-Llama-8B-GGUF/resolve/main/DeepSeek-R1-Distill-Llama-8B-Q2_K_L.gguf", "path": "path_llm", "filename": "DeepSeek-R1-Distill-Llama-8B-Q2_K_L.gguf"},
-        "llm/DeepSeek-R1-Distill-Llama-8B-Q3_K_M.gguf": {"url": "https://huggingface.co/unsloth/DeepSeek-R1-Distill-Llama-8B-GGUF/resolve/main/DeepSeek-R1-Distill-Llama-8B-Q3_K_M.gguf", "path": "path_llm", "filename": "DeepSeek-R1-Distill-Llama-8B-Q3_K_M.gguf"},
-        "llm/DeepSeek-R1-Distill-Llama-8B-Q4_K_M.gguf": {"url": "https://huggingface.co/unsloth/DeepSeek-R1-Distill-Llama-8B-GGUF/resolve/main/DeepSeek-R1-Distill-Llama-8B-Q4_K_M.gguf", "path": "path_llm", "filename": "DeepSeek-R1-Distill-Llama-8B-Q4_K_M.gguf"},
-        "llm/DeepSeek-R1-Distill-Llama-8B-Q5_K_M.gguf": {"url": "https://huggingface.co/unsloth/DeepSeek-R1-Distill-Llama-8B-GGUF/resolve/main/DeepSeek-R1-Distill-Llama-8B-Q5_K_M.gguf", "path": "path_llm", "filename": "DeepSeek-R1-Distill-Llama-8B-Q5_K_M.gguf"},
-        "llm/DeepSeek-R1-Distill-Llama-8B-Q6_K.gguf": {"url": "https://huggingface.co/unsloth/DeepSeek-R1-Distill-Llama-8B-GGUF/resolve/main/DeepSeek-R1-Distill-Llama-8B-Q6_K.gguf", "path": "path_llm", "filename": "DeepSeek-R1-Distill-Llama-8B-Q6_K.gguf"},
-        "llm/DeepSeek-R1-Distill-Llama-8B-Q8_0.gguf": {"url": "https://huggingface.co/unsloth/DeepSeek-R1-Distill-Llama-8B-GGUF/resolve/main/DeepSeek-R1-Distill-Llama-8B-Q8_0.gguf", "path": "path_llm", "filename": "DeepSeek-R1-Distill-Llama-8B-Q8_0.gguf"},
-        "llm/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-IQ4_XS.gguf": {"url": "https://huggingface.co/DavidAU/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-GGUF/resolve/main/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-IQ4_XS.gguf", "path": "path_llm", "filename": "L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-IQ4_XS.gguf"},
-        "llm/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-Q2_k.gguf": {"url": "https://huggingface.co/DavidAU/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-GGUF/resolve/main/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-Q2_k.gguf", "path": "path_llm", "filename": "L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-Q2_k.gguf"},
-        "llm/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-Q3_k_l.gguf": {"url": "https://huggingface.co/DavidAU/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-GGUF/resolve/main/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-Q3_k_l.gguf", "path": "path_llm", "filename": "L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-Q3_k_l.gguf"},
-        "llm/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-Q3_k_m.gguf": {"url": "https://huggingface.co/DavidAU/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-GGUF/resolve/main/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-Q3_k_m.gguf", "path": "path_llm", "filename": "L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-Q3_k_m.gguf"},
-        "llm/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-Q3_k_s.gguf": {"url": "https://huggingface.co/DavidAU/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-GGUF/resolve/main/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-Q3_k_s.gguf", "path": "path_llm", "filename": "L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-Q3_k_s.gguf"},
-        "llm/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-Q4_0_4_4.gguf": {"url": "https://huggingface.co/DavidAU/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-GGUF/resolve/main/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-Q4_0_4_4.gguf", "path": "path_llm", "filename": "L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-Q4_0_4_4.gguf"},
-        "llm/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-Q4_0_4_8.gguf": {"url": "https://huggingface.co/DavidAU/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-GGUF/resolve/main/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-Q4_0_4_8.gguf", "path": "path_llm", "filename": "L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-Q4_0_4_8.gguf"},
-        "llm/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-Q4_0_8_8.gguf": {"url": "https://huggingface.co/DavidAU/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-GGUF/resolve/main/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-Q4_0_8_8.gguf", "path": "path_llm", "filename": "L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-Q4_0_8_8.gguf"},
-        "llm/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-Q4_k_m.gguf": {"url": "https://huggingface.co/DavidAU/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-GGUF/resolve/main/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-Q4_k_m.gguf", "path": "path_llm", "filename": "L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-Q4_k_m.gguf"},
-        "llm/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-Q4_k_s.gguf": {"url": "https://huggingface.co/DavidAU/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-GGUF/resolve/main/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-Q4_k_s.gguf", "path": "path_llm", "filename": "L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-Q4_k_s.gguf"},
-        "llm/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-Q5_k_s.gguf": {"url": "https://huggingface.co/DavidAU/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-GGUF/resolve/main/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-Q5_k_s.gguf", "path": "path_llm", "filename": "L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-Q5_k_s.gguf"},
-        "llm/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-Q6_k.gguf": {"url": "https://huggingface.co/DavidAU/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-GGUF/resolve/main/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-Q6_k.gguf", "path": "path_llm", "filename": "L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-Q6_k.gguf"},
-        "llm/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-Q8_0.gguf": {"url": "https://huggingface.co/DavidAU/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-GGUF/resolve/main/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-Q8_0.gguf", "path": "path_llm", "filename": "L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-Q8_0.gguf"},
-        "llm/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-q5_k_m.gguf": {"url": "https://huggingface.co/DavidAU/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-GGUF/resolve/main/L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-q5_k_m.gguf", "path": "path_llm", "filename": "L3.2-Rogue-Creative-Instruct-Uncensored-Abliterated-7B-D_AU-q5_k_m.gguf"},
-        "llm/Llama-3.2-3B-Instruct-uncensored-IQ3_M.gguf": {"url": "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-uncensored-GGUF/resolve/main/Llama-3.2-3B-Instruct-uncensored-IQ3_M.gguf", "path": "path_llm", "filename": "Llama-3.2-3B-Instruct-uncensored-IQ3_M.gguf"},
-        "llm/Llama-3.2-3B-Instruct-uncensored-IQ3_XS.gguf": {"url": "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-uncensored-GGUF/resolve/main/Llama-3.2-3B-Instruct-uncensored-IQ3_XS.gguf", "path": "path_llm", "filename": "Llama-3.2-3B-Instruct-uncensored-IQ3_XS.gguf"},
-        "llm/Llama-3.2-3B-Instruct-uncensored-IQ4_XS.gguf": {"url": "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-uncensored-GGUF/resolve/main/Llama-3.2-3B-Instruct-uncensored-IQ4_XS.gguf", "path": "path_llm", "filename": "Llama-3.2-3B-Instruct-uncensored-IQ4_XS.gguf"},
-        "llm/Llama-3.2-3B-Instruct-uncensored-Q2_K.gguf": {"url": "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-uncensored-GGUF/resolve/main/Llama-3.2-3B-Instruct-uncensored-Q2_K.gguf", "path": "path_llm", "filename": "Llama-3.2-3B-Instruct-uncensored-Q2_K.gguf"},
-        "llm/Llama-3.2-3B-Instruct-uncensored-Q2_K_L.gguf": {"url": "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-uncensored-GGUF/resolve/main/Llama-3.2-3B-Instruct-uncensored-Q2_K_L.gguf", "path": "path_llm", "filename": "Llama-3.2-3B-Instruct-uncensored-Q2_K_L.gguf"},
-        "llm/Llama-3.2-3B-Instruct-uncensored-Q3_K_L.gguf": {"url": "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-uncensored-GGUF/resolve/main/Llama-3.2-3B-Instruct-uncensored-Q3_K_L.gguf", "path": "path_llm", "filename": "Llama-3.2-3B-Instruct-uncensored-Q3_K_L.gguf"},
-        "llm/Llama-3.2-3B-Instruct-uncensored-Q3_K_M.gguf": {"url": "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-uncensored-GGUF/resolve/main/Llama-3.2-3B-Instruct-uncensored-Q3_K_M.gguf", "path": "path_llm", "filename": "Llama-3.2-3B-Instruct-uncensored-Q3_K_M.gguf"},
-        "llm/Llama-3.2-3B-Instruct-uncensored-Q3_K_S.gguf": {"url": "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-uncensored-GGUF/resolve/main/Llama-3.2-3B-Instruct-uncensored-Q3_K_S.gguf", "path": "path_llm", "filename": "Llama-3.2-3B-Instruct-uncensored-Q3_K_S.gguf"},
-        "llm/Llama-3.2-3B-Instruct-uncensored-Q3_K_XL.gguf": {"url": "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-uncensored-GGUF/resolve/main/Llama-3.2-3B-Instruct-uncensored-Q3_K_XL.gguf", "path": "path_llm", "filename": "Llama-3.2-3B-Instruct-uncensored-Q3_K_XL.gguf"},
-        "llm/Llama-3.2-3B-Instruct-uncensored-Q4_0.gguf": {"url": "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-uncensored-GGUF/resolve/main/Llama-3.2-3B-Instruct-uncensored-Q4_0.gguf", "path": "path_llm", "filename": "Llama-3.2-3B-Instruct-uncensored-Q4_0.gguf"},
-        "llm/Llama-3.2-3B-Instruct-uncensored-Q4_0_4_4.gguf": {"url": "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-uncensored-GGUF/resolve/main/Llama-3.2-3B-Instruct-uncensored-Q4_0_4_4.gguf", "path": "path_llm", "filename": "Llama-3.2-3B-Instruct-uncensored-Q4_0_4_4.gguf"},
-        "llm/Llama-3.2-3B-Instruct-uncensored-Q4_0_4_8.gguf": {"url": "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-uncensored-GGUF/resolve/main/Llama-3.2-3B-Instruct-uncensored-Q4_0_4_8.gguf", "path": "path_llm", "filename": "Llama-3.2-3B-Instruct-uncensored-Q4_0_4_8.gguf"},
-        "llm/Llama-3.2-3B-Instruct-uncensored-Q4_0_8_8.gguf": {"url": "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-uncensored-GGUF/resolve/main/Llama-3.2-3B-Instruct-uncensored-Q4_0_8_8.gguf", "path": "path_llm", "filename": "Llama-3.2-3B-Instruct-uncensored-Q4_0_8_8.gguf"},
-        "llm/Llama-3.2-3B-Instruct-uncensored-Q4_K_L.gguf": {"url": "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-uncensored-GGUF/resolve/main/Llama-3.2-3B-Instruct-uncensored-Q4_K_L.gguf", "path": "path_llm", "filename": "Llama-3.2-3B-Instruct-uncensored-Q4_K_L.gguf"},
-        "llm/Llama-3.2-3B-Instruct-uncensored-Q4_K_M.gguf": {"url": "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-uncensored-GGUF/resolve/main/Llama-3.2-3B-Instruct-uncensored-Q4_K_M.gguf", "path": "path_llm", "filename": "Llama-3.2-3B-Instruct-uncensored-Q4_K_M.gguf"},
-        "llm/Llama-3.2-3B-Instruct-uncensored-Q4_K_S.gguf": {"url": "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-uncensored-GGUF/resolve/main/Llama-3.2-3B-Instruct-uncensored-Q4_K_S.gguf", "path": "path_llm", "filename": "Llama-3.2-3B-Instruct-uncensored-Q4_K_S.gguf"},
-        "llm/Llama-3.2-3B-Instruct-uncensored-Q5_K_L.gguf": {"url": "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-uncensored-GGUF/resolve/main/Llama-3.2-3B-Instruct-uncensored-Q5_K_L.gguf", "path": "path_llm", "filename": "Llama-3.2-3B-Instruct-uncensored-Q5_K_L.gguf"},
-        "llm/Llama-3.2-3B-Instruct-uncensored-Q5_K_M.gguf": {"url": "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-uncensored-GGUF/resolve/main/Llama-3.2-3B-Instruct-uncensored-Q5_K_M.gguf", "path": "path_llm", "filename": "Llama-3.2-3B-Instruct-uncensored-Q5_K_M.gguf"},
-        "llm/Llama-3.2-3B-Instruct-uncensored-Q5_K_S.gguf": {"url": "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-uncensored-GGUF/resolve/main/Llama-3.2-3B-Instruct-uncensored-Q5_K_S.gguf", "path": "path_llm", "filename": "Llama-3.2-3B-Instruct-uncensored-Q5_K_S.gguf"},
-        "llm/Llama-3.2-3B-Instruct-uncensored-Q6_K.gguf": {"url": "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-uncensored-GGUF/resolve/main/Llama-3.2-3B-Instruct-uncensored-Q6_K.gguf", "path": "path_llm", "filename": "Llama-3.2-3B-Instruct-uncensored-Q6_K.gguf"},
-        "llm/Llama-3.2-3B-Instruct-uncensored-Q6_K_L.gguf": {"url": "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-uncensored-GGUF/resolve/main/Llama-3.2-3B-Instruct-uncensored-Q6_K_L.gguf", "path": "path_llm", "filename": "Llama-3.2-3B-Instruct-uncensored-Q6_K_L.gguf"},
-        "llm/Llama-3.2-3B-Instruct-uncensored-Q8_0.gguf": {"url": "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-uncensored-GGUF/resolve/main/Llama-3.2-3B-Instruct-uncensored-Q8_0.gguf", "path": "path_llm", "filename": "Llama-3.2-3B-Instruct-uncensored-Q8_0.gguf"},
-        "llm/Llama-3.2-3B-Instruct-uncensored-f16.gguf": {"url": "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-uncensored-GGUF/resolve/main/Llama-3.2-3B-Instruct-uncensored-f16.gguf", "path": "path_llm", "filename": "Llama-3.2-3B-Instruct-uncensored-f16.gguf"},
-        # Add more downloadable files here
-    }
+    DOWNLOADABLE_FILES = {}
 
     def __init__(self):
         self.paths = self.load_paths()
         self.model_paths = self.get_model_paths()
         self.default_model_names = self.get_default_model_names()
         self.update_all_model_names()
+
+        pathdb_folder = "modules/pathdb"
+        files = os.listdir(pathdb_folder)
+        for file in files:
+            # Check if the file has a .json extension
+            if file.endswith('.json'):
+                file_path = os.path.join(pathdb_folder, file)
+
+                try:
+                    # Open and read the JSON file
+                    with open(file_path, 'r') as json_file:
+                        data = json.load(json_file)
+                        self.DOWNLOADABLE_FILES.update(data)
+                except Exception as e:
+                    print(f"Error reading {file}: {e}")
 
     def load_paths(self):
         paths = self.DEFAULT_PATHS.copy()

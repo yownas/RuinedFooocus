@@ -1,0 +1,67 @@
+{
+    "clip/clip_g.safetensors": {
+        "url": "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/text_encoder_2/model.fp16.safetensors",
+        "path": "path_clip",
+        "filename": "clip_g.safetensors"
+    },
+    "clip/clip_l.safetensors": {
+        "url": "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors",
+        "path": "path_clip",
+        "filename": "clip_l.safetensors"
+    },
+    "clip/t5-v1_1-xxl-encoder-Q3_K_L.gguf": {
+        "url": "https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-Q3_K_L.gguf",
+        "path": "path_clip",
+        "filename": "t5-v1_1-xxl-encoder-Q3_K_L.gguf"
+    },
+    "clip/t5-v1_1-xxl-encoder-Q3_K_M.gguf": {
+        "url": "https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-Q3_K_M.gguf",
+        "path": "path_clip",
+        "filename": "t5-v1_1-xxl-encoder-Q3_K_M.gguf"
+    },
+    "clip/t5-v1_1-xxl-encoder-Q3_K_S.gguf": {
+        "url": "https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-Q3_K_S.gguf",
+        "path": "path_clip",
+        "filename": "t5-v1_1-xxl-encoder-Q3_K_S.gguf"
+    },
+    "clip/t5-v1_1-xxl-encoder-Q4_K_M.gguf": {
+        "url": "https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-Q4_K_M.gguf",
+        "path": "path_clip",
+        "filename": "t5-v1_1-xxl-encoder-Q4_K_M.gguf"
+    },
+    "clip/t5-v1_1-xxl-encoder-Q4_K_S.gguf": {
+        "url": "https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-Q4_K_S.gguf",
+        "path": "path_clip",
+        "filename": "t5-v1_1-xxl-encoder-Q4_K_S.gguf"
+    },
+    "clip/t5-v1_1-xxl-encoder-Q5_K_M.gguf": {
+        "url": "https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-Q5_K_M.gguf",
+        "path": "path_clip",
+        "filename": "t5-v1_1-xxl-encoder-Q5_K_M.gguf"
+    },
+    "clip/t5-v1_1-xxl-encoder-Q5_K_S.gguf": {
+        "url": "https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-Q5_K_S.gguf",
+        "path": "path_clip",
+        "filename": "t5-v1_1-xxl-encoder-Q5_K_S.gguf"
+    },
+    "clip/t5-v1_1-xxl-encoder-Q6_K.gguf": {
+        "url": "https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-Q6_K.gguf",
+        "path": "path_clip",
+        "filename": "t5-v1_1-xxl-encoder-Q6_K.gguf"
+    },
+    "clip/t5-v1_1-xxl-encoder-Q8_0.gguf": {
+        "url": "https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-Q8_0.gguf",
+        "path": "path_clip",
+        "filename": "t5-v1_1-xxl-encoder-Q8_0.gguf"
+    },
+    "clip/t5-v1_1-xxl-encoder-f16.gguf": {
+        "url": "https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-f16.gguf",
+        "path": "path_clip",
+        "filename": "t5-v1_1-xxl-encoder-f16.gguf"
+    },
+    "clip/t5-v1_1-xxl-encoder-f32.gguf": {
+        "url": "https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-f32.gguf",
+        "path": "path_clip",
+        "filename": "t5-v1_1-xxl-encoder-f32.gguf"
+    }
+}
