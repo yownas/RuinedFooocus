@@ -172,7 +172,7 @@ class PathManager:
             "path": "path_vae",
             "filename": "sd3_vae.safetensors",
         },
-                "llm/DeepSeek-R1-Distill-Llama-8B-F16.gguf": {"url": "https://huggingface.co/unsloth/DeepSeek-R1-Distill-Llama-8B-GGUF/resolve/main/DeepSeek-R1-Distill-Llama-8B-F16.gguf", "path": "path_llm", "filename": "DeepSeek-R1-Distill-Llama-8B-F16.gguf"},
+        "llm/DeepSeek-R1-Distill-Llama-8B-F16.gguf": {"url": "https://huggingface.co/unsloth/DeepSeek-R1-Distill-Llama-8B-GGUF/resolve/main/DeepSeek-R1-Distill-Llama-8B-F16.gguf", "path": "path_llm", "filename": "DeepSeek-R1-Distill-Llama-8B-F16.gguf"},
         "llm/DeepSeek-R1-Distill-Llama-8B-Q2_K.gguf": {"url": "https://huggingface.co/unsloth/DeepSeek-R1-Distill-Llama-8B-GGUF/resolve/main/DeepSeek-R1-Distill-Llama-8B-Q2_K.gguf", "path": "path_llm", "filename": "DeepSeek-R1-Distill-Llama-8B-Q2_K.gguf"},
         "llm/DeepSeek-R1-Distill-Llama-8B-Q2_K_L.gguf": {"url": "https://huggingface.co/unsloth/DeepSeek-R1-Distill-Llama-8B-GGUF/resolve/main/DeepSeek-R1-Distill-Llama-8B-Q2_K_L.gguf", "path": "path_llm", "filename": "DeepSeek-R1-Distill-Llama-8B-Q2_K_L.gguf"},
         "llm/DeepSeek-R1-Distill-Llama-8B-Q3_K_M.gguf": {"url": "https://huggingface.co/unsloth/DeepSeek-R1-Distill-Llama-8B-GGUF/resolve/main/DeepSeek-R1-Distill-Llama-8B-Q3_K_M.gguf", "path": "path_llm", "filename": "DeepSeek-R1-Distill-Llama-8B-Q3_K_M.gguf"},
