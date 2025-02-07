@@ -5,6 +5,7 @@ from pathlib import Path
 from modules.settings import default_settings
 from shared import path_manager
 import modules.async_worker as worker
+from html import escape
 
 def llama_names():
         names = []
@@ -125,7 +126,7 @@ class pipeline:
                 if 'content' in delta:
                     tokens = delta['content']
                     for token in tokens:
-                        text += f"{token}"
+                        text += escape(f"{token}")
                         worker.add_result(
                             gen_data["task_id"],
                             "preview",
