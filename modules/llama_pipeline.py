@@ -3,6 +3,7 @@ from llama_cpp import Llama
 from modules.util import TimeIt
 from pathlib import Path
 from modules.settings import default_settings
+from shared import path_manager
 import modules.async_worker as worker
 
 def llama_names():
@@ -33,18 +34,15 @@ def run_llama(system_file, prompt):
                 print(f"LLAMA ERROR: Could not open file {system_file}")
                 return prompt
 
-        repo = default_settings.get("llama_repo", "hugging-quants/Llama-3.2-3B-Instruct-Q8_0-GGUF")
-        file = default_settings.get("llama_file", "*q8_0.gguf")
-
-        print(f"Loading {repo}")
-        llm = Llama.from_pretrained(repo_id=repo , filename=file, verbose=False, n_ctx=2048)
+        llama = pipeline()
+        llama.load_base_model()
 
         with TimeIt(""):
             print(f"# System:\n{system_prompt.strip()}\n")
             print(f"# User:\n{prompt.strip()}\n")
             print(f"# {name}: (Thinking...)")
             try:
-                res = llm.create_chat_completion(
+                res = llama.llm.create_chat_completion(
                     messages=[
                         {"role": "system", "content": system_prompt},
                         {"role": "user", "content": prompt}
@@ -55,8 +53,8 @@ def run_llama(system_file, prompt):
 
             print(f"{res.strip()}\n")
 
-        llm._stack.close()
-        llm.close()
+        llama.llm._stack.close()
+        llama.llm.close()
 
         return res
 
@@ -69,19 +67,35 @@ class pipeline:
         return gen_data
 
     def load_base_model(self):
+        localfile = default_settings.get("llama_localfile", None)
         repo = default_settings.get("llama_repo", "hugging-quants/Llama-3.2-3B-Instruct-Q8_0-GGUF")
         file = default_settings.get("llama_file", "*q8_0.gguf")
-        print(f"Loading {repo}")
         with TimeIt("Load LLM"):
-            self.llm = Llama.from_pretrained(
-                repo_id=repo,
-                filename=file,
-                verbose=False,
-                n_ctx=2048,
-                n_gpu_layers=-1,
-                offload_kqv=True,
-                flash_attn=True,
-            )
+            if localfile is None:
+                print(f"Loading {repo}")
+                self.llm = Llama.from_pretrained(
+                    repo_id=repo,
+                    filename=file,
+                    verbose=False,
+                    n_ctx=2048,
+                    n_gpu_layers=-1,
+                    offload_kqv=True,
+                    flash_attn=True,
+                )
+            else:
+                llm_path = path_manager.get_folder_file_path(
+                    "llm",
+                    localfile,
+                )
+                print(f"Loading {localfile}")
+                self.llm = Llama(
+                    model_path=str(llm_path),
+                    verbose=False,
+                    n_ctx=2048,
+                    n_gpu_layers=-1,
+                    offload_kqv=True,
+                    flash_attn=True,
+                )
 
     def process(self, gen_data):
         worker.add_result(
