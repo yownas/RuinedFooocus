@@ -6,7 +6,7 @@ root = Path(__file__).resolve().parent
 sys.path.append(str(root))
 os.chdir(root)
 
-offline = os.environ.get("RF_OFFLINE") == "1"
+offline = os.environ.get("RF_OFFLINE") == "1" or "--offline" in sys.argv
 
 if not offline:
     bupdated = False

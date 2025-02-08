@@ -19,7 +19,7 @@ parser.add_argument(
     "--nobrowser", action="store_true", help="Do not launch in browser."
 )
 parser.add_argument("--gpu-device-id", type=int, default=None, metavar="DEVICE_ID")
-
+parser.add_argument("--offline", action="store_true", help=argparse.SUPPRESS)
 
 args = parser.parse_args()
 

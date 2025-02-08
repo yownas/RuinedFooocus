@@ -140,7 +140,7 @@ if args.gpu_device_id is not None:
     os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu_device_id)
     print("Set device to:", args.gpu_device_id)
 
-offline = os.environ.get("RF_OFFLINE") == "1"
+offline = os.environ.get("RF_OFFLINE") == "1" or "--offline" in sys.argv
 
 if offline:
     print("Skip checking python modules.")
