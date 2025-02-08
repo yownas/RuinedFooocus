@@ -60,12 +60,26 @@ def add_evolve_tab(prompt, image_number, run_event):
     ):
         prompts = prompt.split("---")
         in_txt = prompts[min(int(button), len(prompts)) - 1]
-        res = (
-            four_evolved_prompts(in_txt, mode, strength)
-            + [in_txt]
-            + four_evolved_prompts(in_txt, mode, strength)
-        )
-        return gr.update(value="\n---\n".join(res)), gr.update(value=1), run_event + 1
+
+        if mode == "Copy to Prompt...":
+            result = (
+                gr.update(value=in_txt),
+                gr.update(),
+                run_event,
+            )
+        else:
+            res = (
+                four_evolved_prompts(in_txt, mode, strength)
+                + [in_txt]
+                + four_evolved_prompts(in_txt, mode, strength)
+            )
+            result = (
+                gr.update(value="\n---\n".join(res)),
+                gr.update(value=1),
+                run_event + 1,
+            )
+
+        return result
 
     with gr.Accordion(label="Evolve", open=False):
         evolve_btn = {}
@@ -82,6 +96,7 @@ def add_evolve_tab(prompt, image_number, run_event):
                 "Tokens",
                 "Words",
                 "OBP Variant",
+                "Copy to Prompt..."
             ]
             evolve_mode = gr.Dropdown(
                 evolve_modes,
