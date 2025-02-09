@@ -1,7 +1,5 @@
 import modules.async_worker as worker
-
 from modules.settings import default_settings
-
 from PIL import Image
 
 # Copy this file, add suitable code and add logic to modules/pipelines.py to select it
@@ -45,23 +43,8 @@ class pipeline:
 
     def process(
         self,
-        positive_prompt,
-        negative_prompt,
-        input_image,
-        controlnet,
-        main_view,
-        steps,
-        width,
-        height,
-        image_seed,
-        start_step,
-        denoise,
-        cfg,
-        sampler_name,
-        scheduler,
-        clip_skip,
-        callback,
         gen_data=None,
+        callback=None,
     ):
         worker.add_result(
             gen_data["task_id"],
@@ -69,10 +52,10 @@ class pipeline:
             (-1, f"Generating ...", None)
         )
 
-        images = Image.open("html/logo.png")
+        image = Image.open("html/logo.png")
 
         # Return finished image to preview
         if callback is not None:
-            callback(steps, 0, 0, steps, images)
+            callback(gen_data["steps"], 0, 0, gen_data["steps"], image)
 
-        return [images]
+        return [image]

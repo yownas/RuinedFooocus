@@ -204,23 +204,8 @@ class pipeline:
 
     def process(
         self,
-        positive_prompt,
-        negative_prompt,
-        input_image,
-        controlnet,
-        main_view,
-        steps,
-        width,
-        height,
-        image_seed,
-        start_step,
-        denoise,
-        cfg,
-        sampler_name,
-        scheduler,
-        clip_skip,
-        callback,
         gen_data=None,
+        callback=None,
     ):
         worker.add_result(
             gen_data["task_id"],
@@ -228,6 +213,7 @@ class pipeline:
             (-1, f"Generating ...", None)
         )
 
+        input_image = gen_data["input_image"]
         input_image = cv2.cvtColor(np.asarray(input_image), cv2.COLOR_RGB2BGR)
         input_faces = sorted(
             self.analyser_model.get(input_image), key=lambda x: x.bbox[0]
@@ -276,7 +262,7 @@ class pipeline:
                 loop=loop,
             )
         else:
-            output_image = cv2.imread(main_view)
+            output_image = cv2.imread(gen_data["main_view"])
             if output_image is None:
                 images = "html/error.png"
             else:

@@ -145,23 +145,8 @@ class pipeline:
 
     def process(
         self,
-        positive_prompt,
-        negative_prompt,
-        input_image,
-        controlnet,
-        main_view,
-        steps,
-        width,
-        height,
-        image_seed,
-        start_step,
-        denoise,
-        cfg,
-        sampler_name,
-        scheduler,
-        clip_skip,
-        callback,
         gen_data=None,
+        callback=None,
     ):
         worker.add_result(
             gen_data["task_id"],
@@ -171,6 +156,6 @@ class pipeline:
         maxresults = gen_data["original_image_number"]
         maxresults = 100 if maxresults <= 1 else maxresults # 0 and 1 is 100 matches (max)
 
-        images = search(positive_prompt, maxresults=maxresults, callback=callback)
+        images = search(gen_data["positive_prompt"], maxresults=maxresults, callback=callback)
 
         return images

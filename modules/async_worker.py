@@ -89,6 +89,7 @@ def worker():
             outputs.append([gen_data["task_id"], "preview", (-1, f"Loading LoRA models ...", None)])
         pipeline.load_loras(loras)
 
+        # FIXME move this into get_perf_options?
         if (
             gen_data["performance_selection"]
             == shared.performance_settings.CUSTOM_PERFORMANCE
@@ -100,8 +101,8 @@ def worker():
             ).copy()
             perf_options.update(gen_data)
             gen_data = perf_options
-
         steps = gen_data["custom_steps"]
+        gen_data["steps"] = steps
 
         if (
             gen_data["aspect_ratios_selection"]
@@ -115,8 +116,12 @@ def worker():
 
         if "width" in gen_data:
             width = gen_data["width"]
+        else:
+            gen_data["width"] = width
         if "height" in gen_data:
             height = gen_data["height"]
+        else:
+            gen_data["height"] = height
 
         if gen_data["cn_selection"] == "Img2Img" or gen_data["cn_type"] == "Img2img":
             if gen_data["input_image"]:
@@ -222,28 +227,16 @@ def worker():
             p_txt, n_txt = process_prompt(
                 gen_data["style_selection"], pos_stripped, neg_stripped, gen_data
             )
+            gen_data["positive_prompt"] = p_txt
+            gen_data["negative_prompt"] = n_txt
+            gen_data["seed"] = seed # Update seed
             start_step = 0
             denoise = None
             with TimeIt("Pipeline process"):
                 try:
                     imgs = pipeline.process(
-                        p_txt,
-                        n_txt,
-                        gen_data["input_image"],
-                        modules.controlnet.get_settings(gen_data),
-                        gen_data["main_view"],
-                        steps,
-                        width,
-                        height,
-                        seed,
-                        start_step,
-                        denoise,
-                        gen_data["cfg"],
-                        gen_data["sampler_name"],
-                        gen_data["scheduler"],
-                        gen_data["clip_skip"],
-                        callback=callback if "silent" not in gen_data else None,
                         gen_data=gen_data,
+                        callback=callback if "silent" not in gen_data else None,
                     )
                 except InterruptProcessingException as iex:
                     stop_batch = True

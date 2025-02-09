@@ -87,23 +87,8 @@ class pipeline:
 
     def process(
         self,
-        positive_prompt,
-        negative_prompt,
-        input_image,
-        controlnet,
-        main_view,
-        steps,
-        width,
-        height,
-        image_seed,
-        start_step,
-        denoise,
-        cfg,
-        sampler_name,
-        scheduler,
-        clip_skip,
-        callback,
         gen_data=None,
+        callback=None,
     ):
         worker.add_result(
             gen_data["task_id"],
@@ -111,21 +96,19 @@ class pipeline:
             (-1, f"Generating ...", None)
         )
 
-        seed = image_seed
-
         image = self.pipe(
-            prompt=positive_prompt,
-            height=height,
-            width=width,
-            guidance_scale=cfg,
+            prompt=gen_data["positive_prompt"],
+            height=gen_data["height"],
+            width=gen_data["width"],
+            guidance_scale=gen_data["cfg"],
             output_type="pil",
-            num_inference_steps=steps,
+            num_inference_steps=gen_data["steps"],
             max_sequence_length=256,
-            generator=torch.Generator("cpu").manual_seed(seed)
+            generator=torch.Generator("cpu").manual_seed(gen_data["seed"])
         ).images[0]
 
         # Return finished image to preview
         if callback is not None:
-            callback(steps, 0, 0, steps, image)
+            callback(gen_data["steps"], 0, 0, gen_data["steps"], image)
 
         return [image]

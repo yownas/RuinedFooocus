@@ -47,27 +47,13 @@ class pipeline:
 
     def process(
         self,
-        positive_prompt,
-        negative_prompt,
-        input_image,
-        controlnet,
-        main_view,
-        steps,
-        width,
-        height,
-        image_seed,
-        start_step,
-        denoise,
-        cfg,
-        sampler_name,
-        scheduler,
-        clip_skip,
-        callback,
         gen_data=None,
+        callback=None,
     ):
-        print(f"Downloading: {positive_prompt}")
+        repo = gen_data["prompt"]
+        print(f"Downloading: {repo}")
 
-        repo_id = re.sub(r"^\s*hf:\s*", "", positive_prompt, count=1)
+        repo_id = re.sub(r"^\s*hf:\s*", "", repo, count=1)
         repo_id = re.sub(r"\s.*$", "", repo_id, count=1)
         repo_id = repo_id.replace(",", "")
 

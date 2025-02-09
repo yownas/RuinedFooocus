@@ -3,6 +3,7 @@ import traceback
 import numpy as np
 import torch
 import modules.async_worker as worker
+import modules.controlnet
 from modules.settings import default_settings
 from shared import path_manager
 import comfy.utils
@@ -60,24 +61,10 @@ class pipeline:
 
     def process(
         self,
-        positive_prompt,
-        negative_prompt,
-        input_image,
-        controlnet,
-        main_view,
-        steps,
-        width,
-        height,
-        image_seed,
-        start_step,
-        denoise,
-        cfg,
-        sampler_name,
-        scheduler,
-        clip_skip,
-        callback,
         gen_data=None,
+        callback=None,
     ):
+        input_image = gen_data["input_image"]
         input_image = input_image.convert("RGB")
         input_image = np.array(input_image).astype(np.float32) / 255.0
         input_image = torch.from_numpy(input_image)[None,]
@@ -87,7 +74,9 @@ class pipeline:
             "preview",
             (-1, f"Load upscaling model ...", None)
         )
-        upscaler_name = controlnet["upscaler"]
+
+        cn_settings = modules.controlnet.get_settings(gen_data)
+        upscaler_name = cn_settings["upscaler"]
         upscale_path = path_manager.get_file_path(upscaler_name)
         if upscale_path == None:
             upscale_path = path_manager.get_file_path("4x-UltraSharp.pth")

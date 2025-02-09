@@ -71,7 +71,7 @@ class pipeline:
         sampler_name,
         scheduler,
         clip_skip,
-        callback,
+        callback=None,
         gen_data=None,
     ):
 
@@ -82,10 +82,10 @@ class pipeline:
         )
 
         rembg_session = rembg.new_session()
-        input_image = self.remove_background(input_image, rembg_session)
+        image = self.remove_background(gen_data["input_image"], rembg_session)
 
         # Return finished image to preview
         if callback is not None:
-            callback(steps, 0, 0, steps, input_image)
+            callback(1, 0, 0, 1, image)
 
-        return [input_image]
+        return [image]

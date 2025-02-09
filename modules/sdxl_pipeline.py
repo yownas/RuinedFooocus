@@ -432,23 +432,8 @@ class pipeline:
     @torch.inference_mode()
     def process(
         self,
-        positive_prompt,
-        negative_prompt,
-        input_image,
-        controlnet,
-        main_view,
-        steps,
-        width,
-        height,
-        image_seed,
-        start_step,
-        denoise,
-        cfg,
-        sampler_name,
-        scheduler,
-        clip_skip,
-        callback,
         gen_data=None,
+        callback=None,
     ):
         try:
             if self.xl_base_patched == None or not (
@@ -478,9 +463,19 @@ class pipeline:
                 )
             return []
 
+        positive_prompt = gen_data["positive_prompt"]
+        negative_prompt = gen_data["negative_prompt"]
+        input_image = gen_data["input_image"]
+        controlnet = modules.controlnet.get_settings(gen_data)
+
+        cfg = gen_data["cfg"]
+        sampler_name = gen_data["sampler_name"]
+        scheduler = gen_data["scheduler"]
+        clip_skip = gen_data["clip_skip"]
+
         img2img_mode = False
         input_image_pil = None
-        seed = image_seed if isinstance(image_seed, int) else random.randint(1, 2**32)
+        seed = gen_data["seed"] if isinstance(gen_data["seed"], int) else random.randint(1, 2**32)
 
         if callback is not None:
             worker.add_result(
@@ -503,8 +498,8 @@ class pipeline:
                 print("ControlNet and [prompt|switching] do not work well together.")
                 print("ControlNet will only be applied to the first prompt.")
 
-            prompt_per_step = pp.prompt_switch_per_step(positive_prompt, steps)
-            perc_per_step = round(100 / steps, 2)
+            prompt_per_step = pp.prompt_switch_per_step(positive_prompt, gen_data["steps"])
+            perc_per_step = round(100 / gen_data["steps"], 2)
             for i in range(len(prompt_per_step)):
                 if self.textencode("switch", prompt_per_step[i], clip_skip):
                     updated_conditions = True
@@ -574,11 +569,11 @@ class pipeline:
                 isinstance(self.xl_base.unet.model, Flux)
             ):
                 latent = EmptySD3LatentImage().generate(
-                    width=width, height=height, batch_size=1
+                    width=gen_data["width"], height=gen_data["height"], batch_size=1
                 )[0]
             else: # SDXL and unknown
                 latent = EmptyLatentImage().generate(
-                    width=width, height=height, batch_size=1
+                    width=gen_data["width"], height=gen_data["height"], batch_size=1
                 )[0]
             force_full_denoise = False
             denoise = None
@@ -615,7 +610,7 @@ class pipeline:
 
         previewer = get_previewer(device, self.xl_base_patched.unet.model.latent_format)
 
-        pbar = comfy.utils.ProgressBar(steps)
+        pbar = comfy.utils.ProgressBar(gen_data["steps"])
 
         def callback_function(step, x0, x, total_steps):
             y = None
@@ -659,8 +654,8 @@ class pipeline:
         kwargs = {
             "cfg": cfg,
             "latent_image": latent_image,
-            "start_step": start_step,
-            "last_step": steps,
+            "start_step": 0,
+            "last_step": gen_data["steps"],
             "force_full_denoise": force_full_denoise,
             "denoise_mask": noise_mask,
             "sigmas": None,
@@ -670,7 +665,7 @@ class pipeline:
         }
         sampler = KSampler(
             self.xl_base_patched.unet,
-            steps=steps,
+            steps=gen_data["steps"],
             device=device,
             sampler=sampler_name,
             scheduler=scheduler,
@@ -713,6 +708,6 @@ class pipeline:
         ]
 
         if callback is not None:
-            callback(steps, 0, 0, steps, images[0])
+            callback(gen_data["steps"], 0, 0, gen_data["steps"], images[0])
 
         return images
