@@ -78,7 +78,7 @@ class pipeline:
                     repo_id=repo,
                     filename=file,
                     verbose=False,
-                    n_ctx=2048,
+                    n_ctx=4096,
                     n_gpu_layers=-1,
                     offload_kqv=True,
                     flash_attn=True,
@@ -92,7 +92,7 @@ class pipeline:
                 self.llm = Llama(
                     model_path=str(llm_path),
                     verbose=False,
-                    n_ctx=2048,
+                    n_ctx=4096,
                     n_gpu_layers=-1,
                     offload_kqv=True,
                     flash_attn=True,
@@ -109,13 +109,13 @@ class pipeline:
             self.load_base_model()
 
         h = gen_data["history"]
-        chat = [{"role": "system", "content": gen_data["system"]}] + h[-5 if len(h) > 5 else -len(h):] # Keep just the last 5 messages
+        chat = [{"role": "system", "content": gen_data["system"]}] + h[-3 if len(h) > 3 else -len(h):] # Keep just the last 3 messages
 
         print(f"Thinking...")
         with TimeIt("LLM thinking"):
             response = self.llm.create_chat_completion(
                 messages = chat,
-                max_tokens=512,
+                max_tokens=1024,
                 stream=True,
             )
             #["choices"][0]["message"]["content"]
