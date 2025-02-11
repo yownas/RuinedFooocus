@@ -70,11 +70,23 @@ def launch_app(args):
     shared.gradio_root.queue(api_open=True)
 
     # Create theme for main interface
-    theme = gr.themes.Default(
-        spacing_size=gr.themes.Size(
-            lg="8px", md="6px", sm="4px", xl="8px", xs="2px", xxl="2px", xxs="1px"
-        ),
-    )
+    if "theme" not in settings or settings["theme"] == "None":
+        theme = gr.themes.Default()
+    else:
+        try:
+            theme = gr.Theme.from_hub(settings["theme"])
+        except:
+            print(f"ERROR: Could not find theme {settings['theme']}. Check https://huggingface.co/spaces/gradio/theme-gallery for themes")
+            theme = gr.themes.Default()
+
+    # Override some settings
+    theme.spacing_lg = '8px'
+    theme.spacing_md = '6px'
+    theme.spacing_sm = '4px'
+    theme.spacing_xl = '8px'
+    theme.spacing_xs = '2px'
+    theme.spacing_xxl = '2px'
+    theme.spacing_xxs = '1px' 
 
     # Create the image gallery from the new module
     app_image_browser = ui_image_gallery.create_image_gallery()
@@ -221,18 +233,12 @@ def generate_clicked(*args):
 
 settings = default_settings
 
-if settings["theme"] == "None":
-    theme = gr.themes.Default()
-else:
-    theme = settings["theme"]
-
 metadata_json = gr.Json()
 
 shared.wildcards = get_wildcard_files()
 
 shared.gradio_root = gr.Blocks(
     title="RuinedFooocus " + version.version,
-    theme=theme,
 ).queue()
 
 with shared.gradio_root as block:
