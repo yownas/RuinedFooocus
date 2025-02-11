@@ -87,6 +87,7 @@ def launch_app(args):
     theme.spacing_xs = '2px'
     theme.spacing_xxl = '2px'
     theme.spacing_xxs = '1px' 
+    theme.text_xxl = '8px' 
 
     # Create the image gallery from the new module
     app_image_browser = ui_image_gallery.create_image_gallery()
@@ -96,7 +97,7 @@ def launch_app(args):
         [shared.gradio_root, app_image_browser, app_llama_chat],
         ["Main", "Image browser", "Chat bot"],
         theme=theme,
-        title="RF2",
+        title="RuinedFooocus " + version.version,
         css=modules.html.css,
         js=modules.html.scripts,
         analytics_enabled=False,
@@ -237,9 +238,7 @@ metadata_json = gr.Json()
 
 shared.wildcards = get_wildcard_files()
 
-shared.gradio_root = gr.Blocks(
-    title="RuinedFooocus " + version.version,
-).queue()
+shared.gradio_root = gr.Blocks().queue()
 
 with shared.gradio_root as block:
     block.load()
