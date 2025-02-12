@@ -1,3 +1,6 @@
+### 25.02.12
+* Bugfixes
+
 ### 25.02.06
 * Fix for browser high CPU usage
 * Code cleanup
