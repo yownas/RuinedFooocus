@@ -5,7 +5,6 @@ from pathlib import Path
 from modules.settings import default_settings
 from shared import path_manager
 import modules.async_worker as worker
-from html import escape
 
 def llama_names():
         names = []
@@ -47,7 +46,9 @@ def run_llama(system_file, prompt):
                     messages=[
                         {"role": "system", "content": system_prompt},
                         {"role": "user", "content": prompt}
-                    ])["choices"][0]["message"]["content"]
+                    ],
+                    repeat_penalty = 1.18,
+                )["choices"][0]["message"]["content"]
             except Exception as e:
                 print(f"LLAMA ERROR: {e}")
                 res = prompt
@@ -126,7 +127,7 @@ class pipeline:
                 if 'content' in delta:
                     tokens = delta['content']
                     for token in tokens:
-                        text += escape(f"{token}")
+                        text += token
                         worker.add_result(
                             gen_data["task_id"],
                             "preview",

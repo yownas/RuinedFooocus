@@ -71,6 +71,7 @@ def create_chat():
                     show_label=False,
                     height=600,
                     type="messages",
+                    allow_tags=["think", "thinking"],
                     value=_llama_select_assistant(default_bot)["chatstart"] ,
                 )
                 llama_msg = gr.Textbox(
