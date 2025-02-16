@@ -63,5 +63,10 @@
         "url": "https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-f32.gguf",
         "path": "path_clip",
         "filename": "t5-v1_1-xxl-encoder-f32.gguf"
+    },
+    "clip/gemma_2_2b_fp16.safetensors": {
+	"url": "https://huggingface.co/calcuis/lumina-gguf/resolve/main/gemma_2_2b_fp16.safetensors",
+	"path": "path_clip",
+        "filename": "gemma_2_2b_fp16.safetensors"
     }
 }

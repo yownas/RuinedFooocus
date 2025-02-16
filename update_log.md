@@ -1,3 +1,7 @@
+### 
+* Support Lumina2 safetensors
+* Bump ComfyUI and GGUF versions
+
 ### 25.02.12
 * Bugfixes
 

@@ -11,7 +11,7 @@ import modules.prompt_processing as pp
 
 from PIL import Image, ImageOps
 
-from comfy.model_base import BaseModel, SDXL, SD3, Flux
+from comfy.model_base import BaseModel, SDXL, SD3, Flux, Lumina2
 from modules.settings import default_settings
 from shared import path_manager
 
@@ -44,7 +44,6 @@ from comfy.sampler_helpers import (
 )
 
 from comfy_extras.nodes_sd3 import EmptySD3LatentImage
-#from comfy_extras.nodes_flux import FluxGuidance
 from node_helpers import conditioning_set_values
 
 from comfy.samplers import KSampler
@@ -61,11 +60,11 @@ from modules.pipleline_utils import (
     set_timestep_range,
 )
 
-from comfyui_gguf.nodes import gguf_clip_loader, gguf_sd_loader, DualCLIPLoaderGGUF, GGUFModelPatcher
+from comfyui_gguf.nodes import gguf_sd_loader, DualCLIPLoaderGGUF, GGUFModelPatcher
 from comfyui_gguf.ops import GGMLOps
 
 class pipeline:
-    pipeline_type = ["sdxl", "ssd", "sd3", "flux"]
+    pipeline_type = ["sdxl", "ssd", "sd3", "flux", "lumina2"]
 
     comfy.model_management.DISABLE_SMART_MEMORY = False
 
@@ -282,6 +281,18 @@ class pipeline:
                         # https://civitai.com/models/511494/sd3-vae
                         vae_name = default_settings.get("vae_sd3", "sd3_vae.safetensors")
 
+                    elif isinstance(unet.model, Lumina2):
+                        clip_name = default_settings.get("gemma_2_2b", "gemma_2_2b_fp16.safetensors")
+                        clip_names = str(clip_name)
+                        clip_path = path_manager.get_folder_file_path(
+                            "clip",
+                            clip_name,
+                            default = os.path.join(path_manager.model_paths["clip_path"], clip_name)
+                        )
+                        clip_paths = [str(clip_path)]
+                        clip_type = comfy.sd.CLIPType.LUMINA2
+                        vae_name = default_settings.get("vae_sdxl", "sdxl_vae.safetensors")
+
                     else: # SDXL
                         clip_name = default_settings.get("clip_g", "clip_g.safetensors")
                         clip_names.append(str(clip_name))
@@ -341,10 +352,11 @@ class pipeline:
                 isinstance(self.xl_base.unet.model, BaseModel) or
                 isinstance(self.xl_base.unet.model, SDXL) or
                 isinstance(self.xl_base.unet.model, SD3) or
-                isinstance(self.xl_base.unet.model, Flux)
+                isinstance(self.xl_base.unet.model, Flux) or
+                isinstance(self.xl_base.unet.model, LUMINA2)
             ):
                 print(
-                    f"Model {type(self.xl_base.unet.model)} not supported. RuinedFooocus only support SDXL/SD3/Flux models as the base model."
+                    f"Model {type(self.xl_base.unet.model)} not supported. RuinedFooocus only support SD1.x/SDXL/SD3/Flux/Lumina2 models as the base model."
                 )
                 self.xl_base = None
 
@@ -440,9 +452,10 @@ class pipeline:
                 isinstance(self.xl_base_patched.unet.model, BaseModel) or
                 isinstance(self.xl_base_patched.unet.model, SDXL) or
                 isinstance(self.xl_base_patched.unet.model, SD3) or
-                isinstance(self.xl_base_patched.unet.model, Flux)
-                ):
-                print(f"ERROR: Can only use SDXL, SD3 or Flux models")
+                isinstance(self.xl_base_patched.unet.model, Flux) or 
+                isinstance(self.xl_base_patched.unet.model, Lumina2)
+            ):
+                print(f"ERROR: Can only use SD1.x, SDXL, SD3, Flux or Lumina2 models")
                 worker.interrupt_ruined_processing = True
                 if callback is not None:
                     worker.add_result(
@@ -566,7 +579,8 @@ class pipeline:
         if not img2img_mode:
             if (
                 isinstance(self.xl_base.unet.model, SD3) or
-                isinstance(self.xl_base.unet.model, Flux)
+                isinstance(self.xl_base.unet.model, Flux) or
+                isinstance(self.xl_base.unet.model, Lumina2)
             ):
                 latent = EmptySD3LatentImage().generate(
                     width=gen_data["width"], height=gen_data["height"], batch_size=1
