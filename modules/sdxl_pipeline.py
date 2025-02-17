@@ -24,7 +24,7 @@ import comfy.model_management
 from comfy.sd import load_checkpoint_guess_config
 from tqdm import tqdm
 
-from comfy_extras.chainner_models import model_loading
+from comfy_extras.nodes_model_advanced import ModelSamplingAuraFlow
 from nodes import (
     CLIPTextEncode,
     CLIPSetLastLayer,
@@ -60,8 +60,10 @@ from modules.pipleline_utils import (
     set_timestep_range,
 )
 
-from comfyui_gguf.nodes import gguf_sd_loader, DualCLIPLoaderGGUF, GGUFModelPatcher
-from comfyui_gguf.ops import GGMLOps
+#from comfyui_gguf.nodes import gguf_sd_loader, DualCLIPLoaderGGUF, GGUFModelPatcher
+#from comfyui_gguf.ops import GGMLOps
+from calcuis_gguf.pig import load_gguf_sd, GGMLOps, GGUFModelPatcher
+from calcuis_gguf.pig import DualClipLoaderGGUF as DualCLIPLoaderGGUF
 
 class pipeline:
     pipeline_type = ["sdxl", "ssd", "sd3", "flux", "lumina2"]
@@ -220,9 +222,11 @@ class pipeline:
             with torch.torch.inference_mode():
                 try:
                     if filename.endswith(".gguf"):
-                        sd = gguf_sd_loader(filename)
-                        self.ggml_ops.Linear.dequant_dtype = "target"
-                        self.ggml_ops.Linear.patch_dtype = "target"
+                        #sd = gguf_sd_loader(filename)
+                        sd = load_gguf_sd(filename)
+#For ComfyUI_GGUF
+#                        self.ggml_ops.Linear.dequant_dtype = "target"
+#                        self.ggml_ops.Linear.patch_dtype = "target"
                         unet = comfy.sd.load_diffusion_model_state_dict(
                             sd, model_options={"custom_operations": self.ggml_ops}
                         )
@@ -282,7 +286,7 @@ class pipeline:
                         vae_name = default_settings.get("vae_sd3", "sd3_vae.safetensors")
 
                     elif isinstance(unet.model, Lumina2):
-                        clip_name = default_settings.get("gemma_2_2b", "gemma_2_2b_fp16.safetensors")
+                        clip_name = default_settings.get("clip_gemma", "gemma_2_2b_fp16.safetensors")
                         clip_names = str(clip_name)
                         clip_path = path_manager.get_folder_file_path(
                             "clip",
@@ -291,7 +295,11 @@ class pipeline:
                         )
                         clip_paths = [str(clip_path)]
                         clip_type = comfy.sd.CLIPType.LUMINA2
-                        vae_name = default_settings.get("vae_sdxl", "sdxl_vae.safetensors")
+                        vae_name = default_settings.get("vae_lumina2", "lumina2_vae_fp32.safetensors")
+                        unet = ModelSamplingAuraFlow().patch_aura(
+                            model=unet,
+                            shift=default_settings.get("lumina2_shift", 3.0),
+                        )[0]
 
                     else: # SDXL
                         clip_name = default_settings.get("clip_g", "clip_g.safetensors")
@@ -353,7 +361,7 @@ class pipeline:
                 isinstance(self.xl_base.unet.model, SDXL) or
                 isinstance(self.xl_base.unet.model, SD3) or
                 isinstance(self.xl_base.unet.model, Flux) or
-                isinstance(self.xl_base.unet.model, LUMINA2)
+                isinstance(self.xl_base.unet.model, Lumina2)
             ):
                 print(
                     f"Model {type(self.xl_base.unet.model)} not supported. RuinedFooocus only support SD1.x/SDXL/SD3/Flux/Lumina2 models as the base model."

@@ -13,5 +13,20 @@
         "url": "https://civitai.com/api/download/models/568480?type=Model&format=SafeTensor",
         "path": "path_vae",
         "filename": "sd3_vae.safetensors"
+    },
+    "vae/lumina2_vae_fp8.safetensors": {
+        "url": "https://huggingface.co/calcuis/lumina-gguf/resolve/main/lumina2_vae_fp8.safetensors",
+        "path": "path_vae",
+        "filename": "lumina2_vae_fp8.safetensors"
+    },
+    "vae/lumina2_vae_fp16.safetensors": {
+        "url": "https://huggingface.co/calcuis/lumina-gguf/resolve/main/lumina2_vae_fp16.safetensors",
+        "path": "path_vae",
+        "filename": "lumina2_vae_fp16.safetensors"
+    },
+    "vae/lumina2_vae_fp32.safetensors": {
+        "url": "https://huggingface.co/calcuis/lumina-gguf/resolve/main/lumina2_vae_fp32.safetensors",
+        "path": "path_vae",
+        "filename": "lumina2_vae_fp32.safetensors"
     }
 }
