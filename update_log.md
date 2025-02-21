@@ -1,4 +1,4 @@
-### 
+### 25.02.21
 * Support Lumina2 safetensors
 * Bump ComfyUI and GGUF versions
 
