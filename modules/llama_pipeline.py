@@ -1,10 +1,13 @@
 import re
 from llama_cpp import Llama
+from txtai import Embeddings
 from modules.util import TimeIt
 from pathlib import Path
 from modules.settings import default_settings
 from shared import path_manager
 import modules.async_worker as worker
+import json
+import requests
 
 def llama_names():
         names = []
@@ -64,6 +67,7 @@ class pipeline:
     pipeline_type = ["llama"]
 
     llm = None
+    embeddings = None
 
     def parse_gen_data(self, gen_data):
         return gen_data
@@ -98,6 +102,44 @@ class pipeline:
                     offload_kqv=True,
                     flash_attn=True,
                 )
+        self.embeddings = None
+
+    def index_source(self, source):
+        if self.embeddings == None:
+            self.embeddings = Embeddings(content=True)
+            self.embeddings.initindex(reindex=True)
+
+        match source[0]:
+
+            case "url":
+                print(f"Read {source[1]}")
+                try:
+                    response = requests.get(source[1])
+                    response.raise_for_status()
+                    data = response.content.decode()
+                except requests.exceptions.HTTPError as e:
+                    if response.status_code == 404:
+                        print(f"Error: Url {Path(path).name} Not Found")
+                    else:
+                        print(f"HTTP Error: {e}")
+                    return
+                except requests.exceptions.RequestException as e:
+                    print(f"Error: {e}")
+                    return
+
+                if source[1].endswith(".md"):
+                    data = data.split("\n# ")
+
+            case "text":
+                data = source[1]
+
+            case _:
+                print("WARNING: Unknown embedding type {source[0]}")
+                return
+
+        if data:
+            self.embeddings.upsert(data)
+
 
     def process(self, gen_data):
         worker.add_result(
@@ -109,8 +151,29 @@ class pipeline:
         if self.llm == None:
             self.load_base_model()
 
+        # load embeds?
+        # FIXME should dump the entire gen_data["embed"] to index_source() and have it sort it out
+        embed = json.loads(gen_data['embed'])
+        if embed:
+            if not self.embeddings: # If chatbot has embeddings to index, check that we have them.
+                for source in embed:
+                    self.index_source(source)
+        else:
+            self.embeddings = None
+
+        system_prompt = gen_data["system"]
+
         h = gen_data["history"]
-        chat = [{"role": "system", "content": gen_data["system"]}] + h[-3 if len(h) > 3 else -len(h):] # Keep just the last 3 messages
+
+        if self.embeddings:
+            q = h[-1]["content"]
+            context = "This some context that will help you answer the question:\n"
+            for data in self.embeddings.search(q, limit=2):
+                #if data["score"] >= 0.5:
+                context += data["text"] + "\n\n"
+            system_prompt += context
+
+        chat = [{"role": "system", "content": system_prompt}] + h[-3 if len(h) > 3 else -len(h):] # Keep just the last 3 messages
 
         print(f"Thinking...")
         with TimeIt("LLM thinking"):

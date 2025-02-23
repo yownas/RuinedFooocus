@@ -36,6 +36,10 @@ def create_chat():
                 info = json.load(f)
                 if "avatar" not in info:
                     info["avatar"] = folder / "avatar.png"
+                if "embed" in info:
+                    info["embed"] = json.dumps(info["embed"])
+                else:
+                    info["embed"] = json.dumps([])
         except Exception as e:
             print(f"ERROR: {dropdown}: {e}")
             info = {
@@ -43,6 +47,7 @@ def create_chat():
                 "greeting": "Error!",
                 "avatar": "html/error.png",
                 "system": "Everything is broken.",
+                "embed": json.dumps([]),
             }
             pass
         info["chatstart"] = [{"role": "assistant", "content": info["greeting"]}]
@@ -57,7 +62,8 @@ def create_chat():
                 value=info["avatar"],
                 label=info["name"],
             ),
-            llama_system: gr.update(value=info["system"])
+            llama_system: gr.update(value=info["system"]),
+            llama_embed: gr.update(value=info["embed"])
         }
 
 
@@ -72,7 +78,7 @@ def create_chat():
                     height=600,
                     type="messages",
                     allow_tags=["think", "thinking"],
-                    value=_llama_select_assistant(default_bot)["chatstart"] ,
+                    value=_llama_select_assistant(default_bot)["chatstart"],
                 )
                 llama_msg = gr.Textbox(
                     show_label=False,
@@ -80,8 +86,8 @@ def create_chat():
                 llama_sent = gr.Textbox(visible=False)
             with gr.Column(scale=2), gr.Group():
                 llama_avatar = gr.Image(
-                    value=_llama_select_assistant(default_bot)["avatar"] ,
-                    label=_llama_select_assistant(default_bot)["name"] ,
+                    value=_llama_select_assistant(default_bot)["avatar"],
+                    label=_llama_select_assistant(default_bot)["name"],
                     height=400,
                     width=400,
                     show_label=True,
@@ -89,7 +95,7 @@ def create_chat():
                 with gr.Row():
                     llama_assistants = gr.Dropdown(
                         choices=llama_get_assistants(),
-                        value=_llama_select_assistant(default_bot)["name"] ,
+                        value=_llama_select_assistant(default_bot)["name"],
                         show_label=False,
                         interactive=True,
                         scale=7,
@@ -100,18 +106,23 @@ def create_chat():
                     )
                 llama_system = gr.Textbox(
                     visible=False,
-                    value=_llama_select_assistant(default_bot)["system"] ,
+                    value=_llama_select_assistant(default_bot)["system"],
+                )
+                llama_embed = gr.Textbox(
+                    visible=False,
+                    value=_llama_select_assistant(default_bot)["embed"],
                 )
 
         def llama_get_text(message):
             return "", message
 
-        def llama_respond(message, system, chat_history):
+        def llama_respond(message, system, embed, chat_history):
             chat_history.append({"role": "user", "content": message})
 
             gen_data = {
                 "task_type": "llama",
                 "system": system,
+                "embed": embed,
                 "history": chat_history,
             }
 
@@ -136,11 +147,11 @@ def create_chat():
             [llama_msg, llama_sent]
         ).then(
             llama_respond,
-            [llama_sent, llama_system, llama_chat],
+            [llama_sent, llama_system, llama_embed, llama_chat],
             [llama_chat]
         )
 
-        llama_assistants.select(llama_select_assistant, [llama_assistants], [llama_chat, llama_msg, llama_avatar, llama_system])
+        llama_assistants.select(llama_select_assistant, [llama_assistants], [llama_chat, llama_msg, llama_avatar, llama_system, llama_embed])
         llama_reload.click(gr_llama_get_assistants, None, [llama_assistants])
 
     return app_llama_chat
