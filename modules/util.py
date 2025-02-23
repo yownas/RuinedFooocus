@@ -159,6 +159,13 @@ def get_lora_thumbnail(model):
         Path(path_manager.model_paths["cache_path"] / "loras" / Path(model).name)
     )
 
+def url_to_filename(url):
+    import string
+    keep = "-_.() %s%s" % (string.ascii_letters, string.digits)
+    url = url.replace(' ','_')
+    url = ''.join(c for c in url if c in keep)
+    return url
+
 def load_file_from_url(
     url: str,
     *,

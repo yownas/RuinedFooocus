@@ -4,6 +4,7 @@ from txtai import Embeddings
 from modules.util import TimeIt
 from pathlib import Path
 from modules.settings import default_settings
+from modules.util import url_to_filename, load_file_from_url
 from shared import path_manager
 import modules.async_worker as worker
 import json
@@ -113,22 +114,16 @@ class pipeline:
 
             case "url":
                 print(f"Read {source[1]}")
-                try:
-                    response = requests.get(source[1])
-                    response.raise_for_status()
-                    data = response.content.decode()
-                except requests.exceptions.HTTPError as e:
-                    if response.status_code == 404:
-                        print(f"Error: Url {Path(path).name} Not Found")
-                    else:
-                        print(f"HTTP Error: {e}")
-                    return
-                except requests.exceptions.RequestException as e:
-                    print(f"Error: {e}")
-                    return
+                data = load_file_from_url(
+                    source[1],
+                    model_dir="../cache/embeds",
+                    file_name=url_to_filename(source[1]),
+                )
 
                 if source[1].endswith(".md"):
                     data = data.split("\n# ")
+                elif source[1].endswith(".txt"):
+                    data = data.split("\n\n")
 
             case "text":
                 data = source[1]
