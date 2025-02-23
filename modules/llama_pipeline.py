@@ -114,11 +114,14 @@ class pipeline:
 
             case "url":
                 print(f"Read {source[1]}")
-                data = load_file_from_url(
+                filename = load_file_from_url(
                     source[1],
                     model_dir="../cache/embeds",
                     file_name=url_to_filename(source[1]),
                 )
+                file = open(filename, "r")
+                data = file.read()
+                file.close()
 
                 if source[1].endswith(".md"):
                     data = data.split("\n# ")
