@@ -93,8 +93,8 @@ class pipeline:
                 llm_path = path_manager.get_folder_file_path(
                     "llm",
                     localfile,
+                    default = Path(path_manager.model_paths["llm_path"]) / localfile
                 )
-                print(f"Loading {localfile}")
                 self.llm = Llama(
                     model_path=str(llm_path),
                     verbose=False,
