@@ -79,6 +79,7 @@ class PathManager:
             "upscaler_path": self.get_abspath_folder(self.paths["path_upscalers"]),
             "clip_path": self.get_abspath_folder(self.paths["path_clip"]),
             "cache_path": self.get_abspath_folder(self.paths["path_cache"]),
+            "llm_path": self.get_abspath_folder(self.paths["path_llm"]),
         }
 
     def get_default_model_names(self):
