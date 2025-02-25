@@ -1,11 +1,14 @@
 import os
 import sys
-import platform
 import version
 import warnings
 from pathlib import Path
 import ssl
+import json
 import argparse
+
+os.environ['HF_HUB_DISABLE_TELEMETRY'] = '1'
+os.environ['DO_NOT_TRACK'] = '1'
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
@@ -29,14 +32,13 @@ from modules.launch_util import (
     run,
     python,
     run_pip,
+    pip_rm,
     repo_dir,
     requirements_met,
     script_path,
     dir_repos,
 )
 
-requirements_file = "requirements_versions.txt"
-launch_pip_file = "pip_modules.txt"
 
 git_repos = [
     {
@@ -66,6 +68,29 @@ def prepare_environment(offline=False):
     print(f"Python {sys.version}")
     print(f"RuinedFooocus version: {version.version}")
 
+    requirements_file = "requirements_versions.txt"
+    pip_config = "settings/pip.json"
+    pip_data = {
+        "setup": {
+            "torch": "nvidia",
+            "llama": "cpu"
+        },
+        "installed": {
+            "torch": "nvidia",
+            "llama": "cpu"
+        }
+    }
+    try:
+        with open(pip_config) as f:
+            pip_data.update(json.load(f))
+    except:
+        print(f"INFO: Could not read setup file {pip_config}, using defaults.")
+        pass
+
+    torch_file = f"pip/torch_{pip_data['setup']['torch']}.txt"
+    modules_file = "pip/modules.txt"
+    llama_file = f"pip/llama_{pip_data['setup']['llama']}.txt"
+
     if offline:
         print("Skip pip check.")
     else:
@@ -75,13 +100,34 @@ def prepare_environment(offline=False):
     # Remove module if installed from older version
     run(f'"{python}" -m pip uninstall -y flash-attn', "", "", live=False)
 
+    if pip_data["setup"]["torch"] != pip_data["installed"]["torch"]:
+        pip_rm("torch torchvision torchsde", "Refresh torch")
+    if pip_data["setup"]["llama"] != pip_data["installed"]["llama"]:
+        pip_rm("llama_cpp_python", "Refresh llama")
+
     if offline:
         print("Skip check of required modules.")
     else:
-        if REINSTALL_ALL or not requirements_met(launch_pip_file):
+        os.environ["FLASH_ATTENTION_SKIP_CUDA_BUILD"] = "TRUE"
+        if REINSTALL_ALL or not requirements_met(torch_file):
+            run_pip(f'install -r "{torch_file}"', "torch modules")
+            pip_data["installed"]["torch"] = pip_data["setup"]["torch"]
+
+        if REINSTALL_ALL or not requirements_met(modules_file):
             print("This next step may take a while")
-            os.environ["FLASH_ATTENTION_SKIP_CUDA_BUILD"] = "TRUE"
-            run_pip(f'install -r "{launch_pip_file}"', "required modules")
+            run_pip(f'install -r "{modules_file}"', "required modules")
+
+        if REINSTALL_ALL or not is_installed("llama_cpp"):
+            run_pip(f'install -r "{llama_file}"', "llama modules")
+            pip_data["installed"]["llama"] = pip_data["setup"]["llama"]
+
+    # Update pip.json
+    try:
+        with open(pip_config, "w") as file:
+            json.dump(pip_data, file, indent=2)
+    except:
+        print(f"WARNING: Could not write setup file {pip_config}")
+        pass
 
 def clone_git_repos(offline=False):
     from modules.launch_util import git_clone

@@ -101,6 +101,13 @@ def run_pip(command, desc=None, live=default_command_live):
         live=live,
     )
 
+def pip_rm(pkgs, desc=None, live=default_command_live):
+    return run(
+        f'"{python}" -m pip uninstall -y {pkgs}',
+        desc=f"Uninstalling {desc}",
+        errdesc=f"Couldn't uninstall {desc}",
+        live=live,
+    )
 
 re_requirement = re.compile(r"\s*([-_a-zA-Z0-9]+)\s*(?:==\s*([-+_.a-zA-Z0-9]+))?\s*")
 
@@ -116,7 +123,7 @@ def requirements_met(requirements_file):
 
     with open(requirements_file, "r", encoding="utf8") as file:
         for line in file:
-            if line.strip() == "":
+            if line.strip() == "" or line.startswith("--"):
                 continue
 
             m = re.match(re_requirement, line)
@@ -130,7 +137,11 @@ def requirements_met(requirements_file):
                 continue
 
             try:
-                version_installed = importlib.metadata.version(package)
+                version_installed = re.sub(
+                    "\+.*$",
+                    "",
+                    importlib.metadata.version(package)
+                )
             except Exception:
                 return False
 
