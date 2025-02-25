@@ -407,7 +407,7 @@ def worker():
                 print(f"WARN: Unknown task_type: {gen_data['task_type']}")
 
     while True:
-        time.sleep(0.1)
+        time.sleep(0.01)
         if len(buffer) > 0:
             task = buffer.pop(0)
             handler(task)
@@ -437,9 +437,8 @@ def task_result(task_id):
     global outputs
 
     while True:
-        time.sleep(0.01)
-
         if not outputs:
+            time.sleep(0.1)
             continue
 
         if outputs[0][0] == task_id:
