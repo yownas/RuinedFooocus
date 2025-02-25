@@ -1,3 +1,8 @@
+###
+* Support different pip requirements files
+* Support cpu-only
+* Support some of the ComfyUI args about vram usage
+
 ### 25.02.23
 * Chatbots can have embeddings and read markdown from github
 

@@ -1,8 +1,12 @@
 from pathlib import Path
 import json
 import os
-import requests
-from tqdm import tqdm
+try:
+    # This can fail during the first run
+    import requests
+    from tqdm import tqdm
+except:
+    pass
 
 
 class PathManager:

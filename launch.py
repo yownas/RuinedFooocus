@@ -101,9 +101,9 @@ def prepare_environment(offline=False):
     run(f'"{python}" -m pip uninstall -y flash-attn xformers', "", "", live=False)
 
     if pip_data["setup"]["torch"] != pip_data["installed"]["torch"]:
-        pip_rm("torch torchvision torchsde", "Refresh torch")
+        pip_rm("torch torchvision torchsde", "torch")
     if pip_data["setup"]["llama"] != pip_data["installed"]["llama"]:
-        pip_rm("llama_cpp_python", "Refresh llama")
+        pip_rm("llama_cpp_python", "llama")
 
     if offline:
         print("Skip check of required modules.")
