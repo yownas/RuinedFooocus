@@ -5,7 +5,7 @@ import warnings
 from pathlib import Path
 import ssl
 import json
-import argparse
+import shared
 
 os.environ['HF_HUB_DISABLE_TELEMETRY'] = '1'
 os.environ['DO_NOT_TRACK'] = '1'
@@ -98,7 +98,7 @@ def prepare_environment(offline=False):
         run(f'"{python}" -m pip install -r "{requirements_file}"', "Check pre-requirements", "Couldn't check pre-reqs", live=False)
 
     # Remove module if installed from older version
-    run(f'"{python}" -m pip uninstall -y flash-attn', "", "", live=False)
+    run(f'"{python}" -m pip uninstall -y flash-attn xformers', "", "", live=False)
 
     if pip_data["setup"]["torch"] != pip_data["installed"]["torch"]:
         pip_rm("torch torchvision torchsde", "Refresh torch")
@@ -128,6 +128,7 @@ def prepare_environment(offline=False):
     except:
         print(f"WARNING: Could not write setup file {pip_config}")
         pass
+    shared.shared_cache["installed"] = pip_data["installed"]
 
 def clone_git_repos(offline=False):
     from modules.launch_util import git_clone

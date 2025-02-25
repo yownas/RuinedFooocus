@@ -1,5 +1,17 @@
 import shared
+
 from argparser import args
+import comfy.cli_args
+comfy.cli_args.args.cpu = args.cpu
+comfy.cli_args.args.highvram = args.highvram
+comfy.cli_args.args.normalvram = args.highvram
+comfy.cli_args.args.lowvram = args.highvram
+comfy.cli_args.args.novram = args.highvram
+comfy.cli_args.args.reserve_vram = args.highvram
+
+if shared.shared_cache["installed"]["torch"] == "cpu":
+    comfy.cli_args.args.cpu = True
+
 from pathlib import Path
 from shared import (
     state,
