@@ -8,7 +8,6 @@ from modules.util import url_to_filename, load_file_from_url
 from shared import path_manager
 import modules.async_worker as worker
 import json
-import requests
 
 def llama_names():
         names = []
@@ -69,6 +68,7 @@ class pipeline:
 
     llm = None
     embeddings = None
+    embeddings_hash = ""
 
     def parse_gen_data(self, gen_data):
         return gen_data
@@ -126,7 +126,7 @@ class pipeline:
                 file.close()
 
                 if source[1].endswith(".md"):
-                    data = data.split("\n# ")
+                    data = data.split("\n#")
                 elif source[1].endswith(".txt"):
                     data = data.split("\n\n")
 
@@ -154,6 +154,9 @@ class pipeline:
         # load embeds?
         # FIXME should dump the entire gen_data["embed"] to index_source() and have it sort it out
         embed = json.loads(gen_data['embed'])
+        if self.embeddings_hash != str(embed):
+            self.embeddings_hash = str(embed)
+            self.embeddings = None
         if embed:
             if not self.embeddings: # If chatbot has embeddings to index, check that we have them.
                 for source in embed:
