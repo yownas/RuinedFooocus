@@ -117,7 +117,8 @@ class pipeline:
                 print(f"Read {source[1]}")
                 filename = load_file_from_url(
                     source[1],
-                    model_dir="../cache/embeds",
+                    model_dir="cache/embeds",
+                    progress=True,
                     file_name=url_to_filename(source[1]),
                 )
                 file = open(filename, "r")
@@ -167,7 +168,7 @@ class pipeline:
         if self.embeddings:
             q = h[-1]["content"]
             context = "This some context that will help you answer the question:\n"
-            for data in self.embeddings.search(q, limit=2):
+            for data in self.embeddings.search(q, limit=3):
                 #if data["score"] >= 0.5:
                 context += data["text"] + "\n\n"
             system_prompt += context
