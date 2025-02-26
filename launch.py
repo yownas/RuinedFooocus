@@ -72,11 +72,11 @@ def prepare_environment(offline=False):
     pip_config = "settings/pip.json"
     pip_data = {
         "setup": {
-            "torch": "nvidia",
+            "torch": "cu124",
             "llama": "cpu"
         },
         "installed": {
-            "torch": "nvidia",
+            "torch": "cu124",
             "llama": "cpu"
         }
     }
