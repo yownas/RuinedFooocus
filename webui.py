@@ -8,6 +8,7 @@ comfy.cli_args.args.normalvram = args.normalvram
 comfy.cli_args.args.lowvram = args.lowvram
 comfy.cli_args.args.novram = args.novram
 comfy.cli_args.args.reserve_vram = args.reserve_vram
+comfy.cli_args.args.cpu_vae = args.cpu_vae
 
 if shared.shared_cache["installed"]["torch"] == "cpu":
     comfy.cli_args.args.cpu = True
