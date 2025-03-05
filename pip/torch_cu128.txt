@@ -2,4 +2,4 @@
 torch==2.7.0.dev20250226+cu128
 torchvision==0.22.0.dev20250226+cu128
 torchsde==0.2.6
-transformers==4.46.1
+transformers==4.49.0
