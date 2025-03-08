@@ -2,6 +2,7 @@ import numpy as np
 import os
 import torch
 import traceback
+import cv2
 
 import modules.async_worker as worker
 from modules.settings import default_settings
@@ -17,9 +18,7 @@ from pathlib import Path
 import json
 import random
 from modules.pipleline_utils import (
-    get_previewer,
     clean_prompt_cond_caches,
-    set_timestep_range,
 )
 
 import comfy.utils
@@ -33,9 +32,7 @@ from calcuis_gguf.pig import DualClipLoaderGGUF as DualCLIPLoaderGGUF
 from nodes import (
     CLIPTextEncode,
     DualCLIPLoader,
-    VAEDecode,
     VAEDecodeTiled,
-    VAEEncode,
 )
 
 from comfy_extras.nodes_custom_sampler import SamplerCustomAdvanced, RandomNoise, BasicScheduler, KSamplerSelect, BasicGuider
@@ -44,9 +41,6 @@ from comfy_extras.nodes_model_advanced import ModelSamplingSD3
 from comfy_extras.nodes_flux import FluxGuidance
 from comfy_extras.nodes_images import SaveAnimatedPNG
 from node_helpers import conditioning_set_values
-
-
-# Copy this file, add suitable code and add logic to modules/pipelines.py to select it
 
 
 class pipeline:
@@ -215,10 +209,6 @@ class pipeline:
         update = False
         hash = f"{text} {clip_skip}"
         if hash != self.conditions[id]["text"]:
-#            if clip_skip > 1:
-#                self.xl_base_patched.clip = CLIPSetLastLayer().set_last_layer(
-#                    self.xl_base_patched.clip, clip_skip * -1
-#                )[0]
             self.conditions[id]["cache"] = CLIPTextEncode().encode(
                 clip=self.model_base.clip, text=text
             )[0]
@@ -258,13 +248,6 @@ class pipeline:
             "negative": self.conditions["-"]["cache"],
         }
 
-        # TODO: switched prompt?
-
-        device = comfy.model_management.get_torch_device()
-
-        # TODO? img2img?
-
-
         previewer = None
 
         pbar = comfy.utils.ProgressBar(gen_data["steps"])
@@ -281,20 +264,18 @@ class pipeline:
         noise = RandomNoise().get_noise(noise_seed=seed)[0]
 
         # Guider
-#        model_sampling = ModelSamplingSD3().patch(
-#            model = self.model_base.unet,
-#            shift = 7.0,
-#        )
-#        flux_guideance = FluxGuidance().append(
-#            conditioning = conds,
-#            guidance = gen_data["cfg"],
-#        )
-
-        positive_cond = conditioning_set_values(self.conditions["+"]["cache"], {"guidance": gen_data["cfg"]})
+        model_sampling = ModelSamplingSD3().patch(
+            model = self.model_base.unet,
+            shift = 7.0,
+        )[0]
+        flux_guideance = FluxGuidance().append(
+            conditioning = self.conditions["+"]["cache"],
+            guidance = gen_data["cfg"],
+        )[0]
 
         guider = BasicGuider().get_guider(
             model = self.model_base.unet,
-            conditioning = positive_cond,
+            conditioning = flux_guideance,
         )[0]
 
         # Sampler
@@ -332,6 +313,13 @@ class pipeline:
             latent_image = latent_image,
         )[0]
 
+        if callback is not None:
+            worker.add_result(
+                gen_data["task_id"],
+                "preview",
+                (-1, f"VAE Decoding ...", None)
+            )
+
         decoded_latent = VAEDecodeTiled().decode(
             samples=sampled,
             tile_size=64,
@@ -345,6 +333,13 @@ class pipeline:
             img = Image.fromarray(np.clip(i, 0, 255).astype(np.uint8))
             pil_images.append(img)
 
+        if callback is not None:
+            worker.add_result(
+                gen_data["task_id"],
+                "preview",
+                (-1, f"Saving ...", None)
+            )
+
         file = generate_temp_filename(
             folder=path_manager.model_paths["temp_outputs_path"], extension="gif"
         )
@@ -353,6 +348,7 @@ class pipeline:
         fps=12.0
         compress_level=4 # Min = 0, Max = 9
 
+        # Save GIF
         pil_images[0].save(
             file,
             compress_level=compress_level,
@@ -362,5 +358,13 @@ class pipeline:
             optimize=True,
             loop=0,
         )
+
+        # Save mp4
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        mp4_file = file.with_suffix(".mp4")
+        out = cv2.VideoWriter(mp4_file, fourcc, fps, (gen_data["width"], gen_data["height"]))
+        for frame in pil_images:
+            out.write(cv2.cvtColor(np.asarray(frame), cv2.COLOR_BGR2RGB))
+        out.release()
 
         return [file]
