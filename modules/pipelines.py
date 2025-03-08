@@ -21,6 +21,7 @@ import modules.huggingface_dl_pipeline as huggingface_dl_pipeline
 import modules.diffusers_pipeline as diffusers_pipeline
 import modules.rembg_pipeline as rembg_pipeline
 import modules.llama_pipeline as llama_pipeline
+import modules.hunyuan_video_pipeline as hunyuan_video_pipeline
 import modules.controlnet as controlnet
 
 class NoPipeLine:
@@ -96,6 +97,13 @@ def update(gen_data):
                     or "diffusers" not in state["pipeline"].pipeline_type
                 ):
                     state["pipeline"] = diffusers_pipeline.pipeline()
+
+            if baseModel == "Hunyuan Video" or str(Path(file).name).startswith("hunyuan-video-t2v-"):
+                if (
+                    state["pipeline"] is None
+                    or "hunyuan_video" not in state["pipeline"].pipeline_type
+                ):
+                    state["pipeline"] = hunyuan_video_pipeline.pipeline()
 
             elif baseModel is not None:
                 # Try with the sdxl/default pipeline if baseModel is set.

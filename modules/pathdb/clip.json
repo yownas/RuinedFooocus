@@ -68,5 +68,10 @@
 	"url": "https://huggingface.co/calcuis/lumina-gguf/resolve/main/gemma_2_2b_fp16.safetensors",
 	"path": "path_clip",
         "filename": "gemma_2_2b_fp16.safetensors"
+    },
+    "clip/llava_llama3_fp8_scaled.safetensors": {
+	"url": "https://huggingface.co/calcuis/hunyuan-gguf/resolve/main/llava_llama3_fp8_scaled.safetensors",
+	"path": "path_clip",
+        "filename": "llava_llama3_fp8_scaled.safetensors"
     }
 }

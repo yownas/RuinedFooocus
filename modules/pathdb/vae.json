@@ -28,5 +28,10 @@
         "url": "https://huggingface.co/calcuis/lumina-gguf/resolve/main/lumina2_vae_fp32.safetensors",
         "path": "path_vae",
         "filename": "lumina2_vae_fp32.safetensors"
+    },
+    "vae/hunyuan_video_vae_bf16.safetensors": {
+        "url": "https://huggingface.co/calcuis/hunyuan-gguf/resolve/main/hunyuan_video_vae_bf16.safetensors",
+        "path": "path_vae",
+        "filename": "hunyuan_video_vae_bf16.safetensors"
     }
 }
