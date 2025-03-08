@@ -274,7 +274,7 @@ class pipeline:
         )[0]
 
         guider = BasicGuider().get_guider(
-            model = self.model_base.unet,
+            model = model_sampling,
             conditioning = flux_guideance,
         )[0]
 
