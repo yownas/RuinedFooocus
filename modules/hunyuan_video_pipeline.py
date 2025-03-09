@@ -63,6 +63,8 @@ class pipeline:
 
     model_hash = ""
     model_base = None
+    model_hash_patched = ""
+    model_base_patched = None
     conditions = None
 
     ggml_ops = GGMLOps()
@@ -80,6 +82,8 @@ class pipeline:
 
         self.model_base = None
         self.model_hash = ""
+        self.model_base_patched = None
+        self.model_hash_patched = ""
         self.conditions = None
 
         filename = os.path.join(path_manager.model_paths["modelfile_path"], name)
@@ -195,6 +199,33 @@ class pipeline:
             return " "
 
     def load_loras(self, loras):
+        loaded_loras = []
+
+        model = self.model_base
+        for name, weight in loras:
+            if name == "None" or weight == 0:
+                continue
+            filename = os.path.join(path_manager.model_paths["lorafile_path"], name)
+            print(f"Loading LoRAs: {name}")
+            try:
+                lora = comfy.utils.load_torch_file(filename, safe_load=True)
+                unet, clip = comfy.sd.load_lora_for_models(
+                    model.unet, model.clip, lora, weight, weight
+                )
+                model = self.StableDiffusionModel(
+                    unet=unet,
+                    clip=clip,
+                    vae=model.vae,
+                    clip_vision=model.clip_vision,
+                )
+                loaded_loras += [(name, weight)]
+            except:
+                pass
+        self.model_base_patched = model
+        self.model_hash_patched = str(loras)
+
+        print(f"LoRAs loaded: {loaded_loras}")
+
         return
 
     def refresh_controlnet(self, name=None):
@@ -210,7 +241,7 @@ class pipeline:
         hash = f"{text} {clip_skip}"
         if hash != self.conditions[id]["text"]:
             self.conditions[id]["cache"] = CLIPTextEncode().encode(
-                clip=self.model_base.clip, text=text
+                clip=self.model_base_patched.clip, text=text
             )[0]
         self.conditions[id]["text"] = hash
         update = True
@@ -265,7 +296,7 @@ class pipeline:
 
         # Guider
         model_sampling = ModelSamplingSD3().patch(
-            model = self.model_base.unet,
+            model = self.model_base_patched.unet,
             shift = 7.0,
         )[0]
         flux_guideance = FluxGuidance().append(
@@ -285,7 +316,7 @@ class pipeline:
 
         # Sigmas
         sigmas = BasicScheduler().get_sigmas(
-            model = self.model_base.unet,
+            model = self.model_base_patched.unet,
             scheduler = gen_data["scheduler"],
             steps = gen_data["steps"],
             denoise = 1,
@@ -322,9 +353,9 @@ class pipeline:
 
         decoded_latent = VAEDecodeTiled().decode(
             samples=sampled,
-            tile_size=64,
-            overlap=32,
-            vae=self.model_base.vae,
+            tile_size=128,
+            overlap=64,
+            vae=self.model_base_patched.vae,
         )[0]
 
         pil_images = []

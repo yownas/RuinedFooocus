@@ -98,7 +98,11 @@ def update(gen_data):
                 ):
                     state["pipeline"] = diffusers_pipeline.pipeline()
 
-            if baseModel == "Hunyuan Video" or str(Path(file).name).startswith("hunyuan-video-t2v-"):
+            if (
+                baseModel == "Hunyuan Video" or
+                str(Path(file).name).startswith("hunyuan-video-t2v-") or
+                str(Path(file).name).startswith("fast-hunyuan-video-t2v-")
+            ):
                 if (
                     state["pipeline"] is None
                     or "hunyuan_video" not in state["pipeline"].pipeline_type
