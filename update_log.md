@@ -1,3 +1,6 @@
+### 25.03.09
+* Initial support for Hunyuan Videos models
+
 ### 25.03.05
 * Support different pip requirements files
 * Support cpu-only
