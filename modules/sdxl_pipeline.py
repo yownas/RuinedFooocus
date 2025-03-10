@@ -69,6 +69,7 @@ class pipeline:
     pipeline_type = ["sdxl", "ssd", "sd3", "flux", "lumina2"]
 
     comfy.model_management.DISABLE_SMART_MEMORY = False
+    comfy.model_management.EXTRA_RESERVED_VRAM = 800 * 1024 * 1024
 
     class StableDiffusionModel:
         def __init__(self, unet, vae, clip, clip_vision):
