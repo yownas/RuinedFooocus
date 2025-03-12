@@ -9,6 +9,7 @@ import shared
 
 os.environ['HF_HUB_DISABLE_TELEMETRY'] = '1'
 os.environ['DO_NOT_TRACK'] = '1'
+os.environ['KMP_DUPLICATE_LIB_OK' = 'TRUE'
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
