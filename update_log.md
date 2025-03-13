@@ -1,3 +1,7 @@
+###
+* Improve model loading
+* Initial support for WAN 2.1 t2v models
+
 ### 25.03.09
 * Initial support for Hunyuan Videos models
 

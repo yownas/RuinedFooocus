@@ -21,7 +21,8 @@ import random
 
 import comfy.utils
 import comfy.model_management
-from comfy.sd import load_checkpoint_guess_config
+from comfy.sd import load_checkpoint_guess_config, load_state_dict_guess_config
+
 from tqdm import tqdm
 
 from comfy_extras.nodes_model_advanced import ModelSamplingAuraFlow
@@ -194,7 +195,7 @@ class pipeline:
         return
 
 
-    def load_base_model(self, name, unet_only=False):
+    def load_base_model(self, name, unet_only=False, input_unet=None):
         if self.xl_base_hash == name and self.xl_base_patched_extra == set():
             return
 
@@ -203,7 +204,8 @@ class pipeline:
             self.merge_models(name)
             return
 
-        print(f"Loading base {'unet' if unet_only else 'model'}: {name}")
+        if input_unet is None: # Be quiet if we already loaded a unet
+            print(f"Loading base {'unet' if unet_only else 'model'}: {name}")
 
         self.xl_base = None
         self.xl_base_hash = ""
@@ -221,12 +223,14 @@ class pipeline:
         if filename.endswith(".gguf") or unet_only:
             with torch.torch.inference_mode():
                 try:
-                    if filename.endswith(".gguf"):
-                        #sd = gguf_sd_loader(filename)
+                    if input_unet is not None:
+                        unet = comfy.sd.load_diffusion_model_state_dict(
+                            input_unet, model_options={"custom_operations": self.ggml_ops}
+                        )
+                        unet = GGUFModelPatcher.clone(unet)
+                        unet.patch_on_device = True
+                    elif filename.endswith(".gguf"):
                         sd = load_gguf_sd(filename)
-#For ComfyUI_GGUF
-#                        self.ggml_ops.Linear.dequant_dtype = "target"
-#                        self.ggml_ops.Linear.patch_dtype = "target"
                         unet = comfy.sd.load_diffusion_model_state_dict(
                             sd, model_options={"custom_operations": self.ggml_ops}
                         )
@@ -334,17 +338,23 @@ class pipeline:
         else:
             try:
                 with torch.torch.inference_mode():
-                    unet, clip, vae, clip_vision = load_checkpoint_guess_config(filename)
+                    sd, metadata = comfy.utils.load_torch_file(filename, return_metadata=True)
+                    aio = load_state_dict_guess_config(sd)
+                    if aio is not None:
+                        unet, clip, vae, clip_vision = aio
+                    else:
+                        unet, clip, vae, clip_vision = (None, None, None, None)
 
-                if clip == None or vae == None:
-                    raise
-            except:
-                print(f"Failed. Trying to load as unet.")
-                self.load_base_model(
-                    filename,
-                    unet_only=True
-                )
-                return
+                if aio == None or clip == None or vae == None:
+                    #print(f"Loading text encoders and vae.")
+                    self.load_base_model(
+                        filename,
+                        unet_only=True,
+                        input_unet=sd,
+                    )
+                    return
+            except Exception as e:
+                print(f"ERROR: Failed loading file {filename}: {e}")
 
         if unet == None:
             print(f"Failed to load {name}")
