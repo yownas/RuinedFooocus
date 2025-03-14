@@ -99,7 +99,7 @@ def update(gen_data):
                 ):
                     state["pipeline"] = diffusers_pipeline.pipeline()
 
-            if (
+            elif (
                 baseModel == "Hunyuan Video" or
                 str(Path(file).name).startswith("hunyuan-video-t2v-") or
                 str(Path(file).name).startswith("fast-hunyuan-video-t2v-")
@@ -110,7 +110,7 @@ def update(gen_data):
                 ):
                     state["pipeline"] = hunyuan_video_pipeline.pipeline()
 
-            if (
+            elif (
                 baseModel == "Wan Video" or
                 str(Path(file).name).startswith("wan2.1_t2v_")
             ):
