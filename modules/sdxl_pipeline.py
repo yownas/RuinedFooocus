@@ -3,7 +3,7 @@ import numpy as np
 import os
 import torch
 import traceback
-import re
+import sys
 
 import modules.controlnet
 import modules.async_worker as worker
@@ -227,7 +227,7 @@ class pipeline:
                         unet = comfy.sd.load_diffusion_model_state_dict(
                             input_unet, model_options={"custom_operations": self.ggml_ops}
                         )
-                        unet = GGUFModelPatcher.clone(unet)
+                        unet = GGUFModelPatcher.clone(unet.model)
                         unet.patch_on_device = True
                     elif filename.endswith(".gguf"):
                         sd = load_gguf_sd(filename)
@@ -338,23 +338,23 @@ class pipeline:
         else:
             try:
                 with torch.torch.inference_mode():
-                    sd, metadata = comfy.utils.load_torch_file(filename, return_metadata=True)
+                    sd = comfy.utils.load_torch_file(filename)
                     aio = load_state_dict_guess_config(sd)
-                    if aio is not None:
-                        unet, clip, vae, clip_vision = aio
-                    else:
-                        unet, clip, vae, clip_vision = (None, None, None, None)
-
-                if aio == None or clip == None or vae == None:
-                    #print(f"Loading text encoders and vae.")
-                    self.load_base_model(
-                        filename,
-                        unet_only=True,
-                        input_unet=sd,
-                    )
-                    return
+                    unet, clip, vae, clip_vision = aio
             except Exception as e:
+                sd = None
+                aio = None
+                unet, clip, vae, clip_vision = (None, None, None, None)
                 print(f"ERROR: Failed loading file {filename}: {e}")
+
+            if aio is None:
+                #print(f"Loading text encoders and vae.")
+                self.load_base_model(
+                    filename,
+                    unet_only=True,
+                    input_unet=sd,
+                )
+                return
 
         if unet == None:
             print(f"Failed to load {name}")
