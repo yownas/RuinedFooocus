@@ -102,7 +102,7 @@ class pipeline:
 
     ggml_ops = GGMLOps()
 
-    def get_clip_name(shortname):
+    def get_clip_name(self, shortname):
         # List of short names and default names for different text encoders
         defaults = {
             "clip_g": "clip_g.safetensors",
@@ -110,7 +110,7 @@ class pipeline:
             "clip_l": "clip_l.safetensors",
             "clip_t5": "t5-v1_1-xxl-encoder-Q3_K_S.gguf",
         }
-        return default_settings.get(shortname, defaults[shortnamme] if shortname in defaults else None)
+        return default_settings.get(shortname, defaults[shortname] if shortname in defaults else None)
 
     # FIXME move this to separate file
     def merge_models(self, name):
@@ -254,21 +254,17 @@ class pipeline:
                     # Get text encoders (clip) and vae to match the unet
                     clip_names = []
 
-                    # https://huggingface.co/comfyanonymous/flux_text_encoders/tree/main
-                    clip_names.append(self.get_clip_name("clip_l"))
-
                     if isinstance(unet.model, Flux):
-                        # https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/tree/main
+                        clip_names.append(self.get_clip_name("clip_l"))
                         clip_names.append(self.get_clip_name("clip_t5"))
                         clip_type = comfy.sd.CLIPType.FLUX
-                        # https://huggingface.co/black-forest-labs/FLUX.1-schnell/tree/main
                         vae_name = default_settings.get("vae_flux", "ae.safetensors")
 
                     elif isinstance(unet.model, SD3):
+                        clip_names.append(self.get_clip_name("clip_l"))
                         clip_names.append(self.get_clip_name("clip_g"))
                         clip_names.append(self.get_clip_name("clip_t5"))
                         clip_type = comfy.sd.CLIPType.SD3
-                        # https://civitai.com/models/511494/sd3-vae
                         vae_name = default_settings.get("vae_sd3", "sd3_vae.safetensors")
 
                     elif isinstance(unet.model, Lumina2):
@@ -281,6 +277,7 @@ class pipeline:
                         )[0]
 
                     else: # SDXL
+                        clip_names.append(self.get_clip_name("clip_l"))
                         clip_names.append(self.get_clip_name("clip_g"))
                         clip_type = comfy.sd.CLIPType.STABLE_DIFFUSION
                         vae_name = default_settings.get("vae_sdxl", "sdxl_vae.safetensors")
@@ -288,16 +285,22 @@ class pipeline:
                     clip_paths = []
                     for clip_name in clip_names:
                         clip_paths.append(
-                            path_manager.get_folder_file_path(
-                                "clip",
-                                clip_name,
-                                default = os.path.join(path_manager.model_paths["clip_path"], clip_name)
+                            str(
+                                path_manager.get_folder_file_path(
+                                    "clip",
+                                    clip_name,
+                                    default = os.path.join(path_manager.model_paths["clip_path"], clip_name)
+                                )
                             )
                         )
 
                     clip_loader = DualCLIPLoaderGGUF()
                     print(f"Loading CLIP: {clip_names}")
-                    clip = clip_loader.load_patcher(clip_paths, clip_type, clip_loader.load_data(clip_paths))
+                    clip = clip_loader.load_patcher(
+                        clip_paths,
+                        clip_type,
+                        clip_loader.load_data(clip_paths)
+                    )
 
                     vae_path = path_manager.get_folder_file_path(
                         "vae",
@@ -325,7 +328,7 @@ class pipeline:
                 unet, clip, vae, clip_vision = (None, None, None, None)
                 print(f"ERROR: Failed loading file {filename}: {e}")
 
-            if aio is None:
+            if aio is None and sd is not None:
                 #print(f"Loading text encoders and vae.")
                 self.load_base_model(
                     filename,
