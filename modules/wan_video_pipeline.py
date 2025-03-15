@@ -10,27 +10,26 @@ from modules.util import generate_temp_filename
 from PIL import Image
 
 import os
-from comfy.model_base import BaseModel, SDXL, SD3, Flux, Lumina2, HunyuanVideo, WAN21
+from comfy.model_base import WAN21
 from modules.settings import default_settings
+import shared
 from shared import path_manager
 
 from pathlib import Path
-import json
 import random
 from modules.pipleline_utils import (
     clean_prompt_cond_caches,
+    get_previewer,
 )
 
 import comfy.utils
 import comfy.model_management
 from comfy.sd import load_checkpoint_guess_config
-from tqdm import tqdm
 
 from calcuis_gguf.pig import load_gguf_sd, GGMLOps, GGUFModelPatcher
 
 from nodes import (
     CLIPTextEncode,
-    KSampler,
     VAEDecodeTiled,
 )
 from comfy_extras.nodes_hunyuan import EmptyHunyuanLatentVideo
@@ -237,13 +236,15 @@ class pipeline:
         gen_data=None,
         callback=None,
     ):
+        shared.state["preview_total"] = 1
+
         seed = gen_data["seed"] if isinstance(gen_data["seed"], int) else random.randint(1, 2**32)
 
         if callback is not None:
             worker.add_result(
                 gen_data["task_id"],
                 "preview",
-                (-1, f"Processing text encoding ...", None)
+                (-1, f"Processing text encoding ...", "html/generate_video.jpeg")
             )
         updated_conditions = False
         if self.conditions is None:
@@ -258,14 +259,10 @@ class pipeline:
         if self.textencode("-", negative_prompt, clip_skip):
             updated_conditions = True
 
-        previewer = None
-
         pbar = comfy.utils.ProgressBar(gen_data["steps"])
 
         def callback_function(step, x0, x, total_steps):
             y = None
-            if previewer:
-                y = previewer.preview(x0, step, total_steps)
             if callback is not None:
                 callback(step, x0, x, total_steps, y)
             pbar.update_absolute(step + 1, total_steps, None)
@@ -287,22 +284,25 @@ class pipeline:
         worker.add_result(
             gen_data["task_id"],
             "preview",
-            (-1, f"Generating ...", None)
+            (-1, f"Generating ...", "html/generate_video.jpeg")
         )
 
-        sampled = KSampler().sample(
-            model = model_sampling,
-            positive = self.conditions["+"]["cache"],
-            negative = self.conditions["-"]["cache"],
-            latent_image = latent_image,
+        noise = comfy.sample.prepare_noise(latent_image["samples"], seed)
 
-            seed = seed,
+        sampled = comfy.sample.sample(
+            model = model_sampling,
+            noise = noise,
             steps = gen_data["steps"],
             cfg = gen_data["cfg"],
             sampler_name = gen_data["sampler_name"],
             scheduler = gen_data["scheduler"],
+            positive = self.conditions["+"]["cache"],
+            negative = self.conditions["-"]["cache"],
+            latent_image = latent_image["samples"],
+
             denoise = 1,
-        )[0]
+            callback = callback_function,
+        )
 
         if callback is not None:
             worker.add_result(
@@ -311,8 +311,10 @@ class pipeline:
                 (-1, f"VAE Decoding ...", None)
             )
 
+        latent_image["samples"] = sampled
+
         decoded_latent = VAEDecodeTiled().decode(
-            samples=sampled,
+            samples=latent_image,
             tile_size=128,
             overlap=64,
             vae=self.model_base_patched.vae,

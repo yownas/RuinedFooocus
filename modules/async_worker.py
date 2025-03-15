@@ -182,6 +182,8 @@ def worker():
             if y is not None:
                 if isinstance(y, Image.Image):
                     image = y
+                elif isinstance(y, str):
+                    image = Image.open(y)
                 else:
                     image = Image.fromarray(y)
                 grid_xpos = int(
@@ -193,6 +195,9 @@ def worker():
                 )
                 image = image.resize((int(width / grid_max), int(height / grid_max)))
                 shared.state["preview_grid"].paste(image, (grid_xpos, grid_ypos))
+                preview = shared.path_manager.model_paths["temp_preview_path"]
+            else:
+                preview = None
 
             shared.state["preview_grid"].save(
                 shared.path_manager.model_paths["temp_preview_path"],
@@ -211,7 +216,7 @@ def worker():
                             / max(gen_data["index"][1], 1)
                         ),
                         f"{status} - {step}/{total_steps}",
-                        shared.path_manager.model_paths["temp_preview_path"],
+                        preview,
                     ),
                 ]
             )
