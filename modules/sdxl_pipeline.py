@@ -102,6 +102,16 @@ class pipeline:
 
     ggml_ops = GGMLOps()
 
+    def get_clip_name(shortname):
+        # List of short names and default names for different text encoders
+        defaults = {
+            "clip_g": "clip_g.safetensors",
+            "clip_gemma": "gemma_2_2b_fp16.safetensors",
+            "clip_l": "clip_l.safetensors",
+            "clip_t5": "t5-v1_1-xxl-encoder-Q3_K_S.gguf",
+        }
+        return default_settings.get(shortname, defaults[shortnamme] if shortname in defaults else None)
+
     # FIXME move this to separate file
     def merge_models(self, name):
         print(f"Loading merge: {name}")
@@ -241,63 +251,28 @@ class pipeline:
                         model_options["dtype"] = torch.float8_e4m3fn # FIXME should be a setting
                         unet = comfy.sd.load_diffusion_model(filename, model_options=model_options)
 
-                    clip_paths = []
+                    # Get text encoders (clip) and vae to match the unet
                     clip_names = []
 
                     # https://huggingface.co/comfyanonymous/flux_text_encoders/tree/main
-                    clip_name = default_settings.get("clip_l", "clip_l.safetensors")
-                    clip_names.append(str(clip_name))
-                    clip_path = path_manager.get_folder_file_path(
-                        "clip",
-                        clip_name,
-                        default = os.path.join(path_manager.model_paths["clip_path"], clip_name)
-                    )
-                    clip_paths.append(str(clip_path))
+                    clip_names.append(self.get_clip_name("clip_l"))
 
                     if isinstance(unet.model, Flux):
                         # https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/tree/main
-                        clip_name = default_settings.get("clip_t5", "t5-v1_1-xxl-encoder-Q3_K_S.gguf")
-                        clip_names.append(str(clip_name))
-                        clip_path = path_manager.get_folder_file_path(
-                            "clip",
-                            clip_name,
-                            default = os.path.join(path_manager.model_paths["clip_path"], clip_name)
-                        )
-                        clip_paths.append(str(clip_path))
+                        clip_names.append(self.get_clip_name("clip_t5"))
                         clip_type = comfy.sd.CLIPType.FLUX
                         # https://huggingface.co/black-forest-labs/FLUX.1-schnell/tree/main
                         vae_name = default_settings.get("vae_flux", "ae.safetensors")
 
                     elif isinstance(unet.model, SD3):
-                        clip_name = default_settings.get("clip_g", "clip_g.safetensors")
-                        clip_names.append(str(clip_name))
-                        clip_path = path_manager.get_folder_file_path(
-                            "clip",
-                            clip_name,
-                            default = os.path.join(path_manager.model_paths["clip_path"], clip_name)
-                        )
-                        clip_paths.append(str(clip_path))
-                        clip_name = default_settings.get("clip_t5", "t5-v1_1-xxl-encoder-Q3_K_S.gguf")
-                        clip_names.append(str(clip_name))
-                        clip_path = path_manager.get_folder_file_path(
-                            "clip",
-                            clip_name,
-                            default = os.path.join(path_manager.model_paths["clip_path"], clip_name)
-                        )
-                        clip_paths.append(str(clip_path))
+                        clip_names.append(self.get_clip_name("clip_g"))
+                        clip_names.append(self.get_clip_name("clip_t5"))
                         clip_type = comfy.sd.CLIPType.SD3
                         # https://civitai.com/models/511494/sd3-vae
                         vae_name = default_settings.get("vae_sd3", "sd3_vae.safetensors")
 
                     elif isinstance(unet.model, Lumina2):
-                        clip_name = default_settings.get("clip_gemma", "gemma_2_2b_fp16.safetensors")
-                        clip_names = str(clip_name)
-                        clip_path = path_manager.get_folder_file_path(
-                            "clip",
-                            clip_name,
-                            default = os.path.join(path_manager.model_paths["clip_path"], clip_name)
-                        )
-                        clip_paths = [str(clip_path)]
+                        clip_names.append(self.get_clip_name("clip_gemma"))
                         clip_type = comfy.sd.CLIPType.LUMINA2
                         vae_name = default_settings.get("vae_lumina2", "lumina2_vae_fp32.safetensors")
                         unet = ModelSamplingAuraFlow().patch_aura(
@@ -306,16 +281,19 @@ class pipeline:
                         )[0]
 
                     else: # SDXL
-                        clip_name = default_settings.get("clip_g", "clip_g.safetensors")
-                        clip_names.append(str(clip_name))
-                        clip_path = path_manager.get_folder_file_path(
-                            "clip",
-                            clip_name,
-                            default = os.path.join(path_manager.model_paths["clip_path"], clip_name)
-                        )
-                        clip_paths.append(str(clip_path))
+                        clip_names.append(self.get_clip_name("clip_g"))
                         clip_type = comfy.sd.CLIPType.STABLE_DIFFUSION
                         vae_name = default_settings.get("vae_sdxl", "sdxl_vae.safetensors")
+
+                    clip_paths = []
+                    for clip_name in clip_names:
+                        clip_paths.append(
+                            path_manager.get_folder_file_path(
+                                "clip",
+                                clip_name,
+                                default = os.path.join(path_manager.model_paths["clip_path"], clip_name)
+                            )
+                        )
 
                     clip_loader = DualCLIPLoaderGGUF()
                     print(f"Loading CLIP: {clip_names}")
