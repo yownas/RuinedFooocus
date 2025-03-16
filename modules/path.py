@@ -23,6 +23,7 @@ class PathManager:
         "path_upscalers": "../models/upscale_models",
         "path_outputs": "../outputs/",
         "path_clip": "../models/clip/",
+        "path_clip_vision": "../models/clip_vision/",
         "path_cache": "../cache/",
         "path_llm": "../models/llm",
     }
@@ -82,6 +83,7 @@ class PathManager:
             "faceswap_path": self.get_abspath_folder(self.paths["path_faceswap"]),
             "upscaler_path": self.get_abspath_folder(self.paths["path_upscalers"]),
             "clip_path": self.get_abspath_folder(self.paths["path_clip"]),
+            "clip_vision_path": self.get_abspath_folder(self.paths["path_clip_vision"]),
             "cache_path": self.get_abspath_folder(self.paths["path_cache"]),
             "llm_path": self.get_abspath_folder(self.paths["path_llm"]),
         }

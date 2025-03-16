@@ -33,6 +33,7 @@ from nodes import (
     VAEDecodeTiled,
 )
 from comfy_extras.nodes_hunyuan import EmptyHunyuanLatentVideo
+from comfy_extras.nodes_wan import WanImageToVideo 
 from comfy_extras.nodes_model_advanced import ModelSamplingSD3
 
 
@@ -131,7 +132,18 @@ class pipeline:
                     sd = comfy.utils.load_torch_file(str(vae_path))
                     vae = comfy.sd.VAE(sd=sd)
 
-                    clip_vision = None
+                    clip_vision_name = default_settings.get("clip_vision", "clip_vision_h_fp8_e4m3fn.safetensors")
+                    clip_vision_path = path_manager.get_folder_file_path(
+                        "clip_vision",
+                        clip_vision_name,
+                        default = os.path.join(path_manager.model_paths["clip_vision_path"], clip_vision_name)
+                    )
+                    print(f"Loading CLIP Vision: {clip_vision_name}")
+                    sd = comfy.utils.load_torch_file(str(clip_vision_path))
+                    if "visual.transformer.resblocks.0.attn.in_proj_weight" in sd:
+                        clip_vision = comfy.clip_vision.load_clipvision_from_sd(sd, prefix="visual.", convert_keys=True)
+                    else:
+                        clip_vision = comfy.clip_vision.load_clipvision_from_sd(sd=sd)
                 except Exception as e:
                     unet = None
                     traceback.print_exc() 
@@ -273,13 +285,34 @@ class pipeline:
             shift = 8.0,
         )[0]
 
-        # latent_image
-        latent_image = EmptyHunyuanLatentVideo().generate(
-            width = gen_data["width"],
-            height = gen_data["height"],
-            length = gen_data["original_image_number"],
-            batch_size = 1,
-        )[0]
+        # t2v or i2v?
+        if gen_data["input_image"]:
+            image = np.array(gen_data["input_image"]).astype(np.float32) / 255.0
+            image = torch.from_numpy(image)[None,]
+
+            clip_vision_output = self.model_base_patched.clip_vision.encode_image(image)
+
+            (positive, negative, latent_image) = WanImageToVideo().encode(
+                positive = self.conditions["+"]["cache"],
+                negative = self.conditions["-"]["cache"],
+                vae = self.model_base_patched.vae,
+                width = gen_data["width"],
+                height = gen_data["height"],
+                length = gen_data["original_image_number"],
+                batch_size = 1,
+                start_image = image,
+                clip_vision_output = clip_vision_output,
+            )
+        else:
+            # latent_image
+            latent_image = EmptyHunyuanLatentVideo().generate(
+                width = gen_data["width"],
+                height = gen_data["height"],
+                length = gen_data["original_image_number"],
+                batch_size = 1,
+            )[0]
+            positive = self.conditions["+"]["cache"],
+            negative = self.conditions["-"]["cache"],
 
         worker.add_result(
             gen_data["task_id"],
@@ -289,6 +322,8 @@ class pipeline:
 
         noise = comfy.sample.prepare_noise(latent_image["samples"], seed)
 
+#            positive = self.conditions["+"]["cache"],
+#            negative = self.conditions["-"]["cache"],
         sampled = comfy.sample.sample(
             model = model_sampling,
             noise = noise,
@@ -296,8 +331,8 @@ class pipeline:
             cfg = gen_data["cfg"],
             sampler_name = gen_data["sampler_name"],
             scheduler = gen_data["scheduler"],
-            positive = self.conditions["+"]["cache"],
-            negative = self.conditions["-"]["cache"],
+            positive = positive,
+            negative = negative,
             latent_image = latent_image["samples"],
 
             denoise = 1,

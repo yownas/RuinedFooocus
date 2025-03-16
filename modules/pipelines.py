@@ -112,7 +112,10 @@ def update(gen_data):
 
             elif (
                 baseModel == "Wan Video" or
-                str(Path(file).name).startswith("wan2.1_t2v_")
+                str(Path(file).name).startswith("wan2.1-t2v-") or
+                str(Path(file).name).startswith("wan2.1_t2v_") or
+                str(Path(file).name).startswith("wan2.1-i2v-") or
+                str(Path(file).name).startswith("wan2.1_i2v_")
             ):
                 if (
                     state["pipeline"] is None

@@ -1,0 +1,12 @@
+{
+    "clip_vision/clip_vision_h_fp16.safetensors": {
+        "url": "https://huggingface.co/calcuis/wan-gguf/resolve/main/clip_vision_h_fp16.safetensors",
+        "path": "path_clip_vision",
+        "filename": "clip_vision_h_fp16.safetensors"
+    },
+    "clip_vision/clip_vision_h_fp8_e4m3fn.safetensors": {
+        "url": "https://huggingface.co/calcuis/wan-gguf/resolve/main/clip_vision_h_fp8_e4m3fn.safetensors",
+        "path": "path_clip_vision",
+        "filename": "clip_vision_h_fp8_e4m3fn.safetensors"
+    }
+}
