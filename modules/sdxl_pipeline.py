@@ -237,7 +237,7 @@ class pipeline:
                         unet = comfy.sd.load_diffusion_model_state_dict(
                             input_unet, model_options={"custom_operations": self.ggml_ops}
                         )
-                        unet = GGUFModelPatcher.clone(unet.model)
+                        unet = GGUFModelPatcher.clone(unet)
                         unet.patch_on_device = True
                     elif filename.endswith(".gguf"):
                         sd = load_gguf_sd(filename)
@@ -317,25 +317,27 @@ class pipeline:
                     traceback.print_exc() 
 
         else:
+            sd = None
+            unet = None
             try:
                 with torch.torch.inference_mode():
                     sd = comfy.utils.load_torch_file(filename)
-                    aio = load_state_dict_guess_config(sd)
-                    unet, clip, vae, clip_vision = aio
             except Exception as e:
-                sd = None
-                aio = None
-                unet, clip, vae, clip_vision = (None, None, None, None)
-                print(f"ERROR: Failed loading file {filename}: {e}")
+                # Failed loading
+                print(f"ERROR: Failed loading {filename}: {e}")
 
-            if aio is None and sd is not None:
-                #print(f"Loading text encoders and vae.")
-                self.load_base_model(
-                    filename,
-                    unet_only=True,
-                    input_unet=sd,
-                )
-                return
+            if sd is not None:
+                aio = load_state_dict_guess_config(sd)
+                if isinstance(aio, tuple):
+                    unet, clip, vae, clip_vision = aio
+                else:
+                    # We got something, assume it was a unet
+                    self.load_base_model(
+                        filename,
+                        unet_only=True,
+                        input_unet=sd,
+                    )
+                    return
 
         if unet == None:
             print(f"Failed to load {name}")
@@ -364,7 +366,7 @@ class pipeline:
                 self.xl_base_patched = self.xl_base
                 self.xl_base_patched_hash = ""
                 # self.xl_base_patched.unet.model.to("cuda")
-                print(f"Base model loaded: {self.xl_base_hash}")
+                #print(f"Base model loaded: {self.xl_base_hash}")
 
         return
 
