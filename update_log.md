@@ -1,4 +1,4 @@
-###
+### 25.03.17
 * Improve model loading
 * Initial support for WAN 2.1 t2v and i2v models
 
