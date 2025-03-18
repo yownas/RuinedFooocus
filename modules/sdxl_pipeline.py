@@ -52,6 +52,7 @@ from comfy_extras.nodes_post_processing import ImageScaleToTotalPixels
 from comfy_extras.nodes_canny import Canny
 from comfy_extras.nodes_freelunch import FreeU
 from comfy.model_patcher import ModelPatcher
+from comfy.sd import CLIP, VAE
 from comfy.utils import load_torch_file
 from comfy.sd import save_checkpoint
 
@@ -234,9 +235,12 @@ class pipeline:
             with torch.torch.inference_mode():
                 try:
                     if input_unet is not None:
-                        unet = comfy.sd.load_diffusion_model_state_dict(
-                            input_unet, model_options={"custom_operations": self.ggml_ops}
-                        )
+                        if isinstance(input_unet, ModelPatcher):
+                            unet = input_unet
+                        else:
+                            unet = comfy.sd.load_diffusion_model_state_dict(
+                                input_unet, model_options={"custom_operations": self.ggml_ops}
+                            )
                         unet = GGUFModelPatcher.clone(unet)
                         unet.patch_on_device = True
                     elif filename.endswith(".gguf"):
@@ -330,7 +334,19 @@ class pipeline:
                 aio = load_state_dict_guess_config(sd)
                 if isinstance(aio, tuple):
                     unet, clip, vae, clip_vision = aio
-                else:
+
+                    if (
+                        isinstance(unet, ModelPatcher) and
+                        isinstance(clip, CLIP) and
+                        isinstance(vae, VAE)
+                    ):
+                        # If we got here, we have all models. Dump sd since we don't need it
+                        sd = None
+                    else:
+                        if isinstance(unet, ModelPatcher):
+                            sd = unet
+
+                if sd is not None:
                     # We got something, assume it was a unet
                     self.load_base_model(
                         filename,
@@ -338,6 +354,9 @@ class pipeline:
                         input_unet=sd,
                     )
                     return
+
+            else:
+                unet = None
 
         if unet == None:
             print(f"Failed to load {name}")
