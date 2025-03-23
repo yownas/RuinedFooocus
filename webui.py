@@ -10,6 +10,9 @@ comfy.cli_args.args.novram = args.novram
 comfy.cli_args.args.reserve_vram = args.reserve_vram
 comfy.cli_args.args.cpu_vae = args.cpu_vae
 
+import transformers
+transformers.logging.set_verbosity_error()
+
 if shared.shared_cache["installed"]["torch"] == "cpu":
     comfy.cli_args.args.cpu = True
 
