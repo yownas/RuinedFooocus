@@ -10,9 +10,6 @@ comfy.cli_args.args.novram = args.novram
 comfy.cli_args.args.reserve_vram = args.reserve_vram
 comfy.cli_args.args.cpu_vae = args.cpu_vae
 
-import transformers
-transformers.logging.set_verbosity_error()
-
 if shared.shared_cache["installed"]["torch"] == "cpu":
     comfy.cli_args.args.cpu = True
 
@@ -48,9 +45,11 @@ from modules.util import (
     get_checkpoint_thumbnail,
     get_lora_thumbnail,
     get_model_thumbnail,
+    get_checkpoint_path,
+    get_lora_path,
 )
 from modules.path import PathManager
-from modules.civit import Civit
+from modules.model_handler import Models
 from modules.imagebrowser import ImageBrowser
 
 import ui_image_gallery
@@ -61,15 +60,8 @@ from PIL import Image
 inpaint_toggle = None
 shared.shared_cache["browser"] = ImageBrowser()
 path_manager = PathManager()
-civit_checkpoints = Civit(
-    model_dir=Path(path_manager.model_paths["modelfile_path"]),
-    cache_path=Path(path_manager.model_paths["cache_path"] / "checkpoints"),
-)
-civit_loras = Civit(
-    model_dir=Path(path_manager.model_paths["lorafile_path"]),
-    cache_path=Path(path_manager.model_paths["cache_path"] / "loras"),
-)
 
+shared.models = Models()
 
 def find_unclosed_markers(s):
     markers = re.findall(r"__", s)
@@ -616,15 +608,14 @@ with shared.gradio_root as block:
                         return s
 
             with gr.Tab(label="Models"):
-                if settings["base_model"] not in path_manager.model_filenames:
-                    settings["base_model"] = path_manager.model_filenames[0]
+# FIXME find a model to use as default
+#                if settings["base_model"] not in path_manager.model_filenames:
+#                    settings["base_model"] = path_manager.model_filenames[0]
 
                 with gr.Tab(label="Model"):
                     model_current = gr.HTML(
                         value=f"{settings['base_model']}",
                     )
-                    # FIXME    container=False,
-                    # FIXME    interactive=False,
                     with gr.Group():
                         modelfilter = gr.Textbox(
                             placeholder="Model name",
@@ -647,7 +638,7 @@ with shared.gradio_root as block:
                             value=list(
                                 map(
                                     lambda x: (get_checkpoint_thumbnail(x), x),
-                                    path_manager.model_filenames,
+                                    shared.models.get_names("checkpoints"),
                                 )
                             ),
                         )
@@ -663,7 +654,7 @@ with shared.gradio_root as block:
                     def update_model_filter(filtered):
                         filtered_filenames = filter(
                             lambda filename: filtered.lower() in filename.lower(),
-                            path_manager.model_filenames,
+                            shared.models.get_names("checkpoints"),
                         )
                         newlist = list(
                             map(
@@ -675,11 +666,11 @@ with shared.gradio_root as block:
 
                     def update_model_select(evt: gr.SelectData):
                         model_name = f"{evt.value['caption']}"
-                        models = civit_checkpoints.get_models_by_path(
-                            path_manager.model_paths["modelfile_path"]
-                            / Path(model_name)
+                        model = shared.models.get_models_by_path(
+                            "checkpoints",
+                            model_name
                         )
-                        model_base = civit_checkpoints.get_model_base(models)
+                        model_base = shared.models.get_model_base(model)
 
                         txt = f"{evt.value['caption']}<br>Model type: {model_base}"
 
@@ -716,7 +707,7 @@ with shared.gradio_root as block:
                             value=list(
                                 map(
                                     lambda x: (get_lora_thumbnail(x), x),
-                                    path_manager.lora_filenames,
+                                    shared.models.get_names("loras"),
                                 )
                             ),
                         )
@@ -816,13 +807,13 @@ with shared.gradio_root as block:
                             value=list(
                                 map(
                                     lambda x: (get_checkpoint_thumbnail(x), f"C:{x}"),
-                                    path_manager.model_filenames,
+                                    shared.models.get_names("checkpoints"),
                                 )
                             )
                             + list(
                                 map(
                                     lambda x: (get_lora_thumbnail(x), f"L:{x}"),
-                                    path_manager.lora_filenames,
+                                    shared.models.get_names("checkpoints"),
                                 )
                             ),
                         )
@@ -900,7 +891,7 @@ with shared.gradio_root as block:
                             lambda x: (get_lora_thumbnail(x), x),
                             filter(
                                 lambda filename: lorafilter.lower() in filename.lower(),
-                                path_manager.lora_filenames,
+                                shared.models.get_names("loras"),
                             ),
                         )
                         if x[1] not in active
@@ -938,7 +929,7 @@ with shared.gradio_root as block:
                             lambda x: (get_lora_thumbnail(x), x),
                             filter(
                                 lambda filename: lorafilter.lower() in filename.lower(),
-                                path_manager.lora_filenames,
+                                shared.models.get_names("loras"),
                             ),
                         )
                         if x[1] not in active
@@ -1000,11 +991,11 @@ with shared.gradio_root as block:
                     loras = list(
                         filter(
                             lambda filename: lorafilter.lower() in filename.lower(),
-                            path_manager.lora_filenames,
+                            shared.models.get_names("loras"),
                         )
                     )
                     if len(loras) == 0:
-                        loras = path_manager.lora_filenames
+                        loras = shared.models.get_names("loras")
 
                     inactive = [
                         x
@@ -1079,7 +1070,7 @@ with shared.gradio_root as block:
                 def update_mm_filter(filtered):
                     filtered_models = filter(
                         lambda filename: ".merge" not in filename.lower(),
-                        path_manager.model_filenames,
+                        shared.models.get_names("checkpoints"),
                     )
                     filtered_models = filter(
                         lambda filename: filtered.lower() in filename.lower(),
@@ -1087,7 +1078,7 @@ with shared.gradio_root as block:
                     )
                     filtered_loras = filter(
                         lambda filename: filtered.lower() in filename.lower(),
-                        path_manager.lora_filenames,
+                        shared.models.get_names("loras"),
                     )
                     newlist = list(
                         map(
@@ -1201,8 +1192,10 @@ with shared.gradio_root as block:
                     dict["normalize"] = 1.0
                     dict["cache"] = cache
 
+                    folder = path_manager.model_paths["modelfile_path"]
+                    folder = folder[0] if isinstance(folder, list) else folder
                     filename = Path(
-                        path_manager.model_paths["modelfile_path"] / name
+                        folder / name
                     ).with_suffix(".merge")
                     if filename.exists():
                         gr.Info("Not saving, file already exists.")
@@ -1266,18 +1259,7 @@ with shared.gradio_root as block:
             )
             def model_refresh_clicked(lora_active_gallery):
                 global civit_checkpoints, civit_loras
-                path_manager.update_all_model_names()
-
-                civit_checkpoints = Civit(
-                    model_dir=Path(path_manager.model_paths["modelfile_path"]),
-                    cache_path=Path(
-                        path_manager.model_paths["cache_path"] / "checkpoints"
-                    ),
-                )
-                civit_loras = Civit(
-                    model_dir=Path(path_manager.model_paths["lorafile_path"]),
-                    cache_path=Path(path_manager.model_paths["cache_path"] / "loras"),
-                )
+                shared.models.update_all_models()
 
                 results = {
                     modelfilter: gr.update(value=""),

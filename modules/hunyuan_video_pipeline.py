@@ -13,6 +13,7 @@ import os
 from comfy.model_base import BaseModel, SDXL, SD3, Flux, Lumina2, HunyuanVideo
 from modules.settings import default_settings
 from shared import path_manager
+import shared
 
 from pathlib import Path
 import json
@@ -86,9 +87,9 @@ class pipeline:
         self.model_hash_patched = ""
         self.conditions = None
 
-        filename = os.path.join(path_manager.model_paths["modelfile_path"], name)
+        filename = str(shared.models.get_file("checkpoints", name))
 
-        print(f"Loading base {'unet' if unet_only else 'model'}: {name}")
+        print(f"Loading Hunyuan video {'unet' if unet_only else 'model'}: {name}")
 
         if filename.endswith(".gguf") or unet_only:
             with torch.torch.inference_mode():
@@ -205,7 +206,7 @@ class pipeline:
         for name, weight in loras:
             if name == "None" or weight == 0:
                 continue
-            filename = os.path.join(path_manager.model_paths["lorafile_path"], name)
+            filename = str(shared.models.get_file("loras", name))
             print(f"Loading LoRAs: {name}")
             try:
                 lora = comfy.utils.load_torch_file(filename, safe_load=True)

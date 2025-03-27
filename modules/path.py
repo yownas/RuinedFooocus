@@ -37,7 +37,11 @@ class PathManager:
         self.paths = self.load_paths()
         self.model_paths = self.get_model_paths()
         self.default_model_names = self.get_default_model_names()
-        self.update_all_model_names()
+        # FIXME clean up
+        #self.update_all_model_names()
+        self.upscaler_filenames = self.get_model_filenames(
+            self.model_paths["upscaler_path"]
+        )
 
         pathdb_folder = "modules/pathdb"
         files = os.listdir(pathdb_folder)
@@ -96,10 +100,15 @@ class PathManager:
         }
 
     def get_abspath_folder(self, path):
-        folder = self.get_abspath(path)
-        if not folder.exists():
-            folder.mkdir(parents=True, exist_ok=True)
-        return folder
+        if isinstance(path, list):
+            rc = []
+            for folder in path:
+                rc.append(self.get_abspath(folder))
+        else:
+            rc = self.get_abspath(path)
+            if not rc.exists():
+                rc.mkdir(parents=True, exist_ok=True)
+        return rc
 
     def get_abspath(self, path):
         return Path(path) if Path(path).is_absolute() else Path(__file__).parent / path
@@ -135,13 +144,6 @@ class PathManager:
             raise ValueError(f"{folder_path} is not a valid directory.")
         filenames = []
         for path in folder_path.glob("*/*"):
-            #            if path.suffix.lower() in self.EXTENSIONS:
-            #                if isLora:
-            #                    txtcheck = path.with_suffix(".txt")
-            #                    if txtcheck.exists():
-            #                        fstats = txtcheck.stat()
-            #                        if fstats.st_size > 0:
-            #                            path = path.with_suffix(f"{path.suffix}")
             filenames.append(f"🤗:{path.relative_to(folder_path)}")
         return sorted(
             filenames,
@@ -150,19 +152,6 @@ class PathManager:
                 if not str(Path(x).parent) == "."
                 else f"1{x.casefold()}"
             ),
-        )
-
-    def update_all_model_names(self):
-        self.model_filenames = self.get_model_filenames(
-            self.model_paths["modelfile_path"], cache="checkpoints"
-        ) + self.get_diffusers_filenames(
-            self.model_paths["diffusers_path"], cache="checkpoints"
-        )
-        self.lora_filenames = self.get_model_filenames(
-            self.model_paths["lorafile_path"], cache="loras", isLora=True
-        )
-        self.upscaler_filenames = self.get_model_filenames(
-            self.model_paths["upscaler_path"]
         )
 
     def get_file_path(self, file_key, default=None):

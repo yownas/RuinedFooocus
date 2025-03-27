@@ -14,6 +14,7 @@ from PIL import Image, ImageOps
 from comfy.model_base import BaseModel, SDXL, SD3, Flux, Lumina2
 from modules.settings import default_settings
 from shared import path_manager
+import shared
 
 from pathlib import Path
 import json
@@ -122,7 +123,7 @@ class pipeline:
         self.xl_base_patched_extra = set()
         self.conditions = None
 
-        filename = Path(path_manager.model_paths["modelfile_path"] / name)
+        filename = shared.models.get_file("checkpoints", name)
         cache_name = str(Path(path_manager.model_paths["cache_path"] / "merges" / Path(name).name).with_suffix(".safetensors"))
         if Path(cache_name).exists() and Path(cache_name).stat().st_mtime >= Path(filename).stat().st_mtime:
             print(f"Loading cached version:")
@@ -136,7 +137,7 @@ class pipeline:
             if 'comment' in merge_data:
                 print(f"  {merge_data['comment']}")
 
-            filename = Path(path_manager.model_paths["modelfile_path"] / merge_data["base"]["name"])
+            filename = shared.models.get_file("checkpoints", merge_data["base"]["name"])
             norm = 1.0
             if "models" in merge_data and len(merge_data["models"]) > 0:
                 weights = sum([merge_data["base"]["weight"]] + [x.get("weight") for x in merge_data["models"]])
@@ -168,7 +169,7 @@ class pipeline:
             w = float(merge_data["base"]["weight"]) * norm
             for m in merge_data["models"]:
                 print(f"Merging {m['name']} ({round(m['weight'] * norm * 100)}%)")
-                filename = Path(path_manager.model_paths["modelfile_path"] / m["name"])
+                filename = str(shared.models.get_file("checkpoints", m["name"]))
                 # FIXME add error check?`
                 with torch.torch.inference_mode():
                     m_unet, m_clip, m_vae, m_clip_vision = load_checkpoint_guess_config(str(filename))
@@ -210,7 +211,8 @@ class pipeline:
         if self.xl_base_hash == name and self.xl_base_patched_extra == set():
             return
 
-        filename = os.path.join(path_manager.model_paths["modelfile_path"], name)
+        #filename = os.path.join(path_manager.model_paths["modelfile_path"], name)
+        filename = shared.models.get_file("checkpoints", name)
         if Path(filename).suffix == '.merge':
             self.merge_models(name)
             return
@@ -231,6 +233,7 @@ class pipeline:
 
         unet = None
 
+        filename = str(filename) # FIXME use Path and suffix instead?
         if filename.endswith(".gguf") or unet_only:
             with torch.torch.inference_mode():
                 try:
@@ -403,7 +406,7 @@ class pipeline:
         for name, weight in loras:
             if name == "None" or weight == 0:
                 continue
-            filename = os.path.join(path_manager.model_paths["lorafile_path"], name)
+            filename = str(shared.models.get_file("loras", name))
             print(f"Loading LoRAs: {name}")
             try:
                 lora = comfy.utils.load_torch_file(filename, safe_load=True)
@@ -418,6 +421,7 @@ class pipeline:
                 )
                 loaded_loras += [(name, weight)]
             except:
+                print(f"DEBUG: Error loading LoRA: {filename}")
                 pass
         self.xl_base_patched = model
         # Uncomment below to enable FreeU shit

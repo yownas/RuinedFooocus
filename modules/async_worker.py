@@ -268,8 +268,7 @@ def worker():
                     "scheduler": gen_data["scheduler"],
                     "base_model_name": gen_data["base_model_name"],
                     "base_model_hash": model_hash(
-                        Path(shared.path_manager.model_paths["modelfile_path"])
-                        / gen_data["base_model_name"]
+                        shared.models.get_file_from_name("checkpoints", gen_data["base_model_name"]) 
                     ),
                     "loras": [[f"{get_lora_hashes(lora[0])['AutoV2']}", f"{lora[1]} - {lora[0]}"] for lora in loras],
                     "start_step": start_step,

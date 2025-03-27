@@ -8,80 +8,151 @@ import threading
 import time
 from pathlib import Path
 import numpy as np
-from shared import civit_worker_folders
+from shared import civit_workers, path_manager
+from modules.path import PathManager
 
-class Civit:
-    def civit_update_worker(self, folder_path, cache_path):
+class Models:
+
+    def civit_update_worker(self, model_type, folder_paths):
         try:
             import imageio.v3
         except:
             # Skip updates if we are missing imageio
             print(f"Can't find imageio.v3 module: Skip CivitAI update")
             return
-        if str(folder_path) in civit_worker_folders:
+        if str(model_type) in civit_workers:
             # Already working on this folder
-            print(f"Skip CivitAI check. Update for {folder_path} already running.")
+            print(f"Skip CivitAI check. Update for {model_type} already running.")
             return
-        if not Path(cache_path).is_dir():
-            print(f"WARNING: Can't find {cache_path}  Will not update thumbnails.")
-            return
-        if not Path(cache_path).is_dir():
-            print(f"WARNING: Can't find {cache_path}  Will not update thumbnails.")
+        if not Path(self.cache_paths[model_type]).is_dir():
+            print(f"WARNING: Can't find {self.cache_paths[model_type]}  Will not update thumbnails.")
             return
 
-        civit_worker_folders.append(str(folder_path))
+        civit_workers.append(str(model_type))
+        self.ready[model_type] = False
         updated = 0
 
-        for path in folder_path.rglob("*"):
-            if path.suffix.lower() in self.EXTENSIONS:
+        # Quick list
+        for folder in folder_paths:
+            for path in folder.rglob("*"):
+                if path.suffix.lower() in self.EXTENSIONS:
+                    # Add to model names
+                    self.names[model_type].append(str(path.relative_to(folder)))
 
-                # get file name, add cache path change suffix
-                cache_file = Path(cache_path / path.name)
-                models = self.get_models_by_path(str(path))
+        # Return a sorted list, prepend names with 0 if they are in a folder or 1
+        # if it is a plain file. This will sort folders above files in the dropdown
+        self.names[model_type] = sorted(
+            self.names[model_type],
+            key=lambda x: (
+                f"0{x.casefold()}"
+                if not str(Path(x).parent) == "."
+                else f"1{x.casefold()}"
+            ),
+        )
+        self.ready[model_type] = True
 
-                suffixes = [".jpeg", ".jpg", ".png", ".gif"]
-                has_preview = False
-                for suffix in suffixes:
-                    thumbcheck = cache_file.with_suffix(suffix)
-                    if Path(thumbcheck).is_file():
-                        has_preview = True
-                        break
+        if self.offline:
+            civit_workers.remove(str(model_type))
+            return
 
-                if not has_preview:
-                    #print(f"Downloading model thumbnail for {Path(path).name} ({self.get_model_base(models)} - {self.get_model_type(models)})")
-                    self.get_image(models, thumbcheck)
-                    updated += 1
-                    time.sleep(1)
+        # Go though and check previews
+        for folder in folder_paths:
+            for path in folder.rglob("*"):
+                if path.suffix.lower() in self.EXTENSIONS:
+                    # get file name, add cache path change suffix
+                    cache_file = Path(self.cache_paths[model_type] / path.name)
+                    models = self.get_models_by_path(model_type, str(path))
 
-                txtcheck = cache_file.with_suffix(".txt")
-                if str(self.get_model_type(models)).lower() == "lora" and not txtcheck.exists():
-                    print(f"Get LoRA keywords for {Path(path).name} ({self.get_model_base(models)} - {self.get_model_type(models)})")
-                    keywords = self.get_keywords(models)
-                    with open(txtcheck, "w") as f:
-                        f.write(", ".join(keywords))
-                    updated += 1
+                    suffixes = [".jpeg", ".jpg", ".png", ".gif"]
+                    has_preview = False
+                    for suffix in suffixes:
+                        thumbcheck = cache_file.with_suffix(suffix)
+                        if Path(thumbcheck).is_file():
+                            has_preview = True
+                            break
+
+                    if not has_preview:
+                        #print(f"Downloading model thumbnail for {Path(path).name} ({self.get_model_base(models)} - {self.get_model_type(models)})")
+                        self.get_image(models, thumbcheck)
+                        updated += 1
+                        time.sleep(1)
+
+                    txtcheck = cache_file.with_suffix(".txt")
+                    if model_type == "loras" and not txtcheck.exists():
+                        print(f"Get LoRA keywords for {Path(path).name} ({self.get_model_base(models)} - {self.get_model_type(models)})")
+                        keywords = self.get_keywords(models)
+                        with open(txtcheck, "w") as f:
+                            f.write(", ".join(keywords))
+                        updated += 1
 
         if updated > 0:
-            print(f"CivitAI update for {folder_path} done.")
-        civit_worker_folders.remove(str(folder_path))
+            print(f"CivitAI update for {model_type} done.")
+        civit_workers.remove(str(model_type))
 
-    def __init__(self, model_dir=None, base_url="https://civitai.com/api/v1/", cache_path="cache"):
-        self.model_dir = model_dir
-        self.cache_path = cache_path
-        self.base_url = base_url
+    def get_names(self, model_type):
+        while not self.ready[model_type]:
+            # Wait until we have read all the filenames
+            time.sleep(0.2)
+        return self.names[model_type]
+
+    def get_file(self, model_type, name):
+        # Search the folders for the model
+        for folder in self.model_dirs[model_type]:
+            file = Path(folder) / name
+            if file.is_file():
+                return file
+        return None
+
+    def update_all_models(self):
+        for model_type in ["checkpoints", "loras"]:
+            self.names[model_type] = []
+            threading.Thread(
+                target=self.civit_update_worker,
+                args=(
+                    model_type,
+                    self.model_dirs[model_type],
+                ),
+                daemon=True,
+            ).start()
+
+    def __init__(self, offline=False):
+        self.offline = offline
+
+        self.ready = {
+            "checkpoints": False,
+            "loras": False,
+        }
+        self.names = {
+            "checkpoints": [],
+            "loras": [],
+        }
+        checkpoints = path_manager.model_paths["modelfile_path"]
+        checkpoints = checkpoints if isinstance(checkpoints, list) else [checkpoints]
+        loras = path_manager.model_paths["lorafile_path"]
+        loras = loras if isinstance(loras, list) else [loras]
+        self.model_dirs = {
+            "checkpoints": checkpoints,
+            "loras": loras,
+        }
+        self.cache_paths = {
+            "checkpoints": Path(path_manager.model_paths["cache_path"] / "checkpoints"),
+            "loras": Path(path_manager.model_paths["cache_path"] / "loras"),
+        }
+
+        self.base_url = "https://civitai.com/api/v1/"
         self.headers = {"Content-Type": "application/json"}
         self.session = requests.Session()
         self.EXTENSIONS = [".pth", ".ckpt", ".bin", ".safetensors", ".gguf"]
 
-        if model_dir:
-            threading.Thread(
-                target=self.civit_update_worker,
-                args=(
-                    self.model_dir,
-                    self.cache_path,
-                ),
-                daemon=True,
-            ).start()
+        self.update_all_models()
+
+
+    def get_file_from_name(self, model_type, model_name):
+        for folder in self.model_dirs[model_type]:
+            path = Path(folder) / model_name
+            if path.is_file():
+                return path
+        return None
 
     def _read_file(self, filename):
         try:
@@ -116,10 +187,10 @@ class Civit:
             print(f"Error: {e}")
             return None
 
-    def get_models_by_path(self, path, cache_path=None):
+    def get_models_by_path(self, model_type, path):
         data = None
-        if cache_path is None:
-            cache_path = Path(self.cache_path) / Path(Path(path).name)
+
+        cache_path = Path(self.cache_paths[model_type]) / Path(Path(path).name)
         if cache_path.is_dir():
             # Give up
             return {}

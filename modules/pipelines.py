@@ -1,10 +1,8 @@
 import os
 from shared import state, path_manager
-from modules.civit import Civit
+import shared
 from pathlib import Path
 import re
-
-civit = Civit(cache_path=Path(path_manager.model_paths["cache_path"]) / Path("checkpoints"))
 
 try:
     import modules.faceswapper_pipeline as faceswapper_pipeline
@@ -86,8 +84,8 @@ def update(gen_data):
         else:
             baseModel = None
             if "base_model_name" in gen_data:
-                file = Path(path_manager.model_paths["modelfile_path"]) / Path(gen_data['base_model_name'])
-                baseModel = civit.get_model_base(civit.get_models_by_path(file))
+                file = shared.models.get_file("checkpoints", gen_data['base_model_name'])
+                baseModel = shared.models.get_model_base(shared.models.get_models_by_path("checkpoints", file))
                 baseModelName = gen_data['base_model_name']
             if state["pipeline"] is None:
                 state["pipeline"] = NoPipeLine()
@@ -135,5 +133,6 @@ def update(gen_data):
         return state["pipeline"]
     except:
         # If things fail. Use the template pipeline that only returns a logo
+        print(f"Something went wrong. Falling back to template pipeline.")
         state["pipeline"] = template_pipeline.pipeline()
         return state["pipeline"]

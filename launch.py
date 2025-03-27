@@ -146,24 +146,28 @@ def download_models():
     from modules.util import load_file_from_url
     from shared import path_manager
 
+    checkpoints = path_manager.model_paths["modelfile_path"]
+    checkpoints = checkpoints[0] if isinstance(checkpoints, list) else checkpoints
+    loras = path_manager.model_paths["lorafile_path"]
+    loras = loras[0] if isinstance(loras, list) else loras
     model_filenames = [
         (
-            path_manager.model_paths["modelfile_path"],
+            checkpoints,
             "sd_xl_base_1.0_0.9vae.safetensors",
             "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0_0.9vae.safetensors",
         ),
         (
-            path_manager.model_paths["lorafile_path"],
+            loras,
             "sd_xl_offset_example-lora_1.0.safetensors",
             "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_offset_example-lora_1.0.safetensors",
         ),
         (
-            path_manager.model_paths["lorafile_path"],
+            loras,
             "lcm-lora-sdxl.safetensors",
             "https://huggingface.co/latent-consistency/lcm-lora-sdxl/resolve/main/pytorch_lora_weights.safetensors",
         ),
         (
-            path_manager.model_paths["lorafile_path"],
+            loras,
             "lcm-lora-ssd-1b.safetensors",
             "https://huggingface.co/latent-consistency/lcm-lora-ssd-1b/resolve/main/pytorch_lora_weights.safetensors",
         ),

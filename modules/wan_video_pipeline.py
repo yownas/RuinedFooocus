@@ -80,9 +80,9 @@ class pipeline:
         self.model_hash_patched = ""
         self.conditions = None
 
-        filename = os.path.join(path_manager.model_paths["modelfile_path"], name)
+        filename = str(shared.models.get_file("checkpoints", name))
 
-        print(f"Loading base {'unet' if unet_only else 'model'}: {name}")
+        print(f"Loading WAN video {'unet' if unet_only else 'model'}: {name}")
 
         if filename.endswith(".gguf") or unet_only:
             with torch.torch.inference_mode():
@@ -200,7 +200,7 @@ class pipeline:
         for name, weight in loras:
             if name == "None" or weight == 0:
                 continue
-            filename = os.path.join(path_manager.model_paths["lorafile_path"], name)
+            filename = str(shared.models.get_file("loras", name))
             print(f"Loading LoRAs: {name}")
             try:
                 lora = comfy.utils.load_torch_file(filename, safe_load=True)
@@ -311,8 +311,8 @@ class pipeline:
                 length = gen_data["original_image_number"],
                 batch_size = 1,
             )[0]
-            positive = self.conditions["+"]["cache"],
-            negative = self.conditions["-"]["cache"],
+            positive = self.conditions["+"]["cache"]
+            negative = self.conditions["-"]["cache"]
 
         worker.add_result(
             gen_data["task_id"],
