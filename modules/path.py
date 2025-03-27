@@ -159,14 +159,14 @@ class PathManager:
         Get the path for a file, downloading it if it doesn't exist.
         """
         if file_key not in self.DOWNLOADABLE_FILES:
-#            if default is None:
-#                raise ValueError(f"Unknown file key: {file_key}")
-#           else:
             return default
 
         file_info = self.DOWNLOADABLE_FILES[file_key]
+        folder = self.paths[file_info["path"]]
+        if isinstance(folder, list): # folder might be a list of folders
+            folder = folder[0] # ...select the first one
         file_path = (
-            self.get_abspath(self.paths[file_info["path"]]) / file_info["filename"]
+            self.get_abspath(folder) / file_info["filename"]
         )
 
         if not file_path.exists():
@@ -182,8 +182,11 @@ class PathManager:
         Download a file if it doesn't exist.
         """
         file_info = self.DOWNLOADABLE_FILES[file_key]
+        folder = self.paths[file_info["path"]]
+        if isinstance(folder, list): # folder might be a list of folders
+            folder = folder[0] # ...select the first one
         file_path = (
-            self.get_abspath(self.paths[file_info["path"]]) / file_info["filename"]
+            self.get_abspath(folder) / file_info["filename"]
         )
 
         print(f"Downloading {file_info['url']}...")

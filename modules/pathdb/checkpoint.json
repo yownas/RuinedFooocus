@@ -1,0 +1,22 @@
+{
+    "checkpoints/sd_xl_base_1.0_0.9vae.safetensors": {
+        "url": "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0_0.9vae.safetensors",
+	"path": "path_checkpoints",
+        "filename": "sd_xl_base_1.0_0.9vae.safetensors"
+    },
+    "checkpoints/top5-v10.safetensors": {
+        "url": "https://huggingface.co/yownas/top5_merge/resolve/main/top5_v10.safetensors",
+	"path": "path_checkpoints",
+        "filename": "top5-v10.safetensors"
+    },
+    "checkpoints/top5-v10Q2K.gguf": {
+        "url": "https://huggingface.co/yownas/top5_merge/resolve/main/top5_v10Q2K.gguf",
+	"path": "path_checkpoints",
+        "filename": "top5-v10Q2K.gguf"
+    },
+    "checkpoints/top5-v10Q51.gguf": {
+        "url": "https://huggingface.co/yownas/top5_merge/resolve/main/top5_v10Q51.gguf",
+	"path": "path_checkpoints",
+        "filename": "top5-v10Q51.gguf"
+    }
+}

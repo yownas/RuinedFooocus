@@ -211,8 +211,16 @@ class pipeline:
         if self.xl_base_hash == name and self.xl_base_patched_extra == set():
             return
 
-        #filename = os.path.join(path_manager.model_paths["modelfile_path"], name)
         filename = shared.models.get_file("checkpoints", name)
+
+        # If we don't have a filename, get the default.
+        if filename is None:
+            base_model = default_settings.get("base_model", "sd_xl_base_1.0_0.9vae.safetensors")
+            filename = path_manager.get_folder_file_path(
+                "checkpoints",
+                base_model,
+            )
+
         if Path(filename).suffix == '.merge':
             self.merge_models(name)
             return
@@ -421,7 +429,7 @@ class pipeline:
                 )
                 loaded_loras += [(name, weight)]
             except:
-                print(f"DEBUG: Error loading LoRA: {filename}")
+                print(f"Error loading LoRA: {filename}")
                 pass
         self.xl_base_patched = model
         # Uncomment below to enable FreeU shit

@@ -85,7 +85,12 @@ def update(gen_data):
             baseModel = None
             if "base_model_name" in gen_data:
                 file = shared.models.get_file("checkpoints", gen_data['base_model_name'])
-                baseModel = shared.models.get_model_base(shared.models.get_models_by_path("checkpoints", file))
+                if file is None:
+                    file = ""
+                    baseModel = "None"
+                else:
+                    path = shared.models.get_models_by_path("checkpoints", file)
+                    baseModel = shared.models.get_model_base(path)
                 baseModelName = gen_data['base_model_name']
             if state["pipeline"] is None:
                 state["pipeline"] = NoPipeLine()
