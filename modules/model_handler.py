@@ -33,6 +33,7 @@ class Models:
         updated = 0
 
         # Quick list
+        self.names[model_type] = []
         for folder in folder_paths:
             for path in folder.rglob("*"):
                 if path.suffix.lower() in self.EXTENSIONS:
@@ -105,7 +106,6 @@ class Models:
 
     def update_all_models(self):
         for model_type in ["checkpoints", "loras"]:
-            self.names[model_type] = []
             threading.Thread(
                 target=self.civit_update_worker,
                 args=(
