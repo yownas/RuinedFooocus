@@ -86,6 +86,38 @@ class Models:
                             f.write(", ".join(keywords))
                         updated += 1
 
+        if model_type == "inbox" and self.names["inbox"]:
+            checkpoints = path_manager.model_paths["modelfile_path"]
+            checkpoints = checkpoints[0] if isinstance(checkpoints, list) else checkpoints
+            loras = path_manager.model_paths["lorafile_path"]
+            loras = loras[0] if isinstance(loras, list) else loras
+            folders = {
+                "LORA": (loras, self.cache_paths["loras"]),
+                "Checkpoint": (checkpoints, self.cache_paths["checkpoints"]),
+            }
+            for name in self.names["inbox"]:
+                model = self.get_models_by_path("inbox", name)
+                filename =  self.get_file_from_name("inbox", name)
+                if model is None:
+                    continue
+                baseModel = self.get_model_base(model)
+                folder = folders.get(self.get_model_type(model), None)[0]
+                cache = folders.get(self.get_model_type(model), None)[1]
+                if folder is None or baseModel is None:
+                    continue
+                # Move model to correct folder
+                dest = Path(folder) / baseModel
+                if not dest.exists():
+                    dest.mkdir(parents=True, exist_ok=True)
+                filename.rename(dest / name)
+                # Move cache-files
+                cache_file = Path(cache) / name
+                suffixes = [".json", ".txt", ".jpeg", ".jpg", ".png", ".gif"]
+                for suffix in suffixes:
+                    cachefile = cache_file.with_suffix(suffix)
+                    if Path(cachefile).is_file():
+                        cachefile.rename(cache / cachefile.name)
+
         if updated > 0:
             print(f"CivitAI update for {model_type} done.")
         civit_workers.remove(str(model_type))
@@ -105,7 +137,7 @@ class Models:
         return None
 
     def update_all_models(self):
-        for model_type in ["checkpoints", "loras"]:
+        for model_type in ["checkpoints", "loras", "inbox"]:
             threading.Thread(
                 target=self.civit_update_worker,
                 args=(
@@ -121,22 +153,28 @@ class Models:
         self.ready = {
             "checkpoints": False,
             "loras": False,
+            "inbox": False,
         }
         self.names = {
             "checkpoints": [],
             "loras": [],
+            "inbox": [],
         }
         checkpoints = path_manager.model_paths["modelfile_path"]
         checkpoints = checkpoints if isinstance(checkpoints, list) else [checkpoints]
         loras = path_manager.model_paths["lorafile_path"]
         loras = loras if isinstance(loras, list) else [loras]
+        inbox = path_manager.model_paths["inbox_path"]
+        inbox = inbox if isinstance(inbox, list) else [inbox]
         self.model_dirs = {
             "checkpoints": checkpoints,
             "loras": loras,
+            "inbox": inbox,
         }
         self.cache_paths = {
             "checkpoints": Path(path_manager.model_paths["cache_path"] / "checkpoints"),
             "loras": Path(path_manager.model_paths["cache_path"] / "loras"),
+            "inbox": Path(path_manager.model_paths["cache_path"] / "inbox"),
         }
 
         self.base_url = "https://civitai.com/api/v1/"

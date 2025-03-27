@@ -26,6 +26,7 @@ class PathManager:
         "path_clip_vision": "../models/clip_vision/",
         "path_cache": "../cache/",
         "path_llm": "../models/llm",
+        "path_inbox": "../models/inbox",
     }
 
     EXTENSIONS = [".pth", ".ckpt", ".bin", ".safetensors", ".gguf", ".merge"]
@@ -90,6 +91,7 @@ class PathManager:
             "clip_vision_path": self.get_abspath_folder(self.paths["path_clip_vision"]),
             "cache_path": self.get_abspath_folder(self.paths["path_cache"]),
             "llm_path": self.get_abspath_folder(self.paths["path_llm"]),
+            "inbox_path": self.get_abspath_folder(self.paths["path_inbox"]),
         }
 
     def get_default_model_names(self):
