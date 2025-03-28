@@ -97,7 +97,7 @@ class PathManager:
     def get_default_model_names(self):
         return {
             "default_base_model_name": "sd_xl_base_1.0_0.9vae.safetensors",
-            "default_lora_name": "sd_xl_offset_example-lora_1.0.safetensors",
+            "default_lora_name": "None",
             "default_lora_weight": 0.5,
         }
 
