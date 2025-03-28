@@ -97,8 +97,8 @@ class Models:
                             f.write(", ".join(keywords))
                         updated += 1
 
-                    if model_type == "inbox" and self.names["inbox"]:
-                        name = str(path.relative_to(folder_paths[0])) # FIXME inbox is a single folder, not a list
+                    if model_type == "inbox":
+                        name = str(path.relative_to(folder_paths[0])) # FIXME handle if inbox is a list
                         model = self.get_models_by_path("inbox", name)
                         filename =  self.get_file_from_name("inbox", name)
                         if model is None:
