@@ -63,6 +63,7 @@ class Models:
             loras = loras[0] if isinstance(loras, list) else loras
             folders = {
                 "LORA": (loras, self.cache_paths["loras"]),
+                "LoCon": (loras, self.cache_paths["loras"]),
                 "Checkpoint": (checkpoints, self.cache_paths["checkpoints"]),
             }
 
@@ -103,10 +104,10 @@ class Models:
                         if model is None:
                             continue
                         baseModel = self.get_model_base(model)
-                        folder = folders.get(self.get_model_type(model), None)[0]
-                        cache = folders.get(self.get_model_type(model), None)[1]
+                        folder, cache = folders.get(self.get_model_type(model), [None, None])
                         if folder is None or baseModel is None:
                             print(f"Skipping {name} not sure what {self.get_model_type(model)} is.")
+                            continue
                         # Move model to correct folder
                         dest = Path(folder) / baseModel
                         if not dest.exists():
