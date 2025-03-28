@@ -56,6 +56,16 @@ class Models:
             civit_workers.remove(str(model_type))
             return
 
+        if model_type == "inbox" and self.names["inbox"]:
+            checkpoints = path_manager.model_paths["modelfile_path"]
+            checkpoints = checkpoints[0] if isinstance(checkpoints, list) else checkpoints
+            loras = path_manager.model_paths["lorafile_path"]
+            loras = loras[0] if isinstance(loras, list) else loras
+            folders = {
+                "LORA": (loras, self.cache_paths["loras"]),
+                "Checkpoint": (checkpoints, self.cache_paths["checkpoints"]),
+            }
+
         # Go though and check previews
         for folder in folder_paths:
             for path in folder.rglob("*"):
@@ -86,37 +96,30 @@ class Models:
                             f.write(", ".join(keywords))
                         updated += 1
 
-        if model_type == "inbox" and self.names["inbox"]:
-            checkpoints = path_manager.model_paths["modelfile_path"]
-            checkpoints = checkpoints[0] if isinstance(checkpoints, list) else checkpoints
-            loras = path_manager.model_paths["lorafile_path"]
-            loras = loras[0] if isinstance(loras, list) else loras
-            folders = {
-                "LORA": (loras, self.cache_paths["loras"]),
-                "Checkpoint": (checkpoints, self.cache_paths["checkpoints"]),
-            }
-            for name in self.names["inbox"]:
-                model = self.get_models_by_path("inbox", name)
-                filename =  self.get_file_from_name("inbox", name)
-                if model is None:
-                    continue
-                baseModel = self.get_model_base(model)
-                folder = folders.get(self.get_model_type(model), None)[0]
-                cache = folders.get(self.get_model_type(model), None)[1]
-                if folder is None or baseModel is None:
-                    continue
-                # Move model to correct folder
-                dest = Path(folder) / baseModel
-                if not dest.exists():
-                    dest.mkdir(parents=True, exist_ok=True)
-                filename.rename(dest / name)
-                # Move cache-files
-                cache_file = Path(cache) / name
-                suffixes = [".json", ".txt", ".jpeg", ".jpg", ".png", ".gif"]
-                for suffix in suffixes:
-                    cachefile = cache_file.with_suffix(suffix)
-                    if Path(cachefile).is_file():
-                        cachefile.rename(cache / cachefile.name)
+                    if model_type == "inbox" and self.names["inbox"]:
+                        name = str(path.relative_to(folder_paths[0])) # FIXME inbox is a single folder, not a list
+                        model = self.get_models_by_path("inbox", name)
+                        filename =  self.get_file_from_name("inbox", name)
+                        if model is None:
+                            continue
+                        baseModel = self.get_model_base(model)
+                        folder = folders.get(self.get_model_type(model), None)[0]
+                        cache = folders.get(self.get_model_type(model), None)[1]
+                        if folder is None or baseModel is None:
+                            print(f"Skipping {name} not sure what {self.get_model_type(model)} is.")
+                        # Move model to correct folder
+                        dest = Path(folder) / baseModel
+                        if not dest.exists():
+                            dest.mkdir(parents=True, exist_ok=True)
+                        Path(filename).rename(dest / name)
+                        # Move cache-files
+                        cache_file = Path(self.cache_paths[model_type] / name)
+                        suffixes = [".json", ".txt", ".jpeg", ".jpg", ".png", ".gif"]
+                        for suffix in suffixes:
+                            cachefile = cache_file.with_suffix(suffix)
+                            if cachefile.is_file():
+                                cachefile.rename(cache / cachefile.name)
+                        print(f"Moved {name} to {dest}")
 
         if updated > 0:
             print(f"CivitAI update for {model_type} done.")
