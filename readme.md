@@ -22,7 +22,7 @@ Don't waste another minute stuck in the past. The future is calling, and it's ti
 
 You can directly download Fooocus with:
 
-**[>>> Click here to download <<<](https://github.com/runew0lf/RuinedFooocus/releases/download/Release-1.25.2/RuinedFooocus_win64_1-25-2.7z)**
+**[>>> Click here to download <<<](https://github.com/runew0lf/RuinedFooocus/releases/download/Release-2.0.0/RuinedFooocus_main_2.0.0.win64.7z)**
 
 ## NOTE YOU WILL NEED TO EXTRACT USING THE LATEST [7ZIP](https://www.7-zip.org/download.html)
 
