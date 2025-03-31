@@ -12,7 +12,7 @@ def create_chat():
         for path in folder_path.rglob("*"):
             if path.is_dir():
                 try:
-                    with open(path / "info.json" , "r") as f:
+                    with open(path / "info.json" , "r", encoding='utf-8') as f:
                         info = json.load(f)
                     names.append((info["name"], str(path)))
                 except Exception as e:
@@ -32,7 +32,7 @@ def create_chat():
     def _llama_select_assistant(dropdown):
         folder = Path(dropdown)
         try:
-            with open(folder / "info.json", "r") as f:
+            with open(folder / "info.json", "r", encoding='utf-8') as f:
                 info = json.load(f)
                 if "avatar" not in info:
                     info["avatar"] = folder / "avatar.png"
