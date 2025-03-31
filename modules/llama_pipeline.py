@@ -14,7 +14,7 @@ def llama_names():
         folder_path = Path("llamas")
         for path in folder_path.rglob("*"):
             if path.suffix.lower() in [".txt"]:
-                f = open(path, "r")
+                f = open(path, "r", encoding='utf-8')
                 name = f.readline().strip()
                 names.append((name, str(path)))
         names.sort(key=lambda x: x[0].casefold())
@@ -30,7 +30,7 @@ def run_llama(system_file, prompt):
             prompt = re.sub(sys_pat, "", prompt)
         else:
             try:
-                file = open(system_file, "r")
+                file = open(system_file, "r", encoding='utf-8')
                 name = name if name is not None else file.readline().strip()
                 system_prompt = file.read().strip()
             except:
