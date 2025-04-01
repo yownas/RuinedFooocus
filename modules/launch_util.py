@@ -133,9 +133,6 @@ def requirements_met(requirements_file):
             package = m.group(1).strip()
             version_required = (m.group(2) or "").strip()
 
-            if version_required == "":
-                continue
-
             try:
                 version_installed = re.sub(
                     "\+.*$",
@@ -144,6 +141,9 @@ def requirements_met(requirements_file):
                 )
             except Exception:
                 return False
+
+            if version_required == "":
+                continue
 
             if packaging.version.parse(version_required) != packaging.version.parse(
                 version_installed
