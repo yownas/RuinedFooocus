@@ -9,7 +9,7 @@ diffusers==0.32.1
 imageio-ffmpeg==0.5.1
 ftfy==6.1.1
 clip_interrogator==0.6.0
-opencv-python==4.10.0.84
+opencv-python==4.11.0.86
 kornia==0.7.3
 sentencepiece==0.2.0
 spandrel==0.3.4
