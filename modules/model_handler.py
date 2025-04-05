@@ -258,7 +258,7 @@ class Models:
             data = response.json()
         except requests.exceptions.HTTPError as e:
             if response.status_code == 404:
-                print(f"Error: Model {Path(path).name} Not Found on civit.ai")
+                print(f"Warning: Could not find {Path(path).name} on civit.ai")
             elif response.status_code == 503:
                 print("Error: Civit.ai Service Currently Unavailable")
             else:
@@ -369,7 +369,7 @@ class Models:
                 image_url = url
                 response = self.session.get(image_url)
                 if response.status_code != 200:
-                    print(f"WARNING: get_image() - {response.status_code} : {response.reason}")
+                    print(f"WARNING: get_image() for {caption_text} - {response.status_code} : {response.reason}")
                     break
                 image = np.asarray(bytearray(response.content), dtype="uint8") 
                 out = make_thumbnail(cv2.imdecode(image, cv2.IMREAD_COLOR), caption_text, caption=caption, zoom=zoom)
