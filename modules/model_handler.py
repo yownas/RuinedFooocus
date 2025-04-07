@@ -112,14 +112,14 @@ class Models:
                         dest = Path(folder) / baseModel
                         if not dest.exists():
                             dest.mkdir(parents=True, exist_ok=True)
-                        Path(filename).rename(dest / name)
+                        shutil.move(Path(filename), Path(dest) / name)
                         # Move cache-files
                         cache_file = Path(self.cache_paths[model_type] / name)
                         suffixes = [".json", ".txt", ".jpeg", ".jpg", ".png", ".gif"]
                         for suffix in suffixes:
                             cachefile = cache_file.with_suffix(suffix)
                             if cachefile.is_file():
-                                cachefile.rename(cache / cachefile.name)
+                                shutil.move(cachefile, Path(cache) / cachefile.name)
                         print(f"Moved {name} to {dest}")
 
         if updated > 0:
@@ -382,7 +382,7 @@ class Models:
 
                 if format == "video":
                     tmp_path = f"{path}.tmp"
-                    os.rename(path, tmp_path)
+                    shutil.move(path, tmp_path)
                     video = iio.imiter(tmp_path)
                     fps = iio.immeta(tmp_path)["fps"]
                     video_out = []
