@@ -558,9 +558,9 @@ with shared.gradio_root as block:
                 image_number = gr.Slider(
                     label="Image Number",
                     minimum=0,
-                    maximum=50,
+                    maximum=default_settings.get("image_number_max", 50),
                     step=1,
-                    value=settings["image_number"],
+                    value=default_settings.get("image_number", 1),
                 )
                 add_ctrl("image_number", image_number)
                 auto_negative_prompt = gr.Checkbox(
