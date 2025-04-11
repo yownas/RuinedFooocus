@@ -7,9 +7,10 @@ import ssl
 import json
 import shared
 
-os.environ['HF_HUB_DISABLE_TELEMETRY'] = '1'
-os.environ['DO_NOT_TRACK'] = '1'
-os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
+
+os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
+os.environ["DO_NOT_TRACK"] = "1"
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
@@ -50,13 +51,13 @@ git_repos = [
         "hash": "b779349b55e79aff81a98b752f5cb486c71812db",
         "add_path": "ComfyUI",
     },
-#    {
-#        "name": "ComfyUI-GGUF",
-#        "path": "comfyui_gguf",
-#        "url": "https://github.com/city96/ComfyUI-GGUF.git",
-#        "hash": "5875c52f59baca3a9372d68c43a3775e21846fe0",
-#        "add_path": "",
-#    },
+    #    {
+    #        "name": "ComfyUI-GGUF",
+    #        "path": "comfyui_gguf",
+    #        "url": "https://github.com/city96/ComfyUI-GGUF.git",
+    #        "hash": "5875c52f59baca3a9372d68c43a3775e21846fe0",
+    #        "add_path": "",
+    #    },
     {
         "name": "Calcuis-GGUF",
         "path": "calcuis_gguf",
@@ -66,6 +67,7 @@ git_repos = [
     },
 ]
 
+
 def prepare_environment(offline=False):
     print(f"Python {sys.version}")
     print(f"RuinedFooocus version: {version.version}")
@@ -73,14 +75,8 @@ def prepare_environment(offline=False):
     requirements_file = "requirements_versions.txt"
     pip_config = "settings/pip.json"
     pip_data = {
-        "setup": {
-            "torch": "cu124",
-            "llama": "cpu"
-        },
-        "installed": {
-            "torch": "cu124",
-            "llama": "cpu"
-        }
+        "setup": {"torch": "cu124", "llama": "cpu"},
+        "installed": {"torch": "cu124", "llama": "cpu"},
     }
     try:
         with open(pip_config) as f:
@@ -96,14 +92,19 @@ def prepare_environment(offline=False):
     if offline:
         print("Skip pip check.")
     else:
-        run(f'"{python}" -m pip install --upgrade pip', "Check pip", "Couldn't check pip", live=False)
-        run(f'"{python}" -m pip install -r "{requirements_file}"', "Check pre-requirements", "Couldn't check pre-reqs", live=False)
+        run(
+            f'"{python}" -m pip install --upgrade pip',
+            "Check pip",
+            "Couldn't check pip",
+            live=False,
+        )
+        run(
+            f'"{python}" -m pip install -r "{requirements_file}"',
+            "Check pre-requirements",
+            "Couldn't check pre-reqs",
+            live=False,
+        )
 
-    # Remove module if installed from older version
-    run(f'"{python}" -m pip uninstall -y flash-attn xformers', "", "", live=False)
-
-    if pip_data["setup"]["torch"] != pip_data["installed"]["torch"]:
-        pip_rm("torch torchvision torchsde", "torch")
     if pip_data["setup"]["llama"] != pip_data["installed"]["llama"]:
         pip_rm("llama_cpp_python", "llama")
 
@@ -111,10 +112,6 @@ def prepare_environment(offline=False):
         print("Skip check of required modules.")
     else:
         os.environ["FLASH_ATTENTION_SKIP_CUDA_BUILD"] = "TRUE"
-        if REINSTALL_ALL or not requirements_met(torch_file):
-            run_pip(f'install -r "{torch_file}"', "torch modules")
-            pip_data["installed"]["torch"] = pip_data["setup"]["torch"]
-
         if REINSTALL_ALL or not requirements_met(modules_file):
             print("This next step may take a while")
             run_pip(f'install -r "{modules_file}"', "required modules")
@@ -132,6 +129,18 @@ def prepare_environment(offline=False):
         pass
     shared.shared_cache["installed"] = pip_data["installed"]
 
+    # Run TorchUtils
+    run(
+        f'"{python}" -m torchruntime install',
+        "Check torch versions",
+        "Couldn't install torch versions for this machine",
+        live=False,
+    )
+    import torchruntime
+
+    torchruntime.configure()
+
+
 def clone_git_repos(offline=False):
     from modules.launch_util import git_clone
 
@@ -141,6 +150,7 @@ def clone_git_repos(offline=False):
         add_path = str(Path(script_path) / dir_repos / repo["add_path"])
         if add_path not in sys.path:
             sys.path.append(add_path)
+
 
 def download_models():
     from modules.util import load_file_from_url
@@ -166,6 +176,7 @@ def download_models():
             file_name=file_name,
         )
 
+
 from argparser import args
 
 REINSTALL_ALL = False
@@ -173,7 +184,7 @@ if os.path.exists("reinstall"):
     REINSTALL_ALL = True
 
 if args.gpu_device_id is not None:
-    os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu_device_id)
+    os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu_device_id)
     print("Set device to:", args.gpu_device_id)
 
 offline = os.environ.get("RF_OFFLINE") == "1" or "--offline" in sys.argv
