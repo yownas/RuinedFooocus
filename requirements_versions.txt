@@ -2,3 +2,4 @@ wheel
 packaging
 pygit2
 setuptools
+torchruntime==1.16.1

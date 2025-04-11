@@ -111,6 +111,17 @@ def prepare_environment(offline=False):
         print("Skip check of required modules.")
     else:
         os.environ["FLASH_ATTENTION_SKIP_CUDA_BUILD"] = "TRUE"
+
+        # Run TorchUtils
+        run(
+            f'"{python}" -m torchruntime install',
+            "Checking for latest torch version",
+            "Couldn't install torch on this machine",
+            live=True,
+        )
+        import torchruntime
+        torchruntime.configure()
+
         if REINSTALL_ALL or not requirements_met(modules_file):
             print("This next step may take a while")
             run_pip(f'install -r "{modules_file}"', "required modules")
@@ -128,16 +139,6 @@ def prepare_environment(offline=False):
         pass
     shared.shared_cache["installed"] = pip_data["installed"]
 
-    # Run TorchUtils
-    run(
-        f'"{python}" -m torchruntime install',
-        "Checking for latest torch version",
-        "Couldn't install torch on this machine",
-        live=True,
-    )
-    import torchruntime
-
-    torchruntime.configure()
 
 
 def clone_git_repos(offline=False):
