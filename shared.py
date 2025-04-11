@@ -14,7 +14,7 @@ wildcards = None
 try:
     tokenizer = CLIPTokenizer.from_pretrained("openai/clip-vit-large-patch14")
 except:
-    print("DEBUG: No tokenizer in shared.py")
+    print("No tokenizer in shared.py")
     tokenizer = None
 
 performance_settings = PerformanceSettings()
