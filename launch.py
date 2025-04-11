@@ -132,9 +132,9 @@ def prepare_environment(offline=False):
     # Run TorchUtils
     run(
         f'"{python}" -m torchruntime install',
-        "Check torch versions",
-        "Couldn't install torch versions for this machine",
-        live=False,
+        "Checking for latest torch version",
+        "Couldn't install torch on this machine",
+        live=True,
     )
     import torchruntime
 
