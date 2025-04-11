@@ -6,7 +6,7 @@ from pathlib import Path
 import ssl
 import json
 import shared
-
+import torchruntime
 
 os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
 os.environ["DO_NOT_TRACK"] = "1"
@@ -51,13 +51,6 @@ git_repos = [
         "hash": "b779349b55e79aff81a98b752f5cb486c71812db",
         "add_path": "ComfyUI",
     },
-    #    {
-    #        "name": "ComfyUI-GGUF",
-    #        "path": "comfyui_gguf",
-    #        "url": "https://github.com/city96/ComfyUI-GGUF.git",
-    #        "hash": "5875c52f59baca3a9372d68c43a3775e21846fe0",
-    #        "add_path": "",
-    #    },
     {
         "name": "Calcuis-GGUF",
         "path": "calcuis_gguf",
@@ -119,8 +112,6 @@ def prepare_environment(offline=False):
         #    "Couldn't install torch on this machine",
         #    live=True,
         #)
-        import torchruntime
-        torchruntime.configure()
         torchruntime.install()
 
         if REINSTALL_ALL or not requirements_met(modules_file):
@@ -206,5 +197,6 @@ except:
 if not offline:
     download_models()
 
+torchruntime.configure()
 print("Starting webui")
 from webui import *
