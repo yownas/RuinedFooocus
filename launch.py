@@ -85,7 +85,6 @@ def prepare_environment(offline=False):
         print(f"INFO: Could not read setup file {pip_config}, using defaults.")
         pass
 
-    torch_file = f"pip/torch_{pip_data['setup']['torch']}.txt"
     modules_file = "pip/modules.txt"
     llama_file = f"pip/llama_{pip_data['setup']['llama']}.txt"
 
