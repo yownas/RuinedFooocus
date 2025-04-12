@@ -6,7 +6,6 @@ from pathlib import Path
 import ssl
 import json
 import shared
-import torchruntime
 
 os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
 os.environ["DO_NOT_TRACK"] = "1"
@@ -106,13 +105,16 @@ def prepare_environment(offline=False):
         os.environ["FLASH_ATTENTION_SKIP_CUDA_BUILD"] = "TRUE"
 
         # Run TorchUtils
-        #run(
+        # run(
         #    f'"{python}" -m torchruntime install',
         #    "Checking for latest torch version",
         #    "Couldn't install torch on this machine",
         #    live=True,
-        #)
+        # )
+        import torchruntime
+
         torchruntime.install()
+        torchruntime.configure()
 
         if REINSTALL_ALL or not requirements_met(modules_file):
             print("This next step may take a while")
@@ -130,7 +132,6 @@ def prepare_environment(offline=False):
         print(f"WARNING: Could not write setup file {pip_config}")
         pass
     shared.shared_cache["installed"] = pip_data["installed"]
-
 
 
 def clone_git_repos(offline=False):
@@ -197,6 +198,5 @@ except:
 if not offline:
     download_models()
 
-torchruntime.configure()
 print("Starting webui")
 from webui import *
