@@ -37,11 +37,9 @@ from nodes import (
 )
 
 from comfy_extras.nodes_custom_sampler import SamplerCustomAdvanced, RandomNoise, BasicScheduler, KSamplerSelect, BasicGuider
-from comfy_extras.nodes_hunyuan import EmptyHunyuanLatentVideo
+from comfy_extras.nodes_hunyuan import EmptyHunyuanLatentVideo, HunyuanImageToVideo 
 from comfy_extras.nodes_model_advanced import ModelSamplingSD3
 from comfy_extras.nodes_flux import FluxGuidance
-from comfy_extras.nodes_images import SaveAnimatedPNG
-from node_helpers import conditioning_set_values
 
 
 class pipeline:
@@ -267,18 +265,13 @@ class pipeline:
             self.conditions = clean_prompt_cond_caches()
 
         positive_prompt = gen_data["positive_prompt"]
-        negative_prompt = gen_data["negative_prompt"]
+#        negative_prompt = gen_data["negative_prompt"]
         clip_skip = 1
 
         if self.textencode("+", positive_prompt, clip_skip):
             updated_conditions = True
-        if self.textencode("-", negative_prompt, clip_skip):
-            updated_conditions = True
-
-        conds = {
-            "positive": self.conditions["+"]["cache"],
-            "negative": self.conditions["-"]["cache"],
-        }
+#        if self.textencode("-", negative_prompt, clip_skip):
+#            updated_conditions = True
 
         previewer = None
 
@@ -295,13 +288,40 @@ class pipeline:
         # Noise
         noise = RandomNoise().get_noise(noise_seed=seed)[0]
 
+        # latent_image
+        # t2v or i2v?
+        if gen_data["input_image"]:
+            image = np.array(gen_data["input_image"]).astype(np.float32) / 255.0
+            image = torch.from_numpy(image)[None,]
+
+            (positive, latent_image) = HunyuanImageToVideo().encode(
+                positive = self.conditions["+"]["cache"],
+                vae = self.model_base_patched.vae,
+                width = gen_data["width"],
+                height = gen_data["height"],
+                length = gen_data["original_image_number"],
+                batch_size = 1,
+                #guidance_type = "v1 (concat)", # "v2 (replace)"
+                guidance_type = "v2 (replace)",
+                start_image = image,
+            )
+        else:
+            # latent_image
+            latent_image = EmptyHunyuanLatentVideo().generate(
+                width = gen_data["width"],
+                height = gen_data["height"],
+                length = gen_data["original_image_number"],
+                batch_size = 1,
+            )[0]
+            positive = self.conditions["+"]["cache"]
+
         # Guider
         model_sampling = ModelSamplingSD3().patch(
             model = self.model_base_patched.unet,
             shift = 7.0,
         )[0]
         flux_guideance = FluxGuidance().append(
-            conditioning = self.conditions["+"]["cache"],
+            conditioning = positive,
             guidance = gen_data["cfg"],
         )[0]
 
@@ -321,14 +341,6 @@ class pipeline:
             scheduler = gen_data["scheduler"],
             steps = gen_data["steps"],
             denoise = 1,
-        )[0]
-
-        # latent_image
-        latent_image = EmptyHunyuanLatentVideo().generate(
-            width = gen_data["width"],
-            height = gen_data["height"],
-            length = gen_data["original_image_number"],
-            batch_size = 1,
         )[0]
 
         worker.add_result(
