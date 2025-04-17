@@ -322,8 +322,6 @@ class pipeline:
 
         noise = comfy.sample.prepare_noise(latent_image["samples"], seed)
 
-#            positive = self.conditions["+"]["cache"],
-#            negative = self.conditions["-"]["cache"],
         sampled = comfy.sample.sample(
             model = model_sampling,
             noise = noise,
