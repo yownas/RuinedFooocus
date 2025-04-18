@@ -10,6 +10,7 @@ import shared
 os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
 os.environ["DO_NOT_TRACK"] = "1"
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+os.environ["CMAKE_POLICY_VERSION_MINIMUM"] = "3.5"
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
@@ -85,10 +86,20 @@ def prepare_environment(offline=False):
         )
 
     import torchruntime
+    import platform
     gpus = torchruntime.device_db.get_gpus()
     torch_platform = torchruntime.platform_detection.get_torch_platform(gpus)
-    print(f"Torch platform: {torch_platform}") # Some debug output
+    os_platform = platform.system()
+
+    # Some platform checks
+    if torch_platform == "xpu" and not os_platform == "Windows":
+        torch_platform == "cpu"
+    if torch_platform == "mps" and not os_platform == "Darwin":
+        torch_platform == "cpu"
+
+    print(f"Torch platform: {os_platform}: {torch_platform}") # Some debug output
     shared.shared_cache["torch_platform"] = torch_platform
+    shared.shared_cache["os_platform"] = os_platform
 
     if offline:
         print("Skip check of required modules.")
@@ -113,7 +124,7 @@ def prepare_environment(offline=False):
                 'xpu': 'https://github.nexa.ai/whl/sycl',
                 'cpu': 'https://github.nexa.ai/whl/cpu'
             }
-            if shared.shared_cache["torch_platform"] in platform_index:
+            if torch_platform in platform_index:
                 run_pip(f'install nexaai --extra-index-url {platform_index[torch_platform]}', "Nexa SDK modules")
             else:
                 print(f"ERROR: Can't find Nexai SDK url for {torch_platform}")
