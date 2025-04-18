@@ -1,6 +1,7 @@
 import numpy as np
 import os
 import torch
+import einops
 import traceback
 import cv2
 
@@ -72,6 +73,7 @@ class pipeline:
     def parse_gen_data(self, gen_data):
         gen_data["original_image_number"] = 1 + ((int(gen_data["image_number"] / 4.0) + 1) * 4)
         gen_data["image_number"] = 1
+        gen_data["show_preview"] = False
         return gen_data
 
     def load_base_model(self, name, unet_only=True): # Hunyuan_Video never has the clip and vae models?
@@ -246,6 +248,38 @@ class pipeline:
         update = True
         return update
 
+    # From https://github.com/lllyasviel/FramePack/blob/main/diffusers_helper/hunyuan.py#L61C1
+    @torch.no_grad()
+    def vae_decode_fake(self, latents):
+        latent_rgb_factors = [
+            [-0.0395, -0.0331, 0.0445],
+            [0.0696, 0.0795, 0.0518],
+            [0.0135, -0.0945, -0.0282],
+            [0.0108, -0.0250, -0.0765],
+            [-0.0209, 0.0032, 0.0224],
+            [-0.0804, -0.0254, -0.0639],
+            [-0.0991, 0.0271, -0.0669],
+            [-0.0646, -0.0422, -0.0400],
+            [-0.0696, -0.0595, -0.0894],
+            [-0.0799, -0.0208, -0.0375],
+            [0.1166, 0.1627, 0.0962],
+            [0.1165, 0.0432, 0.0407],
+            [-0.2315, -0.1920, -0.1355],
+            [-0.0270, 0.0401, -0.0821],
+            [-0.0616, -0.0997, -0.0727],
+            [0.0249, -0.0469, -0.1703]
+        ]  # From comfyui
+
+        latent_rgb_factors_bias = [0.0259, -0.0192, -0.0761]
+
+        weight = torch.tensor(latent_rgb_factors, device=latents.device, dtype=latents.dtype).transpose(0, 1)[:, :, None, None, None]
+        bias = torch.tensor(latent_rgb_factors_bias, device=latents.device, dtype=latents.dtype)
+
+        images = torch.nn.functional.conv3d(latents, weight, bias=bias, stride=1, padding=0, dilation=1, groups=1)
+        images = images.clamp(0.0, 1.0)
+
+        return images
+
     @torch.inference_mode()
     def process(
         self,
@@ -265,24 +299,39 @@ class pipeline:
             self.conditions = clean_prompt_cond_caches()
 
         positive_prompt = gen_data["positive_prompt"]
-#        negative_prompt = gen_data["negative_prompt"]
+        negative_prompt = gen_data["negative_prompt"]
         clip_skip = 1
 
         if self.textencode("+", positive_prompt, clip_skip):
             updated_conditions = True
-#        if self.textencode("-", negative_prompt, clip_skip):
-#            updated_conditions = True
-
-        previewer = None
+        if self.textencode("-", negative_prompt, clip_skip):
+            updated_conditions = True
 
         pbar = comfy.utils.ProgressBar(gen_data["steps"])
 
         def callback_function(step, x0, x, total_steps):
-            y = None
-            if previewer:
-                y = previewer.preview(x0, step, total_steps)
-            if callback is not None:
-                callback(step, x0, x, total_steps, y)
+            y = self.vae_decode_fake(x0)
+            y = (y * 255.0).detach().cpu().numpy().clip(0, 255).astype(np.uint8)
+            y = einops.rearrange(y, 'b c t h w -> (b h) (t w) c')
+            # Skip callback() since we'll just confuse the preview grid and push updates outselves
+            status = "Generating video"
+
+            maxw = 1920
+            maxh = 1080
+            image = Image.fromarray(y)
+            ow, oh = image.size
+            scale = min(maxh / oh, maxw / ow)
+            image = image.resize((int(ow * scale), int(oh * scale)), Image.LANCZOS)
+
+            worker.add_result(
+                gen_data["task_id"],
+                "preview",
+                (
+                    int(100 * (step / total_steps)),
+                    f"{status} - {step}/{total_steps}",
+                    image
+                )
+            )
             pbar.update_absolute(step + 1, total_steps, None)
 
         # Noise
@@ -314,6 +363,8 @@ class pipeline:
                 batch_size = 1,
             )[0]
             positive = self.conditions["+"]["cache"]
+
+        negative = self.conditions["-"]["cache"]
 
         # Guider
         model_sampling = ModelSamplingSD3().patch(
@@ -349,13 +400,32 @@ class pipeline:
             (-1, f"Generating ...", None)
         )
 
-        sampled = SamplerCustomAdvanced().sample(
-            noise = noise,
-            guider = guider,
-            sampler = ksampler,
-            sigmas = sigmas,
-            latent_image = latent_image,
-        )[0]
+        # From https://github.com/comfyanonymous/ComfyUI/blob/880c205df1fca4491c78523eb52d1a388f89ef92/comfy_extras/nodes_custom_sampler.py#L623
+        latent = latent_image
+        latent_image = latent["samples"]
+        latent = latent.copy()
+        latent_image = comfy.sample.fix_empty_latent_channels(guider.model_patcher, latent_image)
+        latent["samples"] = latent_image
+
+        noise_mask = None
+        if "noise_mask" in latent:
+            noise_mask = latent["noise_mask"]
+
+        samples = guider.sample(
+            noise.generate_noise(latent),
+            latent_image,
+            ksampler,
+            sigmas,
+            denoise_mask=noise_mask,
+            callback=callback_function,
+            disable_pbar=False,
+            seed=noise.seed
+        )
+        samples = samples.to(comfy.model_management.intermediate_device())
+
+        sampled = latent.copy()
+        sampled["samples"] = samples
+
 
         if callback is not None:
             worker.add_result(
