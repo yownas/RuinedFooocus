@@ -54,6 +54,7 @@ from modules.imagebrowser import ImageBrowser
 
 import ui_image_gallery
 import ui_llama_chat
+import ui_settings
 
 from PIL import Image
 
@@ -100,10 +101,11 @@ def launch_app(args):
     # Create the image gallery from the new module
     app_image_browser = ui_image_gallery.create_image_gallery()
     app_llama_chat = ui_llama_chat.create_chat()
+    app_settings = ui_settings.create_settings()
 
     main_tabs = gr.TabbedInterface(
-        [shared.gradio_root, app_image_browser, app_llama_chat],
-        ["Main", "Image browser", "Chat bot"],
+        [shared.gradio_root, app_image_browser, app_llama_chat, app_settings],
+        ["Main", "Image browser", "Chat bot", "Settings"],
         theme=theme,
         title="RuinedFooocus " + version.version,
         css=modules.html.css,

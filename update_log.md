@@ -1,9 +1,9 @@
+* Settings tab
+* Add preview for WAN and Hunyuan Video
+
 ### 25.04.11
 * Multiple Fixes
 * Added torchutils to add support for all gfx cards/systems
-
-
-###
 * Added models/inbox for models to get sorted
 * Code cleanup
 
