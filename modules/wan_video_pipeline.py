@@ -1,6 +1,7 @@
 import numpy as np
 import os
 import torch
+import einops
 import traceback
 import cv2
 
@@ -242,6 +243,38 @@ class pipeline:
         update = True
         return update
 
+    @torch.no_grad()
+    def vae_decode_fake(self, latents):
+        # FIXME: This should probably just be import from comfyui
+        latent_rgb_factors = [
+            [-0.1299, -0.1692,  0.2932],
+            [ 0.0671,  0.0406,  0.0442],
+            [ 0.3568,  0.2548,  0.1747],
+            [ 0.0372,  0.2344,  0.1420],
+            [ 0.0313,  0.0189, -0.0328],
+            [ 0.0296, -0.0956, -0.0665],
+            [-0.3477, -0.4059, -0.2925],
+            [ 0.0166,  0.1902,  0.1975],
+            [-0.0412,  0.0267, -0.1364],
+            [-0.1293,  0.0740,  0.1636],
+            [ 0.0680,  0.3019,  0.1128],
+            [ 0.0032,  0.0581,  0.0639],
+            [-0.1251,  0.0927,  0.1699],
+            [ 0.0060, -0.0633,  0.0005],
+            [ 0.3477,  0.2275,  0.2950],
+            [ 0.1984,  0.0913,  0.1861]
+        ]
+
+        latent_rgb_factors_bias = [-0.1835, -0.0868, -0.3360]
+
+        weight = torch.tensor(latent_rgb_factors, device=latents.device, dtype=latents.dtype).transpose(0, 1)[:, :, None, None, None]
+        bias = torch.tensor(latent_rgb_factors_bias, device=latents.device, dtype=latents.dtype)
+
+        images = torch.nn.functional.conv3d(latents, weight, bias=bias, stride=1, padding=0, dilation=1, groups=1)
+        images = images.clamp(0.0, 1.0)
+
+        return images
+
     @torch.inference_mode()
     def process(
         self,
@@ -258,7 +291,7 @@ class pipeline:
                 "preview",
                 (-1, f"Processing text encoding ...", "html/generate_video.jpeg")
             )
-        updated_conditions = False
+
         if self.conditions is None:
             self.conditions = clean_prompt_cond_caches()
 
@@ -266,18 +299,35 @@ class pipeline:
         negative_prompt = gen_data["negative_prompt"]
         clip_skip = 1
 
-        if self.textencode("+", positive_prompt, clip_skip):
-            updated_conditions = True
-        if self.textencode("-", negative_prompt, clip_skip):
-            updated_conditions = True
+        self.textencode("+", positive_prompt, clip_skip)
+        self.textencode("-", negative_prompt, clip_skip)
 
         pbar = comfy.utils.ProgressBar(gen_data["steps"])
 
         def callback_function(step, x0, x, total_steps):
-            y = None
-            if callback is not None:
-                callback(step, x0, x, total_steps, y)
-            pbar.update_absolute(step + 1, total_steps, None)
+            y = self.vae_decode_fake(x0)
+            y = (y * 255.0).detach().cpu().numpy().clip(0, 255).astype(np.uint8)
+            y = einops.rearrange(y, 'b c t h w -> (b h) (t w) c')
+            # Skip callback() since we'll just confuse the preview grid and push updates outselves
+            status = "Generating video"
+
+            maxw = 1920
+            maxh = 1080
+            image = Image.fromarray(y)
+            ow, oh = image.size
+            scale = min(maxh / oh, maxw / ow)
+            image = image.resize((int(ow * scale), int(oh * scale)), Image.LANCZOS)
+
+            worker.add_result(
+                gen_data["task_id"],
+                "preview",
+                (
+                    int(100 * (step / total_steps)),
+                    f"{status} - {step}/{total_steps}",
+                    image
+                )
+            )
+#            pbar.update_absolute(step + 1, total_steps, None)
 
         # ModelSamplingSD3
         model_sampling = ModelSamplingSD3().patch(
