@@ -10,7 +10,8 @@ comfy.cli_args.args.novram = args.novram
 comfy.cli_args.args.reserve_vram = args.reserve_vram
 comfy.cli_args.args.cpu_vae = args.cpu_vae
 
-if shared.shared_cache["installed"]["torch"] == "cpu":
+# FIXME: Should brobably also check directml and other things...
+if shared.shared_cache["torch_platform"] == "cpu":
     comfy.cli_args.args.cpu = True
 
 from pathlib import Path

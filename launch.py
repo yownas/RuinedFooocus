@@ -6,6 +6,7 @@ from pathlib import Path
 import ssl
 import json
 import shared
+import torchruntime
 
 os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
 os.environ["DO_NOT_TRACK"] = "1"
@@ -64,21 +65,14 @@ def prepare_environment(offline=False):
     print(f"Python {sys.version}")
     print(f"RuinedFooocus version: {version.version}")
 
+    gpus = torchruntime.device_db.get_gpus()
+    torch_platform = torchruntime.platform_detection.get_torch_platform(gpus)
+    print(f"Torch platform: {torch_platform}") # Some debug output
+    shared.shared_cache["torch_platform"] = torch_platform
+
     requirements_file = "requirements_versions.txt"
-    pip_config = "settings/pip.json"
-    pip_data = {
-        "setup": {"torch": "cu124", "llama": "cpu"},
-        "installed": {"torch": "cu124", "llama": "cpu"},
-    }
-    try:
-        with open(pip_config) as f:
-            pip_data.update(json.load(f))
-    except:
-        print(f"INFO: Could not read setup file {pip_config}, using defaults.")
-        pass
 
     modules_file = "pip/modules.txt"
-    llama_file = f"pip/llama_{pip_data['setup']['llama']}.txt"
 
     if offline:
         print("Skip pip check.")
@@ -96,23 +90,12 @@ def prepare_environment(offline=False):
             live=False,
         )
 
-    if pip_data["setup"]["llama"] != pip_data["installed"]["llama"]:
-        pip_rm("llama_cpp_python", "llama")
-
     if offline:
         print("Skip check of required modules.")
     else:
         os.environ["FLASH_ATTENTION_SKIP_CUDA_BUILD"] = "TRUE"
 
         # Run TorchUtils
-        # run(
-        #    f'"{python}" -m torchruntime install',
-        #    "Checking for latest torch version",
-        #    "Couldn't install torch on this machine",
-        #    live=True,
-        # )
-        import torchruntime
-
         torchruntime.install()
         torchruntime.configure()
 
@@ -120,18 +103,20 @@ def prepare_environment(offline=False):
             print("This next step may take a while")
             run_pip(f'install -r "{modules_file}"', "required modules")
 
-        if REINSTALL_ALL or not is_installed("llama_cpp"):
-            run_pip(f'install -r "{llama_file}"', "llama modules")
-            pip_data["installed"]["llama"] = pip_data["setup"]["llama"]
-
-    # Update pip.json
-    try:
-        with open(pip_config, "w") as file:
-            json.dump(pip_data, file, indent=2)
-    except:
-        print(f"WARNING: Could not write setup file {pip_config}")
-        pass
-    shared.shared_cache["installed"] = pip_data["installed"]
+        if REINSTALL_ALL or not is_installed("nexa"):
+            platform_index = {
+                'cu124': 'https://github.nexa.ai/whl/cu124',
+                'nightly/cu128': 'https://github.nexa.ai/whl/cu124',
+                'rocm6.2': 'https://github.nexa.ai/whl/rocm621',
+                'directml': 'https://github.nexa.ai/whl/vulkan',
+                'mps': 'https://github.nexa.ai/whl/metal',
+                'xpu': 'https://github.nexa.ai/whl/sycl',
+                'cpu': 'https://github.nexa.ai/whl/cpu'
+            }
+            if shared.shared_cache["torch_platform"] in platform_index:
+                run_pip(f'install nexaai --extra-index-url {platform_index[torch_platform]}', "Nexa SDK modules")
+            else:
+                print(f"ERROR: Can't find Nexai SDK url for {torch_platform}")
 
 
 def clone_git_repos(offline=False):

@@ -1,5 +1,6 @@
 import re
-from llama_cpp import Llama
+#from llama_cpp import Llama
+from nexa.gguf.llama.llama import Llama
 from txtai import Embeddings
 from modules.util import TimeIt
 from pathlib import Path
