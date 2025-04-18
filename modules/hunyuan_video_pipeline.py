@@ -292,9 +292,9 @@ class pipeline:
             worker.add_result(
                 gen_data["task_id"],
                 "preview",
-                (-1, f"Processing text encoding ...", None)
+                (-1, f"Processing text encoding ...", "html/generate_video.jpeg")
             )
-        updated_conditions = False
+
         if self.conditions is None:
             self.conditions = clean_prompt_cond_caches()
 
@@ -302,10 +302,8 @@ class pipeline:
         negative_prompt = gen_data["negative_prompt"]
         clip_skip = 1
 
-        if self.textencode("+", positive_prompt, clip_skip):
-            updated_conditions = True
-        if self.textencode("-", negative_prompt, clip_skip):
-            updated_conditions = True
+        self.textencode("+", positive_prompt, clip_skip)
+        self.textencode("-", negative_prompt, clip_skip)
 
         pbar = comfy.utils.ProgressBar(gen_data["steps"])
 
