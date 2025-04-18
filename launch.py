@@ -6,7 +6,6 @@ from pathlib import Path
 import ssl
 import json
 import shared
-import torchruntime
 
 os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
 os.environ["DO_NOT_TRACK"] = "1"
@@ -65,11 +64,6 @@ def prepare_environment(offline=False):
     print(f"Python {sys.version}")
     print(f"RuinedFooocus version: {version.version}")
 
-    gpus = torchruntime.device_db.get_gpus()
-    torch_platform = torchruntime.platform_detection.get_torch_platform(gpus)
-    print(f"Torch platform: {torch_platform}") # Some debug output
-    shared.shared_cache["torch_platform"] = torch_platform
-
     requirements_file = "requirements_versions.txt"
 
     modules_file = "pip/modules.txt"
@@ -89,6 +83,12 @@ def prepare_environment(offline=False):
             "Couldn't check pre-reqs",
             live=False,
         )
+
+    import torchruntime
+    gpus = torchruntime.device_db.get_gpus()
+    torch_platform = torchruntime.platform_detection.get_torch_platform(gpus)
+    print(f"Torch platform: {torch_platform}") # Some debug output
+    shared.shared_cache["torch_platform"] = torch_platform
 
     if offline:
         print("Skip check of required modules.")
