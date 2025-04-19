@@ -17,6 +17,12 @@ def save_clicked(*args):
         if default_settings[key] == None or default_settings[key] == "":
             default_settings.pop(key)
 
+    # Massage some of the data
+    if isinstance(default_settings["archive_folders"], str):
+        default_settings["archive_folders"] = default_settings["archive_folders"].splitlines()
+    if isinstance(default_settings["style"], str):
+        default_settings["style"] = default_settings["style"].splitlines()
+
     save_settings()
     gr.Info("Saved!")
 
@@ -28,15 +34,33 @@ def create_settings():
             with gr.Column():
                 gr.Markdown("# UI settings")
                 image_number = gr.Number(label="Image Number", interactive=True, value=default_settings.get("image_number", 1))
+                add_setting("image_number", image_number)
                 image_number_max = gr.Number(label="Image Number Max", interactive=True, value=default_settings.get("image_number_max", 50))
+                add_setting("image_number_max", image_number_max)
                 seed_random = gr.Checkbox(label="Seed Random", interactive=True, value=default_settings.get("seed_random", True))
+                add_setting("seed_random", seed_random)
                 seed = gr.Number(label="Seed", interactive=True, value=default_settings.get("seed", -1))
-                style = gr.Textbox(label="Style", interactive=True, value=default_settings.get("style", "[]"))
+                add_setting("seed", seed)
+                style = gr.Code(
+                    label="Style",
+                    interactive=True,
+                    value="\n".join(default_settings.get("style", [])),
+                    lines=5,
+                    max_lines=5
+                )
+                add_setting("style", style)
+
                 prompt = gr.Textbox(label="Prompt", interactive=True, value=default_settings.get("prompt", ""))
+                add_setting("prompt", prompt)
                 negative_prompt = gr.Textbox(label="Negative Prompt", interactive=True, value=default_settings.get("negative_prompt", ""))
+                add_setting("negative_prompt", negative_prompt)
                 performance = gr.Textbox(label="Performance", interactive=True, value=default_settings.get("performance", "Speed"))
-                resolution = gr.Textbox(label="Resolution", interactive=True, value="Should be a Copy From UI button")
+                add_setting("performance", performance)
+                resolution = gr.Textbox(label="Resolution", interactive=True, value=default_settings.get("resolution", "1344x768 (16:9)"))
+                add_setting("resolution", resolution)
                 base_model = gr.Textbox(label="Base Model", interactive=True, value=default_settings.get("base_model", ""))
+                add_setting("base_model", base_model)
+
 #                lora_1_model = gr.Textbox(label="Lora 1 Model")
 #                lora_1_weight = gr.Number(label="Lora 1 Weight", value=1.0)
 #                lora_2_model = gr.Textbox(label="Lora 2 Model")
@@ -48,13 +72,17 @@ def create_settings():
 #                lora_5_model = gr.Textbox(label="Lora 5 Model")
 #                lora_5_weight = gr.Number(label="Lora 5 Weight", value=0.5)
                 auto_negative_prompt = gr.Checkbox(label="Auto Negative Prompt", interactive=True, value=default_settings.get("auto_negative_prompt", False))
+                add_setting("auto_negative_prompt", auto_negative_prompt)
             with gr.Column():
                 gr.Markdown("# One Button Prompt")
                 OBP_preset = gr.Textbox(label="OBP Preset", value=default_settings.get("OBP_preset", "Standard"))
+                add_setting("OBP_preset", OBP_preset)
                 hint_chance = gr.Number(label="Hint Chance", value=default_settings.get("hint_chance", 25))
+                add_setting("hint_chance", hint_chance)
                 
                 gr.Markdown("# Image Browser")
                 images_per_page = gr.Textbox(label="Images per page", value=default_settings.get("images_per_page", 100))
+                add_setting("images_per_page", images_per_page)
                 archive_folders = gr.Code(
                     label="Archive folders",
                     interactive=True,
@@ -62,7 +90,26 @@ def create_settings():
                     lines=5,
                     max_lines=5
                 )
+                add_setting("archive_folders", archive_folders)
                 gr.Markdown("# Paths")
+                path_checkpoints = gr.Code(
+                    label="Checkpoint folders",
+                    interactive=True,
+                    value="\n".join(default_settings.get("path_checkpoints", [])),
+                    lines=5,
+                    max_lines=5
+                )
+# not used yet                add_setting("path_checkpoints", path_checkpoints)
+                path_loras = gr.Code(
+                    label="LoRA folders",
+                    interactive=True,
+                    value="\n".join(default_settings.get("path_loras", [])),
+                    lines=5,
+                    max_lines=5
+                )
+# not used yet                add_setting("path_loras", path_loras)
+                path_outputs = gr.Textbox(label="Output folder", interactive=True, placeholder="../outputs/", value=default_settings.get("path_outputs", "../outputs/"))
+# not used yet                add_setting("path_outputs", path_outputs)
 
             with gr.Column():
                 gr.Markdown("# Other")
@@ -103,11 +150,6 @@ def create_settings():
 
                 llama_localfile = gr.Textbox(label="llama_localfile", interactive=True, placeholder="", value=default_settings.get("llama_localfile", None))
                 add_setting("llama_localfile", llama_localfile)
-
-#modules/llama_pipeline.py:        repo = default_settings.get("llama_repo", "hugging-quants/Llama-3.2-3B-Instruct-Q8_0-GGUF")
-#modules/llama_pipeline.py:        file = default_settings.get("llama_file", "*q8_0.gguf")
-
-
 
         with gr.Row():
             save_btn = gr.Button("Save Settings")
