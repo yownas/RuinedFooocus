@@ -179,6 +179,15 @@ class PathManager:
     def get_folder_file_path(self, folder, filename, default=None):
         return self.get_file_path(f"{folder}/{filename}", default=default)
 
+    def get_folder_list(self, folder):
+        result = []
+        for file in self.DOWNLOADABLE_FILES:
+            if file.startswith(f"{folder}/"):
+                result.append(self.DOWNLOADABLE_FILES[file]["filename"])
+        # FIXME: also list files already in folder
+        return result
+
+
     def download_file(self, file_key):
         """
         Download a file if it doesn't exist.

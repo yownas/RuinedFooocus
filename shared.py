@@ -5,6 +5,7 @@ except:
 from modules.performance import PerformanceSettings
 from modules.resolutions import ResolutionSettings
 from modules.path import PathManager
+from modules.model_handler import Models
 
 gradio_root = None
 
@@ -28,7 +29,7 @@ performance_settings = PerformanceSettings()
 resolution_settings = ResolutionSettings()
 civit_workers = []
 path_manager = PathManager()
-models = None
+models = Models()
 
 shared_cache = {}
 

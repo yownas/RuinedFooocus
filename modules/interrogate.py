@@ -95,13 +95,13 @@ def florence_look(image, prompt, gr):
     return text
 
 looks = {
-    "brainblip:": brainblip_look,
-    "clip:": clip_look,
-    "florence:": florence_look,
+    "brainblip": brainblip_look,
+    "clip": clip_look,
+    "florence": florence_look,
 }
 
 def look(image, prompt, gr):
-    if prompt.strip() in looks:
+    if prompt.strip(" :") in looks:
         text = looks[prompt.strip()](image, prompt, gr)
     else:
         if prompt != "":

@@ -8,7 +8,7 @@ import threading
 import time
 from pathlib import Path
 import numpy as np
-from shared import civit_workers, path_manager
+import shared
 from modules.path import PathManager
 
 class Models:
@@ -20,7 +20,7 @@ class Models:
             # Skip updates if we are missing imageio
             print(f"Can't find imageio.v3 module: Skip CivitAI update")
             return
-        if str(model_type) in civit_workers:
+        if str(model_type) in shared.civit_workers:
             # Already working on this folder
             print(f"Skip CivitAI check. Update for {model_type} already running.")
             return
@@ -28,7 +28,7 @@ class Models:
             print(f"WARNING: Can't find {self.cache_paths[model_type]}  Will not update thumbnails.")
             return
 
-        civit_workers.append(str(model_type))
+        shared.civit_workers.append(str(model_type))
         self.ready[model_type] = False
         updated = 0
 
@@ -53,13 +53,13 @@ class Models:
         self.ready[model_type] = True
 
         if self.offline:
-            civit_workers.remove(str(model_type))
+            shared.civit_workers.remove(str(model_type))
             return
 
         if model_type == "inbox" and self.names["inbox"]:
-            checkpoints = path_manager.model_paths["modelfile_path"]
+            checkpoints = shared.path_manager.model_paths["modelfile_path"]
             checkpoints = checkpoints[0] if isinstance(checkpoints, list) else checkpoints
-            loras = path_manager.model_paths["lorafile_path"]
+            loras = shared.path_manager.model_paths["lorafile_path"]
             loras = loras[0] if isinstance(loras, list) else loras
             folders = {
                 "LORA": (loras, self.cache_paths["loras"]),
@@ -124,7 +124,7 @@ class Models:
 
         if updated > 0:
             print(f"CivitAI update for {model_type} done.")
-        civit_workers.remove(str(model_type))
+        shared.civit_workers.remove(str(model_type))
 
     def get_names(self, model_type):
         while not self.ready[model_type]:
@@ -164,11 +164,11 @@ class Models:
             "loras": [],
             "inbox": [],
         }
-        checkpoints = path_manager.model_paths["modelfile_path"]
+        checkpoints = shared.path_manager.model_paths["modelfile_path"]
         checkpoints = checkpoints if isinstance(checkpoints, list) else [checkpoints]
-        loras = path_manager.model_paths["lorafile_path"]
+        loras = shared.path_manager.model_paths["lorafile_path"]
         loras = loras if isinstance(loras, list) else [loras]
-        inbox = path_manager.model_paths["inbox_path"]
+        inbox = shared.path_manager.model_paths["inbox_path"]
         inbox = inbox if isinstance(inbox, list) else [inbox]
         self.model_dirs = {
             "checkpoints": checkpoints,
@@ -176,9 +176,9 @@ class Models:
             "inbox": inbox,
         }
         self.cache_paths = {
-            "checkpoints": Path(path_manager.model_paths["cache_path"] / "checkpoints"),
-            "loras": Path(path_manager.model_paths["cache_path"] / "loras"),
-            "inbox": Path(path_manager.model_paths["cache_path"] / "inbox"),
+            "checkpoints": Path(shared.path_manager.model_paths["cache_path"] / "checkpoints"),
+            "loras": Path(shared.path_manager.model_paths["cache_path"] / "loras"),
+            "inbox": Path(shared.path_manager.model_paths["cache_path"] / "inbox"),
         }
 
         self.base_url = "https://civitai.com/api/v1/"
