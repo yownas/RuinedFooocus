@@ -80,7 +80,7 @@ def launch_app(args):
     shared.gradio_root.queue(api_open=True)
 
     # Create theme for main interface
-    if "theme" not in settings or settings["theme"] == "None":
+    if "theme" not in settings or settings["theme"] in ["", "None", None]:
         theme = gr.themes.Default()
     else:
         try:

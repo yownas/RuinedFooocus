@@ -3,6 +3,8 @@ from os.path import exists
 
 from shared import path_manager
 
+SETTINGS_FILE="settings/settings.json"
+
 DEFAULT_SETTINGS = {
     "advanced_mode": False,
     "image_number": 1,
@@ -28,15 +30,11 @@ DEFAULT_SETTINGS = {
     "auto_negative_prompt": False,
     "OBP_preset": "Standard",
     "hint_chance": 25,
-    "clip_g": "clip_g.safetensors",
-    "clip_l": "clip_l.safetensors",
-    "clip_t5": "t5-v1_1-xxl-encoder-Q3_K_S.gguf",
 }
 
-
 def load_settings():
-    if exists("settings/settings.json"):
-        with open("settings/settings.json") as f:
+    if exists(SETTINGS_FILE):
+        with open(SETTINGS_FILE) as f:
             settings = json.load(f)
     else:
         settings = {}
@@ -53,10 +51,17 @@ def load_settings():
         settings["style"] = []
 
     if changed:
-        with open("settings/settings.json", "w") as f:
+        with open(SETTINGS_FILE, "w") as f:
             json.dump(settings, f, indent=2)
 
     return settings
+
+def save_settings():
+    global default_settings
+
+    # FIXME: Add some error checks and exception handling
+    with open(SETTINGS_FILE, "w") as f:
+        json.dump(default_settings, f, indent=2)
 
 
 default_settings = load_settings()
