@@ -243,8 +243,8 @@ class ImageBrowser:
                     print(f"    {folder}")
                     for root, _, files in os.walk(folder):
                         for filename in files:
-                            #if filename.lower().endswith((".png", ".gif")):
-                            if filename.lower().endswith(".png"):
+                            if filename.lower().endswith((".png", ".gif")):
+                            #if filename.lower().endswith(".png"):
                                 full_path = Path(root) / filename
                                 rel_path = str(full_path.relative_to(folder))
                                 if filename.lower().endswith(".png"):
