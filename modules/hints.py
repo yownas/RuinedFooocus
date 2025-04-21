@@ -1,7 +1,6 @@
 import gradio as gr
 import random
 import glob
-from modules.settings import default_settings
 
 
 def get_hint():

@@ -2,10 +2,9 @@ import torch
 from clip_interrogator import Config, Interrogator
 from PIL import Image
 import json
-from shared import path_manager
+from shared import path_manager, settings
 from transformers import AutoProcessor, AutoModelForCausalLM 
 from modules.util import TimeIt
-from modules.settings import default_settings
 
 import os
 from transformers.dynamic_module_utils import get_imports
@@ -112,7 +111,7 @@ def look(image, prompt, gr):
             text = json.dumps(json.loads(params))
         except:
             # Default interrogator
-            interrogator = default_settings.get("interrogator", "florence") + ":"
+            interrogator = settings.default_settings.get("interrogator", "florence") + ":"
             text = looks[interrogator](image, prompt, gr)
 
     return text

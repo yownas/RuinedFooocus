@@ -1,7 +1,5 @@
 import modules.async_worker as worker
 
-from modules.settings import default_settings
-
 import os
 import cv2
 import imageio

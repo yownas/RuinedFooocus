@@ -6,15 +6,13 @@ import traceback
 import cv2
 
 import modules.async_worker as worker
-from modules.settings import default_settings
 from modules.util import generate_temp_filename
 from PIL import Image
 
 import os
 from comfy.model_base import WAN21
-from modules.settings import default_settings
 import shared
-from shared import path_manager
+from shared import path_manager, settings
 
 from pathlib import Path
 import random
@@ -104,7 +102,7 @@ class pipeline:
                     clip_names = []
 
                     if isinstance(unet.model, WAN21):
-                        clip_name = default_settings.get("clip_umt5", "umt5_xxl_fp8_e4m3fn_scaled.safetensors")
+                        clip_name = settings.default_settings.get("clip_umt5", "umt5_xxl_fp8_e4m3fn_scaled.safetensors")
                         clip_names.append(str(clip_name))
                         clip_path = path_manager.get_folder_file_path(
                             "clip",
@@ -114,7 +112,7 @@ class pipeline:
                         clip_paths.append(str(clip_path))
                         clip_type = comfy.sd.CLIPType.WAN
                         # https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged
-                        vae_name = default_settings.get("vae_wan", "wan_2.1_vae.safetensors")
+                        vae_name = settings.default_settings.get("vae_wan", "wan_2.1_vae.safetensors")
 
                     else:
                         print(f"ERROR: Not a Wan Video model?")
@@ -133,7 +131,7 @@ class pipeline:
                     sd = comfy.utils.load_torch_file(str(vae_path))
                     vae = comfy.sd.VAE(sd=sd)
 
-                    clip_vision_name = default_settings.get("clip_vision", "clip_vision_h_fp8_e4m3fn.safetensors")
+                    clip_vision_name = settings.default_settings.get("clip_vision", "clip_vision_h_fp8_e4m3fn.safetensors")
                     clip_vision_path = path_manager.get_folder_file_path(
                         "clip_vision",
                         clip_vision_name,

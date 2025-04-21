@@ -21,6 +21,7 @@ from shared import (
     performance_settings,
     resolution_settings,
     path_manager,
+    settings,
 )
 import time
 import json
@@ -38,7 +39,6 @@ from modules.interrogate import look
 
 from comfy.samplers import KSampler
 from modules.sdxl_styles import load_styles, styles, allstyles, apply_style
-from modules.settings import default_settings
 from modules.prompt_processing import get_promptlist
 from modules.util import (
     get_wildcard_files,
@@ -49,8 +49,6 @@ from modules.util import (
     get_checkpoint_path,
     get_lora_path,
 )
-from modules.path import PathManager
-from modules.model_handler import Models
 from modules.imagebrowser import ImageBrowser
 
 import ui_image_gallery
@@ -61,9 +59,6 @@ from PIL import Image
 
 inpaint_toggle = None
 shared.shared_cache["browser"] = ImageBrowser()
-path_manager = PathManager()
-
-shared.models = Models()
 
 def find_unclosed_markers(s):
     markers = re.findall(r"__", s)
@@ -126,7 +121,7 @@ def launch_app(args):
         ),
         favicon_path=favicon_path,
         allowed_paths=["html", "/", path_manager.model_paths["temp_outputs_path"]]
-        + default_settings.get("archive_folders", []),
+        + settings.get("archive_folders", []),
         enable_monitoring=False,
         pwa=True,
     )
@@ -243,7 +238,7 @@ def generate_clicked(*args):
     shared.state["interrupted"] = False
 
 
-settings = default_settings
+settings = settings.default_settings
 
 metadata_json = gr.Json()
 
@@ -561,9 +556,9 @@ with shared.gradio_root as block:
                 image_number = gr.Slider(
                     label="Image Number",
                     minimum=0,
-                    maximum=default_settings.get("image_number_max", 50),
+                    maximum=settings.get("image_number_max", 50),
                     step=1,
-                    value=default_settings.get("image_number", 1),
+                    value=settings.get("image_number", 1),
                 )
                 add_ctrl("image_number", image_number)
                 auto_negative_prompt = gr.Checkbox(
@@ -721,8 +716,8 @@ with shared.gradio_root as block:
 
                     default_active = []
                     for i in range(1, 6):
-                        m = default_settings.get(f"lora_{i}_model", "None")
-                        w = default_settings.get(f"lora_{i}_weight", 0.0)
+                        m = settings.get(f"lora_{i}_model", "None")
+                        w = settings.get(f"lora_{i}_weight", 0.0)
                         if m != "" and m != "None":
                             default_active.append((get_lora_thumbnail(m), f"{w} - {m}"))
 
@@ -731,8 +726,8 @@ with shared.gradio_root as block:
                             lora_weight_slider = gr.Slider(
                                 label="Weight",
                                 show_label=True,
-                                minimum=default_settings.get("lora_min", 0),
-                                maximum=default_settings.get("lora_max", 2),
+                                minimum=settings.get("lora_min", 0),
+                                maximum=settings.get("lora_max", 2),
                                 step=0.05,
                                 value=1.0,
                                 interactive=True,
@@ -830,8 +825,8 @@ with shared.gradio_root as block:
                             mm_weight_slider = gr.Slider(
                                 label="Weight",
                                 show_label=True,
-                                minimum=default_settings.get("lora_min", 0),
-                                maximum=default_settings.get("lora_max", 2),
+                                minimum=settings.get("lora_min", 0),
+                                maximum=settings.get("lora_max", 2),
                                 step=0.05,
                                 value=1.0,
                                 interactive=True,

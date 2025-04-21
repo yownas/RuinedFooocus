@@ -7,9 +7,9 @@ from typing import Dict, List, Tuple, Optional
 from pathlib import Path
 import sqlite3
 import time
-from modules.path import PathManager
+from modules.path import PathManager # FIXME import from shared?
 from modules.util import TimeIt
-from modules.settings import default_settings
+from shared import settings
 import version
 
 
@@ -180,7 +180,7 @@ class ImageBrowser:
         self.base_path = Path(self.path_manager.model_paths["temp_outputs_path"])
         self.current_display_paths = []  # Track currently displayed images
         self.sql_conn = connect_database()
-        self.images_per_page = int(default_settings.get("images_per_page", 100))
+        self.images_per_page = int(settings.default_settings.get("images_per_page", 100))
         self.filter = ""
 
     def num_images_pages(self):
@@ -239,7 +239,7 @@ class ImageBrowser:
             # Walk through directory and all subdirectories
             print("Scanning folder to update DB:")
             with TimeIt("Update DB"):
-                for folder in [self.base_path] + default_settings.get("archive_folders", []):
+                for folder in [self.base_path] + settings.default_settings.get("archive_folders", []):
                     print(f"    {folder}")
                     for root, _, files in os.walk(folder):
                         for filename in files:
@@ -258,7 +258,7 @@ class ImageBrowser:
 
             self.sql_conn.commit()
 
-            folders = ", ".join(map(str, [self.base_path] + default_settings.get("archive_folders", [])))
+            folders = ", ".join(map(str, [self.base_path] + settings.default_settings.get("archive_folders", [])))
             if image_cnt:
                 return (
                     gr.update(value=self.load_images(1)[0]),

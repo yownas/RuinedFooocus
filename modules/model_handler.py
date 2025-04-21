@@ -8,19 +8,20 @@ import threading
 import time
 from pathlib import Path
 import numpy as np
-import shared
-from modules.path import PathManager
 
 class Models:
+    civit_workers = []
 
     def civit_update_worker(self, model_type, folder_paths):
+        from shared import path_manager
+
         try:
             import imageio.v3
         except:
             # Skip updates if we are missing imageio
             print(f"Can't find imageio.v3 module: Skip CivitAI update")
             return
-        if str(model_type) in shared.civit_workers:
+        if str(model_type) in self.civit_workers:
             # Already working on this folder
             print(f"Skip CivitAI check. Update for {model_type} already running.")
             return
@@ -28,7 +29,7 @@ class Models:
             print(f"WARNING: Can't find {self.cache_paths[model_type]}  Will not update thumbnails.")
             return
 
-        shared.civit_workers.append(str(model_type))
+        self.civit_workers.append(str(model_type))
         self.ready[model_type] = False
         updated = 0
 
@@ -53,13 +54,13 @@ class Models:
         self.ready[model_type] = True
 
         if self.offline:
-            shared.civit_workers.remove(str(model_type))
+            self.civit_workers.remove(str(model_type))
             return
 
         if model_type == "inbox" and self.names["inbox"]:
-            checkpoints = shared.path_manager.model_paths["modelfile_path"]
+            checkpoints = path_manager.model_paths["modelfile_path"]
             checkpoints = checkpoints[0] if isinstance(checkpoints, list) else checkpoints
-            loras = shared.path_manager.model_paths["lorafile_path"]
+            loras = path_manager.model_paths["lorafile_path"]
             loras = loras[0] if isinstance(loras, list) else loras
             folders = {
                 "LORA": (loras, self.cache_paths["loras"]),
@@ -124,7 +125,7 @@ class Models:
 
         if updated > 0:
             print(f"CivitAI update for {model_type} done.")
-        shared.civit_workers.remove(str(model_type))
+        self.civit_workers.remove(str(model_type))
 
     def get_names(self, model_type):
         while not self.ready[model_type]:
@@ -152,6 +153,8 @@ class Models:
             ).start()
 
     def __init__(self, offline=False):
+        from shared import path_manager, settings
+
         self.offline = offline
 
         self.ready = {
@@ -164,11 +167,11 @@ class Models:
             "loras": [],
             "inbox": [],
         }
-        checkpoints = shared.path_manager.model_paths["modelfile_path"]
+        checkpoints = path_manager.model_paths["modelfile_path"]
         checkpoints = checkpoints if isinstance(checkpoints, list) else [checkpoints]
-        loras = shared.path_manager.model_paths["lorafile_path"]
+        loras = path_manager.model_paths["lorafile_path"]
         loras = loras if isinstance(loras, list) else [loras]
-        inbox = shared.path_manager.model_paths["inbox_path"]
+        inbox = path_manager.model_paths["inbox_path"]
         inbox = inbox if isinstance(inbox, list) else [inbox]
         self.model_dirs = {
             "checkpoints": checkpoints,
@@ -176,9 +179,9 @@ class Models:
             "inbox": inbox,
         }
         self.cache_paths = {
-            "checkpoints": Path(shared.path_manager.model_paths["cache_path"] / "checkpoints"),
-            "loras": Path(shared.path_manager.model_paths["cache_path"] / "loras"),
-            "inbox": Path(shared.path_manager.model_paths["cache_path"] / "inbox"),
+            "checkpoints": Path(path_manager.model_paths["cache_path"] / "checkpoints"),
+            "loras": Path(path_manager.model_paths["cache_path"] / "loras"),
+            "inbox": Path(path_manager.model_paths["cache_path"] / "inbox"),
         }
 
         self.base_url = "https://civitai.com/api/v1/"
@@ -291,13 +294,14 @@ class Models:
         return res
 
     def get_image(self, model, path):
+        from shared import settings
+
         if "baseModel" in model and model["baseModel"] == "Merge":
             return
 
         import imageio.v3 as iio
-        from modules.settings import default_settings
-        if "model_preview" in default_settings:
-            opts = default_settings["model_preview"].split(",")
+        if "model_preview" in settings.default_settings:
+            opts = settings.default_settings["model_preview"].split(",")
             if "caption" in opts:
                 caption=True
             if "nogifzoom" in opts:

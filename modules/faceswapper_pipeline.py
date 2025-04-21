@@ -6,7 +6,6 @@ from shared import path_manager
 import modules.async_worker as worker
 from tqdm import tqdm
 
-from modules.settings import default_settings
 from modules.util import generate_temp_filename
 
 from PIL import Image

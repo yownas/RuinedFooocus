@@ -1,12 +1,10 @@
 import re
-#from llama_cpp import Llama
 from nexa.gguf.llama.llama import Llama
 from txtai import Embeddings
 from modules.util import TimeIt
 from pathlib import Path
-from modules.settings import default_settings
 from modules.util import url_to_filename, load_file_from_url
-from shared import path_manager
+from shared import path_manager, settings
 import modules.async_worker as worker
 import json
 
@@ -75,9 +73,9 @@ class pipeline:
         return gen_data
 
     def load_base_model(self):
-        localfile = default_settings.get("llama_localfile", None)
-        repo = default_settings.get("llama_repo", "hugging-quants/Llama-3.2-3B-Instruct-Q8_0-GGUF")
-        file = default_settings.get("llama_file", "*q8_0.gguf")
+        localfile = settings.default_settings.get("llama_localfile", None)
+        repo = settings.default_settings.get("llama_repo", "hugging-quants/Llama-3.2-3B-Instruct-Q8_0-GGUF")
+        file = settings.default_settings.get("llama_file", "*q8_0.gguf")
         with TimeIt("Load LLM"):
             if localfile is None:
                 print(f"Loading {repo}")

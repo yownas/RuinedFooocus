@@ -4,7 +4,6 @@ import numpy as np
 import torch
 import modules.async_worker as worker
 import modules.controlnet
-from modules.settings import default_settings
 from shared import path_manager
 import comfy.utils
 from comfy_extras.chainner_models import model_loading

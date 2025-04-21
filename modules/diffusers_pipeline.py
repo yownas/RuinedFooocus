@@ -1,6 +1,5 @@
 import modules.async_worker as worker
 
-from modules.settings import default_settings
 import torch
 import diffusers
 import re

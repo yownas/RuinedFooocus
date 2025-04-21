@@ -5,11 +5,8 @@ import base64
 from pathlib import Path
 from shared import (
     state,
-    performance_settings,
-    resolution_settings,
-    path_manager,
+    settings,
 )
-from modules.settings import default_settings
 import modules.search_pipeline as search_pipeline
 
 def add_api():
@@ -41,11 +38,11 @@ def add_api():
             'negative': "",
             'loras': None,
 
-            'style_selection': default_settings['style'],
+            'style_selection': settings.default_settings['style'],
             'seed': -1,
-            'base_model_name': default_settings['base_model'],
-            'performance_selection': default_settings['performance'],
-            'aspect_ratios_selection': default_settings["resolution"],
+            'base_model_name': settings.default_settings['base_model'],
+            'performance_selection': settings.default_settings['performance'],
+            'aspect_ratios_selection': settings.default_settings["resolution"],
             'cn_selection': None,
             'cn_type': None,
 

@@ -29,13 +29,13 @@ def worker():
     from PIL.PngImagePlugin import PngInfo
     from modules.util import generate_temp_filename, TimeIt, model_hash, get_lora_hashes
     import modules.pipelines
-    from modules.settings import default_settings
+    from shared import settings
 
     pipeline = modules.pipelines.update(
-        {"base_model_name": default_settings["base_model"]}
+        {"base_model_name": settings.default_settings.get("base_model")}
     )
     if not pipeline == None:
-        pipeline.load_base_model(default_settings["base_model"])
+        pipeline.load_base_model(settings.default_settings.get("base_model"))
 
     def job_start(gen_data):
         shared.state["preview_grid"] = None

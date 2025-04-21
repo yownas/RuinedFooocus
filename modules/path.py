@@ -35,11 +35,10 @@ class PathManager:
     DOWNLOADABLE_FILES = {}
 
     def __init__(self):
+        self.settings_path = Path("settings/paths.json")
         self.paths = self.load_paths()
         self.model_paths = self.get_model_paths()
         self.default_model_names = self.get_default_model_names()
-        # FIXME clean up
-        #self.update_all_model_names()
         self.upscaler_filenames = self.get_model_filenames(
             self.model_paths["upscaler_path"]
         )
@@ -61,14 +60,23 @@ class PathManager:
 
     def load_paths(self):
         paths = self.DEFAULT_PATHS.copy()
-        settings_path = Path("settings/paths.json")
-        if settings_path.exists():
-            with settings_path.open() as f:
+        if self.settings_path.exists():
+            with self.settings_path.open() as f:
                 paths.update(json.load(f))
         for key in self.DEFAULT_PATHS:
             if key not in paths:
                 paths[key] = self.DEFAULT_PATHS[key]
-        with settings_path.open("w") as f:
+        with self.settings_path.open("w") as f:
+            json.dump(paths, f, indent=2)
+        return paths
+
+    def save_paths(self, newpaths):
+        paths = self.paths
+
+        for key in newpaths:
+            if key not in paths:
+                paths[key] = newpaths[key]
+        with self.settings_path.open("w") as f:
             json.dump(paths, f, indent=2)
         return paths
 

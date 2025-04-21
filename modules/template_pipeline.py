@@ -1,5 +1,4 @@
 import modules.async_worker as worker
-from modules.settings import default_settings
 from PIL import Image
 
 # Copy this file, add suitable code and add logic to modules/pipelines.py to select it

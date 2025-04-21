@@ -12,8 +12,7 @@ import modules.prompt_processing as pp
 from PIL import Image, ImageOps
 
 from comfy.model_base import BaseModel, SDXL, SD3, Flux, Lumina2
-from modules.settings import default_settings
-from shared import path_manager
+from shared import path_manager, settings
 import shared
 
 from pathlib import Path
@@ -112,7 +111,7 @@ class pipeline:
             "clip_l": "clip_l.safetensors",
             "clip_t5": "t5-v1_1-xxl-encoder-Q3_K_S.gguf",
         }
-        return default_settings.get(shortname, defaults[shortname] if shortname in defaults else None)
+        return settings.default_settings.get(shortname, defaults[shortname] if shortname in defaults else None)
 
     # FIXME move this to separate file
     def merge_models(self, name):
@@ -215,7 +214,7 @@ class pipeline:
 
         # If we don't have a filename, get the default.
         if filename is None:
-            base_model = default_settings.get("base_model", "sd_xl_base_1.0_0.9vae.safetensors")
+            base_model = settings.default_settings.get("base_model", "sd_xl_base_1.0_0.9vae.safetensors")
             filename = path_manager.get_folder_file_path(
                 "checkpoints",
                 base_model,
@@ -273,29 +272,29 @@ class pipeline:
                         clip_names.append(self.get_clip_name("clip_l"))
                         clip_names.append(self.get_clip_name("clip_t5"))
                         clip_type = comfy.sd.CLIPType.FLUX
-                        vae_name = default_settings.get("vae_flux", "ae.safetensors")
+                        vae_name = settings.default_settings.get("vae_flux", "ae.safetensors")
 
                     elif isinstance(unet.model, SD3):
                         clip_names.append(self.get_clip_name("clip_l"))
                         clip_names.append(self.get_clip_name("clip_g"))
                         clip_names.append(self.get_clip_name("clip_t5"))
                         clip_type = comfy.sd.CLIPType.SD3
-                        vae_name = default_settings.get("vae_sd3", "sd3_vae.safetensors")
+                        vae_name = settings.default_settings.get("vae_sd3", "sd3_vae.safetensors")
 
                     elif isinstance(unet.model, Lumina2):
                         clip_names.append(self.get_clip_name("clip_gemma"))
                         clip_type = comfy.sd.CLIPType.LUMINA2
-                        vae_name = default_settings.get("vae_lumina2", "lumina2_vae_fp32.safetensors")
+                        vae_name = settings.default_settings.get("vae_lumina2", "lumina2_vae_fp32.safetensors")
                         unet = ModelSamplingAuraFlow().patch_aura(
                             model=unet,
-                            shift=default_settings.get("lumina2_shift", 3.0),
+                            shift=settings.default_settings.get("lumina2_shift", 3.0),
                         )[0]
 
                     else: # SDXL
                         clip_names.append(self.get_clip_name("clip_l"))
                         clip_names.append(self.get_clip_name("clip_g"))
                         clip_type = comfy.sd.CLIPType.STABLE_DIFFUSION
-                        vae_name = default_settings.get("vae_sdxl", "sdxl_vae.safetensors")
+                        vae_name = settings.default_settings.get("vae_sdxl", "sdxl_vae.safetensors")
 
                     clip_paths = []
                     for clip_name in clip_names:

@@ -2,6 +2,7 @@ try:
     from transformers import CLIPTokenizer
 except:
     pass
+from modules.settings import SettingsManager
 from modules.performance import PerformanceSettings
 from modules.resolutions import ResolutionSettings
 from modules.path import PathManager
@@ -25,10 +26,10 @@ except:
     print("No tokenizer in shared.py")
     tokenizer = None
 
+path_manager = PathManager()
+settings = SettingsManager()
 performance_settings = PerformanceSettings()
 resolution_settings = ResolutionSettings()
-civit_workers = []
-path_manager = PathManager()
 models = Models()
 
 shared_cache = {}

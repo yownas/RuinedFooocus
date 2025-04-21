@@ -6,18 +6,15 @@ import traceback
 import cv2
 
 import modules.async_worker as worker
-from modules.settings import default_settings
 from modules.util import generate_temp_filename
 from PIL import Image
 
 import os
 from comfy.model_base import BaseModel, SDXL, SD3, Flux, Lumina2, HunyuanVideo
-from modules.settings import default_settings
-from shared import path_manager
+from shared import path_manager, settings
 import shared
 
 from pathlib import Path
-import json
 import random
 from modules.pipleline_utils import (
     clean_prompt_cond_caches,
@@ -110,7 +107,7 @@ class pipeline:
                     clip_names = []
 
                     if isinstance(unet.model, HunyuanVideo):
-                        clip_name = default_settings.get("clip_l", "clip_l.safetensors")
+                        clip_name = settings.default_settings.get("clip_l", "clip_l.safetensors")
                         clip_names.append(str(clip_name))
                         clip_path = path_manager.get_folder_file_path(
                             "clip",
@@ -119,7 +116,7 @@ class pipeline:
                         )
                         clip_paths.append(str(clip_path))
                         # https://huggingface.co/calcuis/hunyuan-gguf/tree/main
-                        clip_name = default_settings.get("clip_llava", "llava_llama3_fp8_scaled.safetensors")
+                        clip_name = settings.default_settings.get("clip_llava", "llava_llama3_fp8_scaled.safetensors")
                         clip_names.append(str(clip_name))
                         clip_path = path_manager.get_folder_file_path(
                             "clip",
@@ -129,7 +126,7 @@ class pipeline:
                         clip_paths.append(str(clip_path))
                         clip_type = comfy.sd.CLIPType.HUNYUAN_VIDEO
                         # https://huggingface.co/calcuis/hunyuan-gguf/tree/main
-                        vae_name = default_settings.get("vae_hunyuan_video", "hunyuan_video_vae_bf16.safetensors")
+                        vae_name = settings.default_settings.get("vae_hunyuan_video", "hunyuan_video_vae_bf16.safetensors")
 
                     else:
                         print(f"ERROR: Not a Hunyuan Video model?")

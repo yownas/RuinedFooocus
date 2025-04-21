@@ -1,6 +1,7 @@
 import argparse
 
 parser = argparse.ArgumentParser()
+parser.add_argument("--settings", type=str, default=None, help="Select setting")
 parser.add_argument("--port", type=int, default=None, help="Set the listen port.")
 parser.add_argument(
     "--share", action="store_true", help="Set whether to share on Gradio."
