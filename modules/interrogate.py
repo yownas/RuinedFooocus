@@ -111,7 +111,7 @@ def look(image, prompt, gr):
             text = json.dumps(json.loads(params))
         except:
             # Default interrogator
-            interrogator = settings.default_settings.get("interrogator", "florence") + ":"
+            interrogator = settings.default_settings.get("interrogator", "florence")
             text = looks[interrogator](image, prompt, gr)
 
     return text
