@@ -270,7 +270,16 @@ class Models:
             print(f"Error: {e}")
 
         if data is None:
-            data = {}
+            # Create our own data
+            data = {
+                "files": [
+                    {
+                        "hashes": {
+                            "SHA256": hash,
+                        }
+                    }
+                ]
+            }
 
         print(f"Update model data: {json_path}")
         with open(json_path, "w") as f:
