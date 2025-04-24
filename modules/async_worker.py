@@ -27,7 +27,7 @@ def worker():
 
     from PIL import Image
     from PIL.PngImagePlugin import PngInfo
-    from modules.util import generate_temp_filename, TimeIt, model_hash, get_lora_hashes
+    from modules.util import generate_temp_filename, TimeIt, get_checkpoint_hashes, get_lora_hashes
     import modules.pipelines
     from shared import settings
 
@@ -267,10 +267,8 @@ def worker():
                     "sampler_name": gen_data["sampler_name"],
                     "scheduler": gen_data["scheduler"],
                     "base_model_name": gen_data["base_model_name"],
-                    "base_model_hash": model_hash(
-                        shared.models.get_file_from_name("checkpoints", gen_data["base_model_name"]) 
-                    ),
-                    "loras": [[f"{get_lora_hashes(lora[0])['AutoV2']}", f"{lora[1]} - {lora[0]}"] for lora in loras],
+                    "base_model_hash": get_checkpoint_hashes(gen_data["base_model_name"])['SHA256'],
+                    "loras": [[f"{get_lora_hashes(lora[0])['SHA256']}", f"{lora[1]} - {lora[0]}"] for lora in loras],
                     "start_step": start_step,
                     "denoise": denoise,
                     "clip_skip": gen_data["clip_skip"],
