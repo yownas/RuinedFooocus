@@ -39,23 +39,6 @@ def get_wildcard_files():
     return both
 
 
-def model_hash(filename):
-    """old hash that only looks at a small part of the file and is prone to collisions"""
-    try:
-        with open(filename, "rb") as file:
-            import hashlib
-
-            m = hashlib.sha256()
-            file.seek(0x100000)
-            m.update(file.read(0x10000))
-            shorthash = m.hexdigest()[0:8]
-            return shorthash
-    except FileNotFoundError:
-        return "NOFILE"
-    except Exception:
-        return "NOHASH"
-
-
 def generate_temp_filename(folder="./outputs/", extension="png"):
     current_time = datetime.datetime.now()
     date_string = current_time.strftime("%Y-%m-%d")
@@ -105,7 +88,7 @@ def _get_model_hashes(cache_path, not_found=None):
             return hashes
 
 def get_checkpoint_hashes(model):
-    return _get_model_thumbnail(
+    return _get_model_hashes(
         Path(path_manager.model_paths["cache_path"] / "checkpoints" / Path(model).name)
     )
 
