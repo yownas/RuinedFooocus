@@ -199,24 +199,6 @@ class Models:
                 return path
         return None
 
-    def _read_file(self, filename):
-        try:
-            with open(filename, "rb") as file:
-                file.seek(0x100000)
-                return file.read(0x10000)
-        except FileNotFoundError:
-            return b"NOFILE"
-        except Exception:
-            return b"NOHASH"
-
-    def model_hash(self, filename):
-        """old hash that only looks at a small part of the file and is prone to collisions"""
-        file_content = self._read_file(filename)
-        m = hashlib.sha256()
-        m.update(file_content)
-        shorthash = m.hexdigest()[0:8]
-        return shorthash
-
     def model_sha256(self, filename):
         print(f"Hashing {filename}")
         blksize = 1024 * 1024

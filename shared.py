@@ -8,6 +8,8 @@ from modules.resolutions import ResolutionSettings
 from modules.path import PathManager
 from modules.model_handler import Models
 
+from argparser import args
+
 gradio_root = None
 
 state = {
@@ -23,11 +25,11 @@ wildcards = None
 try:
     tokenizer = CLIPTokenizer.from_pretrained("openai/clip-vit-large-patch14")
 except:
-    print("No tokenizer in shared.py")
+    print("No tokenizer in shared.py yet")
     tokenizer = None
 
-path_manager = PathManager()
 settings = SettingsManager()
+path_manager = PathManager()
 performance_settings = PerformanceSettings()
 resolution_settings = ResolutionSettings()
 models = Models()
@@ -41,4 +43,3 @@ def add_ctrl(name, obj):
 def add_setting(name, obj):
     state["setting_name"] += [name]
     state["setting_obj"] += [obj]
-

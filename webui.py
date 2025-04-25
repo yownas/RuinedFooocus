@@ -1,5 +1,3 @@
-import shared
-
 from argparser import args
 import comfy.cli_args
 comfy.cli_args.args.cpu = args.cpu
@@ -10,6 +8,7 @@ comfy.cli_args.args.novram = args.novram
 comfy.cli_args.args.reserve_vram = args.reserve_vram
 comfy.cli_args.args.cpu_vae = args.cpu_vae
 
+import shared
 # FIXME: Should brobably also check directml and other things...
 if shared.shared_cache["torch_platform"] == "cpu":
     comfy.cli_args.args.cpu = True

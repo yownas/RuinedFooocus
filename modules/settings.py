@@ -1,8 +1,9 @@
 import json
 from os.path import exists
 from pathlib import Path
+import time
 
-class SettingsManager():
+class SettingsManager:
     DEFAULT_SETTINGS = {
         "advanced_mode": False,
         "image_number": 1,
@@ -31,34 +32,47 @@ class SettingsManager():
     }
 
     default_settings = None
+    settings_path = None
+    name = None
 
     def __init__(self):
-        self.settings_path = Path("settings/settings.json")
-        self.default_settings = self.load_settings()
+        from argparser import args
+        self.name = args.settings
+        self.set_settings_path(args.settings)
+        self.load_settings()
+
+    def set_settings_path(self, subfolder=None):
+        self.subfolder = subfolder
+        if self.subfolder in [None, "", "default"]:
+            path = Path("settings/settings.json")
+        else:
+            path = Path(f"settings/{self.subfolder}/settings.json")
+        if not path.parent.exists():
+            path.parent.mkdir()
+        self.settings_path = path
 
     def load_settings(self):
-        if exists(self.settings_path):
-            with open(self.settings_path) as f:
-                settings = json.load(f)
+        path = self.settings_path
+        if path and exists(path):
+            with open(path) as f:
+                self.default_settings = json.load(f)
         else:
-            settings = {}
+            self.default_settings = {}
 
         # Add any missing default settings
         changed = False
         for key, value in self.DEFAULT_SETTINGS.items():
-            if key not in settings:
-                settings[key] = value
+            if key not in self.default_settings:
+                self.default_settings[key] = value
                 changed = True
 
         # Some sanity checks
-        if not isinstance(settings["style"], list):
-            settings["style"] = []
+        if not isinstance(self.default_settings["style"], list):
+            self.default_settings["style"] = []
 
         if changed:
             with open(self.settings_path, "w") as f:
-                json.dump(settings, f, indent=2)
-
-        return settings
+                json.dump(self.default_settings, f, indent=2)
 
     def save_settings(self):
         # FIXME: Add some error checks and exception handling

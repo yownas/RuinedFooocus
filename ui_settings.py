@@ -3,11 +3,11 @@ from pathlib import Path
 
 from modules.interrogate import looks
 
-import shared
-from shared import state, add_setting, performance_settings, resolution_settings, path_manager, settings
-
+from shared import state, add_setting, performance_settings, resolution_settings, path_manager, settings, models
 
 def save_clicked(*args):
+    ui_data = {}
+    path_data = {}
     # Overwrite current settings
     for key, val in zip(state["setting_name"], args):
         settings.default_settings[key] = val
@@ -16,14 +16,26 @@ def save_clicked(*args):
         if settings.default_settings[key] == None or settings.default_settings[key] == "":
             settings.default_settings.pop(key)
 
+        # Move ui_* and path_*
+        if key.startswith("ui_"):
+            ui_data[key] = settings.default_settings.get(key)
+            settings.default_settings.pop(key)
+        if key.startswith("path_"):
+            path_data[key] = settings.default_settings.get(key)
+            settings.default_settings.pop(key)
+
     # Massage some of the data. Settings that are lists should be split
     if "archive_folders" in settings.default_settings and isinstance(settings.default_settings["archive_folders"], str):
         settings.default_settings["archive_folders"] = settings.default_settings["archive_folders"].splitlines()
     if "style" in settings.default_settings and isinstance(settings.default_settings["style"], str):
         settings.default_settings["style"] = settings.default_settings["style"].splitlines()
 
+    settings.set_settings_path(ui_data.get("ui_settings_name", None))
     settings.save_settings()
-    gr.Info("Saved!")
+
+    # TODO: Save path_data to paths.json
+
+    gr.Info("Saved! Please restart RuinedFoocus.")
 
 
 def create_settings():
@@ -68,7 +80,7 @@ def create_settings():
                 base_model = gr.Dropdown(
                     label="Base Model",
                     interactive=True,
-                    choices=shared.models.names['checkpoints'],
+                    choices=models.names['checkpoints'],
                     value=settings.default_settings.get("base_model", "sd_xl_base_1.0_0.9vae.safetensors"),
                 )
                 add_setting("base_model", base_model)
@@ -77,40 +89,40 @@ def create_settings():
                     lora_1_model = gr.Dropdown(
                         label="LoRA 1 Model",
                         interactive=True,
-                        choices=[None] + shared.models.names['loras'],
-                        value=settings.default_settings.get("lora_1_model", None),
+                        choices=["None"] + models.names['loras'],
+                        value=settings.default_settings.get("lora_1_model", "None"),
                     )
                     lora_1_weight = gr.Number(label="Lora 1 Weight", value=settings.default_settings.get("lora_1_weight", 1.0), step=0.05)
                 with gr.Row():
                     lora_2_model = gr.Dropdown(
                         label="LoRA 2 Model",
                         interactive=True,
-                        choices=[None] + shared.models.names['loras'],
-                        value=settings.default_settings.get("lora_2_model", None),
+                        choices=["None"] + models.names['loras'],
+                        value=settings.default_settings.get("lora_2_model", "None"),
                     )
                     lora_2_weight = gr.Number(label="Lora 2 Weight", value=settings.default_settings.get("lora_2_weight", 1.0), step=0.05)
                 with gr.Row():
                     lora_3_model = gr.Dropdown(
                         label="LoRA 3 Model",
                         interactive=True,
-                        choices=[None] + shared.models.names['loras'],
-                        value=settings.default_settings.get("lora_3_model", None),
+                        choices=["None"] + models.names['loras'],
+                        value=settings.default_settings.get("lora_3_model", "None"),
                     )
                     lora_3_weight = gr.Number(label="Lora 3 Weight", value=settings.default_settings.get("lora_3_weight", 1.0), step=0.05)
                 with gr.Row():
                     lora_4_model = gr.Dropdown(
                         label="LoRA 4 Model",
                         interactive=True,
-                        choices=[None] + shared.models.names['loras'],
-                        value=settings.default_settings.get("lora_4_model", None),
+                        choices=["None"] + models.names['loras'],
+                        value=settings.default_settings.get("lora_4_model", "None"),
                     )
                     lora_4_weight = gr.Number(label="Lora 4 Weight", value=settings.default_settings.get("lora_4_weight", 1.0), step=0.05)
                 with gr.Row():
                     lora_5_model = gr.Dropdown(
                         label="LoRA 5 Model",
                         interactive=True,
-                        choices=[None] + shared.models.names['loras'],
-                        value=settings.default_settings.get("lora_5_model", None),
+                        choices=["None"] + models.names['loras'],
+                        value=settings.default_settings.get("lora_5_model", "None"),
                     )
                     lora_5_weight = gr.Number(label="Lora 5 Weight", value=settings.default_settings.get("lora_5_weight", 1.0), step=0.05)
 
@@ -204,7 +216,14 @@ def create_settings():
                 llama_localfile = gr.Dropdown(label="Local Llama file", interactive=True, choices=[None]+path_manager.get_folder_list("llm"), value=settings.default_settings.get("llama_localfile", None),)
                 add_setting("llama_localfile", llama_localfile)
 
-        with gr.Row():
+        with gr.Row(), gr.Group():
+            ui_settings_name = gr.Text(
+                label="Settings name",
+                interactive=True,
+                placeholder="Optional",
+                value=settings.name,
+            )
+            add_setting("ui_settings_name", ui_settings_name)
             save_btn = gr.Button("Save Settings")
 
 # Deal with this later
