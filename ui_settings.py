@@ -7,7 +7,6 @@ from shared import state, add_setting, performance_settings, resolution_settings
 
 def save_clicked(*args):
     ui_data = {}
-    path_data = {}
     # Overwrite current settings
     for key, val in zip(state["setting_name"], args):
         settings.default_settings[key] = val
@@ -15,26 +14,31 @@ def save_clicked(*args):
         # Remove empty keys
         if settings.default_settings[key] == None or settings.default_settings[key] == "":
             settings.default_settings.pop(key)
+            continue
+
+        # Massage some of the data. Settings that are lists should be split
+        if key in [
+            "archive_folders",
+            "style",
+            "path_checkpoints",
+            "path_loras"
+        ]:
+            settings.default_settings[key] = settings.default_settings[key].splitlines()
 
         # Move ui_* and path_*
         if key.startswith("ui_"):
             ui_data[key] = settings.default_settings.get(key)
             settings.default_settings.pop(key)
         if key.startswith("path_"):
-            path_data[key] = settings.default_settings.get(key)
+            path_manager.paths[key] = settings.default_settings.get(key)
             settings.default_settings.pop(key)
-
-    # Massage some of the data. Settings that are lists should be split
-    if "archive_folders" in settings.default_settings and isinstance(settings.default_settings["archive_folders"], str):
-        settings.default_settings["archive_folders"] = settings.default_settings["archive_folders"].splitlines()
-    if "style" in settings.default_settings and isinstance(settings.default_settings["style"], str):
-        settings.default_settings["style"] = settings.default_settings["style"].splitlines()
 
     settings.set_settings_path(ui_data.get("ui_settings_name", None))
     settings.save_settings()
+    path_manager.set_settings_path(ui_data.get("ui_settings_name", None))
+    path_manager.save_paths()
 
-    # TODO: Save path_data to paths.json
-
+    print(f"Saved new settings to {settings.settings_path}. Please restart.") 
     gr.Info("Saved! Please restart RuinedFoocus.")
 
 
@@ -159,23 +163,25 @@ def create_settings():
                 add_setting("archive_folders", archive_folders)
                 gr.Markdown("# Paths")
                 path_checkpoints = gr.Code(
-                    label="Checkpoint folders (FIXME)",
+                    label="Checkpoint folders",
                     interactive=True,
-                    value="\n".join(settings.default_settings.get("path_checkpoints", [])),
+                    value="\n".join(path_manager.paths.get("path_checkpoints", [])),
                     lines=5,
                     max_lines=5
                 )
-# not used yet                add_setting("path_checkpoints", path_checkpoints)
+                add_setting("path_checkpoints", path_checkpoints)
                 path_loras = gr.Code(
-                    label="LoRA folders (FIXME)",
+                    label="LoRA folders",
                     interactive=True,
-                    value="\n".join(settings.default_settings.get("path_loras", [])),
+                    value="\n".join(path_manager.paths.get("path_loras", [])),
                     lines=5,
                     max_lines=5
                 )
-# not used yet                add_setting("path_loras", path_loras)
-                path_outputs = gr.Textbox(label="Output folder (FIXME)", interactive=True, placeholder="../outputs/", value=settings.default_settings.get("path_outputs", "../outputs/"))
-# not used yet                add_setting("path_outputs", path_outputs)
+                add_setting("path_loras", path_loras)
+                path_inbox = gr.Textbox(label="Inbox folder", interactive=True, placeholder="", value=settings.default_settings.get("path_inbox", "../models/inbox/"))
+                add_setting("path_inbox", path_inbox)
+                path_outputs = gr.Textbox(label="Output folder", interactive=True, placeholder="", value=settings.default_settings.get("path_outputs", "../outputs/"))
+                add_setting("path_outputs", path_outputs)
 
             with gr.Column():
                 gr.Markdown("# Other")

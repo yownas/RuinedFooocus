@@ -34,11 +34,16 @@ class PathManager:
     # Add a dictionary to store file download information
     DOWNLOADABLE_FILES = {}
 
+    name = None
+    settings_path = None
+    paths = None
+
     def __init__(self):
-        self.settings_path = Path("settings/paths.json")
+        from argparser import args
+        self.name = args.settings
+        self.set_settings_path(args.settings)
         self.paths = self.load_paths()
         self.model_paths = self.get_model_paths()
-        self.default_model_names = self.get_default_model_names()
         self.upscaler_filenames = self.get_model_filenames(
             self.model_paths["upscaler_path"]
         )
@@ -58,6 +63,16 @@ class PathManager:
                 except Exception as e:
                     print(f"Error reading {file}: {e}")
 
+    def set_settings_path(self, subfolder=None):
+        self.subfolder = subfolder
+        if self.subfolder in [None, "", "default"]:
+            path = Path("settings/paths.json")
+        else:
+            path = Path(f"settings/{self.subfolder}/paths.json")
+        if not path.parent.exists():
+            path.parent.mkdir()
+        self.settings_path = path
+
     def load_paths(self):
         paths = self.DEFAULT_PATHS.copy()
         if self.settings_path.exists():
@@ -70,12 +85,12 @@ class PathManager:
             json.dump(paths, f, indent=2)
         return paths
 
-    def save_paths(self, newpaths):
+    def save_paths(self):
         paths = self.paths
 
-        for key in newpaths:
-            if key not in paths:
-                paths[key] = newpaths[key]
+#        for key in newpaths:
+#            if key not in paths:
+#                paths[key] = newpaths[key]
         with self.settings_path.open("w") as f:
             json.dump(paths, f, indent=2)
         return paths
@@ -100,13 +115,6 @@ class PathManager:
             "cache_path": self.get_abspath_folder(self.paths["path_cache"]),
             "llm_path": self.get_abspath_folder(self.paths["path_llm"]),
             "inbox_path": self.get_abspath_folder(self.paths["path_inbox"]),
-        }
-
-    def get_default_model_names(self):
-        return {
-            "default_base_model_name": "sd_xl_base_1.0_0.9vae.safetensors",
-            "default_lora_name": "None",
-            "default_lora_weight": 0.5,
         }
 
     def get_abspath_folder(self, path):
