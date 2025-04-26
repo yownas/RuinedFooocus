@@ -21,6 +21,7 @@ import modules.rembg_pipeline as rembg_pipeline
 import modules.llama_pipeline as llama_pipeline
 import modules.hunyuan_video_pipeline as hunyuan_video_pipeline
 import modules.wan_video_pipeline as wan_video_pipeline
+import modules.hashbang_pipeline as hashbang_pipeline
 import modules.controlnet as controlnet
 
 class NoPipeLine:
@@ -45,6 +46,13 @@ def update(gen_data):
                 or "template" not in state["pipeline"].pipeline_type
             ):
                 state["pipeline"] = template_pipeline.pipeline()
+
+        elif prompt.startswith("#!"):
+            if (
+                state["pipeline"] is None
+                or "hashbang" not in state["pipeline"].pipeline_type
+            ):
+                state["pipeline"] = hashbang_pipeline.pipeline()
 
         elif prompt.lower().startswith("search:"):
             if (
