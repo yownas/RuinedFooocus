@@ -496,7 +496,7 @@ with shared.gradio_root as block:
                         + [resolution_settings.CUSTOM_RESOLUTION],
                         value=settings["resolution"],
                     )
-                    add_ctrl("aspect_ratios_selection", aspect_ratios_selection)
+                    add_ctrl("aspect_ratios_selection", aspect_ratios_selection, True)
                     ratio_name = gr.Textbox(
                         show_label=False,
                         placeholder="Name",
@@ -1396,10 +1396,16 @@ with shared.gradio_root as block:
 
         def update_cfg():
             # Update ui components
+            # Only refresh things like minimum, maximum and choices. Assume the user already
+            # have options selected and don't overwrite them. (They should restart if they want that)
             return {
                 image_number: gr.update(maximum=settings.get("image_number_max", 50)),
                 performance_selection: gr.update(
                     choices=list(performance_settings.performance_options.keys()) + [performance_settings.CUSTOM_PERFORMANCE]
+                ),
+                aspect_ratios_selection: gr.update(
+                    choices=list(resolution_settings.aspect_ratios.keys())
+                    + [resolution_settings.CUSTOM_RESOLUTION]
                 ),
                 cfg_timestamp: gr.update(value=shared.state["last_config"]),
             }
