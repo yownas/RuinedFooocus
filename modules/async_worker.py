@@ -374,8 +374,6 @@ def worker():
             results = [
                 shared.path_manager.model_paths["temp_preview_path"]
             ] + results
-        else:
-            results = ["html/logo.png"]
 
         outputs.append([gen_data["task_id"], "results", results])
 
