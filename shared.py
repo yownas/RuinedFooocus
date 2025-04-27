@@ -18,7 +18,10 @@ state = {
     "ctrls_obj": [],
     "setting_name": [],
     "setting_obj": [],
+    "cfg_items_name": [],
+    "cfg_items_obj": [],
     "pipeline": None,
+    "last_config": 0.0,
 }
 
 wildcards = None
@@ -33,13 +36,19 @@ path_manager = PathManager()
 performance_settings = PerformanceSettings()
 resolution_settings = ResolutionSettings()
 models = Models()
-
 shared_cache = {}
 
-def add_ctrl(name, obj):
+def add_ctrl(name, obj, configurable=False):
     state["ctrls_name"] += [name]
     state["ctrls_obj"] += [obj]
+    if configurable:
+        state["cfg_items_name"] += [name]
+        state["cfg_items_obj"] += [obj]
 
 def add_setting(name, obj):
     state["setting_name"] += [name]
     state["setting_obj"] += [obj]
+
+def add_cfg_item(name, obj):
+    state["cfg_items_name"] += [name]
+    state["cfg_items_obj"] += [obj]

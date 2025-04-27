@@ -2,6 +2,7 @@ import json
 from os.path import exists
 from pathlib import Path
 import time
+import shared
 
 class SettingsManager:
     DEFAULT_SETTINGS = {
@@ -78,3 +79,4 @@ class SettingsManager:
         # FIXME: Add some error checks and exception handling
         with open(self.settings_path, "w") as f:
             json.dump(self.default_settings, f, indent=2)
+        shared.state["last_config"] = str(time.time())

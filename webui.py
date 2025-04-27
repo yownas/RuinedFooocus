@@ -17,6 +17,7 @@ from pathlib import Path
 from shared import (
     state,
     add_ctrl,
+    add_ui_item,
     performance_settings,
     resolution_settings,
     path_manager,
@@ -249,6 +250,11 @@ with shared.gradio_root as block:
     block.load()
     run_event = gr.Number(visible=False, value=0)
     add_ctrl("run_event", run_event)
+
+    def get_cfg_timestamp():
+        return shared.state["last_config"]
+    cfg_timestamp = gr.Textbox(visible=False, value=get_cfg_timestamp, every=5)
+
     with gr.Row():
         with gr.Column(scale=5):
             main_view = gr.Image(
@@ -559,7 +565,7 @@ with shared.gradio_root as block:
                     step=1,
                     value=settings.get("image_number", 1),
                 )
-                add_ctrl("image_number", image_number)
+                add_ctrl("image_number", image_number, configurable=True)
                 auto_negative_prompt = gr.Checkbox(
                     label="Auto Negative Prompt",
                     show_label=True,
@@ -1388,6 +1394,15 @@ with shared.gradio_root as block:
             shared.state["interrupted"] = False
 
         stop_button.click(fn=stop_clicked, queue=False)
+
+        def update_cfg():
+            # Update ui components
+            return {
+                image_number: gr.update(maximum=settings.get("image_number_max", 50)),
+                cfg_timestamp: gr.update(value=shared.state["last_config"]),
+            }
+        # If cfg_timestamp has a new value, trigger an update
+        cfg_timestamp.change(fn=update_cfg, outputs=[cfg_timestamp] + state["ui_items_obj"])
 
     add_api()
 
