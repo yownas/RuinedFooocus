@@ -70,7 +70,7 @@ class pipeline:
                     if len(kv) < 2:
                         image = Image.open("html/error.png")
                         print(f"ERROR: Can't find key and value on line: {line}")
-                        return
+                        break
                     k = kv[0].lower()
 
                     # Some helpful translations
