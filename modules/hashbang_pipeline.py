@@ -111,10 +111,10 @@ class pipeline:
                         "clip_skip": new_perf['clip_skip'],
                     }
                     perf_options[new_perf['name']] = opts
-                    shared.performance_settings.save_performance(perf_options)
-                    print(f"#!: Saved performance: {new_perf['name']}: {opts}")
 
-                    # TODO: update ui?
+                shared.performance_settings.save_performance(perf_options)
+                print(f"#!: Saved performance: {new_perf['name']}: {opts}")
+                shared.update_cfg()
 
             case _:
                 print(f"ERROR: Unknown command #!{cmd}")

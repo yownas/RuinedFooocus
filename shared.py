@@ -7,8 +7,8 @@ from modules.performance import PerformanceSettings
 from modules.resolutions import ResolutionSettings
 from modules.path import PathManager
 from modules.model_handler import Models
-
 from argparser import args
+import time
 
 gradio_root = None
 
@@ -37,6 +37,10 @@ performance_settings = PerformanceSettings()
 resolution_settings = ResolutionSettings()
 models = Models()
 shared_cache = {}
+
+# Call this to trigger a refresh of ui components
+def update_cfg():
+    state["last_config"] = str(time.time())
 
 def add_ctrl(name, obj, configurable=False):
     state["ctrls_name"] += [name]

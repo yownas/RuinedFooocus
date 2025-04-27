@@ -17,7 +17,6 @@ from pathlib import Path
 from shared import (
     state,
     add_ctrl,
-    add_ui_item,
     performance_settings,
     resolution_settings,
     path_manager,
@@ -390,7 +389,7 @@ with shared.gradio_root as block:
                     + [performance_settings.CUSTOM_PERFORMANCE],
                     value=settings["performance"],
                 )
-                add_ctrl("performance_selection", performance_selection)
+                add_ctrl("performance_selection", performance_selection, True)
                 perf_name = gr.Textbox(
                     show_label=False,
                     placeholder="Name",
@@ -1399,10 +1398,13 @@ with shared.gradio_root as block:
             # Update ui components
             return {
                 image_number: gr.update(maximum=settings.get("image_number_max", 50)),
+                performance_selection: gr.update(
+                    choices=list(performance_settings.performance_options.keys()) + [performance_settings.CUSTOM_PERFORMANCE]
+                ),
                 cfg_timestamp: gr.update(value=shared.state["last_config"]),
             }
         # If cfg_timestamp has a new value, trigger an update
-        cfg_timestamp.change(fn=update_cfg, outputs=[cfg_timestamp] + state["ui_items_obj"])
+        cfg_timestamp.change(fn=update_cfg, outputs=[cfg_timestamp] + state["cfg_items_obj"])
 
     add_api()
 
