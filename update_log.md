@@ -1,3 +1,4 @@
+### 25.04.27
 * Settings tab
 * Add preview for WAN and Hunyuan Video
 
