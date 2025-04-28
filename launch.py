@@ -117,7 +117,7 @@ def prepare_environment(offline=False):
         if REINSTALL_ALL or not is_installed("nexa"):
             platform_index = {
                 'cu124': 'https://github.nexa.ai/whl/cu124',
-                'nightly/cu128': 'https://github.nexa.ai/whl/cu124',
+                'cu128': 'https://github.nexa.ai/whl/cu124',
                 'rocm6.2': 'https://github.nexa.ai/whl/rocm621',
                 'directml': 'https://github.nexa.ai/whl/vulkan',
                 'mps': 'https://github.nexa.ai/whl/metal',
