@@ -68,8 +68,9 @@ class SettingsManager:
                 changed = True
 
         # Some sanity checks
-        if not isinstance(self.default_settings["style"], list):
-            self.default_settings["style"] = []
+        for key in ['style', 'archive_folders']:
+            if key in self.default_settings and not isinstance(self.default_settings[key], list):
+                self.default_settings[key] = [self.default_settings[key]]
 
         if changed:
             with open(self.settings_path, "w") as f:

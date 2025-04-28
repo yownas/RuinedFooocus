@@ -11,10 +11,10 @@ except:
 
 class PathManager:
     DEFAULT_PATHS = {
-        "path_checkpoints": "../models/checkpoints/",
+        "path_checkpoints": ["../models/checkpoints/"],
         "path_diffusers": "../models/diffusers/",
         "path_diffusers_cache": "../models/diffusers_cache/",
-        "path_loras": "../models/loras/",
+        "path_loras": ["../models/loras/"],
         "path_controlnet": "../models/controlnet/",
         "path_vae_approx": "../models/vae_approx/",
         "path_vae": "../models/vae/",
@@ -81,6 +81,11 @@ class PathManager:
         for key in self.DEFAULT_PATHS:
             if key not in paths:
                 paths[key] = self.DEFAULT_PATHS[key]
+        # Fix paths
+        for key in ['path_checkpoints', 'path_loras']:
+            if key in paths and not isinstance(paths[key], list): # Some folders should be lists
+                paths[key] = [paths[key]]
+
         with self.settings_path.open("w") as f:
             json.dump(paths, f, indent=2)
         return paths
