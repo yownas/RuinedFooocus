@@ -5,7 +5,6 @@ import warnings
 from pathlib import Path
 import ssl
 import json
-import shared
 
 os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
 os.environ["DO_NOT_TRACK"] = "1"
@@ -98,8 +97,6 @@ def prepare_environment(offline=False):
         torch_platform == "cpu"
 
     print(f"Torch platform: {os_platform}: {torch_platform}") # Some debug output
-    shared.shared_cache["torch_platform"] = torch_platform
-    shared.shared_cache["os_platform"] = os_platform
 
     if offline:
         print("Skip check of required modules.")
@@ -194,5 +191,7 @@ except:
 if not offline:
     download_models()
 
-print("Starting webui")
-from webui import *
+def launch_ui():
+    print("Starting webui")
+    import webui
+launch_ui()

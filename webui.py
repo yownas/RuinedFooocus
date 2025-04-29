@@ -1,3 +1,15 @@
+import torchruntime
+import platform
+gpus = torchruntime.device_db.get_gpus()
+torch_platform = torchruntime.platform_detection.get_torch_platform(gpus)
+os_platform = platform.system()
+
+# Some platform checks
+if torch_platform == "xpu" and not os_platform == "Windows":
+    torch_platform == "cpu"
+if torch_platform == "mps" and not os_platform == "Darwin":
+    torch_platform == "cpu"
+
 from argparser import args
 import comfy.cli_args
 comfy.cli_args.args.cpu = args.cpu
@@ -8,12 +20,12 @@ comfy.cli_args.args.novram = args.novram
 comfy.cli_args.args.reserve_vram = args.reserve_vram
 comfy.cli_args.args.cpu_vae = args.cpu_vae
 
-import shared
 # FIXME: Should brobably also check directml and other things...
-if shared.shared_cache["torch_platform"] == "cpu":
+if torch_platform == "cpu":
     comfy.cli_args.args.cpu = True
 
 from pathlib import Path
+import shared
 from shared import (
     state,
     add_ctrl,
