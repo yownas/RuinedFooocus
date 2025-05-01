@@ -173,7 +173,7 @@ def add_controlnet_tab(main_view, inpaint_view, prompt, image_number, run_event)
                     "start": cn_start,
                     "stop": cn_stop,
                     "strength": cn_strength,
-                    "upscaler": cn_upscaler,
+                    "upscaler": upscale_model,
                 }
                 if cn_type.lower() == "canny":
                     opts.update(
