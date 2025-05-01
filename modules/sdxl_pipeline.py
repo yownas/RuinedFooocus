@@ -600,6 +600,11 @@ class pipeline:
                 self.conditions["-"]["text"] = None
 
             if controlnet["type"].lower() == "img2img":
+                # If this isn't the first image, do "Loopback"
+                if "preview_count" in shared.state and shared.state["preview_count"] > 0:
+                    input_image = Image.fromarray(shared.shared_cache["prev_image"]).convert("RGB")
+                    input_image = np.array(input_image).astype(np.float32) / 255.0
+                    input_image = torch.from_numpy(input_image)[None,]
                 latent = VAEEncode().encode(
                     vae=self.xl_base_patched.vae, pixels=input_image
                 )[0]
@@ -752,6 +757,7 @@ class pipeline:
             for y in decoded_latent
         ]
 
+        shared.shared_cache["prev_image"] = images[0]
         if callback is not None:
             callback(gen_data["steps"], 0, 0, gen_data["steps"], images[0])
 
