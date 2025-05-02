@@ -8,7 +8,6 @@ import sys
 import modules.controlnet
 import modules.async_worker as worker
 import modules.prompt_processing as pp
-from modules.shift_attention import shift_attention
 
 from PIL import Image, ImageOps
 
@@ -510,11 +509,6 @@ class pipeline:
 
         positive_prompt = gen_data["positive_prompt"]
         negative_prompt = gen_data["negative_prompt"]
-
-        distance = float(shared.state['preview_count']) / max(float(shared.state['preview_total']) - 1.0, 1.0) # Use max() to avoid div. by 0
-        positive_prompt = shift_attention(positive_prompt, distance)
-        negative_prompt = shift_attention(negative_prompt, distance)
-
         input_image = gen_data["input_image"]
         controlnet = modules.controlnet.get_settings(gen_data)
 

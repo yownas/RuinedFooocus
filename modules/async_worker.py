@@ -24,6 +24,7 @@ def worker():
     import random
 
     from modules.prompt_processing import process_metadata, process_prompt, parse_loras
+    from modules.shift_attention import shift_attention
 
     from PIL import Image
     from PIL.PngImagePlugin import PngInfo
@@ -232,6 +233,11 @@ def worker():
             p_txt, n_txt = process_prompt(
                 gen_data["style_selection"], pos_stripped, neg_stripped, gen_data
             )
+
+            distance = float(i) / max(image_number - 1.0, 1.0) # Use max() to avoid div. by 0
+            p_txt = shift_attention(p_txt, distance)
+            n_txt = shift_attention(n_txt, distance)
+
             gen_data["positive_prompt"] = p_txt
             gen_data["negative_prompt"] = n_txt
             gen_data["seed"] = seed # Update seed
