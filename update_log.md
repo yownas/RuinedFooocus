@@ -1,3 +1,7 @@
+* Hashbang-commands to simplify some tasks
+* Shift attention, specify ranges of weights
+* Use last image as input if generating multiple images with img2img
+
 ### 25.04.27
 * Settings tab
 * Add preview for WAN and Hunyuan Video
