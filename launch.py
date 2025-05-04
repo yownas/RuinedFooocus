@@ -4,7 +4,6 @@ import version
 import warnings
 from pathlib import Path
 import ssl
-import torchruntime
 
 os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
 os.environ["DO_NOT_TRACK"] = "1"
