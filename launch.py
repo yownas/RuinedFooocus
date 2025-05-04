@@ -4,7 +4,7 @@ import version
 import warnings
 from pathlib import Path
 import ssl
-import json
+import torchruntime
 
 os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
 os.environ["DO_NOT_TRACK"] = "1"
@@ -87,7 +87,10 @@ def prepare_environment(offline=False):
     import torchruntime
     import platform
     gpus = torchruntime.device_db.get_gpus()
-    torch_platform = torchruntime.platform_detection.get_torch_platform(gpus)
+    if "TORCH_PLATFORM" in os.environ:
+        torch_platform = os.environ["TORCH_PLATFORM"]
+    else:
+        torch_platform = torchruntime.platform_detection.get_torch_platform(gpus)
     os_platform = platform.system()
 
     # Some platform checks
@@ -103,8 +106,10 @@ def prepare_environment(offline=False):
     else:
         os.environ["FLASH_ATTENTION_SKIP_CUDA_BUILD"] = "TRUE"
 
-        # Run TorchUtils
-        torchruntime.install()
+        # Run torchruntime install
+        cmds = torchruntime.installer.get_install_commands(torch_platform, [])
+        cmds = torchruntime.installer.get_pip_commands(cmds)
+        torchruntime.installer.run_commands(cmds)
         torchruntime.configure()
 
         if REINSTALL_ALL or not requirements_met(modules_file):
