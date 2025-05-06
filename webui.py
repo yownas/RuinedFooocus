@@ -1,7 +1,11 @@
 import torchruntime
 import platform
+import os
 gpus = torchruntime.device_db.get_gpus()
-torch_platform = torchruntime.platform_detection.get_torch_platform(gpus)
+if "TORCH_PLATFORM" in os.environ:
+    torch_platform = os.environ["TORCH_PLATFORM"]
+else:
+    torch_platform = torchruntime.platform_detection.get_torch_platform(gpus)
 os_platform = platform.system()
 
 # Some platform checks
