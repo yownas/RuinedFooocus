@@ -63,8 +63,9 @@ class Models:
             loras = path_manager.model_paths["lorafile_path"]
             loras = loras[0] if isinstance(loras, list) else loras
             folders = {
-                "LORA": (loras, self.cache_paths["loras"]),
+                "DoRA": (loras, self.cache_paths["loras"]),
                 "LoCon": (loras, self.cache_paths["loras"]),
+                "LORA": (loras, self.cache_paths["loras"]),
                 "Checkpoint": (checkpoints, self.cache_paths["checkpoints"]),
             }
 
