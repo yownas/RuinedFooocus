@@ -142,16 +142,27 @@ def create_chat():
             yield chat_history
 
         llama_msg.submit(
-            llama_get_text,
-            [llama_msg],
-            [llama_msg, llama_sent]
+            fn=llama_get_text,
+            show_api=False,
+            inputs=[llama_msg],
+            outputs=[llama_msg, llama_sent]
         ).then(
-            llama_respond,
-            [llama_sent, llama_system, llama_embed, llama_chat],
-            [llama_chat]
+            fn=llama_respond,
+            show_api=False,
+            inputs=[llama_sent, llama_system, llama_embed, llama_chat],
+            outputs=[llama_chat]
         )
 
-        llama_assistants.select(llama_select_assistant, [llama_assistants], [llama_chat, llama_msg, llama_avatar, llama_system, llama_embed])
-        llama_reload.click(gr_llama_get_assistants, None, [llama_assistants])
+        llama_assistants.select(
+            fn=llama_select_assistant,
+            show_api=False,
+            inputs=[llama_assistants],
+            outputs=[llama_chat, llama_msg, llama_avatar, llama_system, llama_embed]
+        )
+        llama_reload.click(
+            fn=gr_llama_get_assistants,
+            show_api=False,
+            outputs=[llama_assistants]
+        )
 
     return app_llama_chat

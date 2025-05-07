@@ -102,15 +102,16 @@ class pipeline:
                         print(f"ERROR: Unknown key: {k}")
                         break
                     new_perf[k] = v
-                    perf_options = shared.performance_settings.load_performance()
-                    opts = {
-                        "custom_steps": new_perf['custom_steps'],
-                        "cfg": new_perf['cfg'],
-                        "sampler_name": new_perf['sampler_name'],
-                        "scheduler": new_perf['scheduler'],
-                        "clip_skip": new_perf['clip_skip'],
-                    }
-                    perf_options[new_perf['name']] = opts
+
+                perf_options = shared.performance_settings.load_performance()
+                opts = {
+                    "custom_steps": new_perf['custom_steps'],
+                    "cfg": new_perf['cfg'],
+                    "sampler_name": new_perf['sampler_name'],
+                    "scheduler": new_perf['scheduler'],
+                    "clip_skip": new_perf['clip_skip'],
+                }
+                perf_options[new_perf['name']] = opts
 
                 shared.performance_settings.save_performance(perf_options)
                 print(f"#!: Saved performance: {new_perf['name']}: {opts}")

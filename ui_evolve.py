@@ -107,17 +107,11 @@ def add_evolve_tab(prompt, image_number, run_event):
             evolve_strength = gr.Slider(
                 minimum=0, maximum=100, value=10, step=1, label="Evolve chance %:"
             )
-        #        with gr.Row():
-        #            evo_help = gr.HTML(value='''
-        #                Start with any prompt or random chunk of letters.<br>
-        #                Click on the number of the image you like best.<br>
-        #                Repeat.<br>
-        #                For best result, set a static seed.<br>
-        #            ''')
 
         for i in range(1, 10):
             evolve_btn[i].click(
                 evolve,
+                show_api=False,
                 inputs=[
                     evolve_btn[i],
                     evolve_mode,

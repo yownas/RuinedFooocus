@@ -11,6 +11,9 @@ from argparser import args
 import time
 
 gradio_root = None
+server_app = None
+local_url = "http://127.0.0.1:7860/"
+share_url = "http://127.0.0.1:7860/"
 
 state = {
     "preview_image": None,

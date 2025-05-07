@@ -2,7 +2,10 @@ import time
 import gradio as gr
 from typing import Any
 import base64
+import re
+import numpy as np
 from pathlib import Path
+import shared
 from shared import (
     state,
     settings,
@@ -36,8 +39,13 @@ def add_api():
             'task_type': "api_process",
             'prompt': prompt,
             'negative': "",
-            'loras': None,
-
+            'loras': [
+                ("", f"{settings.default_settings.get('lora_1_weight', 1.0)} - {settings.default_settings.get('lora_1_model', 'None')}"),
+                ("", f"{settings.default_settings.get('lora_2_weight', 1.0)} - {settings.default_settings.get('lora_2_model', 'None')}"),
+                ("", f"{settings.default_settings.get('lora_3_weight', 1.0)} - {settings.default_settings.get('lora_3_model', 'None')}"),
+                ("", f"{settings.default_settings.get('lora_4_weight', 1.0)} - {settings.default_settings.get('lora_4_model', 'None')}"),
+                ("", f"{settings.default_settings.get('lora_5_weight', 1.0)} - {settings.default_settings.get('lora_5_model', 'None')}"),
+            ],
             'style_selection': settings.default_settings['style'],
             'seed': -1,
             'base_model_name': settings.default_settings['base_model'],
@@ -62,10 +70,25 @@ def add_api():
         return product
 
     def api_prompt2url(prompt: str) -> str:
+        """
+        Generate an image from a prompt describing a scene and get the url to the image.
+
+        Args:
+            prompt (str): Description what the image should look like
+
+        Returns:
+            url (str): The url to the generated image
+        """
         file = Path(_api_process(prompt)[0])
-        return str(file.relative_to(file.cwd()))
+        return shared.local_url + "gradio_api/file/" + re.sub(r'[^/]+/\.\./', '', str(file.relative_to(file.cwd())))
 
     def api_prompt2img(prompt: str) -> str:
+        """
+        Generate an image from a prompt describing a scene and return an image file.
+
+        Args:
+            prompt (str): Description what the image should look like
+        """
         file = _api_process(prompt)[0]
         with open(file, 'rb') as image:
             image_data = base64.b64encode(image.read())
@@ -77,6 +100,14 @@ def add_api():
 
     # Search
     def api_search(text: str) -> str:
+        """
+        Tool to search for images. Uses the filter to find a list of images that match.
+
+        Args:
+            filter (str): Text to find images that match.
+        Returns:
+            version (str): List of images
+        """
         prompt = f"search: max:10 {text}"
         files = search_pipeline.search(prompt)
         result = []
@@ -86,3 +117,14 @@ def add_api():
         return result
 
     gr.api(api_search, api_name="search")
+
+    def api_version() -> str:
+        """
+        Look up the current version of RuinedFooocus
+
+        Returns:
+            version (str): The current version of RuinedFooocus
+        """
+        from version import version
+        return version
+    gr.api(api_version, api_name="api_version")

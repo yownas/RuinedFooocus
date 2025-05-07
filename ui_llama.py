@@ -8,8 +8,6 @@ def add_llama_tab(prompt):
 
         return gr.update(value=res)
 
-    
-
     with gr.Group(), gr.Row():
         llama_select = gr.Dropdown(
             choices=llama_names(),
@@ -22,4 +20,9 @@ def add_llama_tab(prompt):
             min_width=1,
         )
 
-    llama_btn.click(run_llama_run, inputs=[llama_select, prompt], outputs=[prompt])
+    llama_btn.click(
+        run_llama_run,
+        show_api=False,
+        inputs=[llama_select, prompt],
+        outputs=[prompt]
+    )

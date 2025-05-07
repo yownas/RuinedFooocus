@@ -16,11 +16,11 @@ parser.add_argument(
     const="0.0.0.0",
     help="Set the listen interface.",
 )
-parser.add_argument(
-    "--nobrowser", action="store_true", help="Do not launch in browser."
-)
+parser.add_argument("--mcp", action="store_true", help="Start MCP server.")
+parser.add_argument("--nobrowser", action="store_true", help="Do not launch in browser.")
 parser.add_argument("--gpu-device-id", type=int, default=None, metavar="DEVICE_ID")
-parser.add_argument("--offline", action="store_true", help=argparse.SUPPRESS)
+parser.add_argument("--offline", action="store_true", help="Skip update-check during startup.")
+parser.add_argument("--iINSTallLEDmYOwNPaCKaGeS", action="store_true", help=argparse.SUPPRESS)
 
 # ComfyUI arguments
 parser.add_argument("--directml", type=int, nargs="?", metavar="DIRECTML_DEVICE", const=-1, help="Use torch-directml.")

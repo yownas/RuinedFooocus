@@ -115,7 +115,9 @@ def add_controlnet_tab(main_view, inpaint_view, prompt, image_number, run_event)
         ]
 
         @cn_selection.change(
-            inputs=[cn_selection], outputs=[cn_name] + cn_outputs + cn_sliders
+            show_api=False,
+            inputs=[cn_selection],
+            outputs=[cn_name] + cn_outputs + cn_sliders
         )
         def cn_changed(selection):
             if selection != NEWCN:
@@ -128,6 +130,7 @@ def add_controlnet_tab(main_view, inpaint_view, prompt, image_number, run_event)
                 )
 
         @cn_type.change(
+            show_api=False,
             inputs=[cn_type],
             outputs=cn_sliders,
         )
@@ -152,6 +155,7 @@ def add_controlnet_tab(main_view, inpaint_view, prompt, image_number, run_event)
             return result
 
         @cn_save_btn.click(
+            show_api=False,
             inputs=cn_outputs + cn_sliders,
             outputs=[cn_selection],
         )
@@ -200,7 +204,9 @@ def add_controlnet_tab(main_view, inpaint_view, prompt, image_number, run_event)
         add_ctrl("inpaint_toggle", inpaint_toggle)
 
         @inpaint_toggle.change(
-            inputs=[inpaint_toggle, main_view], outputs=[main_view, inpaint_view]
+            show_api=False,
+            inputs=[inpaint_toggle, main_view],
+            outputs=[main_view, inpaint_view]
         )
         def inpaint_checked(r, image):
             if r:

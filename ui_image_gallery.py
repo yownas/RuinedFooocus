@@ -43,19 +43,30 @@ def create_image_gallery():
 
         # Event handlers
         update_btn.click(
-            browser.update_images, inputs=[], outputs=[gallery, ib_page, status_output]
+            fn=browser.update_images,
+            show_api=False,
+            outputs=[gallery, ib_page, status_output],
         )
         ib_page.change(
-            browser.load_images, inputs=[ib_page], outputs=[gallery, ib_range]
+            fn=browser.load_images,
+            show_api=False,
+            inputs=[ib_page],
+            outputs=[gallery, ib_range],
         )
-        gallery.select(browser.get_image_metadata, None, metadata_output)
+        gallery.select(
+            fn=browser.get_image_metadata,
+            show_api=False,
+            outputs=[metadata_output],
+        )
         search_btn.click(
-            browser.search_metadata,
+            fn=browser.search_metadata,
+            show_api=False,
             inputs=[search_input],
             outputs=[gallery, ib_page, status_output],
         )
         search_input.submit(
-            browser.search_metadata,
+            fn=browser.search_metadata,
+            show_api=False,
             inputs=[search_input],
             outputs=[gallery, ib_page, status_output],
         )

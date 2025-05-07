@@ -124,7 +124,7 @@ def launch_app(args):
         analytics_enabled=False,
     )
 
-    main_tabs.launch(
+    shared.server_app, shared.local_url, shared.share_url = main_tabs.launch(
         inbrowser=inbrowser,
         server_name=args.listen,
         server_port=args.port,
@@ -139,8 +139,9 @@ def launch_app(args):
         + settings.get("archive_folders", []),
         enable_monitoring=False,
         pwa=True,
+        mcp_server=args.mcp,
+        prevent_thread_lock=True,
     )
-
 
 def update_clicked():
     return {
@@ -318,6 +319,7 @@ with shared.gradio_root as block:
             )
 
             @gallery.select(
+                show_api=False,
                 inputs=[gallery],
                 outputs=[main_view, metadata_json],
                 show_progress="hidden",
@@ -358,7 +360,7 @@ with shared.gradio_root as block:
                                 scale=1,
                             )
 
-                    @prompt.input(inputs=prompt, outputs=spellcheck)
+                    @prompt.input(show_api=False, inputs=prompt, outputs=spellcheck)
                     def checkforwildcards(text):
                         test = find_unclosed_markers(text)
                         if test is not None:
@@ -377,7 +379,7 @@ with shared.gradio_root as block:
                                 spellcheck: gr.update(interactive=False, visible=False)
                             }
 
-                    @spellcheck.select(inputs=[prompt, spellcheck], outputs=prompt)
+                    @spellcheck.select(show_api=False, inputs=[prompt, spellcheck], outputs=prompt)
                     def select_spellcheck(text, selection):
                         last_idx = text.rindex("__")
                         newtext = f"{text[:last_idx]}__{selection}__"
@@ -390,7 +392,9 @@ with shared.gradio_root as block:
                     )
 
                     @main_view.upload(
-                        inputs=[main_view, prompt], outputs=[prompt, gallery]
+                        show_api=False,
+                        inputs=[main_view, prompt],
+                        outputs=[prompt, gallery]
                     )
                     def load_images_handler(file, prompt):
                         image = Image.open(file)
@@ -475,6 +479,7 @@ with shared.gradio_root as block:
                 ]
 
                 @perf_save.click(
+                    show_api=False,
                     inputs=performance_outputs,
                     outputs=[performance_selection],
                 )
@@ -546,6 +551,7 @@ with shared.gradio_root as block:
                     )
 
                     @ratio_save.click(
+                        show_api=False,
                         inputs=[ratio_name, custom_width, custom_height],
                         outputs=[aspect_ratios_selection],
                     )
@@ -606,6 +612,7 @@ with shared.gradio_root as block:
                 add_ctrl("seed", image_seed)
 
                 @style_button.click(
+                    show_api=False,
                     inputs=[prompt, negative_prompt, style_selection],
                     outputs=[prompt, negative_prompt, style_selection],
                 )
@@ -615,7 +622,11 @@ with shared.gradio_root as block:
                     )
                     return prompt_style, negative_style, []
 
-                @seed_random.change(inputs=[seed_random], outputs=[image_seed])
+                @seed_random.change(
+                    show_api=False,
+                    inputs=[seed_random],
+                    outputs=[image_seed]
+                )
                 def random_checked(r):
                     return gr.update(visible=not r)
 
@@ -626,10 +637,6 @@ with shared.gradio_root as block:
                         return s
 
             with gr.Tab(label="Models"):
-# FIXME find a model to use as default
-#                if settings["base_model"] not in path_manager.model_filenames:
-#                    settings["base_model"] = path_manager.model_filenames[0]
-
                 with gr.Tab(label="Model"):
                     model_current = gr.HTML(
                         value=f"{settings['base_model']}",
@@ -667,8 +674,16 @@ with shared.gradio_root as block:
                     )
                     add_ctrl("base_model_name", base_model)
 
-                    @modelfilter.input(inputs=modelfilter, outputs=[model_gallery])
-                    @modelfilter.submit(inputs=modelfilter, outputs=[model_gallery])
+                    @modelfilter.input(
+                        show_api=False,
+                        inputs=modelfilter,
+                        outputs=[model_gallery]
+                    )
+                    @modelfilter.submit(
+                        show_api=False,
+                        inputs=modelfilter,
+                        outputs=[model_gallery]
+                    )
                     def update_model_filter(filtered):
                         filtered_filenames = filter(
                             lambda filename: filtered.lower() in filename.lower(),
@@ -698,7 +713,9 @@ with shared.gradio_root as block:
                         }
 
                     model_gallery.select(
-                        update_model_select, None, outputs=[model_current, base_model]
+                        fn=update_model_select,
+                        show_api=False,
+                        outputs=[model_current, base_model]
                     )
 
                 with gr.Tab(label="LoRAs"):
@@ -891,10 +908,14 @@ with shared.gradio_root as block:
 
                 # LoRA
                 @lorafilter.input(
-                    inputs=[lorafilter, lora_active_gallery], outputs=[lora_gallery]
+                    show_api=False,
+                    inputs=[lorafilter, lora_active_gallery],
+                    outputs=[lora_gallery]
                 )
                 @lorafilter.submit(
-                    inputs=[lorafilter, lora_active_gallery], outputs=[lora_gallery]
+                    show_api=False,
+                    inputs=[lorafilter, lora_active_gallery],
+                    outputs=[lora_gallery]
                 )
                 def update_lora_filter(lorafilter, lora_active_gallery):
                     if lora_active_gallery:
@@ -1049,24 +1070,29 @@ with shared.gradio_root as block:
 
                 lora_weight_slider.release(
                     fn=lora_weight_slider_update,
+                    show_api=False,
                     inputs=[lora_active_gallery, lora_weight_slider],
                     outputs=[lora_active_gallery],
                 )
                 lora_add_btn.click(
                     fn=gallery_toggle,
+                    show_api=False,
                     outputs=[lora_add, lora_active],
                 )
                 lora_cancel_btn.click(
                     fn=gallery_toggle,
+                    show_api=False,
                     outputs=[lora_active, lora_add],
                 )
                 lora_del_btn.click(
                     fn=lora_delete,
+                    show_api=False,
                     inputs=[lora_active_gallery, lorafilter],
                     outputs=[lora_gallery, lora_active_gallery, lora_keywords],
                 )
                 lora_gallery.select(
                     fn=lora_select,
+                    show_api=False,
                     inputs=[lora_active_gallery, lorafilter],
                     outputs=[
                         lora_add,
@@ -1078,13 +1104,22 @@ with shared.gradio_root as block:
                 )
                 lora_active_gallery.select(
                     fn=lora_active_select,
+                    show_api=False,
                     inputs=[lora_active_gallery],
                     outputs=[lora_active, lora_active_gallery, lora_weight_slider],
                 )
 
                 # MergeMaker
-                @mm_filter.input(inputs=mm_filter, outputs=[mm_gallery])
-                @mm_filter.submit(inputs=mm_filter, outputs=[mm_gallery])
+                @mm_filter.input(
+                    show_api=False,
+                    inputs=mm_filter,
+                    outputs=[mm_gallery]
+                )
+                @mm_filter.submit(
+                    show_api=False,
+                    inputs=mm_filter,
+                    outputs=[mm_gallery]
+                )
                 def update_mm_filter(filtered):
                     filtered_models = filter(
                         lambda filename: ".merge" not in filename.lower(),
@@ -1224,34 +1259,41 @@ with shared.gradio_root as block:
 
                 mm_weight_slider.release(
                     fn=mm_weight_slider_update,
+                    show_api=False,
                     inputs=[mm_active_gallery, mm_weight_slider],
                     outputs=[mm_active_gallery],
                 )
                 mm_add_btn.click(
                     fn=gallery_toggle,
+                    show_api=False,
                     outputs=[mm_add, mm_active],
                 )
                 mm_cancel_btn.click(
                     fn=gallery_toggle,
+                    show_api=False,
                     outputs=[mm_active, mm_add],
                 )
                 mm_del_btn.click(
                     fn=mm_delete,
+                    show_api=False,
                     inputs=mm_active_gallery,
                     outputs=[mm_active_gallery],
                 )
                 mm_gallery.select(
                     fn=mm_select,
+                    show_api=False,
                     inputs=[mm_active_gallery],
                     outputs=[mm_add, mm_active, mm_active_gallery],
                 )
                 mm_active_gallery.select(
                     fn=mm_active_select,
+                    show_api=False,
                     inputs=[mm_active_gallery],
                     outputs=[mm_active, mm_active_gallery, mm_weight_slider],
                 )
                 mm_save_btn.click(
                     fn=mm_save,
+                    show_api=False,
                     inputs=[mm_name, mm_comment, mm_active_gallery, mm_cache],
                     outputs=[],
                 )
@@ -1264,6 +1306,7 @@ with shared.gradio_root as block:
                     )
 
             @model_refresh.click(
+                show_api=False,
                 inputs=[lora_active_gallery],
                 outputs=[
                     modelfilter,
@@ -1316,6 +1359,7 @@ with shared.gradio_root as block:
             )
 
             @performance_selection.change(
+                show_api=False,
                 inputs=[performance_selection],
                 outputs=[perf_name] + performance_outputs,
             )
@@ -1330,6 +1374,7 @@ with shared.gradio_root as block:
                     ] * len(performance_outputs)
 
             @performance_selection.change(
+                show_api=False,
                 inputs=[performance_selection],
                 outputs=[custom_steps]
                 + [cfg]
@@ -1357,6 +1402,7 @@ with shared.gradio_root as block:
                 }
 
             @aspect_ratios_selection.change(
+                show_api=False,
                 inputs=[aspect_ratios_selection],
                 outputs=[ratio_name, custom_width, custom_height, ratio_save],
             )
@@ -1380,11 +1426,17 @@ with shared.gradio_root as block:
             return gr.update(interactive=True)
 
         run_event.change(
-            fn=refresh_seed, inputs=[seed_random, image_seed], outputs=image_seed
+            fn=refresh_seed,
+            show_api=False,
+            inputs=[seed_random, image_seed],
+            outputs=image_seed
         ).then(
-            fn=activate, outputs=[inpaint_view]
+            fn=activate,
+            show_api=False,
+            outputs=[inpaint_view]
         ).then(
             fn=generate_clicked,
+            show_api=False,
             inputs=state["ctrls_obj"],
             outputs=[
                 run_button,
@@ -1402,13 +1454,13 @@ with shared.gradio_root as block:
         def poke(number):
             return number + 1
 
-        run_button.click(fn=poke, inputs=run_event, outputs=run_event)
+        run_button.click(fn=poke, show_api=False, inputs=run_event, outputs=run_event)
 
         def stop_clicked():
             worker.interrupt_ruined_processing = True
             shared.state["interrupted"] = False
 
-        stop_button.click(fn=stop_clicked, queue=False)
+        stop_button.click(fn=stop_clicked, show_api=False, queue=False)
 
         def update_cfg():
             # Update ui components
@@ -1426,7 +1478,7 @@ with shared.gradio_root as block:
                 cfg_timestamp: gr.update(value=shared.state["last_config"]),
             }
         # If cfg_timestamp has a new value, trigger an update
-        cfg_timestamp.change(fn=update_cfg, outputs=[cfg_timestamp] + state["cfg_items_obj"])
+        cfg_timestamp.change(fn=update_cfg, show_api=False, outputs=[cfg_timestamp] + state["cfg_items_obj"])
 
     add_api()
 
@@ -1441,3 +1493,7 @@ if isinstance(args.auth, str) and not "/" in args.auth:
         )
         args.share = False
 launch_app(args)
+
+# Wait...
+while True:
+    time.sleep(100)
