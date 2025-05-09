@@ -269,7 +269,9 @@ with shared.gradio_root as block:
 
     def get_cfg_timestamp():
         return shared.state["last_config"]
-    cfg_timestamp = gr.Textbox(visible=False, value=get_cfg_timestamp, every=5)
+    cfg_timestamp = gr.Textbox(visible=False, value=get_cfg_timestamp())
+    cfg_timer = gr.Timer(value=5)
+    cfg_timer.tick(fn=get_cfg_timestamp, show_api=False, outputs=[cfg_timestamp])
 
     with gr.Row():
         with gr.Column(scale=5):
