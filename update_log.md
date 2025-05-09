@@ -1,3 +1,4 @@
+* Cleanup and fixes
 * --mcp to start MCP server
 * Hashbang-commands to simplify some tasks
 * Shift attention, specify ranges of weights
