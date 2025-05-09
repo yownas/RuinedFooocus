@@ -14,22 +14,18 @@ import modules.search_pipeline as search_pipeline
 
 def add_api():
 
-    # "secret" pi slideshow
-    def get_last_image() -> str:
-        global state
-        if "last_image" in state:
-            return state["last_image"]
-        else:
-            return "html/logo.png"
-
-    gr.api(get_last_image, api_name="last_image")
-
     # llama
     from modules.llama_pipeline import run_llama
     def api_llama(system: str, user: str) -> str:
+        """
+        Talk to the RuinedFooocus llama llm model.
+
+        Args:
+            system (str): System prompt
+            user (str): user input
+        """
         prompt = f"system: {system}\n\n{user}"
         return run_llama(None, prompt)
-
     gr.api(api_llama, api_name="llama")
 
     # process
@@ -71,7 +67,8 @@ def add_api():
 
     def api_prompt2url(prompt: str) -> str:
         """
-        Generate an image from a prompt describing a scene and get the url to the image.
+        Generates an image from a prompt describing a scene.
+        Continue by formatting the url with markdown like this "![title](url)" to display it to the user.
 
         Args:
             prompt (str): Description what the image should look like
@@ -81,6 +78,7 @@ def add_api():
         """
         file = Path(_api_process(prompt)[0])
         return shared.local_url + "gradio_api/file/" + re.sub(r'[^/]+/\.\./', '', str(file.relative_to(file.cwd())))
+    gr.api(api_prompt2url, api_name="prompt2url")
 
     def api_prompt2img(prompt: str) -> str:
         """
@@ -94,8 +92,6 @@ def add_api():
             image_data = base64.b64encode(image.read())
             result = image_data.decode('ascii')
         return result
-
-    gr.api(api_prompt2url, api_name="prompt2url")
     gr.api(api_prompt2img, api_name="prompt2img")
 
     # Search
@@ -115,7 +111,6 @@ def add_api():
             file = Path(file)
             result.append(str(file.relative_to(file.cwd())))
         return result
-
     gr.api(api_search, api_name="search")
 
     def api_version() -> str:
@@ -128,3 +123,15 @@ def add_api():
         from version import version
         return version
     gr.api(api_version, api_name="api_version")
+
+    # "secret" pi slideshow
+    def get_last_image() -> str:
+        """
+        Internal use for the secret pi slideshow
+        """
+        global state
+        if "last_image" in state:
+            return state["last_image"]
+        else:
+            return "html/logo.png"
+    gr.api(get_last_image, api_name="last_image")
