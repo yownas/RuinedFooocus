@@ -80,19 +80,19 @@ def add_api():
         return shared.local_url + "gradio_api/file/" + re.sub(r'[^/]+/\.\./', '', str(file.relative_to(file.cwd())))
     gr.api(api_prompt2url, api_name="prompt2url")
 
-    def api_prompt2img(prompt: str) -> str:
-        """
-        Generate an image from a prompt describing a scene and return an image file.
-
-        Args:
-            prompt (str): Description what the image should look like
-        """
-        file = _api_process(prompt)[0]
-        with open(file, 'rb') as image:
-            image_data = base64.b64encode(image.read())
-            result = image_data.decode('ascii')
-        return result
-    gr.api(api_prompt2img, api_name="prompt2img")
+#    def api_prompt2img(prompt: str) -> str:
+#        """
+#        Generate an image from a prompt describing a scene and return an image file.
+#
+#        Args:
+#            prompt (str): Description what the image should look like
+#        """
+#        file = _api_process(prompt)[0]
+#        with open(file, 'rb') as image:
+#            image_data = base64.b64encode(image.read())
+#            result = image_data.decode('ascii')
+#        return result
+#    gr.api(api_prompt2img, api_name="prompt2img")
 
     # Search
     def api_search(text: str) -> str:
