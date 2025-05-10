@@ -945,6 +945,8 @@ with shared.gradio_root as block:
 
                     return gr.update(value=filtered_filenames)
 
+                lora_active_selected = None
+
                 def lora_select(gallery, lorafilter, evt: gr.SelectData):
                     global lora_active_selected
 
@@ -983,7 +985,7 @@ with shared.gradio_root as block:
                         lora_add: gr.update(visible=False),
                         lora_gallery: gr.update(
                             value=inactive,
-                            selected_index=65535,
+                            selected_index=None,
                         ),
                         lora_active: gr.update(visible=True),
                         lora_active_gallery: gr.update(
@@ -992,8 +994,6 @@ with shared.gradio_root as block:
                         ),
                         lora_keywords: gr.update(value=keywords),
                     }
-
-                lora_active_selected = None
 
                 def lora_active_select(gallery, evt: gr.SelectData):
                     global lora_active_selected
@@ -1050,7 +1050,7 @@ with shared.gradio_root as block:
                     return {
                         lora_gallery: gr.update(
                             value=inactive,
-                            selected_index=65535,
+                            selected_index=None,
                         ),
                         lora_active_gallery: gr.update(
                             value=active,
@@ -1318,6 +1318,7 @@ with shared.gradio_root as block:
                     modelfilter,
                     model_gallery,
                     lorafilter,
+                    lora_active_gallery,
                     lora_gallery,
                     style_selection,
                     mm_filter,
@@ -1325,13 +1326,15 @@ with shared.gradio_root as block:
                 ],
             )
             def model_refresh_clicked(lora_active_gallery):
-                global civit_checkpoints, civit_loras
+                global civit_checkpoints, civit_loras, lora_active_selected
+                lora_active_selected=None
                 shared.models.update_all_models()
 
                 results = {
                     modelfilter: gr.update(value=""),
                     model_gallery: update_model_filter(""),
                     lorafilter: gr.update(value=""),
+                    lora_active_gallery: gr.update(selected_index=lora_active_selected),
                     lora_gallery: update_lora_filter("", lora_active_gallery),
                     style_selection: gr.update(choices=list(load_styles().keys())),
                     mm_filter: gr.update(value=""),
