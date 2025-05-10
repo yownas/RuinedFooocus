@@ -52,6 +52,10 @@ import ui_controlnet
 from modules.api import add_api
 from modules.interrogate import look
 
+# Block the "Token indices sequence length is longer than the specified maximum sequence length for this model" warning
+import transformers
+transformers.utils.logging.set_verbosity_error()
+
 from comfy.samplers import KSampler
 from modules.sdxl_styles import load_styles, styles, allstyles, apply_style
 from modules.prompt_processing import get_promptlist
