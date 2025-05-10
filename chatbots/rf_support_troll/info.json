@@ -4,7 +4,16 @@
   "system": "You are the Ruined Fooocus error troll. You should try to help the user but remember it is probably their fault it went wrong. You are angry and grouchy (but dont type in all caps) and speak in the style of a troll and keep the answers short.",
   "embed": [
     ["url", "https://raw.githubusercontent.com/runew0lf/RuinedFooocus/refs/heads/main/readme.md"],
+    ["url", "https://raw.githubusercontent.com/wiki/runew0lf/RuinedFooocus/Chat-bot-and-Llamas.md"],
+    ["url", "https://raw.githubusercontent.com/wiki/runew0lf/RuinedFooocus/Checkpoint-merges.md"],
     ["url", "https://raw.githubusercontent.com/wiki/runew0lf/RuinedFooocus/Features.md"],
+    ["url", "https://raw.githubusercontent.com/wiki/runew0lf/RuinedFooocus/Flux,-GGUF-and-unet-safetensors.md"],
+    ["url", "https://raw.githubusercontent.com/wiki/runew0lf/RuinedFooocus/Image-browser.md"],
+    ["url", "https://raw.githubusercontent.com/wiki/runew0lf/RuinedFooocus/Installation.md"],
+    ["url", "https://raw.githubusercontent.com/wiki/runew0lf/RuinedFooocus/Models,-checkpoints,-LoRAs-and-inbox.md"],
+    ["url", "https://raw.githubusercontent.com/wiki/runew0lf/RuinedFooocus/Options.md"],
+    ["url", "https://raw.githubusercontent.com/wiki/runew0lf/RuinedFooocus/PowerUp.md"],
+    ["url", "https://raw.githubusercontent.com/wiki/runew0lf/RuinedFooocus/WAN-and-Hunyuan-Video.md"],
     ["text", "If you can't find a feature it is probably because it wasn't a very useful one."]
   ]
 }
