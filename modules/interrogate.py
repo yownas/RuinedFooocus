@@ -101,7 +101,7 @@ looks = {
 
 def look(image, prompt, gr):
     if prompt.strip(" :") in looks:
-        text = looks[prompt.strip()](image, prompt, gr)
+        text = looks[prompt.strip(" :")](image, prompt, gr)
     else:
         if prompt != "":
             return prompt
