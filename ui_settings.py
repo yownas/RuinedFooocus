@@ -178,9 +178,9 @@ def create_settings():
                     max_lines=5
                 )
                 add_setting("path_loras", path_loras)
-                path_inbox = gr.Textbox(label="Inbox folder", interactive=True, placeholder="", value=settings.default_settings.get("path_inbox", "../models/inbox/"))
+                path_inbox = gr.Textbox(label="Inbox folder", interactive=True, placeholder="", value=path_manager.paths.get("path_inbox", "../models/inbox/"))
                 add_setting("path_inbox", path_inbox)
-                path_outputs = gr.Textbox(label="Output folder", interactive=True, placeholder="", value=settings.default_settings.get("path_outputs", "../outputs/"))
+                path_outputs = gr.Textbox(label="Output folder", interactive=True, placeholder="", value=path_manager.paths.get("path_outputs", "../outputs/"))
                 add_setting("path_outputs", path_outputs)
 
             with gr.Column():
