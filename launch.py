@@ -46,14 +46,14 @@ git_repos = [
         "name": "ComfyUI",
         "path": "ComfyUI",
         "url": "https://github.com/comfyanonymous/ComfyUI",
-        "hash": "b779349b55e79aff81a98b752f5cb486c71812db",
+        "hash": "31e9e36c941bbedd29bb388a052911a65bed1bc4",
         "add_path": "ComfyUI",
     },
     {
         "name": "Calcuis-GGUF",
         "path": "calcuis_gguf",
         "url": "https://github.com/calcuis/gguf",
-        "hash": "ea10dbe3d4c3ca3b18320315b322e401a6f72745",
+        "hash": "12b8b50cf3580c4b6a21c65d162ec582a700939b",
         "add_path": "",
     },
 ]
@@ -82,6 +82,13 @@ def prepare_environment(offline=False):
             "Couldn't check pre-reqs",
             live=False,
         )
+        run(
+            f'"{python}" -m pip uninstall -y llama-cpp-python',
+            "Check for old modules",
+            "Couldn't check old modules",
+            live=False,
+        )
+
 
     import torchruntime
     import platform
