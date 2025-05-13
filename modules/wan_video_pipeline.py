@@ -420,7 +420,7 @@ class pipeline:
         os.makedirs(os.path.dirname(file), exist_ok=True)
 
         fps=12.0
-        compress_level=4 # Min = 0, Max = 9
+        compress_level=9 # Min = 0, Max = 9
 
         # Save GIF
         pil_images[0].save(

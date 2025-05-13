@@ -553,7 +553,7 @@ class pipeline:
             save_all=True,
             duration=int(1000.0/fps),
             append_images=pil_images[1:],
-            optimize=False,
+            optimize=True,
             loop=0,
         )
 
