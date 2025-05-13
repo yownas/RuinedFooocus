@@ -22,6 +22,7 @@ import modules.llama_pipeline as llama_pipeline
 import modules.hunyuan_video_pipeline as hunyuan_video_pipeline
 import modules.wan_video_pipeline as wan_video_pipeline
 import modules.hashbang_pipeline as hashbang_pipeline
+import modules.ltx_video_pipeline as ltx_video_pipeline
 import modules.controlnet as controlnet
 
 class NoPipeLine:
@@ -135,6 +136,16 @@ def update(gen_data):
                     or "wan_video" not in state["pipeline"].pipeline_type
                 ):
                     state["pipeline"] = wan_video_pipeline.pipeline()
+
+            elif (
+                baseModel == "LTXV" or
+                Path(gen_data['base_model_name']).parts[0] == "LTXV"
+            ):
+                if (
+                    state["pipeline"] is None
+                    or "ltx_video" not in state["pipeline"].pipeline_type
+                ):
+                    state["pipeline"] = ltx_video_pipeline.pipeline()
 
             elif baseModel is not None:
                 # Try with the sdxl/default pipeline if baseModel is set.

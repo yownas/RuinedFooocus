@@ -43,5 +43,15 @@
         "url": "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/vae/wan_2.1_vae.safetensors",
         "path": "path_vae",
         "filename": "wan_2.1_vae.safetensors"
+    },
+    "vae/LTX-Video-VAE.safetensors": {
+        "url": "https://huggingface.co/Lightricks/LTX-Video/resolve/main/vae/diffusion_pytorch_model.safetensors",
+        "path": "path_vae",
+        "filename": "LTX-Video-VAE.safetensors"
+    },
+    "vae/pig_video_97_vae_fp32-f16.gguf": {
+        "url": "https://huggingface.co/calcuis/ltxv0.9.7-gguf/resolve/main/pig_video_97_vae_fp32-f16.gguf",
+        "path": "path_vae",
+        "filename": "pig_video_97_vae_fp32-f16.gguf"
     }
 }
