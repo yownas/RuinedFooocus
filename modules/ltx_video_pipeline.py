@@ -445,17 +445,16 @@ class pipeline:
         if gen_data["input_image"]:
             image = np.array(gen_data["input_image"]).astype(np.float32) / 255.0
             image = torch.from_numpy(image)[None,]
-
-            (positive, latent_image) = LTXVImgToVideo().encode(
+            (positive, negative, latent_image) = LTXVImgToVideo().generate(
                 positive = self.conditions["+"]["cache"],
+                negative = self.conditions["-"]["cache"],
+                image = image,
                 vae = self.model_base_patched.vae,
                 width = gen_data["width"],
                 height = gen_data["height"],
                 length = gen_data["original_image_number"],
                 batch_size = 1,
-                #guidance_type = "v1 (concat)", # "v2 (replace)"
-                guidance_type = "v2 (replace)",
-                start_image = image,
+                strength = 1,
             )
         else:
             # latent_image
