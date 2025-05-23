@@ -133,7 +133,7 @@ def prepare_environment(offline=False):
                 'cpu': 'https://github.nexa.ai/whl/cpu'
             }
             if torch_platform in platform_index:
-                run_pip(f'install nexaai --extra-index-url {platform_index[torch_platform]}', "Nexa SDK modules")
+                run_pip(f'install nexaai -U --extra-index-url {platform_index[torch_platform]}', "Nexa SDK modules")
             else:
                 print(f"ERROR: Can't find Nexai SDK url for {torch_platform}")
 
