@@ -11,11 +11,6 @@ def save_clicked(*args):
     for key, val in zip(state["setting_name"], args):
         settings.default_settings[key] = val
 
-        # Remove empty keys
-        if settings.default_settings[key] == None or settings.default_settings[key] == "":
-            settings.default_settings.pop(key)
-            continue
-
         # Massage some of the data. Settings that are lists should be split
         if key in [
             "archive_folders",
@@ -24,6 +19,11 @@ def save_clicked(*args):
             "path_loras"
         ]:
             settings.default_settings[key] = settings.default_settings[key].splitlines()
+
+        # Remove empty keys
+        if settings.default_settings[key] == None or settings.default_settings[key] == "":
+            settings.default_settings.pop(key)
+            continue
 
         # Move ui_* and path_*
         if key.startswith("ui_"):
