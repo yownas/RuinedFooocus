@@ -120,7 +120,7 @@ class pipeline:
                     progress=True,
                     file_name=url_to_filename(source[1]),
                 )
-                file = open(filename, "r")
+                file = open(filename, "r", encoding='utf-8')
                 data = file.read()
                 file.close()
 
