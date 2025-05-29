@@ -3,7 +3,9 @@ from pathlib import Path
 
 from modules.interrogate import looks
 
-from shared import state, add_setting, performance_settings, resolution_settings, path_manager, settings, models
+from shared import state, add_setting, performance_settings, resolution_settings, path_manager, settings, models, translate
+
+t = translate
 
 def save_clicked(*args):
     ui_data = {}
@@ -38,51 +40,50 @@ def save_clicked(*args):
     path_manager.set_settings_path(ui_data.get("ui_settings_name", None))
     path_manager.save_paths()
 
-    print(f"Saved new settings to {settings.settings_path}. Please restart.") 
-    gr.Info("Saved! Please restart RuinedFoocus.")
-
+    print(t("Saved new settings to %{path}s.") % {"path": settings.settings_path}) 
+    gr.Info(t("Saved new settings to %{path}s.") % {"path": settings.settings_path}) 
 
 def create_settings():
     with gr.Blocks() as app_settings:
         with gr.Row():
             with gr.Column():
-                gr.Markdown("# UI settings")
-                image_number = gr.Number(label="Image Number", interactive=True, value=settings.default_settings.get("image_number", 1))
+                gr.Markdown(t("# UI settings"))
+                image_number = gr.Number(label=t("Image Number"), interactive=True, value=settings.default_settings.get("image_number", 1))
                 add_setting("image_number", image_number)
-                image_number_max = gr.Number(label="Image Number Max", interactive=True, value=settings.default_settings.get("image_number_max", 50))
+                image_number_max = gr.Number(label=t("Image Number Max"), interactive=True, value=settings.default_settings.get("image_number_max", 50))
                 add_setting("image_number_max", image_number_max)
-                seed_random = gr.Checkbox(label="Seed Random", interactive=True, value=settings.default_settings.get("seed_random", True))
+                seed_random = gr.Checkbox(label=t("Random Seed"), interactive=True, value=settings.default_settings.get("seed_random", True))
                 add_setting("seed_random", seed_random)
-                seed = gr.Number(label="Seed", interactive=True, value=settings.default_settings.get("seed", -1))
+                seed = gr.Number(label=t("Seed"), interactive=True, value=settings.default_settings.get("seed", -1))
                 add_setting("seed", seed)
                 style = gr.Code(
-                    label="Style",
+                    label=t("Style"),
                     interactive=True,
                     value="\n".join(settings.default_settings.get("style", [])),
                     lines=5,
                     max_lines=5
                 )
                 add_setting("style", style)
-                prompt = gr.Textbox(label="Prompt", interactive=True, value=settings.default_settings.get("prompt", ""))
+                prompt = gr.Textbox(label=t("Prompt"), interactive=True, value=settings.default_settings.get("prompt", ""))
                 add_setting("prompt", prompt)
-                negative_prompt = gr.Textbox(label="Negative Prompt", interactive=True, value=settings.default_settings.get("negative_prompt", ""))
+                negative_prompt = gr.Textbox(label=t("Negative Prompt"), interactive=True, value=settings.default_settings.get("negative_prompt", ""))
                 add_setting("negative_prompt", negative_prompt)
                 performance = gr.Dropdown(
-                    label="Performance",
+                    label=t("Performance"),
                     interactive=True,
                     choices=list(performance_settings.performance_options.keys()),
                     value=settings.default_settings.get("performance", "Speed"),
                 )
                 add_setting("performance", performance)
                 resolution = gr.Dropdown(
-                    label="Resolution",
+                    label=t("Resolution"),
                     interactive=True,
                     choices=list(resolution_settings.aspect_ratios.keys()),
                     value=settings.default_settings.get("resolution", "1344x768 (16:9)"),
                 )
                 add_setting("resolution", resolution)
                 base_model = gr.Dropdown(
-                    label="Base Model",
+                    label=t("Base Model"),
                     interactive=True,
                     choices=models.names['checkpoints'],
                     value=settings.default_settings.get("base_model", "sd_xl_base_1.0_0.9vae.safetensors"),
@@ -91,44 +92,44 @@ def create_settings():
 
                 with gr.Row():
                     lora_1_model = gr.Dropdown(
-                        label="LoRA 1 Model",
+                        label=t("LoRA %s Model") % 1,
                         interactive=True,
                         choices=["None"] + models.names['loras'],
                         value=settings.default_settings.get("lora_1_model", "None"),
                     )
-                    lora_1_weight = gr.Number(label="Lora 1 Weight", value=settings.default_settings.get("lora_1_weight", 1.0), step=0.05)
+                    lora_1_weight = gr.Number(label=t("Lora %s Weight") % 1, value=settings.default_settings.get("lora_1_weight", 1.0), step=0.05)
                 with gr.Row():
                     lora_2_model = gr.Dropdown(
-                        label="LoRA 2 Model",
+                        label=t("LoRA %s Model") % 2,
                         interactive=True,
                         choices=["None"] + models.names['loras'],
                         value=settings.default_settings.get("lora_2_model", "None"),
                     )
-                    lora_2_weight = gr.Number(label="Lora 2 Weight", value=settings.default_settings.get("lora_2_weight", 1.0), step=0.05)
+                    lora_2_weight = gr.Number(label=t("Lora %s Weight") % 2, value=settings.default_settings.get("lora_2_weight", 1.0), step=0.05)
                 with gr.Row():
                     lora_3_model = gr.Dropdown(
-                        label="LoRA 3 Model",
+                        label=t("LoRA %s Model") % 3,
                         interactive=True,
                         choices=["None"] + models.names['loras'],
                         value=settings.default_settings.get("lora_3_model", "None"),
                     )
-                    lora_3_weight = gr.Number(label="Lora 3 Weight", value=settings.default_settings.get("lora_3_weight", 1.0), step=0.05)
+                    lora_3_weight = gr.Number(label=t("Lora %s Weight") % 3, value=settings.default_settings.get("lora_3_weight", 1.0), step=0.05)
                 with gr.Row():
                     lora_4_model = gr.Dropdown(
-                        label="LoRA 4 Model",
+                        label=t("LoRA %s Model") % 4,
                         interactive=True,
                         choices=["None"] + models.names['loras'],
                         value=settings.default_settings.get("lora_4_model", "None"),
                     )
-                    lora_4_weight = gr.Number(label="Lora 4 Weight", value=settings.default_settings.get("lora_4_weight", 1.0), step=0.05)
+                    lora_4_weight = gr.Number(label=t("Lora %s Weight") % 4, value=settings.default_settings.get("lora_4_weight", 1.0), step=0.05)
                 with gr.Row():
                     lora_5_model = gr.Dropdown(
-                        label="LoRA 5 Model",
+                        label=t("LoRA %s Model") % 5,
                         interactive=True,
                         choices=["None"] + models.names['loras'],
                         value=settings.default_settings.get("lora_5_model", "None"),
                     )
-                    lora_5_weight = gr.Number(label="Lora 5 Weight", value=settings.default_settings.get("lora_5_weight", 1.0), step=0.05)
+                    lora_5_weight = gr.Number(label=t("Lora %s Weight") % 5, value=settings.default_settings.get("lora_5_weight", 1.0), step=0.05)
 
                 add_setting("lora_1_model", lora_1_model)
                 add_setting("lora_2_model", lora_2_model)
@@ -141,29 +142,29 @@ def create_settings():
                 add_setting("lora_4_weight", lora_4_weight)
                 add_setting("lora_5_weight", lora_5_weight)
 
-                auto_negative_prompt = gr.Checkbox(label="Auto Negative Prompt", interactive=True, value=settings.default_settings.get("auto_negative_prompt", False))
+                auto_negative_prompt = gr.Checkbox(label=t("Auto Negative Prompt"), interactive=True, value=settings.default_settings.get("auto_negative_prompt", False))
                 add_setting("auto_negative_prompt", auto_negative_prompt)
             with gr.Column():
-                gr.Markdown("# One Button Prompt")
-                OBP_preset = gr.Textbox(label="OBP Preset", value=settings.default_settings.get("OBP_preset", "Standard"))
+                gr.Markdown(t("# One Button Prompt"))
+                OBP_preset = gr.Textbox(label=t("OBP Preset"), value=settings.default_settings.get("OBP_preset", "Standard"))
                 add_setting("OBP_preset", OBP_preset)
-                hint_chance = gr.Number(label="Hint Chance", value=settings.default_settings.get("hint_chance", 25))
+                hint_chance = gr.Number(label=t("Hint Chance"), value=settings.default_settings.get("hint_chance", 25))
                 add_setting("hint_chance", hint_chance)
                 
-                gr.Markdown("# Image Browser")
-                images_per_page = gr.Number(label="Images per page", value=settings.default_settings.get("images_per_page", 100), minimum=1, maximum=1000, step=1)
+                gr.Markdown(t("# Image Browser"))
+                images_per_page = gr.Number(label=t("Images per page"), value=settings.default_settings.get("images_per_page", 100), minimum=1, maximum=1000, step=1)
                 add_setting("images_per_page", images_per_page)
                 archive_folders = gr.Code(
-                    label="Archive folders",
+                    label=t("Archive Folders"),
                     interactive=True,
                     value="\n".join(settings.default_settings.get("archive_folders", [])),
                     lines=5,
                     max_lines=5
                 )
                 add_setting("archive_folders", archive_folders)
-                gr.Markdown("# Paths")
+                gr.Markdown(t("# Paths"))
                 path_checkpoints = gr.Code(
-                    label="Checkpoint folders",
+                    label=t("Checkpoint Folders"),
                     interactive=True,
                     value="\n".join(path_manager.paths.get("path_checkpoints", [])),
                     lines=5,
@@ -171,25 +172,25 @@ def create_settings():
                 )
                 add_setting("path_checkpoints", path_checkpoints)
                 path_loras = gr.Code(
-                    label="LoRA folders",
+                    label=t("LoRA Folders"),
                     interactive=True,
                     value="\n".join(path_manager.paths.get("path_loras", [])),
                     lines=5,
                     max_lines=5
                 )
                 add_setting("path_loras", path_loras)
-                path_inbox = gr.Textbox(label="Inbox folder", interactive=True, placeholder="", value=path_manager.paths.get("path_inbox", "../models/inbox/"))
+                path_inbox = gr.Textbox(label=t("Inbox Folder"), interactive=True, placeholder="", value=path_manager.paths.get("path_inbox", "../models/inbox/"))
                 add_setting("path_inbox", path_inbox)
-                path_outputs = gr.Textbox(label="Output folder", interactive=True, placeholder="", value=path_manager.paths.get("path_outputs", "../outputs/"))
+                path_outputs = gr.Textbox(label=t("Output Folder"), interactive=True, placeholder="", value=path_manager.paths.get("path_outputs", "../outputs/"))
                 add_setting("path_outputs", path_outputs)
 
             with gr.Column():
-                gr.Markdown("# Other")
-                interrogator = gr.Dropdown(label="Default interrogator", interactive=True, choices=list(looks.keys()), value=settings.default_settings.get("interrogator", None),)
+                gr.Markdown(t("# Other"))
+                interrogator = gr.Dropdown(label=t("Default Interrogator"), interactive=True, choices=list(looks.keys()), value=settings.default_settings.get("interrogator", None),)
                 add_setting("interrogator", interrogator)
-                save_metadata = gr.Checkbox(label="Save Metadata", value=settings.default_settings.get("save_metadata", True))
+                save_metadata = gr.Checkbox(label=t("Save Metadata"), value=settings.default_settings.get("save_metadata", True))
                 add_setting("save_metadata", save_metadata)
-                theme = gr.Textbox(label="Theme", interactive=True, value=settings.default_settings.get("theme", None))
+                theme = gr.Textbox(label=t("Theme"), interactive=True, value=settings.default_settings.get("theme", None))
                 add_setting("theme", theme)
                 clip_g = gr.Dropdown(label="clip_g", interactive=True, choices=[None]+path_manager.get_folder_list("clip"), value=settings.default_settings.get("clip_g", None),)
                 add_setting("clip_g", clip_g)
@@ -226,13 +227,13 @@ def create_settings():
 
         with gr.Row(), gr.Group():
             ui_settings_name = gr.Text(
-                label="Settings name",
+                label=t("Name"),
                 interactive=True,
-                placeholder="Optional",
+                placeholder=t("Optional"),
                 value=settings.name,
             )
             add_setting("ui_settings_name", ui_settings_name)
-            save_btn = gr.Button("Save Settings")
+            save_btn = gr.Button(t("Save"))
 
 # Deal with this later
 #            output = gr.Textbox(label="Status")

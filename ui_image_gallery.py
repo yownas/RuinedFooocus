@@ -1,9 +1,9 @@
 import gradio as gr
-from shared import path_manager, translation_manager
+from shared import path_manager, translate
 from modules.imagebrowser import ImageBrowser
 
 browser = ImageBrowser()
-t = translation_manager.translate
+t = translate
 
 def create_image_gallery():
     with gr.Blocks(theme=gr.themes.Soft()) as app_image_browser:

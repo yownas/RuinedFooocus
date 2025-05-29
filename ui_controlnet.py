@@ -6,16 +6,18 @@ from modules.controlnet import (
     NEWCN,
 )
 import gradio as gr
-from shared import add_ctrl, path_manager
+from shared import add_ctrl, path_manager, translate
 import ui_evolve
 import ui_llama
 from PIL import Image
 
+t = translate
+
 def add_controlnet_tab(main_view, inpaint_view, prompt, image_number, run_event):
-    with gr.Tab(label="PowerUp"):
+    with gr.Tab(label=t("PowerUp")):
         with gr.Row():
             cn_selection = gr.Dropdown(
-                label="Cheat Code",
+                label=t("Cheat Code"),
                 choices=["None"] + list(cn_options.keys()) + [NEWCN],
                 value="None",
             )
@@ -23,18 +25,18 @@ def add_controlnet_tab(main_view, inpaint_view, prompt, image_number, run_event)
 
         cn_name = gr.Textbox(
             show_label=False,
-            placeholder="Name",
+            placeholder=t("Name"),
             interactive=True,
             visible=False,
         )
         cn_save_btn = gr.Button(
-            value="Save",
+            value=t("Save"),
             visible=False,
         )
 
         type_choices=list(map(lambda x: x.capitalize(), controlnet.controlnet_models.keys()))
         cn_type = gr.Dropdown(
-            label="Type",
+            label=t("Type"),
             choices=type_choices,
             value=type_choices[0],
             visible=False,
@@ -42,7 +44,7 @@ def add_controlnet_tab(main_view, inpaint_view, prompt, image_number, run_event)
         add_ctrl("cn_type", cn_type)
 
         cn_edge_low = gr.Slider(
-            label="Edge (low)",
+            label=t("Edge (low)"),
             minimum=0.0,
             maximum=1.0,
             step=0.01,
@@ -52,7 +54,7 @@ def add_controlnet_tab(main_view, inpaint_view, prompt, image_number, run_event)
         add_ctrl("cn_edge_low", cn_edge_low)
 
         cn_edge_high = gr.Slider(
-            label="Edge (high)",
+            label=t("Edge (high)"),
             minimum=0.0,
             maximum=1.0,
             step=0.01,
@@ -62,7 +64,7 @@ def add_controlnet_tab(main_view, inpaint_view, prompt, image_number, run_event)
         add_ctrl("cn_edge_high", cn_edge_high)
 
         cn_start = gr.Slider(
-            label="Start",
+            label=t("Start"),
             minimum=0.0,
             maximum=1.0,
             step=0.01,
@@ -72,7 +74,7 @@ def add_controlnet_tab(main_view, inpaint_view, prompt, image_number, run_event)
         add_ctrl("cn_start", cn_start)
 
         cn_stop = gr.Slider(
-            label="Stop",
+            label=t("Stop"),
             minimum=0.0,
             maximum=1.0,
             step=0.01,
@@ -82,7 +84,7 @@ def add_controlnet_tab(main_view, inpaint_view, prompt, image_number, run_event)
         add_ctrl("cn_stop", cn_stop)
 
         cn_strength = gr.Slider(
-            label="Strength",
+            label=t("Strength"),
             minimum=0.0,
             maximum=2.0,
             step=0.01,
@@ -92,7 +94,7 @@ def add_controlnet_tab(main_view, inpaint_view, prompt, image_number, run_event)
         add_ctrl("cn_strength", cn_strength)
 
         cn_upscaler = gr.Dropdown(
-            label=f"Upscaler",
+            label=t("Upscaler"),
             show_label=False,
             choices=["None"] + path_manager.upscaler_filenames,
             value="None",
@@ -194,12 +196,12 @@ def add_controlnet_tab(main_view, inpaint_view, prompt, image_number, run_event)
                 return gr.update()
 
         input_image = gr.Image(
-            label="Input image",
+            label=t("Input image"),
             type="pil",
             visible=True,
         )
         add_ctrl("input_image", input_image)
-        inpaint_toggle = gr.Checkbox(label="Inpainting", value=False)
+        inpaint_toggle = gr.Checkbox(label=t("Inpainting"), value=False)
 
         add_ctrl("inpaint_toggle", inpaint_toggle)
 
