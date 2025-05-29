@@ -1,9 +1,9 @@
 import gradio as gr
-from shared import path_manager
+from shared import path_manager, translation_manager
 from modules.imagebrowser import ImageBrowser
 
 browser = ImageBrowser()
-
+t = translation_manager.translate
 
 def create_image_gallery():
     with gr.Blocks(theme=gr.themes.Soft()) as app_image_browser:
@@ -11,7 +11,7 @@ def create_image_gallery():
             # Left side for gallery
             with gr.Column(scale=2):
                 gallery = gr.Gallery(
-                    label="Images",
+                    label=t("Images"),
                     show_label=False,
                     columns=[4],
                     height="600px",
@@ -19,7 +19,7 @@ def create_image_gallery():
                     value=browser.load_images(1)[0],
                 )
                 ib_page = gr.Slider(
-                    label="Page",
+                    label=t("Page"),
                     value=1,
                     step=1,
                     minimum=1,
@@ -30,15 +30,15 @@ def create_image_gallery():
             # Right side for metadata and search
             with gr.Column(scale=1):
                 with gr.Row():
-                    update_btn = gr.Button("Update DB", scale=5)
+                    update_btn = gr.Button(t("Update DB"), scale=5)
                     gr.HTML(value="""<a href="gradio_api/file/html/slideshow.html" style="color: gray; text-decoration: none" target="_blank">🛝</a>""")
                 metadata_output = gr.Textbox(
-                    label="Image Metadata", interactive=False, lines=15
+                    label=t("Image Metadata"), interactive=False, lines=15
                 )
                 search_input = gr.Textbox(
-                    label="Search Metadata", placeholder="Enter search term"
+                    label=t("Search Metadata"), placeholder=t("Search term")
                 )
-                search_btn = gr.Button("Search")
+                search_btn = gr.Button(t("Search"))
                 status_output = gr.Markdown()
 
         # Event handlers

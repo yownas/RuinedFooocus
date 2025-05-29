@@ -78,6 +78,7 @@ from PIL import Image
 
 inpaint_toggle = None
 shared.shared_cache["browser"] = ImageBrowser()
+t = shared.translate
 
 def find_unclosed_markers(s):
     markers = re.findall(r"__", s)
@@ -118,7 +119,6 @@ def launch_app(args):
     app_llama_chat = ui_llama_chat.create_chat()
     app_settings = ui_settings.create_settings()
 
-    t = shared.translate
     main_tabs = gr.TabbedInterface(
         [shared.gradio_root, app_image_browser, app_llama_chat, app_settings],
         [t("Main"), t("Image browser"), t("Chat bots"), t("Settings")],
@@ -349,7 +349,7 @@ with shared.gradio_root as block:
                         with gr.Group(), gr.Row():
                             prompt = gr.Textbox(
                                 show_label=False,
-                                placeholder="Type prompt here.",
+                                placeholder=t("Type prompt here."),
                                 container=False,
                                 autofocus=True,
                                 elem_classes="type_row",
@@ -393,9 +393,9 @@ with shared.gradio_root as block:
                         return {prompt: gr.update(value=newtext)}
 
                 with gr.Column(scale=1, min_width=0):
-                    run_button = gr.Button(value="Generate", elem_id="generate")
+                    run_button = gr.Button(value=t("Generate"), elem_id="generate")
                     stop_button = gr.Button(
-                        value="Stop", interactive=False, visible=False
+                        value=t("Stop"), interactive=False, visible=False
                     )
 
                     @main_view.upload(
@@ -409,9 +409,9 @@ with shared.gradio_root as block:
                         return params, [file]
 
         with gr.Column(scale=2) as right_col:
-            with gr.Tab(label="Setting"):
+            with gr.Tab(label=t("Setting")):
                 performance_selection = gr.Dropdown(
-                    label="Performance",
+                    label=t("Performance"),
                     choices=list(performance_settings.performance_options.keys())
                     + [performance_settings.CUSTOM_PERFORMANCE],
                     value=settings["performance"],
@@ -419,19 +419,19 @@ with shared.gradio_root as block:
                 add_ctrl("performance_selection", performance_selection, True)
                 perf_name = gr.Textbox(
                     show_label=False,
-                    placeholder="Name",
+                    placeholder=t("Name"),
                     interactive=True,
                     visible=False,
                 )
                 perf_save = gr.Button(
-                    value="Save",
+                    value=t("Save"),
                     visible=False,
                 )
                 custom_default_values = performance_settings.get_perf_options(
                     settings["performance"]
                 )
                 custom_steps = gr.Slider(
-                    label="Custom Steps",
+                    label=t("Custom Steps"),
                     minimum=1,
                     maximum=200,
                     step=1,
@@ -441,7 +441,7 @@ with shared.gradio_root as block:
                 add_ctrl("custom_steps", custom_steps)
 
                 cfg = gr.Slider(
-                    label="CFG",
+                    label=t("CFG"),
                     minimum=0.0,
                     maximum=20.0,
                     step=0.1,
@@ -450,14 +450,14 @@ with shared.gradio_root as block:
                 )
                 add_ctrl("cfg", cfg)
                 sampler_name = gr.Dropdown(
-                    label="Sampler",
+                    label=t("Sampler"),
                     choices=KSampler.SAMPLERS,
                     value=custom_default_values["sampler_name"],
                     visible=False,
                 )
                 add_ctrl("sampler_name", sampler_name)
                 scheduler = gr.Dropdown(
-                    label="Scheduler",
+                    label=t("Scheduler"),
                     choices=KSampler.SCHEDULERS,
                     value=custom_default_values["scheduler"],
                     visible=False,
@@ -465,7 +465,7 @@ with shared.gradio_root as block:
                 add_ctrl("scheduler", scheduler)
 
                 clip_skip = gr.Slider(
-                    label="Clip Skip",
+                    label=t("Clip Skip"),
                     minimum=1,
                     maximum=5,
                     step=1,
@@ -519,7 +519,7 @@ with shared.gradio_root as block:
 
                 with gr.Group():
                     aspect_ratios_selection = gr.Dropdown(
-                        label="Aspect Ratios (width x height)",
+                        label=t("Aspect Ratios (width x height)"),
                         choices=list(resolution_settings.aspect_ratios.keys())
                         + [resolution_settings.CUSTOM_RESOLUTION],
                         value=settings["resolution"],
@@ -527,7 +527,7 @@ with shared.gradio_root as block:
                     add_ctrl("aspect_ratios_selection", aspect_ratios_selection, True)
                     ratio_name = gr.Textbox(
                         show_label=False,
-                        placeholder="Name",
+                        placeholder=t("Name"),
                         interactive=True,
                         visible=False,
                     )
@@ -535,7 +535,7 @@ with shared.gradio_root as block:
                         settings["resolution"]
                     )
                     custom_width = gr.Slider(
-                        label="Width",
+                        label=t("Width"),
                         minimum=256,
                         maximum=4096,
                         step=2,
@@ -544,7 +544,7 @@ with shared.gradio_root as block:
                     )
                     add_ctrl("custom_width", custom_width)
                     custom_height = gr.Slider(
-                        label="Height",
+                        label=t("Height"),
                         minimum=256,
                         maximum=4096,
                         step=2,
@@ -553,7 +553,7 @@ with shared.gradio_root as block:
                     )
                     add_ctrl("custom_height", custom_height)
                     ratio_save = gr.Button(
-                        value="Save",
+                        value=t("Save"),
                         visible=False,
                     )
 
@@ -578,16 +578,16 @@ with shared.gradio_root as block:
                             return gr.update()
 
                     style_selection = gr.Dropdown(
-                        label="Style Selection",
+                        label=t("Style Selection"),
                         multiselect=True,
                         container=True,
                         choices=list(load_styles().keys()),
                         value=settings["style"],
                     )
                     add_ctrl("style_selection", style_selection)
-                style_button = gr.Button(value="⬅️ Send Style to prompt", size="sm")
+                style_button = gr.Button(value="⬅️ " + t("Send Style to prompt"), size="sm")
                 image_number = gr.Slider(
-                    label="Image Number",
+                    label=t("Image Number"),
                     minimum=0,
                     maximum=settings.get("image_number_max", 50),
                     step=1,
@@ -595,7 +595,7 @@ with shared.gradio_root as block:
                 )
                 add_ctrl("image_number", image_number, configurable=True)
                 auto_negative_prompt = gr.Checkbox(
-                    label="Auto Negative Prompt",
+                    label=t("Auto Negative Prompt"),
                     show_label=True,
                     value=settings["auto_negative_prompt"],
                 )
@@ -608,10 +608,10 @@ with shared.gradio_root as block:
                 )
                 add_ctrl("negative", negative_prompt)
                 seed_random = gr.Checkbox(
-                    label="Random Seed", value=settings["seed_random"]
+                    label=t("Random Seed"), value=settings["seed_random"]
                 )
                 image_seed = gr.Number(
-                    label="Seed",
+                    label=t("Seed"),
                     value=settings["seed"],
                     precision=0,
                     visible=not settings["seed_random"],
@@ -643,14 +643,14 @@ with shared.gradio_root as block:
                     else:
                         return s
 
-            with gr.Tab(label="Models"):
-                with gr.Tab(label="Model"):
+            with gr.Tab(label=t("Models")):
+                with gr.Tab(label=t("Model")):
                     model_current = gr.HTML(
                         value=f"{settings['base_model']}",
                     )
                     with gr.Group():
                         modelfilter = gr.Textbox(
-                            placeholder="Model name",
+                            placeholder=t("Model name"),
                             value="",
                             show_label=False,
                             container=False,
@@ -712,7 +712,7 @@ with shared.gradio_root as block:
                         )
                         model_base = shared.models.get_model_base(model)
 
-                        txt = f"{evt.value['caption']}<br>Model type: {model_base}"
+                        txt = f"{evt.value['caption']}<br>{t('Model type')}: {model_base}"
 
                         return {
                             model_current: gr.update(value=txt),
@@ -728,7 +728,7 @@ with shared.gradio_root as block:
                 with gr.Tab(label="LoRAs"):
                     with gr.Group(visible=False) as lora_add:
                         lorafilter = gr.Textbox(
-                            placeholder="Search LoRA",
+                            placeholder=t("Search LoRA"),
                             value="",
                             show_label=False,
                             container=False,
@@ -768,7 +768,7 @@ with shared.gradio_root as block:
                     with gr.Group(visible=True) as lora_active:
                         with gr.Row():
                             lora_weight_slider = gr.Slider(
-                                label="Weight",
+                                label=t("Weight"),
                                 show_label=True,
                                 minimum=settings.get("lora_min", 0),
                                 maximum=settings.get("lora_max", 2),
@@ -805,7 +805,7 @@ with shared.gradio_root as block:
                             )
 
                         lora_keywords = gr.Textbox(
-                            label="LoRA Trigger Words", interactive=False
+                            label=t("LoRA Trigger Words"), interactive=False
                         )
                         add_ctrl("lora_keywords", lora_keywords)
 
@@ -813,12 +813,12 @@ with shared.gradio_root as block:
                     with gr.Group():
                         mm_name = gr.Textbox(
                             show_label=False,
-                            placeholder="Name(.merge)",
+                            placeholder=t("Name(.merge)"),
                             container=False,
                         )
                         mm_comment = gr.Textbox(
                             show_label=False,
-                            placeholder="Comment",
+                            placeholder=t("Comment"),
                             container=False,
                         )
                         mm_cache = gr.Checkbox(
@@ -867,7 +867,7 @@ with shared.gradio_root as block:
                     with gr.Group(visible=True) as mm_active:
                         with gr.Row():
                             mm_weight_slider = gr.Slider(
-                                label="Weight",
+                                label=t("Weight"),
                                 show_label=True,
                                 minimum=settings.get("lora_min", 0),
                                 maximum=settings.get("lora_max", 2),
@@ -876,7 +876,7 @@ with shared.gradio_root as block:
                                 interactive=True,
                             )
                         mm_active_gallery = gr.Gallery(
-                            label=f"Models",
+                            label=t("Models"),
                             show_label=False,
                             height="auto",
                             allow_preview=False,
@@ -903,7 +903,7 @@ with shared.gradio_root as block:
                             )
 
                         mm_save_btn = gr.Button(
-                            value="Save",
+                            value=t("Save"),
                         )
 
                 def gallery_toggle():
@@ -1218,7 +1218,7 @@ with shared.gradio_root as block:
 
                 def mm_save(name, comment, gallery, cache):
                     if name == "":
-                        gr.Info("Merge needs a name.")
+                        gr.Info(t("Merge needs a name."))
                         return
                     if comment == "":
                         gr.Info("You probably want a comment.")
@@ -1262,7 +1262,7 @@ with shared.gradio_root as block:
                     else:
                         with open(filename, "w") as outfile:
                             json.dump(dict, outfile, indent=2)
-                        gr.Info(f"Saved {Path(name).with_suffix('.merge')}")
+                        gr.Info(f"{t('Saved')} {Path(name).with_suffix('.merge')}")
 
                 mm_weight_slider.release(
                     fn=mm_weight_slider_update,
@@ -1307,7 +1307,7 @@ with shared.gradio_root as block:
 
                 with gr.Row():
                     model_refresh = gr.Button(
-                        value="\U0001f504 Refresh All Files",
+                        value=f"\U0001f504 {t('Refresh All Files')}",
                         variant="secondary",
                         elem_classes="refresh_button",
                     )
@@ -1348,7 +1348,7 @@ with shared.gradio_root as block:
                 main_view, inpaint_view, prompt, image_number, run_event
             )
 
-            with gr.Tab(label="Info"):
+            with gr.Tab(label=t("Info")):
                 with gr.Row():
                     metadata_json.render()
                 with gr.Row():
