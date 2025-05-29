@@ -7,6 +7,7 @@ from modules.performance import PerformanceSettings
 from modules.resolutions import ResolutionSettings
 from modules.path import PathManager
 from modules.model_handler import Models
+from modules.translation_manager import TranslationManager
 from argparser import args
 import time
 
@@ -14,6 +15,10 @@ gradio_root = None
 server_app = None
 local_url = "http://127.0.0.1:7860/"
 share_url = "http://127.0.0.1:7860/"
+
+translation_manager = TranslationManager()
+translation_manager.set_language(args.language)
+translate = translation_manager.translate
 
 state = {
     "preview_image": None,

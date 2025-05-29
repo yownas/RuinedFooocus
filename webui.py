@@ -118,9 +118,10 @@ def launch_app(args):
     app_llama_chat = ui_llama_chat.create_chat()
     app_settings = ui_settings.create_settings()
 
+    t = shared.translate
     main_tabs = gr.TabbedInterface(
         [shared.gradio_root, app_image_browser, app_llama_chat, app_settings],
-        ["Main", "Image browser", "Chat bot", "Settings"],
+        [t("Main"), t("Image browser"), t("Chat bots"), t("Settings")],
         theme=theme,
         title="RuinedFooocus " + version.version,
         css=modules.html.css,
