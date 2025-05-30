@@ -24,12 +24,18 @@ class TranslationManager:
     def set_language(self, language):
         self.language = language
 
-    def translate(self, input):
+    def translate(self, input, mapping=None):
         dictionary = self.translations.get(self.language, None)
         if dictionary is None: # Fallback to 'en'
             dictionary = self.translations.get('en', None)
         if dictionary is None: # Not even 'en'?? Give up.
             return input
         
-        return dictionary.get(input, input) # Return translation of 'input', or just return the original string
+        res = dictionary.get(input, input) # Use translation of 'input', or just use the original string
+        try:
+            if mapping is not None:
+                res = res.format_map(mapping)
+        except Exception as e:
+            print(f"Error in translation mapping. {e}")
+        return res
 

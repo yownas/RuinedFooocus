@@ -2,12 +2,11 @@ try:
     from transformers import CLIPTokenizer
 except:
     pass
+from modules.translation_manager import TranslationManager
 from modules.settings import SettingsManager
 from modules.performance import PerformanceSettings
 from modules.resolutions import ResolutionSettings
 from modules.path import PathManager
-from modules.model_handler import Models
-from modules.translation_manager import TranslationManager
 from argparser import args
 import time
 
@@ -43,6 +42,7 @@ settings = SettingsManager()
 path_manager = PathManager()
 performance_settings = PerformanceSettings()
 resolution_settings = ResolutionSettings()
+from modules.model_handler import Models
 models = Models()
 shared_cache = {}
 

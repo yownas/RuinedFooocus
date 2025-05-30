@@ -92,44 +92,44 @@ def create_settings():
 
                 with gr.Row():
                     lora_1_model = gr.Dropdown(
-                        label=t("LoRA %s Model") % 1,
+                        label=t("LoRA {id} Model", mapping={'id': 1}),
                         interactive=True,
                         choices=["None"] + models.names['loras'],
                         value=settings.default_settings.get("lora_1_model", "None"),
                     )
-                    lora_1_weight = gr.Number(label=t("Lora %s Weight") % 1, value=settings.default_settings.get("lora_1_weight", 1.0), step=0.05)
+                    lora_1_weight = gr.Number(label=t("Lora {id} Weight", mapping={'id': 1}), value=settings.default_settings.get("lora_1_weight", 1.0), step=0.05)
                 with gr.Row():
                     lora_2_model = gr.Dropdown(
-                        label=t("LoRA %s Model") % 2,
+                        label=t("LoRA {id} Model", mapping={'id': 2}),
                         interactive=True,
                         choices=["None"] + models.names['loras'],
                         value=settings.default_settings.get("lora_2_model", "None"),
                     )
-                    lora_2_weight = gr.Number(label=t("Lora %s Weight") % 2, value=settings.default_settings.get("lora_2_weight", 1.0), step=0.05)
+                    lora_2_weight = gr.Number(label=t("Lora {id} Weight", mapping={'id': 2}), value=settings.default_settings.get("lora_2_weight", 1.0), step=0.05)
                 with gr.Row():
                     lora_3_model = gr.Dropdown(
-                        label=t("LoRA %s Model") % 3,
+                        label=t("LoRA {id} Model", mapping={'id': 3}),
                         interactive=True,
                         choices=["None"] + models.names['loras'],
                         value=settings.default_settings.get("lora_3_model", "None"),
                     )
-                    lora_3_weight = gr.Number(label=t("Lora %s Weight") % 3, value=settings.default_settings.get("lora_3_weight", 1.0), step=0.05)
+                    lora_3_weight = gr.Number(label=t("Lora {id} Weight", mapping={'id': 3}), value=settings.default_settings.get("lora_3_weight", 1.0), step=0.05)
                 with gr.Row():
                     lora_4_model = gr.Dropdown(
-                        label=t("LoRA %s Model") % 4,
+                        label=t("LoRA {id} Model", mapping={'id': 4}),
                         interactive=True,
                         choices=["None"] + models.names['loras'],
                         value=settings.default_settings.get("lora_4_model", "None"),
                     )
-                    lora_4_weight = gr.Number(label=t("Lora %s Weight") % 4, value=settings.default_settings.get("lora_4_weight", 1.0), step=0.05)
+                    lora_4_weight = gr.Number(label=t("Lora {id} Weight", mapping={'id': 4}), value=settings.default_settings.get("lora_4_weight", 1.0), step=0.05)
                 with gr.Row():
                     lora_5_model = gr.Dropdown(
-                        label=t("LoRA %s Model") % 5,
+                        label=t("LoRA {id} Model", mapping={'id': 5}),
                         interactive=True,
                         choices=["None"] + models.names['loras'],
                         value=settings.default_settings.get("lora_5_model", "None"),
                     )
-                    lora_5_weight = gr.Number(label=t("Lora %s Weight") % 5, value=settings.default_settings.get("lora_5_weight", 1.0), step=0.05)
+                    lora_5_weight = gr.Number(label=t("Lora {id} Weight", mapping={'id': 5}), value=settings.default_settings.get("lora_5_weight", 1.0), step=0.05)
 
                 add_setting("lora_1_model", lora_1_model)
                 add_setting("lora_2_model", lora_2_model)

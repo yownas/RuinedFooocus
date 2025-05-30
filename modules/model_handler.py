@@ -9,6 +9,8 @@ import time
 from pathlib import Path
 import numpy as np
 
+from shared import translate as t
+
 class Models:
     civit_workers = []
 
@@ -23,10 +25,10 @@ class Models:
             return
         if str(model_type) in self.civit_workers:
             # Already working on this folder
-            print(f"Skip CivitAI check. Update for {model_type} already running.")
+            print(t("Skip CivitAI check. Update for {type} already running.", mapping={'type': model_type}))
             return
         if not Path(self.cache_paths[model_type]).is_dir():
-            print(f"WARNING: Can't find {self.cache_paths[model_type]}  Will not update thumbnails.")
+            print(t("WARNING: Can't find {path} Will not update thumbnails.", mapping={'path': self.cache_paths[model_type]}))
             return
 
         self.civit_workers.append(str(model_type))
@@ -86,14 +88,22 @@ class Models:
                             break
 
                     if not has_preview:
-                        #print(f"Downloading model thumbnail for {Path(path).name} ({self.get_model_base(models)} - {self.get_model_type(models)})")
                         self.get_image(models, thumbcheck)
                         updated += 1
                         time.sleep(1)
 
                     txtcheck = cache_file.with_suffix(".txt")
                     if model_type == "loras" and not txtcheck.exists():
-                        print(f"Get LoRA keywords for {Path(path).name} ({self.get_model_base(models)} - {self.get_model_type(models)})")
+                        print(
+                            t(
+                                "Get LoRA keywords for {name} ({base} - {type})",
+                                mapping= {
+                                    'name': Path(path).name,
+                                    'base': self.get_model_base(models),
+                                    'type': self.get_model_type(models)
+                                }
+                            )
+                        )
                         keywords = self.get_keywords(models)
                         with open(txtcheck, "w") as f:
                             f.write(", ".join(keywords))
@@ -108,7 +118,7 @@ class Models:
                         baseModel = self.get_model_base(model)
                         folder, cache = folders.get(self.get_model_type(model), [None, None])
                         if folder is None or baseModel is None:
-                            print(f"Skipping {name} not sure what {self.get_model_type(model)} is.")
+                            print(t('Skipping {name} not sure what {type} is.', mapping={'name': str(name), 'type': self.get_model_type(model)}))
                             continue
                         # Move model to correct folder
                         dest = Path(folder) / baseModel
@@ -122,10 +132,10 @@ class Models:
                             cachefile = cache_file.with_suffix(suffix)
                             if cachefile.is_file():
                                 shutil.move(cachefile, Path(cache) / cachefile.name)
-                        print(f"Moved {name} to {dest}")
+                        print(t("Moved {name} to {dest}", mapping={'name': name, 'dest': dest}))
 
         if updated > 0:
-            print(f"CivitAI update for {model_type} done.")
+            print(t("CivitAI update for {type} done.", mapping={'type': model_type}))
         self.civit_workers.remove(str(model_type))
 
     def get_names(self, model_type):
@@ -201,7 +211,7 @@ class Models:
         return None
 
     def model_sha256(self, filename):
-        print(f"Hashing {filename}")
+        print(t("Hashing {filename}", mapping={'filename': filename}))
         blksize = 1024 * 1024
         hash_sha256 = hashlib.sha256()
         try:
@@ -244,7 +254,7 @@ class Models:
             data = response.json()
         except requests.exceptions.HTTPError as e:
             if response.status_code == 404:
-                print(f"Warning: Could not find {Path(path).name} on civit.ai")
+                print(t("Warning: Could not find {name} on civit.ai", mapping={'name': Path(path).name}))
             elif response.status_code == 503:
                 print("Error: Civit.ai Service Currently Unavailable")
             else:
@@ -264,7 +274,7 @@ class Models:
                 ]
             }
 
-        print(f"Update model data: {json_path}")
+        print(t("Update model data: {path}", mapping={'path': json_path}))
         with open(json_path, "w") as f:
             json.dump(data, f, indent=2)
 
@@ -361,7 +371,7 @@ class Models:
             url = preview.get("url")
             format = preview.get("type")
             if url:
-                print(f"Updating preview for {caption_text}.")
+                print(t("Updating preview for {text}.", mapping={'text': caption_text}))
                 image_url = url
                 response = self.session.get(image_url)
                 if response.status_code != 200:
