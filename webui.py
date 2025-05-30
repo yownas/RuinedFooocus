@@ -950,6 +950,7 @@ with shared.gradio_root as block:
 
                 def lora_select(gallery, lorafilter, evt: gr.SelectData):
                     global lora_active_selected
+                    print(f"DEBUG: index {evt.index} selected {evt.selected} value {evt.value}")
 
                     w = 1.0
 
@@ -971,23 +972,27 @@ with shared.gradio_root as block:
                     )
                     lora_active_selected = len(gallery) - 1
                     active.append(f"{evt.value['caption']}")
-                    inactive = [
-                        x
-                        for x in map(
-                            lambda x: (get_lora_thumbnail(x), x),
-                            filter(
-                                lambda filename: lorafilter.lower() in filename.lower(),
-                                shared.models.get_names("loras"),
-                            ),
-                        )
-                        if x[1] not in active
-                    ]
+# Workaround for Issue #278
+#                    inactive = [
+#                        x
+#                        for x in map(
+#                            lambda x: (get_lora_thumbnail(x), x),
+#                            filter(
+#                                lambda filename: lorafilter.lower() in filename.lower(),
+#                                shared.models.get_names("loras"),
+#                            ),
+#                        )
+#                        if x[1] not in active
+#                    ]
+#
+#                        lora_gallery: gr.update(
+#                            value=inactive,
+#                            selected_index=None,
+#                        ),
+
                     return {
                         lora_add: gr.update(visible=False),
-                        lora_gallery: gr.update(
-                            value=inactive,
-                            selected_index=None,
-                        ),
+                        lora_gallery: gr.update(),
                         lora_active: gr.update(visible=True),
                         lora_active_gallery: gr.update(
                             value=gallery,
