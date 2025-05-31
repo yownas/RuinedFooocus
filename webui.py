@@ -1432,6 +1432,7 @@ with shared.gradio_root as block:
                     style_selection,
                     mm_filter,
                     mm_gallery,
+                    preset_gallery,
                 ],
             )
             def model_refresh_clicked(lora_active_gallery):
@@ -1447,6 +1448,7 @@ with shared.gradio_root as block:
                     style_selection: gr.update(choices=list(load_styles().keys())),
                     mm_filter: gr.update(value=""),
                     mm_gallery: update_mm_filter(""),
+                    preset_gallery: gr.update(value=path_manager.get_presets()),
                 }
 
                 return results
