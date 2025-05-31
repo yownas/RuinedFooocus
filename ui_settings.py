@@ -40,8 +40,8 @@ def save_clicked(*args):
     path_manager.set_settings_path(ui_data.get("ui_settings_name", None))
     path_manager.save_paths()
 
-    print(t("Saved new settings to %{path}s.") % {"path": settings.settings_path}) 
-    gr.Info(t("Saved new settings to %{path}s.") % {"path": settings.settings_path}) 
+    print(t("Saved new settings to {path}.", mapping={"path": settings.settings_path}))
+    gr.Info(t("Saved new settings to {path}.", mapping={"path": settings.settings_path}))
 
 def create_settings():
     with gr.Blocks() as app_settings:
