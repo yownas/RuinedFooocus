@@ -221,7 +221,7 @@ class PathManager:
         return file_path
 
     def get_folder_file_path(self, folder, filename, default=None):
-        return self.get_file_path(f"{folder}/{filename}", default=default)
+        return self.get_file_path(f"{str(folder)}/{str(filename)}", default=default)
 
     def get_folder_list(self, folder):
         result = []

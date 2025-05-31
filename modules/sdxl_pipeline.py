@@ -212,16 +212,22 @@ class pipeline:
 
         filename = shared.models.get_file("checkpoints", name)
 
+        if filename is None:
+            name = path_manager.get_folder_file_path("checkpoints", name)
+            if name is not None:
+                filename = shared.models.get_file("loras", name)
+
         # If we don't have a filename, get the default.
         if filename is None:
             base_model = settings.default_settings.get("base_model", "sd_xl_base_1.0_0.9vae.safetensors")
-            filename = path_manager.get_folder_file_path(
+            name = path_manager.get_folder_file_path(
                 "checkpoints",
                 base_model,
             )
+            filename = shared.models.get_file("checkpoints", name)
 
         if Path(filename).suffix == '.merge':
-            self.merge_models(name)
+            self.merge_models(filename)
             return
 
         if input_unet is None: # Be quiet if we already loaded a unet
@@ -413,24 +419,18 @@ class pipeline:
         for name, weight in loras:
             if name == "None" or weight == 0:
                 continue
-            filename = str(shared.models.get_file("loras", name))
-            if filename == None:
+            filename = shared.models.get_file("loras", name)
+            if filename is None:
+                # If we couldn't find the LoRA, see if we can download it
+                name = path_manager.get_folder_file_path("loras", name)
+                if name is None:
+                    continue
+                filename = shared.models.get_file("loras", name)
+            if filename is None:
                 continue
-            # If we couldn't find the LoRA, see if we can download it
-            filename = str(
-                shared.models.get_file(
-                    "loras",
-                    path_manager.get_folder_file_path(
-                        "loras",
-                        name,
-                    )
-                )
-            )
-            if filename == None:
-                continue
-            print(f"Loading LoRAs: {name}")
+            print(f"Loading LoRA: {name}")
             try:
-                lora = comfy.utils.load_torch_file(filename, safe_load=True)
+                lora = comfy.utils.load_torch_file(str(filename), safe_load=True)
                 unet, clip = comfy.sd.load_lora_for_models(
                     model.unet, model.clip, lora, weight, weight
                 )
@@ -441,8 +441,8 @@ class pipeline:
                     clip_vision=model.clip_vision,
                 )
                 loaded_loras += [(name, weight)]
-            except:
-                print(f"Error loading LoRA: {filename}")
+            except Exception as e:
+                print(f"Error loading LoRA: {filename} {e}")
                 pass
         self.xl_base_patched = model
         # Uncomment below to enable FreeU shit
