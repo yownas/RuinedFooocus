@@ -414,6 +414,20 @@ class pipeline:
             if name == "None" or weight == 0:
                 continue
             filename = str(shared.models.get_file("loras", name))
+            if filename == None:
+                continue
+            # If we couldn't find the LoRA, see if we can download it
+            filename = str(
+                shared.models.get_file(
+                    "loras",
+                    path_manager.get_folder_file_path(
+                        "loras",
+                        name,
+                    )
+                )
+            )
+            if filename == None:
+                continue
             print(f"Loading LoRAs: {name}")
             try:
                 lora = comfy.utils.load_torch_file(filename, safe_load=True)
