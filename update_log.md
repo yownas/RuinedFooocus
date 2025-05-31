@@ -1,3 +1,7 @@
+### dev
+* Preset images
+* First steps to enable internationalization
+
 ### 25.05.14
 * LTXV support
 * Cleanup and fixes

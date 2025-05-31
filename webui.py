@@ -240,6 +240,29 @@ def generate_clicked(*args):
 
     gen_data["generate_forever"] = int(gen_data["image_number"]) == 0
 
+    # Check for preset image
+    if gen_data['preset_selection']:
+        try:
+            image = Image.open(gen_data['preset_selection'])
+            info = image.info
+            params = info.get("parameters", "")
+            preset_data = json.loads(params)
+
+            if preset_data["software"] == "RuinedFooocus":
+                gen_data["steps"] = preset_data["steps"]
+                gen_data["width"] = preset_data["width"]
+                gen_data["height"] = preset_data["height"]
+                gen_data["cfg"] = preset_data["cfg"]
+                gen_data["sampler_name"] = preset_data["sampler_name"]
+                gen_data["scheduler"] = preset_data["scheduler"]
+                gen_data["clip_skip"] = preset_data["clip_skip"]
+                gen_data["base_model_name"] = preset_data["base_model_name"]
+                gen_data["loras"] = preset_data["loras"]
+        except Exception as e:
+            print(f"DEBUG: Failed using preset: {e}")
+            traceback.print_exc()
+            pass
+
     task_id = append_work(gen_data)
 
     shared.state["interrupted"] = False
@@ -410,6 +433,88 @@ with shared.gradio_root as block:
 
         with gr.Column(scale=2) as right_col:
             with gr.Tab(label=t("Setting")):
+                preset_accordion = gr.Accordion(
+                    label="Preset:",
+                    open=False,
+                )
+                with preset_accordion:
+                    with gr.Group(), gr.Column():
+                        preset_image = gr.Image(
+                            placeholder="Select or drop preset image here",
+                            show_label=False,
+                            type="filepath",
+                            interactive=True,
+                            sources=['upload'],
+                        )
+                        preset_gallery = gr.Gallery(
+                            show_label=False,
+                            height="auto",
+                            allow_preview=False,
+                            preview=False,
+                            columns=[2],
+                            rows=[3],
+                            object_fit="contain",
+                            visible=True,
+                            show_download_button=False,
+                            min_width=60,
+                            selected_index=None,
+                            value=path_manager.get_presets(),
+                        )
+                preset_selection = gr.Text(
+                    value=None,
+                    visible=False,
+                )
+                def preset_select(preset_gallery, evt: gr.SelectData):
+                    path = evt.value['image']['path']
+                    preset = Path(path).with_suffix('').name
+                    return {
+                        preset_image: gr.update(value=path),
+                        preset_selection: gr.update(value=path),
+                        preset_accordion: gr.update(label=t("Preset:") + " " + preset)
+                    }
+                def preset_unselect():
+                    return {
+                        preset_selection: gr.update(value=''),
+                        preset_accordion: gr.update(label=t("Preset:"))
+                    }
+                def preset_image_upload(preset_image):
+                    path = preset_image
+                    preset = Path(path).with_suffix('').name
+                    return {
+                        preset_selection: gr.update(value=path),
+                        preset_accordion: gr.update(label=t("Preset:" + " " + preset))
+                    }
+                preset_image.clear(
+                    fn=preset_unselect,
+                    show_api=False,
+                    outputs=[
+                        preset_selection,
+                        preset_accordion,
+                    ]
+                )
+                preset_image.upload(
+                    fn=preset_image_upload,
+                    show_api=False,
+                    inputs=[
+                        preset_image,
+                    ],
+                    outputs=[
+                        preset_selection,
+                        preset_accordion,
+                    ]
+                )
+                preset_gallery.select(
+                    fn=preset_select,
+                    show_api=False,
+                    inputs=[preset_gallery],
+                    outputs=[
+                        preset_image,
+                        preset_selection,
+                        preset_accordion,
+                    ]
+                )
+                add_ctrl("preset_selection", preset_selection)
+
                 performance_selection = gr.Dropdown(
                     label=t("Performance"),
                     choices=list(performance_settings.performance_options.keys())
@@ -950,7 +1055,6 @@ with shared.gradio_root as block:
 
                 def lora_select(gallery, lorafilter, evt: gr.SelectData):
                     global lora_active_selected
-                    print(f"DEBUG: index {evt.index} selected {evt.selected} value {evt.value}")
 
                     w = 1.0
 

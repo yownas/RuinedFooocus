@@ -27,6 +27,7 @@ class PathManager:
         "path_cache": "../cache/",
         "path_llm": "../models/llm",
         "path_inbox": "../models/inbox",
+        "path_presets": "presets",
     }
 
     EXTENSIONS = [".pth", ".ckpt", ".bin", ".safetensors", ".gguf", ".merge"]
@@ -120,6 +121,7 @@ class PathManager:
             "cache_path": self.get_abspath_folder(self.paths["path_cache"]),
             "llm_path": self.get_abspath_folder(self.paths["path_llm"]),
             "inbox_path": self.get_abspath_folder(self.paths["path_inbox"]),
+            "preset_path": self.get_abspath_folder(self.paths["path_presets"]),
         }
 
     def get_abspath_folder(self, path):
@@ -160,6 +162,24 @@ class PathManager:
                 else f"1{x.casefold()}"
             ),
         )
+
+    def get_presets(self):
+        folder_path = Path(self.paths['path_presets'])
+        if not folder_path.is_dir():
+            raise ValueError(f"{folder_path} is not a valid directory.")
+        filenames = []
+        for path in folder_path.rglob("*.png"):
+            filenames.append(path)
+        # Return a sorted list, prepend names with 0 if they are in a folder or 1
+        return sorted(
+            filenames,
+            key=lambda x: (
+                f"0{str(x).casefold()}"
+                if not str(x.parent) == "."
+                else f"1{str(x).casefold()}"
+            ),
+        )
+
 
     def get_diffusers_filenames(self, folder_path, cache=None, isLora=False):
         folder_path = Path(folder_path)
