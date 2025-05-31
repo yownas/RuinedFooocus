@@ -171,13 +171,16 @@ class PathManager:
         for path in folder_path.rglob("*.png"):
             filenames.append(path)
         # Return a sorted list, prepend names with 0 if they are in a folder or 1
-        return sorted(
+        presets = sorted(
             filenames,
             key=lambda x: (
                 f"0{str(x).casefold()}"
                 if not str(x.parent) == "."
                 else f"1{str(x).casefold()}"
             ),
+        )
+        return map(
+            lambda x: (x, str(Path(x).with_suffix('').name)), presets
         )
 
 
