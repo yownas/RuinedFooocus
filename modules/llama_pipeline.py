@@ -24,7 +24,7 @@ def llama_names():
 
 def run_llama(system_file, prompt):
         if Llama == None:
-            return "Error: There is no Llama" 
+            return "Error: There is no Llama"
         name = None
         sys_pat = "system:.*\n\n"
         system = re.match(sys_pat, prompt, flags=re.M|re.I)
@@ -147,7 +147,7 @@ class pipeline:
 
     def process(self, gen_data):
         if Llama == None:
-            return "Error: There is no Llama" 
+            return "Error: There is no Llama"
 
         worker.add_result(
             gen_data["task_id"],
