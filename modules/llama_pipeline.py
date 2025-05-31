@@ -1,5 +1,8 @@
 import re
-from nexa.gguf.llama.llama import Llama
+try:
+    from nexa.gguf.llama.llama import Llama
+except:
+    Llama = None
 from txtai import Embeddings
 from modules.util import TimeIt
 from pathlib import Path
@@ -20,6 +23,8 @@ def llama_names():
         return names
 
 def run_llama(system_file, prompt):
+        if Llama == None:
+            return "Error: There is no Llama" 
         name = None
         sys_pat = "system:.*\n\n"
         system = re.match(sys_pat, prompt, flags=re.M|re.I)
@@ -141,6 +146,9 @@ class pipeline:
 
 
     def process(self, gen_data):
+        if Llama == None:
+            return "Error: There is no Llama" 
+
         worker.add_result(
             gen_data["task_id"],
             "preview",
