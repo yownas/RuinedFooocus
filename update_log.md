@@ -1,4 +1,5 @@
 ### dev
+* Removed MergeManager
 * Preset images
 * First steps to enable internationalization
 

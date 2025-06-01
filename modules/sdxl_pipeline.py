@@ -113,99 +113,6 @@ class pipeline:
         }
         return settings.default_settings.get(shortname, defaults[shortname] if shortname in defaults else None)
 
-    # FIXME move this to separate file
-    def merge_models(self, name):
-        print(f"Loading merge: {name}")
-
-        self.xl_base_patched = None
-        self.xl_base_patched_hash = ""
-        self.xl_base_patched_extra = set()
-        self.conditions = None
-
-        filename = shared.models.get_file("checkpoints", name)
-        cache_name = str(Path(path_manager.model_paths["cache_path"] / "merges" / Path(name).name).with_suffix(".safetensors"))
-        if Path(cache_name).exists() and Path(cache_name).stat().st_mtime >= Path(filename).stat().st_mtime:
-            print(f"Loading cached version:")
-            self.load_base_model(cache_name)
-            return
-
-        try:
-            with filename.open() as f:
-                merge_data = json.load(f)
-
-            if 'comment' in merge_data:
-                print(f"  {merge_data['comment']}")
-
-            filename = shared.models.get_file("checkpoints", merge_data["base"]["name"])
-            norm = 1.0
-            if "models" in merge_data and len(merge_data["models"]) > 0:
-                weights = sum([merge_data["base"]["weight"]] + [x.get("weight") for x in merge_data["models"]])
-                if "normalize" in merge_data:
-                    norm = float(merge_data["normalize"]) / weights
-                else:
-                    norm = 1.0 / weights
-
-            print(f"Loading base {merge_data['base']['name']} ({round(merge_data['base']['weight'] * norm * 100)}%)")
-            with torch.torch.inference_mode():
-                unet, clip, vae, clip_vision = load_checkpoint_guess_config(str(filename))
-
-            self.xl_base = self.StableDiffusionModel(
-                unet=unet, clip=clip, vae=vae, clip_vision=clip_vision
-            )
-            if self.xl_base is not None:
-                self.xl_base_hash = name
-                self.xl_base_patched = self.xl_base
-                self.xl_base_patched_hash = ""
-        except Exception as e:
-            self.xl_base = None
-            print(f"ERROR: {e}")
-            return
-
-        if "models" in merge_data and len(merge_data["models"]) > 0:
-            device = comfy.model_management.get_torch_device()
-            mp = ModelPatcher(self.xl_base_patched.unet, device, "cpu", size=1)
-
-            w = float(merge_data["base"]["weight"]) * norm
-            for m in merge_data["models"]:
-                print(f"Merging {m['name']} ({round(m['weight'] * norm * 100)}%)")
-                filename = str(shared.models.get_file("checkpoints", m["name"]))
-                # FIXME add error check?`
-                with torch.torch.inference_mode():
-                    m_unet, m_clip, m_vae, m_clip_vision = load_checkpoint_guess_config(str(filename))
-                del m_clip
-                del m_vae
-                del m_clip_vision
-                kp = m_unet.get_key_patches("diffusion_model.")
-                for k in kp:
-                    mp.model.add_patches({k: kp[k]}, strength_patch=float(m['weight'] * norm), strength_model=w)
-                del m_unet
-                w = 1.0
-
-            self.xl_base = self.StableDiffusionModel(
-                unet=mp.model, clip=clip, vae=vae, clip_vision=clip_vision
-            )
-
-        if "loras" in merge_data and len(merge_data["loras"]) > 0:
-            loras = [(x.get("name"), x.get("weight")) for x in merge_data["loras"]]
-            self.load_loras(loras)
-            self.xl_base = self.xl_base_patched
-
-        if 'cache' in merge_data and merge_data['cache'] == True:
-            filename = str(Path(path_manager.model_paths["cache_path"] / "merges" / Path(name).name).with_suffix(".safetensors"))
-            print(f"Saving merged model: {filename}")
-            with torch.torch.inference_mode():
-                save_checkpoint(
-                    filename,
-                    self.xl_base.unet,
-                    clip=self.xl_base.clip,
-                    vae=self.xl_base.vae,
-                    clip_vision=self.xl_base.clip_vision,
-                    metadata={"rf_merge_data": str(merge_data)}
-                )
-
-        return
-
-
     def load_base_model(self, name, unet_only=False, input_unet=None):
         if self.xl_base_hash == name and self.xl_base_patched_extra == set():
             return
@@ -227,7 +134,7 @@ class pipeline:
             filename = shared.models.get_file("checkpoints", name)
 
         if Path(filename).suffix == '.merge':
-            self.merge_models(filename)
+            print(f"Error: Model type not supported.")
             return
 
         if input_unet is None: # Be quiet if we already loaded a unet
@@ -261,6 +168,7 @@ class pipeline:
                         unet.patch_on_device = True
                     elif filename.endswith(".gguf"):
                         sd = load_gguf_sd(filename)
+                        print(f"DEBUG: {filename} {sd}")
                         unet = comfy.sd.load_diffusion_model_state_dict(
                             sd, model_options={"custom_operations": self.ggml_ops}
                         )
