@@ -146,10 +146,13 @@ class Models:
 
     def get_file(self, model_type, name):
         # Search the folders for the model
-        for folder in self.model_dirs[model_type]:
-            file = Path(folder) / name
-            if file.is_file():
-                return file
+        try:
+            for folder in self.model_dirs[model_type]:
+                file = Path(folder) / name
+                if file.is_file():
+                    return file
+        except:
+            pass
         return None
 
     def update_all_models(self):

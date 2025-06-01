@@ -122,7 +122,7 @@ class pipeline:
         if filename is None:
             name = path_manager.get_folder_file_path("checkpoints", name)
             if name is not None:
-                filename = shared.models.get_file("loras", name)
+                filename = shared.models.get_file("checkpoints", name)
 
         # If we don't have a filename, get the default.
         if filename is None:
@@ -132,6 +132,10 @@ class pipeline:
                 base_model,
             )
             filename = shared.models.get_file("checkpoints", name)
+
+        if filename is None:
+            print(f"Could not find checkpoint.")
+            return
 
         if Path(filename).suffix == '.merge':
             print(f"Error: Model type not supported.")
