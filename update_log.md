@@ -1,4 +1,4 @@
-### dev
+### 25.06.01
 * Removed MergeManager
 * Preset images
 * First steps to enable internationalization
