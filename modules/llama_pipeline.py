@@ -2,6 +2,7 @@ import re
 try:
     from nexa.gguf.llama.llama import Llama
 except:
+    print("ERROR: Could not load Llama.")
     Llama = None
 from txtai import Embeddings
 from modules.util import TimeIt
