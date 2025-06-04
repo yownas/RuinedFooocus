@@ -1265,16 +1265,6 @@ with shared.gradio_root as block:
         cfg_timestamp.change(fn=update_cfg, show_api=False, outputs=[cfg_timestamp] + state["cfg_items_obj"])
 
         # Preset functions
-        preset_toggles = [
-            performance_selection,
-        ] + performance_outputs + [
-            aspect_ratios_selection,
-            ratio_name,
-            custom_width,
-            custom_height,
-            ratio_save,
-        ]
-
         def preset_select(preset_gallery, evt: gr.SelectData):
             path = evt.value['image']['path']
             preset = Path(path).with_suffix('').name
