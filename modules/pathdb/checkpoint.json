@@ -5,18 +5,8 @@
         "filename": "sd_xl_base_1.0_0.9vae.safetensors"
     },
     "checkpoints/SDXL 1.0/top5_v10.safetensors": {
-        "url": "https://huggingface.co/yownas/top5_merge/resolve/main/top5_v10.safetensors",
+        "url": "https://civitai.com/api/download/models/624591",
 	"path": "path_checkpoints",
         "filename": "SDXL 1.0/top5_v10.safetensors"
-    },
-    "checkpoints/SDXL 1.0/top5_v10Q2K.gguf": {
-        "url": "https://huggingface.co/yownas/top5_merge/resolve/main/top5_v10Q2K.gguf",
-	"path": "path_checkpoints",
-        "filename": "SDXL 1.0/top5_v10Q2K.gguf"
-    },
-    "checkpoints/SDXL 1.0/top5_v10Q51.gguf": {
-        "url": "https://huggingface.co/yownas/top5_merge/resolve/main/top5_v10Q51.gguf",
-	"path": "path_checkpoints",
-        "filename": "SDXL 1.0/top5_v10Q51.gguf"
     }
 }
