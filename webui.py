@@ -464,55 +464,6 @@ with shared.gradio_root as block:
                     value=None,
                     visible=False,
                 )
-                def preset_select(preset_gallery, evt: gr.SelectData):
-                    path = evt.value['image']['path']
-                    preset = Path(path).with_suffix('').name
-                    return {
-                        preset_image: gr.update(value=path),
-                        preset_selection: gr.update(value=path),
-                        preset_accordion: gr.update(label=t("Preset:") + " " + preset)
-                    }
-                def preset_unselect():
-                    return {
-                        preset_selection: gr.update(value=''),
-                        preset_accordion: gr.update(label=t("Preset:"))
-                    }
-                def preset_image_upload(preset_image):
-                    path = preset_image
-                    preset = Path(path).with_suffix('').name
-                    return {
-                        preset_selection: gr.update(value=path),
-                        preset_accordion: gr.update(label=t("Preset:" + " " + preset))
-                    }
-                preset_image.clear(
-                    fn=preset_unselect,
-                    show_api=False,
-                    outputs=[
-                        preset_selection,
-                        preset_accordion,
-                    ]
-                )
-                preset_image.upload(
-                    fn=preset_image_upload,
-                    show_api=False,
-                    inputs=[
-                        preset_image,
-                    ],
-                    outputs=[
-                        preset_selection,
-                        preset_accordion,
-                    ]
-                )
-                preset_gallery.select(
-                    fn=preset_select,
-                    show_api=False,
-                    inputs=[preset_gallery],
-                    outputs=[
-                        preset_image,
-                        preset_selection,
-                        preset_accordion,
-                    ]
-                )
                 add_ctrl("preset_selection", preset_selection)
 
                 performance_selection = gr.Dropdown(
@@ -748,7 +699,11 @@ with shared.gradio_root as block:
                     else:
                         return s
 
-            with gr.Tab(label=t("Models")):
+            model_tab = gr.Tab(
+                label=t("Models"),
+                visible=True,
+            )
+            with model_tab:
                 with gr.Tab(label=t("Model")):
                     model_current = gr.HTML(
                         value=f"{settings['base_model']}",
@@ -1308,6 +1263,168 @@ with shared.gradio_root as block:
             }
         # If cfg_timestamp has a new value, trigger an update
         cfg_timestamp.change(fn=update_cfg, show_api=False, outputs=[cfg_timestamp] + state["cfg_items_obj"])
+
+        # Preset functions
+        preset_toggles = [
+            performance_selection,
+        ] + performance_outputs + [
+            aspect_ratios_selection,
+            ratio_name,
+            custom_width,
+            custom_height,
+            ratio_save,
+        ]
+
+        def preset_select(preset_gallery, evt: gr.SelectData):
+            path = evt.value['image']['path']
+            preset = Path(path).with_suffix('').name
+            return {
+                preset_image: gr.update(value=path),
+                preset_selection: gr.update(value=path),
+                preset_accordion: gr.update(label=t("Preset:") + " " + preset),
+
+                performance_selection: gr.update(visible=False),
+                perf_name: gr.update(visible=False),
+                perf_save: gr.update(visible=False),
+                cfg: gr.update(visible=False),
+                sampler_name: gr.update(visible=False),
+                scheduler: gr.update(visible=False),
+                clip_skip: gr.update(visible=False),
+                custom_steps: gr.update(visible=False),
+                aspect_ratios_selection: gr.update(visible=False),
+                ratio_name: gr.update(visible=False),
+                custom_width: gr.update(visible=False),
+                custom_height: gr.update(visible=False),
+                ratio_save: gr.update(visible=False),
+                model_tab: gr.update(visible=False),
+            }
+
+        def preset_unselect(performance_selection_val, aspect_ratios_selection_val):
+            show_perf = performance_selection_val == performance_settings.CUSTOM_PERFORMANCE
+            show_size = aspect_ratios_selection_val == resolution_settings.CUSTOM_RESOLUTION
+
+            return {
+                preset_selection: gr.update(value=''),
+                preset_accordion: gr.update(label=t("Preset:")),
+
+                performance_selection: gr.update(visible=True),
+                perf_name: gr.update(visible=show_perf),
+                perf_save: gr.update(visible=show_perf),
+                cfg: gr.update(visible=show_perf),
+                sampler_name: gr.update(visible=show_perf),
+                scheduler: gr.update(visible=show_perf),
+                clip_skip: gr.update(visible=show_perf),
+                custom_steps: gr.update(visible=show_perf),
+
+                aspect_ratios_selection: gr.update(visible=True),
+                ratio_name: gr.update(visible=show_size),
+                custom_width: gr.update(visible=show_size),
+                custom_height: gr.update(visible=show_size),
+                ratio_save: gr.update(visible=show_size),
+
+                model_tab: gr.update(visible=True),
+            }
+        def preset_image_upload(preset_image):
+            path = preset_image
+            preset = Path(path).with_suffix('').name
+            return {
+                preset_selection: gr.update(value=path),
+                preset_accordion: gr.update(label=t("Preset:" + " " + preset)),
+
+                performance_selection: gr.update(visible=False),
+                perf_name: gr.update(visible=False),
+                perf_save: gr.update(visible=False),
+                cfg: gr.update(visible=False),
+                sampler_name: gr.update(visible=False),
+                scheduler: gr.update(visible=False),
+                clip_skip: gr.update(visible=False),
+                custom_steps: gr.update(visible=False),
+                aspect_ratios_selection: gr.update(visible=False),
+                ratio_name: gr.update(visible=False),
+                custom_width: gr.update(visible=False),
+                custom_height: gr.update(visible=False),
+                ratio_save: gr.update(visible=False),
+                model_tab: gr.update(visible=False),
+            }
+
+        preset_image.clear(
+            fn=preset_unselect,
+            show_api=False,
+            inputs=[
+                performance_selection,
+                aspect_ratios_selection,
+            ],
+            outputs=[
+                preset_selection,
+                preset_accordion,
+
+                performance_selection,
+                perf_name,
+                perf_save,
+                cfg,
+                sampler_name,
+                scheduler,
+                clip_skip,
+                custom_steps,
+                aspect_ratios_selection,
+                ratio_name,
+                custom_width,
+                custom_height,
+                ratio_save,
+                model_tab,
+            ]
+        )
+        preset_image.upload(
+            fn=preset_image_upload,
+            show_api=False,
+            inputs=[
+                preset_image,
+            ],
+            outputs=[
+                preset_selection,
+                preset_accordion,
+
+                performance_selection,
+                perf_name,
+                perf_save,
+                cfg,
+                sampler_name,
+                scheduler,
+                clip_skip,
+                custom_steps,
+                aspect_ratios_selection,
+                ratio_name,
+                custom_width,
+                custom_height,
+                ratio_save,
+                model_tab,
+            ]
+        )
+        preset_gallery.select(
+            fn=preset_select,
+            show_api=False,
+            inputs=[preset_gallery],
+            outputs=[
+                preset_image,
+                preset_selection,
+                preset_accordion,
+
+                performance_selection,
+                perf_name,
+                perf_save,
+                cfg,
+                sampler_name,
+                scheduler,
+                clip_skip,
+                custom_steps,
+                aspect_ratios_selection,
+                ratio_name,
+                custom_width,
+                custom_height,
+                ratio_save,
+                model_tab,
+            ]
+        )
 
     add_api()
 
