@@ -127,6 +127,7 @@ def launch_app(args):
         css=modules.html.css,
         js=modules.html.scripts,
         analytics_enabled=False,
+        delete_cache=(86400, 86400),
     )
 
     shared.server_app, shared.local_url, shared.share_url = main_tabs.launch(
@@ -257,6 +258,7 @@ def generate_clicked(*args):
                 gen_data["scheduler"] = preset_data["scheduler"]
                 gen_data["clip_skip"] = preset_data["clip_skip"]
                 gen_data["base_model_name"] = preset_data["base_model_name"]
+                gen_data["base_model_hash"] = preset_data.get("base_model_hash", None)
                 gen_data["loras"] = preset_data["loras"]
         except Exception as e:
             print(f"DEBUG: Failed using preset: {e}")

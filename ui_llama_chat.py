@@ -67,7 +67,7 @@ def create_chat():
         }
 
 
-    with gr.Blocks() as app_llama_chat:
+    with gr.Blocks(delete_cache=(86400, 86400)) as app_llama_chat:
         with gr.Row():
             with gr.Column(scale=3), gr.Group():
                 # FIXME!!! start value should be read from some info.json

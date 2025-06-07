@@ -44,7 +44,7 @@ def save_clicked(*args):
     gr.Info(t("Saved new settings to {path}.", mapping={"path": settings.settings_path}))
 
 def create_settings():
-    with gr.Blocks() as app_settings:
+    with gr.Blocks(delete_cache=(86400, 86400)) as app_settings:
         with gr.Row():
             with gr.Column():
                 gr.Markdown(t("# UI settings"))

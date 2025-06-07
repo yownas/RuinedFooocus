@@ -6,7 +6,10 @@ browser = ImageBrowser()
 t = translate
 
 def create_image_gallery():
-    with gr.Blocks(theme=gr.themes.Soft()) as app_image_browser:
+    with gr.Blocks(
+        theme=gr.themes.Soft(),
+        delete_cache=(86400, 86400),
+    ) as app_image_browser:
         with gr.Row():
             # Left side for gallery
             with gr.Column(scale=2):
