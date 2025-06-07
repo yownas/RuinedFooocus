@@ -245,9 +245,25 @@ class Models:
             ret = None
         return ret
 
-    def get_models_by_path(self, model_type, path):
+    def search_civitai_with_hash(self, hash):
+        url = f"{self.base_url}model-versions/by-hash/{hash}"
         data = None
+        try:
+            response = requests.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+        except requests.exceptions.HTTPError as e:
+            if response.status_code == 404:
+                print(t("Warning: Could not find {name} on civit.ai", mapping={'name': Path(path).name}))
+            elif response.status_code == 503:
+                print("Error: Civit.ai Service Currently Unavailable")
+            else:
+                print(f"HTTP Error: {e}")
+        except requests.exceptions.RequestException as e:
+            print(f"Error: {e}")
+        return data
 
+    def get_models_by_path(self, model_type, path):
         cache_path = Path(self.cache_paths[model_type]) / Path(Path(path).name)
         if cache_path.is_dir():
             # Give up
@@ -267,20 +283,7 @@ class Models:
             return {"baseModel": "Merge"}
 
         hash = self.model_sha256(path)
-        url = f"{self.base_url}model-versions/by-hash/{hash}"
-        try:
-            response = requests.get(url, headers=self.headers)
-            response.raise_for_status()
-            data = response.json()
-        except requests.exceptions.HTTPError as e:
-            if response.status_code == 404:
-                print(t("Warning: Could not find {name} on civit.ai", mapping={'name': Path(path).name}))
-            elif response.status_code == 503:
-                print("Error: Civit.ai Service Currently Unavailable")
-            else:
-                print(f"HTTP Error: {e}")
-        except requests.exceptions.RequestException as e:
-            print(f"Error: {e}")
+        data = self.search_civitai_with_hash(hash)
 
         if data is None:
             # Create our own data
@@ -318,8 +321,12 @@ class Models:
             filename = self.get_file(model_type, name)
 
         if filename is None:
-            print(f"Could not find model: {name} (SHA256: {hash})")
-            # FIXME: we should search civitai here and give hints where to download the missing model
+            print(f"Could not find file: {name}")
+            if hash is not None:
+                print(f"    SHA256: {hash}")
+                data = self.search_civitai_with_hash(hash)
+                if data.get('modelId', None) is not None:
+                    print(f"    Download link: https://civitai.com/models/{data.get('modelId')}")
 
         return filename
 
