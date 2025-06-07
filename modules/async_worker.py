@@ -48,6 +48,15 @@ def worker():
         shared.state["preview_total"] = 0
         shared.state["preview_count"] = 0
 
+    def is_sha256_hash(input_string):
+        # Check if the string is exactly 64 characters long
+        if len(input_string) != 64:
+            return False
+        # Check if the string consists only of hexadecimal characters
+        if not all(c in '0123456789abcdefABCDEF' for c in input_string):
+            return False
+        return True
+
     def _process(gen_data):
         global results, metadatastrings
 
@@ -69,9 +78,14 @@ def worker():
         loras = []
 
         for lora_data in gen_data["loras"] if gen_data["loras"] is not None else []:
+            if is_sha256_hash(lora_data[0]):
+                hash = lora_data[0]
+            else:
+                hash = None
+
             w, l  = lora_data[1].split(" - ", 1)
             if not l == "None":
-                loras.append((l, float(w)))
+                loras.append({"name": l, "weight": float(w), "hash": hash})
 
         parsed_loras, pos_stripped, neg_stripped = parse_loras(
             gen_data["prompt"], gen_data["negative"]
@@ -86,7 +100,10 @@ def worker():
                     (-1, f"Loading base model: {gen_data['base_model_name']}", None),
                 ]
             )
-        gen_data["modelhash"] = pipeline.load_base_model(gen_data["base_model_name"])
+        gen_data["modelhash"] = pipeline.load_base_model(
+            gen_data["base_model_name"],
+            hash=gen_data.get("base_model_hash", None),
+        )
         if "silent" not in gen_data:
             outputs.append([gen_data["task_id"], "preview", (-1, f"Loading LoRA models ...", None)])
         pipeline.load_loras(loras)
@@ -275,7 +292,7 @@ def worker():
                     "scheduler": gen_data["scheduler"],
                     "base_model_name": gen_data["base_model_name"],
                     "base_model_hash": get_checkpoint_hashes(gen_data["base_model_name"])['SHA256'],
-                    "loras": [[f"{get_lora_hashes(lora[0])['SHA256']}", f"{lora[1]} - {lora[0]}"] for lora in loras],
+                    "loras": [[f"{get_lora_hashes(lora['name'])['SHA256']}", f"{lora['weight']} - {lora['name']}"] for lora in loras],
                     "start_step": start_step,
                     "denoise": denoise,
                     "clip_skip": gen_data["clip_skip"],

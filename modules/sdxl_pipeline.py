@@ -113,28 +113,24 @@ class pipeline:
         }
         return settings.default_settings.get(shortname, defaults[shortname] if shortname in defaults else None)
 
-    def load_base_model(self, name, unet_only=False, input_unet=None):
+    def load_base_model(self, name, unet_only=False, input_unet=None, hash=None):
         if self.xl_base_hash == name and self.xl_base_patched_extra == set():
             return
 
-        filename = shared.models.get_file("checkpoints", name)
+        default_name = path_manager.get_folder_file_path(
+            "checkpoints",
+            settings.default_settings.get("base_model", "sd_xl_base_1.0_0.9vae.safetensors"),
+        )
+        default = shared.models.get_file("checkpoints", default_name)
+
+        filename = shared.models.get_model_path(
+            "checkpoints",
+            name,
+            hash=hash,
+            default=default,
+        )
 
         if filename is None:
-            name = path_manager.get_folder_file_path("checkpoints", name)
-            if name is not None:
-                filename = shared.models.get_file("checkpoints", name)
-
-        # If we don't have a filename, get the default.
-        if filename is None:
-            base_model = settings.default_settings.get("base_model", "sd_xl_base_1.0_0.9vae.safetensors")
-            name = path_manager.get_folder_file_path(
-                "checkpoints",
-                base_model,
-            )
-            filename = shared.models.get_file("checkpoints", name)
-
-        if filename is None:
-            print(f"Could not find checkpoint.")
             return
 
         if Path(filename).suffix == '.merge':
@@ -172,7 +168,6 @@ class pipeline:
                         unet.patch_on_device = True
                     elif filename.endswith(".gguf"):
                         sd = load_gguf_sd(filename)
-                        print(f"DEBUG: {filename} {sd}")
                         unet = comfy.sd.load_diffusion_model_state_dict(
                             sd, model_options={"custom_operations": self.ggml_ops}
                         )
@@ -328,16 +323,19 @@ class pipeline:
         loaded_loras = []
 
         model = self.xl_base
-        for name, weight in loras:
+        for lora in loras:
+            name = lora.get("name", "None")
+            weight = lora.get("weight", 0)
+            hash = lora.get("hash", None)
             if name == "None" or weight == 0:
                 continue
-            filename = shared.models.get_file("loras", name)
-            if filename is None:
-                # If we couldn't find the LoRA, see if we can download it
-                name = path_manager.get_folder_file_path("loras", name)
-                if name is None:
-                    continue
-                filename = shared.models.get_file("loras", name)
+
+            filename = shared.models.get_model_path(
+                "loras",
+                name,
+                hash=hash,
+            )
+
             if filename is None:
                 continue
             print(f"Loading LoRA: {name}")

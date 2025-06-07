@@ -281,9 +281,9 @@ def parse_loras(prompt, negative):
     pattern = re.compile(r"<lora:([^>]+):(\d*\.*\d+)>")
     loras = []
     for match in re.finditer(pattern, prompt):
-        loras.append((f"{match.group(1)}.safetensors", float(match.group(2))))
+        loras.append({"name": f"{match.group(1)}.safetensors", "weight": float(match.group(2)), "hash": None})
     for match in re.finditer(pattern, negative):
-        loras.append((f"{match.group(1)}.safetensors", float(match.group(2))))
+        loras.append({"name": f"{match.group(1)}.safetensors", "weight": float(match.group(2)), "hash": None})
     return loras, re.sub(pattern, "", prompt), re.sub(pattern, "", negative)
 
 

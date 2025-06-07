@@ -77,7 +77,7 @@ class Models:
                 if path.suffix.lower() in self.EXTENSIONS:
                     # get file name, add cache path change suffix
                     cache_file = Path(self.cache_paths[model_type] / path.name)
-                    models = self.get_models_by_path(model_type, str(path))
+                    model_data = self.get_models_by_path(model_type, str(path))
 
                     suffixes = [".jpeg", ".jpg", ".png", ".gif"]
                     has_preview = False
@@ -88,7 +88,7 @@ class Models:
                             break
 
                     if not has_preview:
-                        self.get_image(models, thumbcheck)
+                        self.get_image(model_data, thumbcheck)
                         updated += 1
                         time.sleep(1)
 
@@ -99,26 +99,26 @@ class Models:
                                 "Get LoRA keywords for {name} ({base} - {type})",
                                 mapping= {
                                     'name': Path(path).name,
-                                    'base': self.get_model_base(models),
-                                    'type': self.get_model_type(models)
+                                    'base': self.get_model_base(model_data),
+                                    'type': self.get_model_type(model_data)
                                 }
                             )
                         )
-                        keywords = self.get_keywords(models)
+                        keywords = self.get_keywords(model_data)
                         with open(txtcheck, "w") as f:
                             f.write(", ".join(keywords))
                         updated += 1
 
                     if model_type == "inbox":
                         name = str(path.relative_to(folder_paths[0])) # FIXME handle if inbox is a list
-                        model = self.get_models_by_path("inbox", name)
                         filename =  self.get_file_from_name("inbox", name)
-                        if model is None:
-                            continue
-                        baseModel = self.get_model_base(model)
-                        folder, cache = folders.get(self.get_model_type(model), [None, None])
+# Remove?
+#                        if model_data is None:
+#                            continue
+                        baseModel = self.get_model_base(model_data)
+                        folder, cache = folders.get(self.get_model_type(model_data), [None, None])
                         if folder is None or baseModel is None:
-                            print(t('Skipping {name} not sure what {type} is.', mapping={'name': str(name), 'type': self.get_model_type(model)}))
+                            print(t('Skipping {name} not sure what {type} is.', mapping={'name': str(name), 'type': self.get_model_type(model_data)}))
                             continue
                         # Move model to correct folder
                         dest = Path(folder) / baseModel
@@ -133,6 +133,13 @@ class Models:
                             if cachefile.is_file():
                                 shutil.move(cachefile, Path(cache) / cachefile.name)
                         print(t("Moved {name} to {dest}", mapping={'name': name, 'dest': dest}))
+                    else:
+                        # If this isn't the inbox, store some info about the "live" model
+                        try:
+                            self.model_hash[model_type][model_data["files"][0]["hashes"]["SHA256"]] = str(path)
+                        except:
+                            # Some models seem to not have sha256 hashes, just ignore those.
+                            pass
 
         if updated > 0:
             print(t("CivitAI update for {type} done.", mapping={'type': model_type}))
@@ -166,6 +173,8 @@ class Models:
                 daemon=True,
             ).start()
 
+
+
     def __init__(self, offline=False):
         from shared import path_manager, settings
 
@@ -180,6 +189,11 @@ class Models:
             "checkpoints": [],
             "loras": [],
             "inbox": [],
+        }
+        self.model_hash = {
+            "checkpoints": {},
+            "loras": {},
+            "inbox": {},
         }
         checkpoints = path_manager.model_paths["modelfile_path"]
         checkpoints = checkpoints if isinstance(checkpoints, list) else [checkpoints]
@@ -205,6 +219,8 @@ class Models:
 
         self.update_all_models()
 
+    def get_file_from_hash(self, model_type, hash):
+        return self.model_hash.get(model_type, {}).get(hash, None)
 
     def get_file_from_name(self, model_type, model_name):
         for folder in self.model_dirs[model_type]:
@@ -222,11 +238,12 @@ class Models:
                 for chunk in iter(lambda: f.read(blksize), b""):
                     hash_sha256.update(chunk)
             f.close()
-            return hash_sha256.hexdigest().upper()
+            ret = hash_sha256.hexdigest().upper()
         except Exception as e:
             print(f"model_sha256(): Failed reading {filename}")
             print(f"Error: {e}")
-            return None
+            ret = None
+        return ret
 
     def get_models_by_path(self, model_type, path):
         data = None
@@ -282,6 +299,30 @@ class Models:
             json.dump(data, f, indent=2)
 
         return data
+
+
+    def get_model_path(self, model_type, name, hash=None, default=None):
+        # Look through folders for the filename
+        filename = self.get_file(model_type, name)
+
+        # Try looking for model using the hash
+        if filename is None and hash is not None:
+            filename = self.get_file_from_hash(model_type, hash)
+
+        # If we don't have a filename, get the default.
+        if filename is None and default is not None:
+            name = path_manager.get_folder_file_path(
+                model_type,
+                default,
+            )
+            filename = self.get_file(model_type, name)
+
+        if filename is None:
+            print(f"Could not find model: {name} (SHA256: {hash})")
+            # FIXME: we should search civitai here and give hints where to download the missing model
+
+        return filename
+
 
     def get_keywords(self, model):
         keywords = model.get("trainedWords", [""])

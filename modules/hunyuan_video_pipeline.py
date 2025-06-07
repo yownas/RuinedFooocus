@@ -73,7 +73,8 @@ class pipeline:
         gen_data["show_preview"] = False
         return gen_data
 
-    def load_base_model(self, name, unet_only=True): # Hunyuan_Video never has the clip and vae models?
+    def load_base_model(self, name, unet_only=True, input_unet=None, hash=None): # Hunyuan_Video never has the clip and vae models?
+
         # Check if model is already loaded
         if self.model_hash == name:
             return
@@ -84,7 +85,22 @@ class pipeline:
         self.model_hash_patched = ""
         self.conditions = None
 
-        filename = str(shared.models.get_file("checkpoints", name))
+# FIXME? Add default model for video
+#        default_name = path_manager.get_folder_file_path(
+#            "checkpoints",
+#            settings.default_settings.get("base_model", "sd_xl_base_1.0_0.9vae.safetensors"),
+#        )
+#        default = shared.models.get_file("checkpoints", default_name)
+        default = None
+
+        filename = str(
+            shared.models.get_model_path(
+                "checkpoints",
+                name,
+                hash=hash,
+                default=default,
+            )
+        )
 
         print(f"Loading Hunyuan video {'unet' if unet_only else 'model'}: {name}")
 
@@ -200,10 +216,27 @@ class pipeline:
         loaded_loras = []
 
         model = self.model_base
-        for name, weight in loras:
+#        for name, weight in loras:
+#           if name == "None" or weight == 0:
+#               continue
+#           filename = str(shared.models.get_file("loras", name))
+
+        for lora in loras:
+            name = lora.get("name", "None")
+            weight = lora.get("weight", 0)
+            hash = lora.get("hash", None)
             if name == "None" or weight == 0:
                 continue
-            filename = str(shared.models.get_file("loras", name))
+
+            filename = shared.models.get_model_path(
+                "loras",
+                name,
+                hash=hash,
+            )
+
+            if filename is None:
+                continue
+
             print(f"Loading LoRAs: {name}")
             try:
                 lora = comfy.utils.load_torch_file(filename, safe_load=True)

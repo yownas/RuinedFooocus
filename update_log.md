@@ -1,3 +1,5 @@
+* Smarter model loader
+
 ### 25.06.01
 * Removed MergeManager
 * Preset images
