@@ -1,3 +1,4 @@
+* Remove diffusers pipeline
 * Smarter model loader
 
 ### 25.06.01

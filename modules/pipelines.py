@@ -15,8 +15,6 @@ import modules.sdxl_pipeline as sdxl_pipeline
 import modules.template_pipeline as template_pipeline
 import modules.upscale_pipeline as upscale_pipeline
 import modules.search_pipeline as search_pipeline
-import modules.huggingface_dl_pipeline as huggingface_dl_pipeline
-import modules.diffusers_pipeline as diffusers_pipeline
 import modules.rembg_pipeline as rembg_pipeline
 import modules.llama_pipeline as llama_pipeline
 import modules.hunyuan_video_pipeline as hunyuan_video_pipeline
@@ -62,13 +60,6 @@ def update(gen_data):
             ):
                 state["pipeline"] = search_pipeline.pipeline()
 
-        elif re.match(r"^\s*hf:", prompt):
-            if (
-                state["pipeline"] is None
-                or "huggingface_dl" not in state["pipeline"].pipeline_type
-            ):
-                state["pipeline"] = huggingface_dl_pipeline.pipeline()
-
         elif cn_type.lower() == "upscale":
             if (
                 state["pipeline"] is None
@@ -103,13 +94,6 @@ def update(gen_data):
                 baseModelName = gen_data['base_model_name']
             if state["pipeline"] is None:
                 state["pipeline"] = NoPipeLine()
-
-            if baseModelName.startswith("🤗"):
-                if (
-                    state["pipeline"] is None
-                    or "diffusers" not in state["pipeline"].pipeline_type
-                ):
-                    state["pipeline"] = diffusers_pipeline.pipeline()
 
             elif (
                 baseModel == "Hunyuan Video" or
