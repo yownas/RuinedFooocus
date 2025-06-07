@@ -264,6 +264,7 @@ class Models:
         return data
 
     def get_models_by_path(self, model_type, path):
+        data = None
         cache_path = Path(self.cache_paths[model_type]) / Path(Path(path).name)
         if cache_path.is_dir():
             # Give up
