@@ -119,7 +119,7 @@ class pipeline:
         gen_data["show_preview"] = False
         return gen_data
 
-    def load_base_model(self, name):
+    def load_base_model(self, name, hash=None):
         # We're not doing models here
         return
 

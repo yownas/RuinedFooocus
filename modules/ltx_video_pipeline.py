@@ -74,7 +74,7 @@ class pipeline:
         gen_data["show_preview"] = False
         return gen_data
 
-    def load_base_model(self, name, unet_only=True): # LTXV never has the clip and vae models?
+    def load_base_model(self, name, unet_only=True, hash=None): # LTXV never has the clip and vae models?
         # Check if model is already loaded
         if self.model_hash == name:
             return

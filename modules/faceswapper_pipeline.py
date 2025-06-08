@@ -78,7 +78,7 @@ class pipeline:
         gen_data["show_preview"] = False
         return gen_data
 
-    def load_base_model(self, name):
+    def load_base_model(self, name, hash=None):
         model_name = "inswapper_128.onnx"
         if not self.swapper_hash == model_name:
             print(f"Loading swapper model: {model_name}")

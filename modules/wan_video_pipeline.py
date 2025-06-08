@@ -68,7 +68,7 @@ class pipeline:
         gen_data["image_number"] = 1
         return gen_data
 
-    def load_base_model(self, name, unet_only=True): # Wan_Video never has the clip and vae models?
+    def load_base_model(self, name, unet_only=True, hash=None): # Wan_Video never has the clip and vae models?
         # Check if model is already loaded
         if self.model_hash == name:
             return

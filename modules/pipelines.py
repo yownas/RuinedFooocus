@@ -109,7 +109,7 @@ def update(gen_data):
 
             elif (
                 baseModel == "Wan Video" or
-                Path(gen_data['base_model_name']).parts[0] == "Wan Video" or
+                str(Path(gen_data['base_model_name']).parts[0]).startswith("Wan Video") or
                 str(Path(file).name).startswith("wan2.1-t2v-") or
                 str(Path(file).name).startswith("wan2.1_t2v_") or
                 str(Path(file).name).startswith("wan2.1-i2v-") or

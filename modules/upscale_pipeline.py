@@ -32,7 +32,7 @@ class pipeline:
         out = model_loading.load_state_dict(sd).eval()
         return out
 
-    def load_base_model(self, name):
+    def load_base_model(self, name, hash=None):
         # Check if model is already loaded
         if self.model_hash == name:
             return

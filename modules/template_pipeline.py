@@ -14,7 +14,7 @@ class pipeline:
         gen_data["ruinedfooocus_was_here"] = True
         return gen_data
 
-    def load_base_model(self, name):
+    def load_base_model(self, name, hash=None):
         # Check if model is already loaded
         if self.model_hash == name:
             return

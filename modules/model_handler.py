@@ -254,7 +254,7 @@ class Models:
             data = response.json()
         except requests.exceptions.HTTPError as e:
             if response.status_code == 404:
-                print(t("Warning: Could not find {name} on civit.ai", mapping={'name': Path(path).name}))
+                print(t("Warning: Could not find {name} on civit.ai", mapping={'name': hash}))
             elif response.status_code == 503:
                 print("Error: Civit.ai Service Currently Unavailable")
             else:
@@ -323,7 +323,7 @@ class Models:
 
         if filename is None:
             print(f"Could not find file: {name}")
-            if hash is not None:
+            if hash is not None or hash != "None":
                 print(f"    SHA256: {hash}")
                 data = self.search_civitai_with_hash(hash)
                 if data.get('modelId', None) is not None:
