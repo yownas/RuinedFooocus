@@ -1,3 +1,4 @@
+* Locking seeds
 * Remove diffusers pipeline
 * Smarter model loader
 

@@ -151,12 +151,10 @@ def worker():
                 gen_data["cn_selection"] = "None"
                 gen_data["cn_type"] = "None"
 
-        seed = gen_data["seed"]
-
+        seed = int(gen_data["seed"])
         max_seed = 2**32
-        if not isinstance(seed, int) or seed < 0:
+        if not isinstance(seed, int) or seed == -1:
             seed = random.randint(0, max_seed)
-        seed = seed % max_seed
 
         all_steps = steps * max(image_number, 1)
         with open("render.txt") as f:
@@ -258,7 +256,7 @@ def worker():
 
             gen_data["positive_prompt"] = p_txt
             gen_data["negative_prompt"] = n_txt
-            gen_data["seed"] = seed # Update seed
+            gen_data["seed"] = abs(seed) # Update seed
             start_step = 0
             denoise = None
             with TimeIt("Pipeline process"):
@@ -287,7 +285,7 @@ def worker():
                     "cfg": gen_data["cfg"],
                     "width": width,
                     "height": height,
-                    "seed": seed,
+                    "seed": abs(seed),
                     "sampler_name": gen_data["sampler_name"],
                     "scheduler": gen_data["scheduler"],
                     "base_model_name": gen_data["base_model_name"],
@@ -344,7 +342,8 @@ def worker():
                 metadatastrings.append(json.dumps(prompt))
                 shared.state["last_image"] = local_temp_filename
 
-            seed += 1
+            if seed > -1:
+                seed += 1
             if stop_batch:
                 break
         return
