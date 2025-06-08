@@ -289,7 +289,7 @@ metadata_json = gr.Json()
 
 shared.wildcards = get_wildcard_files()
 
-shared.gradio_root = gr.Blocks(delete_cache=(86400, 86400)).queue()
+shared.gradio_root = gr.Blocks().queue()
 
 with shared.gradio_root as block:
     block.load()

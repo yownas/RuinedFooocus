@@ -4,6 +4,7 @@ import version
 import warnings
 from pathlib import Path
 import ssl
+from tempfile import gettempdir
 
 os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
 os.environ["DO_NOT_TRACK"] = "1"
@@ -201,6 +202,21 @@ except:
 
 if not offline:
     download_models()
+
+gradio_cache = os.path.join(gettempdir(), 'ruinedfooocus_cache')
+os.environ['GRADIO_TEMP_DIR'] = gradio_cache
+# Delete old data
+import shutil
+try:
+    # Yownas being paranoid
+    if gradio_cache.endswith('ruinedfooocus_cache'):
+        shutil.rmtree(gradio_cache)
+except FileNotFoundError:
+    pass
+except PermissionError:
+    pass
+except Exception as e:
+    print(f"An error occurred: {str(e)}")
 
 def launch_ui():
     print("Starting webui")
