@@ -639,7 +639,10 @@ with shared.gradio_root as block:
                         multiselect=True,
                         container=True,
                         choices=list(load_styles().keys()),
-                        value=settings["style"],
+                        value=list(
+                            set(settings["style"]) &
+                            set(load_styles().keys())
+                        ),
                     )
                     add_ctrl("style_selection", style_selection)
                 style_button = gr.Button(value="⬅️ " + t("Send Style to prompt"), size="sm")
@@ -1061,7 +1064,7 @@ with shared.gradio_root as block:
                 )
                 lora_del_btn.click(
                     fn=lora_delete,
-                    show_api=False,
+                        show_api=False,
                     inputs=[lora_active_gallery, lorafilter],
                     outputs=[lora_gallery, lora_active_gallery, lora_keywords],
                 )

@@ -1,6 +1,6 @@
 import gradio as gr
 from pathlib import Path
-
+from modules.sdxl_styles import load_styles
 from modules.interrogate import looks
 
 from shared import state, add_setting, performance_settings, resolution_settings, path_manager, settings, models, translate
@@ -16,7 +16,6 @@ def save_clicked(*args):
         # Massage some of the data. Settings that are lists should be split
         if key in [
             "archive_folders",
-            "style",
             "path_checkpoints",
             "path_loras"
         ]:
@@ -56,12 +55,15 @@ def create_settings():
                 add_setting("seed_random", seed_random)
                 seed = gr.Number(label=t("Seed"), interactive=True, value=settings.default_settings.get("seed", -1))
                 add_setting("seed", seed)
-                style = gr.Code(
-                    label=t("Style"),
-                    interactive=True,
-                    value="\n".join(settings.default_settings.get("style", [])),
-                    lines=5,
-                    max_lines=5
+                style = gr.Dropdown(
+                    label=t("Style Selection"),
+                    multiselect=True,
+                    container=True,
+                    choices=list(load_styles().keys()),
+                    value=list(
+                        set(settings.default_settings.get("style", [])) &
+                        set(load_styles().keys())
+                    ),
                 )
                 add_setting("style", style)
                 prompt = gr.Textbox(label=t("Prompt"), interactive=True, value=settings.default_settings.get("prompt", ""))
