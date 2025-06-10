@@ -1,6 +1,7 @@
 import modules.async_worker as worker
 from PIL import Image
 import shared
+import json
 
 from comfy.samplers import KSampler
 
@@ -65,57 +66,90 @@ class pipeline:
             case "add performance":
                 new_perf = shared.performance_settings.default_settings
                 new_perf['name'] = "Oops! Forgot to add a name." # Have a default name
-                for line in lines[1:]:
-                    kv = line.split(":")
-                    if len(kv) < 2:
-                        image = Image.open("html/error.png")
-                        print(f"ERROR: Can't find key and value on line: {line}")
-                        break
-                    k = kv[0].lower()
 
-                    # Some helpful translations
-                    if k in ['steps']:
-                        k = 'custom_steps'
-                    if k in ['sampler']:
-                        k = 'sampler_name'
-                    if k in ['clip-skip', 'clip skip', 'clipskip']:
-                        k = 'clip_skip'
+                metadata = None
+                if str(lines[1]).startswith("name:") and lines[2][0] == "{": # Try parsing json
+                    new_perf['name'] = lines[1].split(':')[1].strip()
+                    try:
+                        metadata = json.loads("\n".join(lines[2:]))
+                    except:
+                        metadata = None
 
-                    if k in ['custom_steps', 'clip_skip']: # Handle ints
-                        v = int(kv[1])
-                    elif k in ['cfg']: # Handle floats
-                        v = float(kv[1])
-                    elif k in ['sampler_name', 'scheduler', 'name']: # Handle strings
-                        v = kv[1].strip()
-                        if (k == 'sampler_name' and v not in KSampler.SAMPLERS):
+                    if metadata is not None:
+                        try:
+                            new_perf['custom_steps'] = metadata['steps']
+                            new_perf['cfg'] = metadata['cfg']
+                            new_perf['sampler_name'] = metadata['sampler_name']
+                            new_perf['scheduler'] = metadata['scheduler']
+                            new_perf['clip_skip'] = metadata['clip_skip']
+                        except:
+                            metadata = None
+
+                if metadata is None:
+                    # It wasn't json-data, try parsing as the example below:
+                    #
+                    # #!add performance
+                    # name: WAN
+                    # steps: 30
+                    # cfg: 4
+                    # scheduler: simple
+                    # sampler: uni_pc
+
+                    for line in lines[1:]:
+                        kv = line.split(":")
+                        if len(kv) < 2:
                             image = Image.open("html/error.png")
-                            print(f"ERROR: Unknown sampler: {v}")
-                            print(f"Known Samplers: {KSampler.SAMPLERS}")
-                            break
-                        if (k == 'scheduler' and v not in KSampler.SCHEDULERS):
+                            print(f"ERROR: Can't find key and value on line: {line}")
+                            return []
+                        k = kv[0].lower()
+
+                        # Some helpful translations
+                        if k in ['steps']:
+                            k = 'custom_steps'
+                        if k in ['sampler']:
+                            k = 'sampler_name'
+                        if k in ['clip-skip', 'clip skip', 'clipskip']:
+                            k = 'clip_skip'
+
+                        if k in ['custom_steps', 'clip_skip']: # Handle ints
+                            v = int(kv[1])
+                        elif k in ['cfg']: # Handle floats
+                            v = float(kv[1])
+                        elif k in ['sampler_name', 'scheduler', 'name']: # Handle strings
+                            v = kv[1].strip()
+                            if (k == 'sampler_name' and v not in KSampler.SAMPLERS):
+                                image = Image.open("html/error.png")
+                                print(f"ERROR: Unknown sampler: {v}")
+                                print(f"Known Samplers: {KSampler.SAMPLERS}")
+                                return []
+                            if (k == 'scheduler' and v not in KSampler.SCHEDULERS):
+                                image = Image.open("html/error.png")
+                                print(f"ERROR: Unknown scheduler: {v}")
+                                print(f"Known Schedulers: {KSampler.SCHEDULERS}")
+                                return []
+                        else:
                             image = Image.open("html/error.png")
-                            print(f"ERROR: Unknown scheduler: {v}")
-                            print(f"Known Schedulers: {KSampler.SCHEDULERS}")
-                            break
-                    else:
-                        image = Image.open("html/error.png")
-                        print(f"ERROR: Unknown key: {k}")
-                        break
-                    new_perf[k] = v
+                            print(f"ERROR: Unknown key: {k}")
+                            return []
+                        new_perf[k] = v
 
                 perf_options = shared.performance_settings.load_performance()
-                opts = {
-                    "custom_steps": new_perf['custom_steps'],
-                    "cfg": new_perf['cfg'],
-                    "sampler_name": new_perf['sampler_name'],
-                    "scheduler": new_perf['scheduler'],
-                    "clip_skip": new_perf['clip_skip'],
-                }
-                perf_options[new_perf['name']] = opts
+                try:
+                    opts = {
+                        "custom_steps": new_perf['custom_steps'],
+                        "cfg": new_perf['cfg'],
+                        "sampler_name": new_perf['sampler_name'],
+                        "scheduler": new_perf['scheduler'],
+                        "clip_skip": new_perf['clip_skip'],
+                    }
+                    perf_options[new_perf['name']] = opts
 
-                shared.performance_settings.save_performance(perf_options)
-                print(f"#!: Saved performance: {new_perf['name']}: {opts}")
-                shared.update_cfg()
+                    shared.performance_settings.save_performance(perf_options)
+                    print(f"#!: Saved performance: {new_perf['name']}: {opts}")
+                    shared.update_cfg()
+                except Exception as e:
+                    image = Image.open("html/error.png")
+                    print(f"ERROR: {e}")
 
             case _:
                 print(f"ERROR: Unknown command #!{cmd}")
