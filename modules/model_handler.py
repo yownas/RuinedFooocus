@@ -323,10 +323,10 @@ class Models:
 
         if filename is None:
             print(f"Could not find file: {name}")
-            if hash is not None or hash != "None":
+            if hash is not None and hash != "None":
                 print(f"    SHA256: {hash}")
                 data = self.search_civitai_with_hash(hash)
-                if data.get('modelId', None) is not None:
+                if data is not None and data.get('modelId', None) is not None:
                     print(f"    Download link: https://civitai.com/models/{data.get('modelId')}")
 
         return filename
