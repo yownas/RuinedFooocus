@@ -42,6 +42,7 @@ import time
 import json
 import gradio as gr
 import re
+import traceback
 
 import version
 import modules.async_worker as worker
