@@ -1,3 +1,5 @@
+* Fix Florence
+* Clear gradio cache at start
 * Locking seeds
 * Remove diffusers pipeline
 * Smarter model loader
