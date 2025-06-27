@@ -45,6 +45,8 @@ from comfy.sampler_helpers import (
 )
 
 from comfy_extras.nodes_sd3 import EmptySD3LatentImage
+from comfy_extras.nodes_flux import FluxKontextImageScale
+from comfy_extras.nodes_edit_model import ReferenceLatent
 from node_helpers import conditioning_set_values
 
 from comfy.samplers import KSampler
@@ -483,6 +485,10 @@ class pipeline:
 
         device = comfy.model_management.get_torch_device()
 
+        # FIXME need a good whay to check if we are using Flux.1 Kontext
+        if isinstance(self.xl_base.unet.model, Flux) and input_image is not None:
+            controlnet["type"] = "kontext"
+
         if controlnet is not None and "type" in controlnet and input_image is not None:
             if callback is not None:
                 worker.add_result(
@@ -523,17 +529,19 @@ class pipeline:
                 self.conditions["+"]["text"] = None
                 self.conditions["-"]["text"] = None
 
-            if controlnet["type"].lower() == "img2img":
+            if controlnet["type"].lower() in ["img2img", "kontext"]:
                 # If this isn't the first image, do "Loopback"
                 if "preview_count" in shared.state and shared.state["preview_count"] > 0:
                     input_image = Image.fromarray(shared.shared_cache["prev_image"]).convert("RGB")
                     input_image = np.array(input_image).astype(np.float32) / 255.0
                     input_image = torch.from_numpy(input_image)[None,]
+                if controlnet["type"].lower() == "kontext":
+                    input_image = FluxKontextImageScale().scale(input_image)[0]
                 latent = VAEEncode().encode(
                     vae=self.xl_base_patched.vae, pixels=input_image
                 )[0]
                 force_full_denoise = False
-                denoise = float(controlnet.get("denoise", controlnet.get("strength")))
+                denoise = float(controlnet.get("denoise", controlnet.get("strength", 1)))
                 img2img_mode = True
 
         if not img2img_mode:
@@ -574,6 +582,25 @@ class pipeline:
                 grow_mask_by=20,
             )[0]
 
+        if updated_conditions:
+            conds = {
+                0: self.conditions["+"]["cache"],
+                1: self.conditions["-"]["cache"],
+            }
+            self.models, self.inference_memory = get_additional_models(
+                conds,
+                self.xl_base_patched.unet.model_dtype(),
+            )
+
+        comfy.model_management.load_models_gpu([self.xl_base_patched.unet])
+        # Use FluxGuidance for Flux
+        positive_cond = switched_prompt if switched_prompt else self.conditions["+"]["cache"]
+        if isinstance(self.xl_base.unet.model, Flux):
+            if controlnet.get("type", "") == "kontext":
+                positive_cond = ReferenceLatent().append(positive_cond, latent=latent)[0]
+            positive_cond = conditioning_set_values(positive_cond, {"guidance": cfg})
+            cfg = 1.0
+
         latent_image = latent["samples"]
         batch_inds = latent["batch_index"] if "batch_index" in latent else None
         noise = comfy.sample.prepare_noise(latent_image, seed, batch_inds)
@@ -603,27 +630,11 @@ class pipeline:
                 "preview",
                 (-1, f"Prepare models ...", None)
             )
-        if updated_conditions:
-            conds = {
-                0: self.conditions["+"]["cache"],
-                1: self.conditions["-"]["cache"],
-            }
-            self.models, self.inference_memory = get_additional_models(
-                conds,
-                self.xl_base_patched.unet.model_dtype(),
-            )
 
-        comfy.model_management.load_models_gpu([self.xl_base_patched.unet])
         comfy.model_management.load_models_gpu(self.models)
 
         noise = noise.to(device)
         latent_image = latent_image.to(device)
-
-        # Use FluxGuidance for Flux
-        positive_cond = switched_prompt if switched_prompt else self.conditions["+"]["cache"]
-        if isinstance(self.xl_base.unet.model, Flux):
-            positive_cond = conditioning_set_values(positive_cond, {"guidance": cfg})
-            cfg = 1.0
 
         kwargs = {
             "cfg": cfg,
