@@ -379,7 +379,6 @@ class pipeline:
         if self.xl_controlnet_hash != name:
             self.xl_controlnet = None
             self.xl_controlnet_hash = None
-            print(f"Controlnet model unloaded")
 
     conditions = None
 
