@@ -485,7 +485,7 @@ class pipeline:
         device = comfy.model_management.get_torch_device()
 
 
-        if controlnet is None:
+        if controlnet is None or not "type" in controlnet:
             controlnet = {}
             controlnet["type"] = "None"
 
