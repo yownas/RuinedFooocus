@@ -484,11 +484,20 @@ class pipeline:
 
         device = comfy.model_management.get_torch_device()
 
+
+        if controlnet is None:
+            controlnet = {}
+            controlnet["type"] = "None"
+
         # FIXME need a good whay to check if we are using Flux.1 Kontext
-        if isinstance(self.xl_base.unet.model, Flux) and input_image is not None:
+        if (
+            controlnet["type"] == "None" and
+            isinstance(self.xl_base.unet.model, Flux) and
+            input_image is not None
+        ):
             controlnet["type"] = "kontext"
 
-        if controlnet is not None and "type" in controlnet and input_image is not None:
+        if controlnet["type"] != "None" and input_image is not None:
             if callback is not None:
                 worker.add_result(
                     gen_data["task_id"],
