@@ -90,14 +90,15 @@ def add_api():
         Args:
             filter (str): Text to find images that match.
         Returns:
-            version (str): List of images
+            images (str): List of image urls
         """
         prompt = f"search: max:10 {text}"
         files = search_pipeline.search(prompt)
         result = []
         for file in files:
             file = Path(file)
-            result.append(str(file.relative_to(file.cwd())))
+            url = shared.local_url + "gradio_api/file=" + re.sub(r'[^/]+/\.\./', '', str(file.relative_to(file.cwd())))
+            result.append(url)
         return result
     gr.api(api_search, api_name="search")
 
