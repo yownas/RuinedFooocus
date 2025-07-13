@@ -54,7 +54,7 @@ git_repos = [
         "name": "Calcuis-GGUF",
         "path": "calcuis_gguf",
         "url": "https://github.com/calcuis/gguf",
-        "hash": "edfe8d6d8c543bace1fbb3e9880c2e09b7faf629",
+        "hash": "2504e21db88e1b5427ce358dbf206f3b3e6fad80",
         "add_path": "",
     },
 ]
