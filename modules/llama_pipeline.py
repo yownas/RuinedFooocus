@@ -187,22 +187,25 @@ class pipeline:
             system_prompt += context
 
         chat = [{"role": "system", "content": system_prompt + "\nOnly use the tool when asked to generate an image.\n"}] + h[-3 if len(h) > 3 else -len(h):] # Keep just the last 3 messages
-        tools = [
-            {
-                "type": "function",
-                "function": {
-                    "name": "generate_image",
-                    "description": "Generates an image from a prompt.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "prompt": {"type": "string", "description": "The prompt for the image"},
+        if settings.default_settings.get("enable_llm_tools", False):
+            tools = [
+                {
+                    "type": "function",
+                    "function": {
+                        "name": "generate_image",
+                        "description": "Generates an image from a prompt.",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                                "prompt": {"type": "string", "description": "The prompt for the image"},
+                            },
+                            "required": ["prompt"],
                         },
-                        "required": ["prompt"],
                     },
                 },
-            },
-        ]
+            ]
+        else:
+            tools = None
 
         print(f"Thinking...")
         with TimeIt("LLM thinking"):
@@ -227,58 +230,106 @@ class pipeline:
                             "preview",
                             gen_data["history"] + [{"role": "assistant", "content": text}]
                         )
-            if "<tool_call>" in text:
+
+            call = None
+            if settings.default_settings.get("enable_llm_tools", False):
+                # Parse the output and look for tool_calls. (This is probably not the proper way to do it...)
                 tool_error = f"![Error]({local_url}gradio_api/file=html/error.png)"
-                try:
-                    call = re.match(r"^.*<tool_call>(?P<call>.+)</tool_call>.*$", text, flags=re.MULTILINE+re.DOTALL)
-                    tool_call = json.loads(call.groupdict()['call'].strip()[1:-1]) # There are extra {} in the reply?
+                if "<tool_call>" in text:
+                    try:
+                        call = re.match(r"^.*<tool_call>(?P<call>.+)</tool_call>.*$", text, flags=re.MULTILINE+re.DOTALL)
+                        call = call.groupdict()['call'].strip()[1:-1] # There are extra {} in the reply?
+                        call_type = "xml"
+                    except:
+                        call = None
+                else:
+                    # Llama-instruct?
+                    try:
+                        json.loads(text)
+                        call = text
+                        call_type = "json"
+                    except Exception as e:
+                        call = None
 
-                    if tool_call.get('name', None) == 'generate_image':
-                        prompt = tool_call['arguments']['prompt']
-                        task_id = -1
+                if call is not None:
+                    try:
+                        tool_call = json.loads(call) # There are extra {} in the reply?
+                        if tool_call.get('name', None) == 'generate_image':
+                            if 'arguments' in tool_call:
+                                prompt = tool_call['arguments']['prompt']
+                            elif 'parameters' in tool_call:
+                                prompt = tool_call['parameters']['prompt']
+                            else:
+                                # Unknown...
+                                prompt = str(tool_call)
 
-                        tmp_data = {
-                            'task_type': "tool_call",
-                            'task_id': task_id,
-                            'silent': True,
-                            'prompt': prompt,
-                            'negative': "",
-                            'loras': [
-                                ("", f"{settings.default_settings.get('lora_1_weight', 1.0)} - {settings.default_settings.get('lora_1_model', 'None')}"),
-                                ("", f"{settings.default_settings.get('lora_2_weight', 1.0)} - {settings.default_settings.get('lora_2_model', 'None')}"),
-                                ("", f"{settings.default_settings.get('lora_3_weight', 1.0)} - {settings.default_settings.get('lora_3_model', 'None')}"),
-                                ("", f"{settings.default_settings.get('lora_4_weight', 1.0)} - {settings.default_settings.get('lora_4_model', 'None')}"),
-                                ("", f"{settings.default_settings.get('lora_5_weight', 1.0)} - {settings.default_settings.get('lora_5_model', 'None')}"),
-                            ],
-                            'style_selection': settings.default_settings['style'],
-                            'seed': -1,
-                            'base_model_name': settings.default_settings['base_model'],
-                            'performance_selection': settings.default_settings['performance'],
-                            'aspect_ratios_selection': settings.default_settings["resolution"],
-                            'cn_selection': None,
-                            'cn_type': None,
-                            'silent': True,
-                            'image_number': 1,
-                        }
+                            task_id = -1
 
-                        # TODO unload llm model from memory?
-                        del self.llm
-                        self.llm = None
+                            tmp_data = {
+                                'task_type': "tool_call",
+                                'task_id': task_id,
+                                'silent': True,
+                                'prompt': prompt,
+                                'negative': "",
+                                'loras': [
+                                    ("", f"{settings.default_settings.get('lora_1_weight', 1.0)} - {settings.default_settings.get('lora_1_model', 'None')}"),
+                                    ("", f"{settings.default_settings.get('lora_2_weight', 1.0)} - {settings.default_settings.get('lora_2_model', 'None')}"),
+                                    ("", f"{settings.default_settings.get('lora_3_weight', 1.0)} - {settings.default_settings.get('lora_3_model', 'None')}"),
+                                    ("", f"{settings.default_settings.get('lora_4_weight', 1.0)} - {settings.default_settings.get('lora_4_model', 'None')}"),
+                                    ("", f"{settings.default_settings.get('lora_5_weight', 1.0)} - {settings.default_settings.get('lora_5_model', 'None')}"),
+                                ],
+                                'style_selection': settings.default_settings['style'],
+                                'seed': -1,
+                                'base_model_name': settings.default_settings['base_model'],
+                                'performance_selection': settings.default_settings['performance'],
+                                'aspect_ratios_selection': settings.default_settings["resolution"],
+                                'cn_selection': None,
+                                'cn_type': None,
+                                'silent': True,
+                                'image_number': 1,
+                            }
 
-                        results = worker._process(tmp_data.copy())
-                        file = results[0]
-                        url = local_url + "gradio_api/file/" + re.sub(r'[^/]+/\.\./', '', str(file.relative_to(file.cwd())))
-                        markdown = f"\n![Image]({url})\n"
-                        text = re.sub(r"<tool_call>.*</tool_call>", markdown, text, flags=re.MULTILINE+re.DOTALL)
+                            # unload llm model from memory?
+                            # TODO: make this selectable for people with more ram/vram that is socialy acceptable
+                            del self.llm
+                            self.llm = None
 
-                    else:
-                        text = tool_error # Unknown tool
-                        text += "Unknown tool"
+                            info_txt = "(Generating image...)"
+                            if call_type == "xml":
+                                tmp_text = re.sub(r"<tool_call>.*</tool_call>", info_txt, text, flags=re.MULTILINE+re.DOTALL)
+                            elif call_type == "json":
+                                tmp_text = info_txt
+                            else:
+                                # Just add it to the end...
+                                tmp_text = text + "\n" + info_txt
 
-                except Exception as e:
-                    import traceback
-                    print(f"ERROR:")
-                    traceback.print_exc()
-                    text += f"Exception? {e}"
+                            worker.add_result(
+                                gen_data["task_id"],
+                                "preview",
+                                gen_data["history"] + [{"role": "assistant", "content": tmp_text}]
+                            )
+
+                            results = worker._process(tmp_data.copy())
+                            file = results[0]
+                            url = local_url + "gradio_api/file/" + re.sub(r'[^/]+/\.\./', '', str(file.relative_to(file.cwd())))
+                            markdown = f"\n![Image]({url})\n"
+
+                            if call_type == "xml":
+                                text = re.sub(r"<tool_call>.*</tool_call>", markdown, text, flags=re.MULTILINE+re.DOTALL)
+                            elif call_type == "json":
+                                text = markdown
+                            else:
+                                # Just add it to the end...
+                                text += "\n" + markdown
+
+                        else:
+                            text = tool_error # Unknown tool
+                            text += "Unknown tool"
+
+                    except Exception as e:
+                        import traceback
+                        print(f"ERROR:")
+                        traceback.print_exc()
+                        text += f"Exception? {e}"
 
         return text

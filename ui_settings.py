@@ -186,6 +186,10 @@ def create_settings():
                 path_outputs = gr.Textbox(label=t("Output Folder"), interactive=True, placeholder="", value=path_manager.paths.get("path_outputs", "../outputs/"))
                 add_setting("path_outputs", path_outputs)
 
+                gr.Markdown(t("# Chatbot settings"))
+                enable_llm_tools = gr.Checkbox(label=t("Enable image generation"), value=settings.default_settings.get("enable_llm_tools", False))
+                add_setting("enable_llm_tools", enable_llm_tools)
+
             with gr.Column():
                 gr.Markdown(t("# Other"))
                 interrogator = gr.Dropdown(label=t("Default Interrogator"), interactive=True, choices=list(looks.keys()), value=settings.default_settings.get("interrogator", None),)
