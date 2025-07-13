@@ -228,7 +228,8 @@ def create_settings():
                 add_setting("vae_sdxl", vae_sdxl)
                 vae_wan = gr.Dropdown(label="WAN 2.1 VAE", interactive=True, choices=[None]+path_manager.get_folder_list("vae"), value=settings.default_settings.get("vae_wan", None),)
                 add_setting("vae_wan", vae_wan)
-                llama_localfile = gr.Dropdown(label="Local Llama file", interactive=True, choices=[None]+path_manager.get_folder_list("llm"), value=settings.default_settings.get("llama_localfile", None),)
+                curr_localfile = settings.default_settings.get("llama_localfile", None)
+                llama_localfile = gr.Dropdown(label="Local Llama file", interactive=True, choices=[curr_localfile, None]+path_manager.get_folder_list("llm"), value=curr_localfile,)
                 add_setting("llama_localfile", llama_localfile)
 
         with gr.Row(), gr.Group():

@@ -258,7 +258,10 @@ class pipeline:
                             if 'arguments' in tool_call:
                                 prompt = tool_call['arguments']['prompt']
                             elif 'parameters' in tool_call:
-                                prompt = tool_call['parameters']['prompt']
+                                if 'properties' in tool_call['parameters']:
+                                    prompt = tool_call['parameters']['properties']['prompt']
+                                else:
+                                    prompt = tool_call['parameters']['prompt']
                             else:
                                 # Unknown...
                                 prompt = str(tool_call)
