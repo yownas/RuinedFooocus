@@ -22,8 +22,6 @@ from shared import settings
 
 buffer = []
 outputs = []
-results = []
-metadatastrings = []
 current_task = 0
 
 interrupt_ruined_processing = False
@@ -38,9 +36,8 @@ def is_sha256_hash(input_string):
     return True
 
 def _process(gen_data):
-    global metadatastrings
-
     res = []
+    metadatastrings = []
     gen_data = process_metadata(gen_data)
 
     pipeline = modules.pipelines.update(gen_data)
@@ -354,8 +351,6 @@ def worker():
         shared.state["preview_count"] = 0
 
     def process(gen_data):
-        global results, metadatastrings
-
         # Check some needed items
         if not "image_total" in gen_data:
             gen_data["image_total"] = 1
@@ -364,9 +359,10 @@ def worker():
 
         shared.state["preview_total"] = max(gen_data["image_total"], 1)
 
+        results = []
+        metadatastrings = []
         while True:
             reset_preview()
-            results = []
             gen_data["index"] = (0, (gen_data["image_total"]))
             if isinstance(gen_data["prompt"], list):
                 tmp_data = gen_data.copy()
@@ -374,15 +370,13 @@ def worker():
                     tmp_data["prompt"] = prompt
                     if gen_data["generate_forever"]:
                         reset_preview()
-                    results.append(_process(tmp_data)[0])
+                    results.extend(_process(tmp_data))
                     if shared.state["interrupted"]:
                         break
                     tmp_data["index"] = (tmp_data["index"][0] + 1, tmp_data["index"][1])
             else:
                 gen_data["index"] = (0, 1)
-                results.append(_process(gen_data)[0])
-
-            metadatastrings = []
+                results.extend(_process(gen_data))
 
             if not (gen_data["generate_forever"] and shared.state["interrupted"] == False):
                 break
