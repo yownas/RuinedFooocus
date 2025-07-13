@@ -186,7 +186,6 @@ class pipeline:
                 context += data["text"] + "\n\n"
             system_prompt += context
 
-        chat = [{"role": "system", "content": system_prompt + "\nOnly use the tool when asked to generate an image.\n"}] + h[-3 if len(h) > 3 else -len(h):] # Keep just the last 3 messages
         if settings.default_settings.get("enable_llm_tools", False):
             tools = [
                 {
@@ -204,8 +203,11 @@ class pipeline:
                     },
                 },
             ]
+            tool_prompt = "\nUse the tool when asked to generate an image. When using the tool you must make sure you use the correct format.\n"
         else:
             tools = None
+            tool_prompt = ""
+        chat = [{"role": "system", "content": system_prompt + tool_prompt}] + h[-3 if len(h) > 3 else -len(h):] # Keep just the last 3 messages
 
         print(f"Thinking...")
         with TimeIt("LLM thinking"):
