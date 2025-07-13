@@ -333,6 +333,7 @@ class pipeline:
                         import traceback
                         print(f"ERROR:")
                         traceback.print_exc()
-                        text += f"Exception? {e}"
+                        text += f"Exception? {e}\n"
+                        text += f"Call: {call}"
 
         return text
