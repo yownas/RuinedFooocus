@@ -8,9 +8,10 @@ from txtai import Embeddings
 from modules.util import TimeIt
 from pathlib import Path
 from modules.util import url_to_filename, load_file_from_url
-from shared import path_manager, settings
-import modules.async_worker as worker
+from shared import path_manager, settings, local_url
 import json
+import xmltodict
+import modules.async_worker as worker
 
 def llama_names():
         names = []
@@ -50,13 +51,14 @@ def run_llama(system_file, prompt):
             print(f"# User:\n{prompt.strip()}\n")
             print(f"# {name}: (Thinking...)")
             try:
-                res = llama.llm.create_chat_completion(
+                ret = llama.llm.create_chat_completion(
                     messages=[
                         {"role": "system", "content": system_prompt},
                         {"role": "user", "content": prompt}
                     ],
                     repeat_penalty = 1.18,
-                )["choices"][0]["message"]["content"]
+                )["choices"][0]["message"]
+                res = ret["content"]
             except Exception as e:
                 print(f"LLAMA ERROR: {e}")
                 res = prompt
@@ -184,7 +186,23 @@ class pipeline:
                 context += data["text"] + "\n\n"
             system_prompt += context
 
-        chat = [{"role": "system", "content": system_prompt}] + h[-3 if len(h) > 3 else -len(h):] # Keep just the last 3 messages
+        chat = [{"role": "system", "content": system_prompt + "\nOnly use the tool when asked to generate an image.\n"}] + h[-3 if len(h) > 3 else -len(h):] # Keep just the last 3 messages
+        tools = [
+            {
+                "type": "function",
+                "function": {
+                    "name": "generate_image",
+                    "description": "Generates an image from a prompt.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "prompt": {"type": "string", "description": "The prompt for the image"},
+                        },
+                        "required": ["prompt"],
+                    },
+                },
+            },
+        ]
 
         print(f"Thinking...")
         with TimeIt("LLM thinking"):
@@ -192,6 +210,8 @@ class pipeline:
                 messages = chat,
                 max_tokens=1024,
                 stream=True,
+                tools=tools,
+                tool_choice="auto",
             )
             #["choices"][0]["message"]["content"]
 
@@ -207,5 +227,58 @@ class pipeline:
                             "preview",
                             gen_data["history"] + [{"role": "assistant", "content": text}]
                         )
+            if "<tool_call>" in text:
+                tool_error = f"![Error]({local_url}gradio_api/file=html/error.png)"
+                try:
+                    call = re.match(r"^.*<tool_call>(?P<call>.+)</tool_call>.*$", text, flags=re.MULTILINE+re.DOTALL)
+                    tool_call = json.loads(call.groupdict()['call'].strip()[1:-1]) # There are extra {} in the reply?
+
+                    if tool_call.get('name', None) == 'generate_image':
+                        prompt = tool_call['arguments']['prompt']
+                        task_id = -1
+
+                        tmp_data = {
+                            'task_type': "tool_call",
+                            'task_id': task_id,
+                            'silent': True,
+                            'prompt': prompt,
+                            'negative': "",
+                            'loras': [
+                                ("", f"{settings.default_settings.get('lora_1_weight', 1.0)} - {settings.default_settings.get('lora_1_model', 'None')}"),
+                                ("", f"{settings.default_settings.get('lora_2_weight', 1.0)} - {settings.default_settings.get('lora_2_model', 'None')}"),
+                                ("", f"{settings.default_settings.get('lora_3_weight', 1.0)} - {settings.default_settings.get('lora_3_model', 'None')}"),
+                                ("", f"{settings.default_settings.get('lora_4_weight', 1.0)} - {settings.default_settings.get('lora_4_model', 'None')}"),
+                                ("", f"{settings.default_settings.get('lora_5_weight', 1.0)} - {settings.default_settings.get('lora_5_model', 'None')}"),
+                            ],
+                            'style_selection': settings.default_settings['style'],
+                            'seed': -1,
+                            'base_model_name': settings.default_settings['base_model'],
+                            'performance_selection': settings.default_settings['performance'],
+                            'aspect_ratios_selection': settings.default_settings["resolution"],
+                            'cn_selection': None,
+                            'cn_type': None,
+                            'silent': True,
+                            'image_number': 1,
+                        }
+
+                        # TODO unload llm model from memory?
+                        del self.llm
+                        self.llm = None
+
+                        results = worker._process(tmp_data.copy())
+                        file = results[0]
+                        url = local_url + "gradio_api/file/" + re.sub(r'[^/]+/\.\./', '', str(file.relative_to(file.cwd())))
+                        markdown = f"\n![Image]({url})\n"
+                        text = re.sub(r"<tool_call>.*</tool_call>", markdown, text, flags=re.MULTILINE+re.DOTALL)
+
+                    else:
+                        text = tool_error # Unknown tool
+                        text += "Unknown tool"
+
+                except Exception as e:
+                    import traceback
+                    print(f"ERROR:")
+                    traceback.print_exc()
+                    text += f"Exception? {e}"
 
         return text

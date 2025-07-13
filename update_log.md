@@ -1,3 +1,6 @@
+###
+* Chatbots now has access to a image generation tool
+
 ### 25.06.27
 * Flux.1 Kontext support
 * Fix Florence
