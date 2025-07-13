@@ -315,7 +315,7 @@ class pipeline:
                             results = worker._process(tmp_data.copy())
                             file = results[0]
                             url = local_url + "gradio_api/file/" + re.sub(r'[^/]+/\.\./', '', str(file.relative_to(file.cwd())))
-                            markdown = f"\n![Image]({url})\n"
+                            markdown = f"\n*{prompt}*\n\n![Image]({url})\n"
 
                             if call_type == "xml":
                                 text = re.sub(r"<tool_call>.*</tool_call>", markdown, text, flags=re.MULTILINE+re.DOTALL)
