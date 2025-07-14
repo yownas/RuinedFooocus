@@ -203,7 +203,7 @@ class pipeline:
                     },
                 },
             ]
-            tool_prompt = "\nUse the tool when asked to generate an image. When using the tool you must make sure you use the correct format.\n"
+            tool_prompt = "\nUse the tool when asked to generate an image. You really need to make sure you use the correct format for the tool.\n"
         else:
             tools = None
             tool_prompt = ""
@@ -316,7 +316,7 @@ class pipeline:
 
                             results = worker._process(tmp_data.copy())
                             file = results[0]
-                            url = local_url + "gradio_api/file/" + re.sub(r'[^/]+/\.\./', '', str(file.relative_to(file.cwd())))
+                            url = "gradio_api/file/" + re.sub(r'[^/]+/\.\./', '', str(file.relative_to(file.cwd())))
                             markdown = f"\n*{prompt}*\n\n![Image]({url})\n"
 
                             if call_type == "xml":
@@ -335,7 +335,8 @@ class pipeline:
                         import traceback
                         print(f"ERROR:")
                         traceback.print_exc()
-                        text += f"Exception? {e}\n"
-                        text += f"Call: {call}"
+                        text += f"Error: {e}\n\n"
+                        text += f"Call: {call}\n\n"
+                        text += "Looks like I made a mistake. I really need to make sure I use the correct format. Do you want me to try again?"
 
         return text
