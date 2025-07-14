@@ -120,6 +120,7 @@ def _process(gen_data):
     else:
         gen_data["height"] = height
 
+    # TODO: Leave this logic to the pipeline?
     if gen_data["cn_selection"] == "Img2Img" or gen_data["cn_type"] == "Img2img":
         if gen_data["input_image"]:
             width = gen_data["input_image"].width

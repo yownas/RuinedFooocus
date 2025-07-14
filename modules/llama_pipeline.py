@@ -203,7 +203,7 @@ class pipeline:
                     },
                 },
             ]
-            tool_prompt = "\nUse the tool when asked to generate an image. You really need to make sure you use the correct format for the tool.\n"
+            tool_prompt = "\nUse the tool when asked to generate an image. When using the tool you must make sure you use the correct format.\n"
         else:
             tools = None
             tool_prompt = ""
@@ -236,7 +236,7 @@ class pipeline:
             call = None
             if settings.default_settings.get("enable_llm_tools", False):
                 # Parse the output and look for tool_calls. (This is probably not the proper way to do it...)
-                tool_error = f"![Error]({local_url}gradio_api/file=html/error.png)"
+                tool_error = f"![Error](gradio_api/file=html/error.png)"
                 if "<tool_call>" in text:
                     try:
                         call = re.match(r"^.*<tool_call>(?P<call>.+)</tool_call>.*$", text, flags=re.MULTILINE+re.DOTALL)
@@ -316,7 +316,8 @@ class pipeline:
 
                             results = worker._process(tmp_data.copy())
                             file = results[0]
-                            url = "gradio_api/file/" + re.sub(r'[^/]+/\.\./', '', str(file.relative_to(file.cwd())))
+                            filename = str(file.relative_to(file.cwd()).as_posix())
+                            url = "gradio_api/file=" + re.sub(r'[^/]+/\.\./', '', filename)
                             markdown = f"\n*{prompt}*\n\n![Image]({url})\n"
 
                             if call_type == "xml":
