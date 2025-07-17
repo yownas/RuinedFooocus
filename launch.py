@@ -91,22 +91,22 @@ def prepare_environment(offline=False):
         )
 
 
-    import torchruntime
-    import platform
-    gpus = torchruntime.device_db.get_gpus()
-    if "TORCH_PLATFORM" in os.environ:
-        torch_platform = os.environ["TORCH_PLATFORM"]
-    else:
-        torch_platform = torchruntime.platform_detection.get_torch_platform(gpus)
-    os_platform = platform.system()
+        import torchruntime
+        import platform
+        gpus = torchruntime.device_db.get_gpus()
+        if "TORCH_PLATFORM" in os.environ:
+            torch_platform = os.environ["TORCH_PLATFORM"]
+        else:
+            torch_platform = torchruntime.platform_detection.get_torch_platform(gpus)
+        os_platform = platform.system()
 
-    # Some platform checks
-    if torch_platform == "xpu" and not os_platform == "Windows":
-        torch_platform == "cpu"
-    if torch_platform == "mps" and not os_platform == "Darwin":
-        torch_platform == "cpu"
+        # Some platform checks
+        if torch_platform == "xpu" and not os_platform == "Windows":
+            torch_platform == "cpu"
+        if torch_platform == "mps" and not os_platform == "Darwin":
+            torch_platform == "cpu"
 
-    print(f"Torch platform: {os_platform}: {torch_platform}") # Some debug output
+        print(f"Torch platform: {os_platform}: {torch_platform}") # Some debug output
 
     if offline:
         print("Skip check of required modules.")
