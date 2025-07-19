@@ -507,7 +507,7 @@ class pipeline:
             input_image_pil = input_image.convert("RGB")
             input_image = np.array(input_image_pil).astype(np.float32) / 255.0
             input_image = torch.from_numpy(input_image)[None,]
-            megapixels=math.sqrt(float(gen_data["width"])*float(gen_data["height"])/(1024*1024))
+            megapixels=float(gen_data["width"])*float(gen_data["height"])/(1024*1024)
             input_image = ImageScaleToTotalPixels().upscale(
                 image=input_image, upscale_method="bicubic", megapixels=megapixels
             )[0]
