@@ -235,7 +235,8 @@ def _process(gen_data):
             try:
                 # Load LoRAs
                 parsed_loras, p_txt, n_txt = parse_loras(p_txt, n_txt)
-                pipeline.load_loras(loras + parsed_loras)
+                used_loras = loras + parsed_loras
+                pipeline.load_loras(used_loras)
                 gen_data["positive_prompt"] = p_txt
                 gen_data["negative_prompt"] = n_txt
 
@@ -268,7 +269,7 @@ def _process(gen_data):
                 "scheduler": gen_data["scheduler"],
                 "base_model_name": gen_data["base_model_name"],
                 "base_model_hash": get_checkpoint_hashes(gen_data["base_model_name"])['SHA256'],
-                "loras": [[f"{get_lora_hashes(lora['name'])['SHA256']}", f"{lora['weight']} - {lora['name']}"] for lora in loras],
+                "loras": [[f"{get_lora_hashes(lora['name'])['SHA256']}", f"{lora['weight']} - {lora['name']}"] for lora in used_loras],
                 "start_step": start_step,
                 "denoise": denoise,
                 "clip_skip": gen_data["clip_skip"],
