@@ -323,6 +323,9 @@ class pipeline:
 
     def load_loras(self, loras):
         loaded_loras = []
+        loras = sorted(loras, key=lambda x: x['name'].lower())
+        if self.xl_base_patched_hash == str(loras):
+            return
 
         model = self.xl_base
         for lora in loras:
@@ -363,7 +366,6 @@ class pipeline:
         self.xl_base_patched_hash = str(loras)
 
         print(f"LoRAs loaded: {loaded_loras}")
-
         return
 
     def refresh_controlnet(self, name=None):

@@ -65,11 +65,6 @@ def _process(gen_data):
         if not l == "None":
             loras.append({"name": l, "weight": float(w), "hash": hash})
 
-    parsed_loras, pos_stripped, neg_stripped = parse_loras(
-        gen_data["prompt"], gen_data["negative"]
-    )
-    loras.extend(parsed_loras)
-
     if "silent" not in gen_data:
         outputs.append(
             [
@@ -84,7 +79,6 @@ def _process(gen_data):
     )
     if "silent" not in gen_data:
         outputs.append([gen_data["task_id"], "preview", (-1, f"Loading LoRA models ...", None)])
-    pipeline.load_loras(loras)
 
     # FIXME move this into get_perf_options?
     if (
@@ -227,20 +221,24 @@ def _process(gen_data):
     stop_batch = False
     for i in range(max(image_number, 1)):
         p_txt, n_txt = process_prompt(
-            gen_data["style_selection"], pos_stripped, neg_stripped, gen_data
+            gen_data["style_selection"], gen_data["prompt"], gen_data["negative"], gen_data
         )
 
         distance = float(i) / max(image_number - 1.0, 1.0) # Use max() to avoid div. by 0
         p_txt = shift_attention(p_txt, distance)
         n_txt = shift_attention(n_txt, distance)
 
-        gen_data["positive_prompt"] = p_txt
-        gen_data["negative_prompt"] = n_txt
         gen_data["seed"] = abs(seed) # Update seed
         start_step = 0
         denoise = None
         with TimeIt("Pipeline process"):
             try:
+                # Load LoRAs
+                parsed_loras, p_txt, n_txt = parse_loras(p_txt, n_txt)
+                pipeline.load_loras(loras + parsed_loras)
+                gen_data["positive_prompt"] = p_txt
+                gen_data["negative_prompt"] = n_txt
+
                 imgs = pipeline.process(
                     gen_data=gen_data,
                     callback=callback if "silent" not in gen_data else None,
