@@ -328,6 +328,7 @@ class Models:
                 data = self.search_civitai_with_hash(hash)
                 if data is not None and data.get('modelId', None) is not None:
                     print(f"    Download link: https://civitai.com/models/{data.get('modelId')}")
+                print(f"    Search here: https://civitaiarchive.com/sha256/{hash}")
 
         return filename
 
