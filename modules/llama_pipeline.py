@@ -28,11 +28,11 @@ def run_llama(system_file, prompt):
         if Llama == None:
             return "Error: There is no Llama"
         name = None
-        sys_pat = "system:.*\n\n"
+        sys_pat = r"system:.*\n\n"
         system = re.match(sys_pat, prompt, flags=re.M|re.I)
         if system is not None: # Llama system-prompt provided in the ui-prompt
             name = "Llama"
-            system_prompt = re.sub("^[^:]*: *", "", system.group(0), flags=re.M|re.I)
+            system_prompt = re.sub(r"^[^:]*: *", "", system.group(0), flags=re.M|re.I)
             prompt = re.sub(sys_pat, "", prompt)
         else:
             try:

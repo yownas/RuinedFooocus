@@ -135,7 +135,7 @@ def requirements_met(requirements_file):
 
             try:
                 version_installed = re.sub(
-                    "\+.*$",
+                    r"\+.*$",
                     "",
                     importlib.metadata.version(package)
                 )
