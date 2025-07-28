@@ -1,3 +1,9 @@
+### 25.07.28
+* Bump gradio version
+* Workaround for Nexa modules
+* Links to civitaiarchive for missing models
+* Fixes
+
 ### 25.07.13
 * Chatbots can now have access to a image generation tool
 
