@@ -10,7 +10,7 @@ from modules.util import generate_temp_filename
 from PIL import Image
 
 import os
-from comfy.model_base import WAN21
+from comfy.model_base import WAN21, WAN22
 import shared
 from shared import path_manager, settings
 
@@ -22,6 +22,7 @@ from modules.pipleline_utils import (
 )
 
 import comfy.utils
+import comfy.latent_formats
 import comfy.model_management
 from comfy.sd import load_checkpoint_guess_config
 
@@ -32,7 +33,7 @@ from nodes import (
     VAEDecodeTiled,
 )
 from comfy_extras.nodes_hunyuan import EmptyHunyuanLatentVideo
-from comfy_extras.nodes_wan import WanImageToVideo 
+from comfy_extras.nodes_wan import WanImageToVideo, Wan22ImageToVideoLatent
 from comfy_extras.nodes_model_advanced import ModelSamplingSD3
 
 
@@ -59,6 +60,9 @@ class pipeline:
     model_hash_patched = ""
     model_base_patched = None
     conditions = None
+    latent_rgb_factors = None
+    latent_rgb_factors_bias = None
+    wan_version = None
 
     ggml_ops = GGMLOps()
 
@@ -117,35 +121,54 @@ class pipeline:
                     clip_names = []
 
                     if isinstance(unet.model, WAN21):
-                        clip_name = settings.default_settings.get("clip_umt5", "umt5_xxl_fp8_e4m3fn_scaled.safetensors")
-                        clip_names.append(str(clip_name))
-                        clip_path = path_manager.get_folder_file_path(
-                            "clip",
-                            clip_name,
-                            default = os.path.join(path_manager.model_paths["clip_path"], clip_name)
-                        )
-                        clip_paths.append(str(clip_path))
-                        clip_type = comfy.sd.CLIPType.WAN
-                        # https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged
-                        vae_name = settings.default_settings.get("vae_wan", "wan_2.1_vae.safetensors")
-
+                        self.wan_version = "WAN21"
+                        latent_format = comfy.latent_formats.Wan21()
+                        self.latent_rgb_factors = latent_format.latent_rgb_factors
+                        self.latent_rgb_factors_bias = latent_format.latent_rgb_factors_bias
+                    elif isinstance(unet.model, WAN22):
+                        self.wan_version = "WAN22"
+                        latent_format = comfy.latent_formats.Wan22()
+                        self.latent_rgb_factors = latent_format.latent_rgb_factors
+                        self.latent_rgb_factors_bias = latent_format.latent_rgb_factors_bias
                     else:
                         print(f"ERROR: Not a Wan Video model?")
                         unet = None
                         return
 
+                    clip_name = settings.default_settings.get("clip_umt5", "umt5_xxl_fp8_e4m3fn_scaled.safetensors")
+                    clip_names.append(str(clip_name))
+                    clip_path = path_manager.get_folder_file_path(
+                        "clip",
+                        clip_name,
+                        default = os.path.join(path_manager.model_paths["clip_path"], clip_name)
+                    )
+                    clip_paths.append(str(clip_path))
+                    clip_type = comfy.sd.CLIPType.WAN
+
                     print(f"Loading CLIP: {clip_names}")
                     clip = comfy.sd.load_clip(ckpt_paths=clip_paths, clip_type=clip_type, model_options={})
 
+
+                    if self.wan_version == "WAN21":
+                        # https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged
+                        vae_name = settings.default_settings.get("vae_wan", "wan_2.1_vae.safetensors")
+                    else:
+                        # FIXME: This is for the 5b model. Might need check for "5b or 14b".
+                        # https://huggingface.co/calcuis/wan2-gguf/resolve/main/pig_wan2_vae_fp32-f16.gguf
+                        vae_name = settings.default_settings.get("vae_wan", "pig_wan_2.2_vae_fp32-f16.gguf")
+
+                    print(f"Loading VAE: {vae_name}")
                     vae_path = path_manager.get_folder_file_path(
                         "vae",
                         vae_name,
                         default = os.path.join(path_manager.model_paths["vae_path"], vae_name)
                     )
-                    print(f"Loading VAE: {vae_name}")
-                    sd = comfy.utils.load_torch_file(str(vae_path))
+
+                    #sd = comfy.utils.load_torch_file(str(vae_path))
+                    sd = load_gguf_sd(str(vae_path))
                     vae = comfy.sd.VAE(sd=sd)
 
+                    # FIXME: Is this needed for WAN22?
                     clip_vision_name = settings.default_settings.get("clip_vision", "clip_vision_h_fp8_e4m3fn.safetensors")
                     clip_vision_path = path_manager.get_folder_file_path(
                         "clip_vision",
@@ -186,7 +209,7 @@ class pipeline:
                 unet=unet, clip=clip, vae=vae, clip_vision=clip_vision
             )
             if not (
-                isinstance(self.model_base.unet.model, WAN21)
+                isinstance(self.model_base.unet.model, WAN21) or isinstance(self.model_base.unet.model, WAN22)
             ):
                 print(
                     f"Model {type(self.model_base.unet.model)} not supported. Expected Wan Video model."
@@ -270,30 +293,8 @@ class pipeline:
 
     @torch.no_grad()
     def vae_decode_fake(self, latents):
-        # FIXME: This should probably just be import from comfyui
-        latent_rgb_factors = [
-            [-0.1299, -0.1692,  0.2932],
-            [ 0.0671,  0.0406,  0.0442],
-            [ 0.3568,  0.2548,  0.1747],
-            [ 0.0372,  0.2344,  0.1420],
-            [ 0.0313,  0.0189, -0.0328],
-            [ 0.0296, -0.0956, -0.0665],
-            [-0.3477, -0.4059, -0.2925],
-            [ 0.0166,  0.1902,  0.1975],
-            [-0.0412,  0.0267, -0.1364],
-            [-0.1293,  0.0740,  0.1636],
-            [ 0.0680,  0.3019,  0.1128],
-            [ 0.0032,  0.0581,  0.0639],
-            [-0.1251,  0.0927,  0.1699],
-            [ 0.0060, -0.0633,  0.0005],
-            [ 0.3477,  0.2275,  0.2950],
-            [ 0.1984,  0.0913,  0.1861]
-        ]
-
-        latent_rgb_factors_bias = [-0.1835, -0.0868, -0.3360]
-
-        weight = torch.tensor(latent_rgb_factors, device=latents.device, dtype=latents.dtype).transpose(0, 1)[:, :, None, None, None]
-        bias = torch.tensor(latent_rgb_factors_bias, device=latents.device, dtype=latents.dtype)
+        weight = torch.tensor(self.latent_rgb_factors, device=latents.device, dtype=latents.dtype).transpose(0, 1)[:, :, None, None, None]
+        bias = torch.tensor(self.latent_rgb_factors_bias, device=latents.device, dtype=latents.dtype)
 
         images = torch.nn.functional.conv3d(latents, weight, bias=bias, stride=1, padding=0, dilation=1, groups=1)
         images = images.clamp(0.0, 1.0)
@@ -360,31 +361,45 @@ class pipeline:
             shift = 8.0,
         )[0]
 
-        # t2v or i2v?
         if gen_data["input_image"]:
             image = np.array(gen_data["input_image"]).astype(np.float32) / 255.0
             image = torch.from_numpy(image)[None,]
+        else:
+            image = None
 
-            clip_vision_output = self.model_base_patched.clip_vision.encode_image(image)
+        if self.wan_version == "WAN21":
+            if image is not None:
+                clip_vision_output = self.model_base_patched.clip_vision.encode_image(image)
 
-            (positive, negative, latent_image) = WanImageToVideo().encode(
-                positive = self.conditions["+"]["cache"],
-                negative = self.conditions["-"]["cache"],
+                (positive, negative, latent_image) = WanImageToVideo().encode(
+                    positive = self.conditions["+"]["cache"],
+                    negative = self.conditions["-"]["cache"],
+                    vae = self.model_base_patched.vae,
+                    width = gen_data["width"],
+                    height = gen_data["height"],
+                    length = gen_data["original_image_number"],
+                    batch_size = 1,
+                    start_image = image,
+                    clip_vision_output = clip_vision_output,
+                )
+            else:
+                # latent_image
+                latent_image = EmptyHunyuanLatentVideo().generate(
+                    width = gen_data["width"],
+                    height = gen_data["height"],
+                    length = gen_data["original_image_number"],
+                    batch_size = 1,
+                )[0]
+                positive = self.conditions["+"]["cache"]
+                negative = self.conditions["-"]["cache"]
+        else: # WAN22
+            latent_image = Wan22ImageToVideoLatent().encode(
                 vae = self.model_base_patched.vae,
                 width = gen_data["width"],
                 height = gen_data["height"],
                 length = gen_data["original_image_number"],
                 batch_size = 1,
-                start_image = image,
-                clip_vision_output = clip_vision_output,
-            )
-        else:
-            # latent_image
-            latent_image = EmptyHunyuanLatentVideo().generate(
-                width = gen_data["width"],
-                height = gen_data["height"],
-                length = gen_data["original_image_number"],
-                batch_size = 1,
+                start_image = image, # Image is None if t2v
             )[0]
             positive = self.conditions["+"]["cache"]
             negative = self.conditions["-"]["cache"]
