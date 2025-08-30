@@ -123,22 +123,20 @@ def prepare_environment(offline=False):
             print("This next step may take a while")
             run_pip(f'install -r "{modules_file}"', "required modules")
 
-# ?? Old wlh's removed?
-#        if REINSTALL_ALL or not is_installed("nexa"):
-#            platform_index = {
-#                'cu124': 'https://github.nexa.ai/whl/cu124',
-#                'cu128': 'https://github.nexa.ai/whl/cu124',
-#                'rocm6.2': 'https://github.nexa.ai/whl/rocm621',
-#                'directml': 'https://github.nexa.ai/whl/vulkan',
-#                'mps': 'https://github.nexa.ai/whl/metal',
-#                'xpu': 'https://github.nexa.ai/whl/sycl',
-#                'cpu': 'https://github.nexa.ai/whl/cpu'
-#            }
-#            if torch_platform in platform_index:
-#                run_pip(f'install nexaai -U --extra-index-url {platform_index[torch_platform]}', "Nexa SDK modules")
-#            else:
-#                print(f"ERROR: Can't find Nexai SDK url for {torch_platform}")
-
+        try:
+            if REINSTALL_ALL or not is_installed("xllamacpp"):
+                platform_index = {
+                    'cu124': 'https://xorbitsai.github.io/xllamacpp/whl/cu124',
+                    'cu128': 'https://xorbitsai.github.io/xllamacpp/whl/cu128',
+                    'rocm6.3': 'https://xorbitsai.github.io/xllamacpp/whl/cu128',
+                    'rocm6.4': 'https://xorbitsai.github.io/xllamacpp/whl/rocm-6.3.4',
+                    'cpu': 'https://pypi.org/simple'
+                }
+                if torch_platform not in platform_index:
+                    torch_platform = 'cpu'
+                run_pip(f'install xllamacpp==0.2.0 -U --extra-index-url {platform_index[torch_platform]}', "XLlamacpp")
+        except:
+            print("WARNING: Failed to install/update llm modules.")
 
 def clone_git_repos(offline=False):
     from modules.launch_util import git_clone
