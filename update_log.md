@@ -1,3 +1,7 @@
+### 25.08.31
+* Support WAN 2.2 5b
+* Switch from NexaAI to XLlamaCPP
+
 ### 25.07.28
 * Bump gradio version
 * Workaround for Nexa modules
