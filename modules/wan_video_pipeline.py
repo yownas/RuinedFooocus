@@ -356,9 +356,13 @@ class pipeline:
 #            pbar.update_absolute(step + 1, total_steps, None)
 
         # ModelSamplingSD3
+        if self.wan_version == "WAN21":
+            shift = 8.0
+        else: # WAN22
+            shift = 5.0
         model_sampling = ModelSamplingSD3().patch(
             model = self.model_base_patched.unet,
-            shift = 8.0,
+            shift = shift,
         )[0]
 
         if gen_data["input_image"]:
