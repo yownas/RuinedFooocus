@@ -213,6 +213,8 @@ class pipeline:
             }
 
             def callback(chunk):
+                if len(chunk.get('choices', [])) == 0:
+                    return
                 try:
                     delta = chunk['choices'][0]['delta']
                 except:
