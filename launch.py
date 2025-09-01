@@ -126,8 +126,8 @@ def prepare_environment(offline=False):
                 platform_index = {
                     'cu124': 'https://xorbitsai.github.io/xllamacpp/whl/cu124',
                     'cu128': 'https://xorbitsai.github.io/xllamacpp/whl/cu128',
-                    'rocm6.3': 'https://xorbitsai.github.io/xllamacpp/whl/cu128',
-                    'rocm6.4': 'https://xorbitsai.github.io/xllamacpp/whl/rocm-6.3.4',
+                    'rocm6.3': 'https://xorbitsai.github.io/xllamacpp/whl/rocm-6.3.4',
+                    'rocm6.4': 'https://xorbitsai.github.io/xllamacpp/whl/rocm-6.4.1',
                     'cpu': 'https://pypi.org/simple'
                 }
                 if torch_platform not in platform_index:
