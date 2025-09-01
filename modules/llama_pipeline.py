@@ -147,7 +147,7 @@ class pipeline:
         worker.add_result(
             gen_data["task_id"],
             "preview",
-            gen_data["history"]
+            gen_data["history"] + [{"role": "assistant", "content": "🤔"}]
         )
 
         if self.llm == None:
