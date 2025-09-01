@@ -5,6 +5,7 @@ import warnings
 from pathlib import Path
 import ssl
 from tempfile import gettempdir
+from modules.shared_functions import broken_torch_platforms
 
 os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
 os.environ["DO_NOT_TRACK"] = "1"
@@ -101,10 +102,7 @@ def prepare_environment(offline=False):
         os_platform = platform.system()
 
         # Some platform checks
-        if torch_platform == "xpu" and not os_platform == "Windows":
-            torch_platform == "cpu"
-        if torch_platform == "mps" and not os_platform == "Darwin":
-            torch_platform == "cpu"
+        torch_platform, os_platform = broken_torch_platforms(torch_platform, os_platform)
 
         print(f"Torch platform: {os_platform}: {torch_platform}") # Some debug output
 

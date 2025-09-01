@@ -1,6 +1,7 @@
 import torchruntime
 import platform
 import os
+from modules.shared_functions import broken_torch_platforms
 gpus = torchruntime.device_db.get_gpus()
 if "TORCH_PLATFORM" in os.environ:
     torch_platform = os.environ["TORCH_PLATFORM"]
@@ -9,10 +10,7 @@ else:
 os_platform = platform.system()
 
 # Some platform checks
-if torch_platform == "xpu" and not os_platform == "Windows":
-    torch_platform == "cpu"
-if torch_platform == "mps" and not os_platform == "Darwin":
-    torch_platform == "cpu"
+torch_platform, os_platform = broken_torch_platforms(torch_platform, os_platform)
 
 from argparser import args
 import comfy.cli_args
