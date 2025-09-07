@@ -82,7 +82,7 @@ class pipeline:
         return gen_data
 
     def load_base_model(self):
-        localfile = settings.default_settings.get("llama_localfile", None) # FIXME set a default file
+        localfile = settings.default_settings.get("llama_localfile", "Llama-3.2-3B-Instruct-uncensored-IQ3_M.gguf")
         llm_path = path_manager.get_folder_file_path(
             "llm",
             localfile,
