@@ -1289,7 +1289,7 @@ with shared.gradio_root as block:
                 custom_width: gr.update(visible='hidden'),
                 custom_height: gr.update(visible='hidden'),
                 ratio_save: gr.update(visible='hidden'),
-                model_tab: gr.update(visible='hidden'),
+                model_tab: gr.update(visible=False),
             }
 
         def preset_unselect(performance_selection_val, aspect_ratios_selection_val):
@@ -1337,7 +1337,7 @@ with shared.gradio_root as block:
                 custom_width: gr.update(visible='hidden'),
                 custom_height: gr.update(visible='hidden'),
                 ratio_save: gr.update(visible='hidden'),
-                model_tab: gr.update(visible='hidden'),
+                model_tab: gr.update(visible=False),
             }
 
         preset_image.clear(
