@@ -149,16 +149,16 @@ def launch_app(args):
 
 def update_clicked():
     return {
-        run_button: gr.update(interactive=False, visible=False),
+        run_button: gr.update(interactive=False, visible='hidden'),
         stop_button: gr.update(interactive=True, visible=True),
         progress_html: gr.update(
             visible=True,
             value=modules.html.make_progress_html(0, "Please wait ..."),
         ),
-        gallery: gr.update(visible=False),
+        gallery: gr.update(visible='hidden'),
         main_view: gr.update(visible=True, value="html/init_image.png"),
         inpaint_view: gr.update(
-            visible=False,
+            visible='hidden',
             interactive=False,
         ),
         hint_text: gr.update(visible=True, value=modules.hints.get_hint()),
@@ -168,7 +168,7 @@ def update_clicked():
 def update_preview(product):
     percentage, title, image = product
     return {
-        run_button: gr.update(interactive=False, visible=False),
+        run_button: gr.update(interactive=False, visible='hidden'),
         stop_button: gr.update(interactive=True, visible=True),
         progress_html: gr.update(
             visible=True, value=modules.html.make_progress_html(percentage, title)
@@ -188,8 +188,8 @@ def update_results(product):
 
     return {
         run_button: gr.update(interactive=True, visible=True),
-        stop_button: gr.update(interactive=False, visible=False),
-        progress_html: gr.update(visible=False),
+        stop_button: gr.update(interactive=False, visible='hidden'),
+        progress_html: gr.update(visible='hidden'),
         main_view: gr.update(value=product[0]) if len(product) > 0 else gr.update(),
         inpaint_toggle: gr.update(value=False),
         gallery: gr.update(
@@ -292,12 +292,12 @@ shared.gradio_root = gr.Blocks().queue()
 
 with shared.gradio_root as block:
     block.load()
-    run_event = gr.Number(visible=False, value=0)
+    run_event = gr.Number(visible='hidden', value=0)
     add_ctrl("run_event", run_event)
 
     def get_cfg_timestamp():
         return shared.state["last_config"]
-    cfg_timestamp = gr.Textbox(visible=False, value=get_cfg_timestamp())
+    cfg_timestamp = gr.Textbox(visible='hidden', value=get_cfg_timestamp())
     cfg_timer = gr.Timer(value=5)
     cfg_timer.tick(fn=get_cfg_timestamp, show_api=False, outputs=[cfg_timestamp])
 
@@ -316,7 +316,7 @@ with shared.gradio_root as block:
             inpaint_view = gr.ImageEditor(
                 height=680,
                 type="numpy",
-                visible=False,
+                visible='hidden',
                 show_label=False,
                 show_fullscreen_button=True,
                 show_download_button=True,
@@ -329,7 +329,7 @@ with shared.gradio_root as block:
 
             progress_html = gr.HTML(
                 value=modules.html.make_progress_html(32, "Progress 32%"),
-                visible=False,
+                visible='hidden',
                 padding=False,
                 elem_id="progress-bar",
                 elem_classes="progress-bar",
@@ -384,7 +384,7 @@ with shared.gradio_root as block:
 
                             spellcheck = gr.Dropdown(
                                 label="Wildcards",
-                                visible=False,
+                                visible='hidden',
                                 choices=[],
                                 value="",
                                 scale=1,
@@ -406,7 +406,7 @@ with shared.gradio_root as block:
                             }
                         else:
                             return {
-                                spellcheck: gr.update(interactive=False, visible=False)
+                                spellcheck: gr.update(interactive=False, visible='hidden')
                             }
 
                     @spellcheck.select(show_api=False, inputs=[prompt, spellcheck], outputs=prompt)
@@ -418,7 +418,7 @@ with shared.gradio_root as block:
                 with gr.Column(scale=1, min_width=0):
                     run_button = gr.Button(value=t("Generate"), elem_id="generate")
                     stop_button = gr.Button(
-                        value=t("Stop"), interactive=False, visible=False
+                        value=t("Stop"), interactive=False, visible='hidden'
                     )
 
                     @main_view.upload(
@@ -462,7 +462,7 @@ with shared.gradio_root as block:
                         )
                 preset_selection = gr.Text(
                     value=None,
-                    visible=False,
+                    visible='hidden',
                 )
                 add_ctrl("preset_selection", preset_selection)
 
@@ -477,11 +477,11 @@ with shared.gradio_root as block:
                     show_label=False,
                     placeholder=t("Name"),
                     interactive=True,
-                    visible=False,
+                    visible='hidden',
                 )
                 perf_save = gr.Button(
                     value=t("Save"),
-                    visible=False,
+                    visible='hidden',
                 )
                 custom_default_values = performance_settings.get_perf_options(
                     settings["performance"]
@@ -492,7 +492,7 @@ with shared.gradio_root as block:
                     maximum=200,
                     step=1,
                     value=custom_default_values["custom_steps"],
-                    visible=False,
+                    visible='hidden',
                 )
                 add_ctrl("custom_steps", custom_steps)
 
@@ -502,21 +502,21 @@ with shared.gradio_root as block:
                     maximum=20.0,
                     step=0.1,
                     value=custom_default_values["cfg"],
-                    visible=False,
+                    visible='hidden',
                 )
                 add_ctrl("cfg", cfg)
                 sampler_name = gr.Dropdown(
                     label=t("Sampler"),
                     choices=KSampler.SAMPLERS,
                     value=custom_default_values["sampler_name"],
-                    visible=False,
+                    visible='hidden',
                 )
                 add_ctrl("sampler_name", sampler_name)
                 scheduler = gr.Dropdown(
                     label=t("Scheduler"),
                     choices=KSampler.SCHEDULERS,
                     value=custom_default_values["scheduler"],
-                    visible=False,
+                    visible='hidden',
                 )
                 add_ctrl("scheduler", scheduler)
 
@@ -526,7 +526,7 @@ with shared.gradio_root as block:
                     maximum=5,
                     step=1,
                     value=1,
-                    visible=False,
+                    visible='hidden',
                 )
 
                 add_ctrl("clip_skip", clip_skip)
@@ -585,7 +585,7 @@ with shared.gradio_root as block:
                         show_label=False,
                         placeholder=t("Name"),
                         interactive=True,
-                        visible=False,
+                        visible='hidden',
                     )
                     default_resolution = resolution_settings.get_aspect_ratios(
                         settings["resolution"]
@@ -595,7 +595,7 @@ with shared.gradio_root as block:
                         minimum=256,
                         maximum=4096,
                         step=2,
-                        visible=False,
+                        visible='hidden',
                         value=default_resolution[0],
                     )
                     add_ctrl("custom_width", custom_width)
@@ -604,13 +604,13 @@ with shared.gradio_root as block:
                         minimum=256,
                         maximum=4096,
                         step=2,
-                        visible=False,
+                        visible='hidden',
                         value=default_resolution[1],
                     )
                     add_ctrl("custom_height", custom_height)
                     ratio_save = gr.Button(
                         value=t("Save"),
-                        visible=False,
+                        visible='hidden',
                     )
 
                     @ratio_save.click(
@@ -673,7 +673,7 @@ with shared.gradio_root as block:
                     label=t("Seed"),
                     value=settings["seed"],
                     precision=0,
-                    visible=not settings["seed_random"],
+                    visible='hidden' if settings["seed_random"] else True,
                 )
                 add_ctrl("seed", image_seed)
 
@@ -694,7 +694,7 @@ with shared.gradio_root as block:
                     outputs=[image_seed]
                 )
                 def random_checked(r):
-                    return gr.update(visible=not r)
+                    return gr.update(visible='hidden' if r else True) 
 
                 def refresh_seed(r, s):
                     if r:
@@ -739,7 +739,7 @@ with shared.gradio_root as block:
                         )
 
                     base_model = gr.Text(
-                        visible=False,
+                        visible='hidden',
                         value=settings["base_model"],
                     )
                     add_ctrl("base_model_name", base_model)
@@ -789,7 +789,7 @@ with shared.gradio_root as block:
                     )
 
                 with gr.Tab(label="LoRAs"):
-                    with gr.Group(visible=False) as lora_add:
+                    with gr.Group(visible='hidden') as lora_add:
                         lorafilter = gr.Textbox(
                             placeholder=t("Search LoRA"),
                             value="",
@@ -875,7 +875,7 @@ with shared.gradio_root as block:
                 def gallery_toggle():
                     result = [
                         gr.update(visible=True),
-                        gr.update(visible=False),
+                        gr.update(visible='hidden'),
                     ]
                     return result
 
@@ -956,7 +956,7 @@ with shared.gradio_root as block:
 #                        ),
 
                     return {
-                        lora_add: gr.update(visible=False),
+                        lora_add: gr.update(visible='hidden'),
                         lora_gallery: gr.update(),
                         lora_active: gr.update(visible=True),
                         lora_active_gallery: gr.update(
@@ -1156,8 +1156,8 @@ with shared.gradio_root as block:
                         performance_outputs
                     )
                 else:
-                    return [gr.update(visible=False)] + [
-                        gr.update(visible=False)
+                    return [gr.update(visible='hidden')] + [
+                        gr.update(visible='hidden')
                     ] * len(performance_outputs)
 
             @performance_selection.change(
@@ -1203,10 +1203,10 @@ with shared.gradio_root as block:
                     selection
                 )
                 return {
-                    ratio_name: gr.update(visible=False),
-                    custom_width: gr.update(visible=False, value=selected_width),
-                    custom_height: gr.update(visible=False, value=selected_height),
-                    ratio_save: gr.update(visible=False),
+                    ratio_name: gr.update(visible='hidden'),
+                    custom_width: gr.update(visible='hidden', value=selected_width),
+                    custom_height: gr.update(visible='hidden', value=selected_height),
+                    ratio_save: gr.update(visible='hidden'),
                 }
 
         def activate(): # UGLY workaround for https://github.com/gradio-app/gradio/issues/7586
@@ -1276,25 +1276,25 @@ with shared.gradio_root as block:
                 preset_selection: gr.update(value=path),
                 preset_accordion: gr.update(label=t("Preset:") + " " + preset),
 
-                performance_selection: gr.update(visible=False),
-                perf_name: gr.update(visible=False),
-                perf_save: gr.update(visible=False),
-                cfg: gr.update(visible=False),
-                sampler_name: gr.update(visible=False),
-                scheduler: gr.update(visible=False),
-                clip_skip: gr.update(visible=False),
-                custom_steps: gr.update(visible=False),
-                aspect_ratios_selection: gr.update(visible=False),
-                ratio_name: gr.update(visible=False),
-                custom_width: gr.update(visible=False),
-                custom_height: gr.update(visible=False),
-                ratio_save: gr.update(visible=False),
-                model_tab: gr.update(visible=False),
+                performance_selection: gr.update(visible='hidden'),
+                perf_name: gr.update(visible='hidden'),
+                perf_save: gr.update(visible='hidden'),
+                cfg: gr.update(visible='hidden'),
+                sampler_name: gr.update(visible='hidden'),
+                scheduler: gr.update(visible='hidden'),
+                clip_skip: gr.update(visible='hidden'),
+                custom_steps: gr.update(visible='hidden'),
+                aspect_ratios_selection: gr.update(visible='hidden'),
+                ratio_name: gr.update(visible='hidden'),
+                custom_width: gr.update(visible='hidden'),
+                custom_height: gr.update(visible='hidden'),
+                ratio_save: gr.update(visible='hidden'),
+                model_tab: gr.update(visible='hidden'),
             }
 
         def preset_unselect(performance_selection_val, aspect_ratios_selection_val):
-            show_perf = performance_selection_val == performance_settings.CUSTOM_PERFORMANCE
-            show_size = aspect_ratios_selection_val == resolution_settings.CUSTOM_RESOLUTION
+            show_perf = True if (performance_selection_val == performance_settings.CUSTOM_PERFORMANCE) else 'hidden'
+            show_size = True if (aspect_ratios_selection_val == resolution_settings.CUSTOM_RESOLUTION) else 'hidden'
 
             return {
                 preset_selection: gr.update(value=''),
@@ -1324,20 +1324,20 @@ with shared.gradio_root as block:
                 preset_selection: gr.update(value=path),
                 preset_accordion: gr.update(label=t("Preset:" + " " + preset)),
 
-                performance_selection: gr.update(visible=False),
-                perf_name: gr.update(visible=False),
-                perf_save: gr.update(visible=False),
-                cfg: gr.update(visible=False),
-                sampler_name: gr.update(visible=False),
-                scheduler: gr.update(visible=False),
-                clip_skip: gr.update(visible=False),
-                custom_steps: gr.update(visible=False),
-                aspect_ratios_selection: gr.update(visible=False),
-                ratio_name: gr.update(visible=False),
-                custom_width: gr.update(visible=False),
-                custom_height: gr.update(visible=False),
-                ratio_save: gr.update(visible=False),
-                model_tab: gr.update(visible=False),
+                performance_selection: gr.update(visible='hidden'),
+                perf_name: gr.update(visible='hidden'),
+                perf_save: gr.update(visible='hidden'),
+                cfg: gr.update(visible='hidden'),
+                sampler_name: gr.update(visible='hidden'),
+                scheduler: gr.update(visible='hidden'),
+                clip_skip: gr.update(visible='hidden'),
+                custom_steps: gr.update(visible='hidden'),
+                aspect_ratios_selection: gr.update(visible='hidden'),
+                ratio_name: gr.update(visible='hidden'),
+                custom_width: gr.update(visible='hidden'),
+                custom_height: gr.update(visible='hidden'),
+                ratio_save: gr.update(visible='hidden'),
+                model_tab: gr.update(visible='hidden'),
             }
 
         preset_image.clear(

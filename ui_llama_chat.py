@@ -83,7 +83,7 @@ def create_chat():
                 llama_msg = gr.Textbox(
                     show_label=False,
                 )
-                llama_sent = gr.Textbox(visible=False)
+                llama_sent = gr.Textbox(visible='hidden')
             with gr.Column(scale=2), gr.Group():
                 llama_avatar = gr.Image(
                     value=_llama_select_assistant(default_bot)["avatar"],
@@ -105,11 +105,11 @@ def create_chat():
                         scale=1,
                     )
                 llama_system = gr.Textbox(
-                    visible=False,
+                    visible='hidden',
                     value=_llama_select_assistant(default_bot)["system"],
                 )
                 llama_embed = gr.Textbox(
-                    visible=False,
+                    visible='hidden',
                     value=_llama_select_assistant(default_bot)["embed"],
                 )
 

@@ -27,11 +27,11 @@ def add_controlnet_tab(main_view, inpaint_view, prompt, image_number, run_event)
             show_label=False,
             placeholder=t("Name"),
             interactive=True,
-            visible=False,
+            visible='hidden',
         )
         cn_save_btn = gr.Button(
             value=t("Save"),
-            visible=False,
+            visible='hidden',
         )
 
         type_choices=list(map(lambda x: x.capitalize(), controlnet.controlnet_models.keys()))
@@ -39,7 +39,7 @@ def add_controlnet_tab(main_view, inpaint_view, prompt, image_number, run_event)
             label=t("Type"),
             choices=type_choices,
             value=type_choices[0],
-            visible=False,
+            visible='hidden',
         )
         add_ctrl("cn_type", cn_type)
 
@@ -49,7 +49,7 @@ def add_controlnet_tab(main_view, inpaint_view, prompt, image_number, run_event)
             maximum=1.0,
             step=0.01,
             value=0.2,
-            visible=False,
+            visible='hidden',
         )
         add_ctrl("cn_edge_low", cn_edge_low)
 
@@ -59,7 +59,7 @@ def add_controlnet_tab(main_view, inpaint_view, prompt, image_number, run_event)
             maximum=1.0,
             step=0.01,
             value=0.8,
-            visible=False,
+            visible='hidden',
         )
         add_ctrl("cn_edge_high", cn_edge_high)
 
@@ -69,7 +69,7 @@ def add_controlnet_tab(main_view, inpaint_view, prompt, image_number, run_event)
             maximum=1.0,
             step=0.01,
             value=0.0,
-            visible=False,
+            visible='hidden',
         )
         add_ctrl("cn_start", cn_start)
 
@@ -79,7 +79,7 @@ def add_controlnet_tab(main_view, inpaint_view, prompt, image_number, run_event)
             maximum=1.0,
             step=0.01,
             value=1.0,
-            visible=False,
+            visible='hidden',
         )
         add_ctrl("cn_stop", cn_stop)
 
@@ -89,7 +89,7 @@ def add_controlnet_tab(main_view, inpaint_view, prompt, image_number, run_event)
             maximum=2.0,
             step=0.01,
             value=1.0,
-            visible=False,
+            visible='hidden',
         )
         add_ctrl("cn_strength", cn_strength)
 
@@ -98,7 +98,7 @@ def add_controlnet_tab(main_view, inpaint_view, prompt, image_number, run_event)
             show_label=False,
             choices=["None"] + path_manager.upscaler_filenames,
             value="None",
-            visible=False,
+            visible='hidden',
         )
         add_ctrl("cn_upscale", cn_upscaler)
 
@@ -123,7 +123,7 @@ def add_controlnet_tab(main_view, inpaint_view, prompt, image_number, run_event)
         )
         def cn_changed(selection):
             if selection != NEWCN:
-                return [gr.update(visible=False)] + [gr.update(visible=False)] * len(
+                return [gr.update(visible='hidden')] + [gr.update(visible='hidden')] * len(
                     cn_outputs + cn_sliders
                 )
             else:
@@ -152,7 +152,7 @@ def add_controlnet_tab(main_view, inpaint_view, prompt, image_number, run_event)
 
             result = []
             for vis in show:
-                result += [gr.update(visible=vis)]
+                result += [gr.update(visible=True if vis else 'hidden')]
 
             return result
 
@@ -219,7 +219,7 @@ def add_controlnet_tab(main_view, inpaint_view, prompt, image_number, run_event)
                 img = img.resize((width, base_height), Image.Resampling.LANCZOS)
 
                 return {
-                    main_view: gr.update(visible=False),
+                    main_view: gr.update(visible='hidden'),
                     inpaint_view: gr.update(
                         visible=True,
                         interactive=True,
@@ -234,7 +234,7 @@ def add_controlnet_tab(main_view, inpaint_view, prompt, image_number, run_event)
                 return {
                     main_view: gr.update(visible=True),
                     inpaint_view: gr.update(
-                        visible=False,
+                        visible='hidden',
                         interactive=False,
                     ),
                 }

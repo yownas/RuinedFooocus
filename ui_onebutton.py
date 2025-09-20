@@ -582,7 +582,7 @@ def ui_onebutton(prompt, run_event):
         
 
                 
-        with gr.Group(visible=False) as maingroup:
+        with gr.Group(visible='hidden') as maingroup:
             with gr.Row():
                     obp_preset_name = gr.Textbox(
                         show_label=False,
@@ -619,25 +619,25 @@ def ui_onebutton(prompt, run_event):
                     subjectsubtypesobject,
                     label="Type of object",
                     value=custom_obp_values["chosensubjectsubtypeobject"],
-                    visible=False,
+                    visible='hidden',
                 )
                 add_ctrl("obp_chosensubjectsubtypeobject", chosensubjectsubtypeobject)
                 chosensubjectsubtypehumanoid = gr.Dropdown(
                     subjectsubtypeshumanoid,
                     label="Type of humanoids",
                     value=custom_obp_values["chosensubjectsubtypehumanoid"],
-                    visible=False,
+                    visible='hidden',
                 )
                 add_ctrl("obp_chosensubjectsubtypehumanoid", chosensubjectsubtypehumanoid)
                 chosensubjectsubtypeconcept = gr.Dropdown(
                     subjectsubtypesconcept,
                     label="Type of concept",
                     value=custom_obp_values["chosensubjectsubtypeconcept"],
-                    visible=False,
+                    visible='hidden',
                 )
                 add_ctrl("obp_chosensubjectsubtypeconcept", chosensubjectsubtypeconcept)
                 chosengender = gr.Dropdown(
-                    genders, label="gender", value=custom_obp_values["chosengender"], visible=False
+                    genders, label="gender", value=custom_obp_values["chosengender"], visible='hidden'
                 )
                 add_ctrl("obp_chosengender", chosengender)
             with gr.Row():
@@ -811,8 +811,8 @@ def ui_onebutton(prompt, run_event):
     
                 else:
                     return {
-                        obp_preset_name: gr.update(visible=False),
-                        maingroup: gr.update(visible=False),
+                        obp_preset_name: gr.update(visible='hidden'),
+                        maingroup: gr.update(visible='hidden'),
                     }
         OBP_preset.change(obppreset_changed,
                 show_api=False,
@@ -875,7 +875,7 @@ def ui_onebutton(prompt, run_event):
         
         # turn things on and off for gender
         def subjectsvalue(subject):
-            enable = "human" in subject
+            enable = True if ("human" in subject) else 'hidden'
             return {
                 chosengender: gr.update(visible=enable),
             }
@@ -889,7 +889,7 @@ def ui_onebutton(prompt, run_event):
 
         # turn things on and off for subject subtype object
         def subjectsvalueforsubtypeobject(subject):
-            enable = subject == "object"
+            enable = True if (subject == "object") else 'hidden'
             return {
                 chosensubjectsubtypeobject: gr.update(visible=enable),
             }
@@ -903,7 +903,7 @@ def ui_onebutton(prompt, run_event):
 
         # turn things on and off for subject subtype humanoid
         def subjectsvalueforsubtypeobject(subject):
-            enable = subject == "humanoid"
+            enable = True if (subject == "humanoid") else 'hidden'
             return {
                 chosensubjectsubtypehumanoid: gr.update(visible=enable),
             }
@@ -917,7 +917,7 @@ def ui_onebutton(prompt, run_event):
 
         # turn things on and off for subject subtype concept
         def subjectsvalueforsubtypeconcept(subject):
-            enable = subject == "concept"
+            enable = True if (subject == "concept") else 'hidden'
             return {
                 chosensubjectsubtypeconcept: gr.update(visible=enable),
             }
@@ -931,7 +931,7 @@ def ui_onebutton(prompt, run_event):
 
         # turn things on and off for ASSUME DIRECT CONTROL
         def assumedirectcontrolflip(assumedirectcontrol):
-            enable = not assumedirectcontrol
+            enable = 'hidden' if assumedirectcontrol else True
             return {
                 instant_obp: gr.update(visible=enable),
                 random_button: gr.update(visible=enable),
