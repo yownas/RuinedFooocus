@@ -89,23 +89,22 @@ progress::after {
 #inpaint_sketch { overflow: overlay !important; resize: auto; background: var(--panel-background-fill); z-index: 5; }
 /* Custom CSS for mobile-friendliness */
 @media (max-width: 768px) {
-    body, .gr-textbox, .gr-button {
-        font-size: 14px;
-    }
- #component-321
- {
+  body, .gr-textbox, .gr-button {
+    font-size: 14px;
+  }
+  #component-321
+  {
     padding: unset;
-}  
-    
-#component-7 {
-height: 100% !important;
-}
-#component-19{
+  }
+  #main_view {
+    height: 100% !important;
+  }
+  #component-19{
     padding: 0px 6% 0 7%;
-}
-#component-22{
+  }
+  #component-22{
     margin-top: 55px;
-}
+  }
 }
 """
 progress_html = """

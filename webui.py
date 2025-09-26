@@ -304,6 +304,7 @@ with shared.gradio_root as block:
     with gr.Row():
         with gr.Column(scale=5):
             main_view = gr.Image(
+                elem_id="main_view",
                 value="html/init_image.png",
                 height=680,
                 type="filepath",
