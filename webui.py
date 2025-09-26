@@ -46,8 +46,8 @@ import version
 import modules.async_worker as worker
 import modules.html
 import modules.hints
-import ui_onebutton
-import ui_controlnet
+import modules.ui.ui_onebutton as ui_onebutton
+import modules.ui.ui_controlnet as ui_controlnet
 from modules.api import add_api
 from modules.interrogate import look
 
@@ -69,9 +69,9 @@ from modules.util import (
 )
 from modules.imagebrowser import ImageBrowser
 
-import ui_image_gallery
-import ui_llama_chat
-import ui_settings
+import modules.ui.ui_image_gallery as ui_image_gallery
+import modules.ui.ui_llama_chat as ui_llama_chat
+import modules.ui.ui_settings as ui_settings
 
 from PIL import Image
 

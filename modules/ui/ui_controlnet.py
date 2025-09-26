@@ -7,8 +7,8 @@ from modules.controlnet import (
 )
 import gradio as gr
 from shared import add_ctrl, path_manager, translate
-import ui_evolve
-import ui_llama
+import modules.ui.ui_evolve as ui_evolve
+import modules.ui.ui_llama as ui_llama
 from PIL import Image
 
 t = translate

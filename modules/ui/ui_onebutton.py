@@ -582,7 +582,7 @@ def ui_onebutton(prompt, run_event):
         
 
                 
-        with gr.Group(visible='hidden') as maingroup:
+        with gr.Group(visible=False) as maingroup:
             with gr.Row():
                     obp_preset_name = gr.Textbox(
                         show_label=False,
@@ -812,7 +812,7 @@ def ui_onebutton(prompt, run_event):
                 else:
                     return {
                         obp_preset_name: gr.update(visible='hidden'),
-                        maingroup: gr.update(visible='hidden'),
+                        maingroup: gr.update(visible=False),
                     }
         OBP_preset.change(obppreset_changed,
                 show_api=False,

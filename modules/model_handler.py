@@ -439,11 +439,11 @@ class Models:
                 with open(path, "wb") as file:
                     file.write(out)
 
-                if format == "video":
+                fps = iio.immeta(path).get("fps", False)
+                if format == "video" and fps:
                     tmp_path = f"{path}.tmp"
                     shutil.move(path, tmp_path)
                     video = iio.imiter(tmp_path)
-                    fps = iio.immeta(tmp_path)["fps"]
                     video_out = []
                     for i in video:
                         out = make_thumbnail(i, caption_text, caption=caption, zoom=not nogifzoom)
