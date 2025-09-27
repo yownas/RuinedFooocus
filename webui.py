@@ -790,7 +790,7 @@ with shared.gradio_root as block:
                     )
 
                 with gr.Tab(label="LoRAs"):
-                    with gr.Group(visible='hidden') as lora_add:
+                    with gr.Group(visible=False) as lora_add:
                         lorafilter = gr.Textbox(
                             placeholder=t("Search LoRA"),
                             value="",
@@ -876,7 +876,7 @@ with shared.gradio_root as block:
                 def gallery_toggle():
                     result = [
                         gr.update(visible=True),
-                        gr.update(visible='hidden'),
+                        gr.update(visible=False),
                     ]
                     return result
 
@@ -938,26 +938,9 @@ with shared.gradio_root as block:
                     )
                     lora_active_selected = len(gallery) - 1
                     active.append(f"{evt.value['caption']}")
-# Workaround for Issue #278
-#                    inactive = [
-#                        x
-#                        for x in map(
-#                            lambda x: (get_lora_thumbnail(x), x),
-#                            filter(
-#                                lambda filename: lorafilter.lower() in filename.lower(),
-#                                shared.models.get_names("loras"),
-#                            ),
-#                        )
-#                        if x[1] not in active
-#                    ]
-#
-#                        lora_gallery: gr.update(
-#                            value=inactive,
-#                            selected_index=None,
-#                        ),
 
                     return {
-                        lora_add: gr.update(visible='hidden'),
+                        lora_add: gr.update(visible=False),
                         lora_gallery: gr.update(),
                         lora_active: gr.update(visible=True),
                         lora_active_gallery: gr.update(
