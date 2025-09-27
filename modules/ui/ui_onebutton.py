@@ -834,7 +834,7 @@ def ui_onebutton(prompt, run_event):
                 else:     
                     selected_opb_preset = OBPresets.get_obp_preset(selection)
                 return {
-                    insanitylevel: gr.update(value=selected_opb_preset["insanitylevel"]),
+                    insanitylevel: gr.update(value=int(selected_opb_preset["insanitylevel"])),
                     subject: gr.update(value=selected_opb_preset["subject"]),
                     artist: gr.update(value=selected_opb_preset["artist"]),
                     chosensubjectsubtypeobject: gr.update(value=selected_opb_preset["chosensubjectsubtypeobject"]),
@@ -842,7 +842,7 @@ def ui_onebutton(prompt, run_event):
                     chosensubjectsubtypeconcept: gr.update(value=selected_opb_preset["chosensubjectsubtypeconcept"]),
                     chosengender: gr.update(value=selected_opb_preset["chosengender"]),
                     imagetype: gr.update(value=selected_opb_preset["imagetype"]),
-                    imagemodechance: gr.update(value=selected_opb_preset["imagemodechance"]),
+                    imagemodechance: gr.update(value=int(selected_opb_preset["imagemodechance"])),
                     givensubject: gr.update(value=selected_opb_preset["givensubject"]),
                     smartsubject: gr.update(value=selected_opb_preset["smartsubject"]),
                     givenoutfit: gr.update(value=selected_opb_preset["givenoutfit"]),
