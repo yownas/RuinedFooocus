@@ -64,6 +64,10 @@ class pipeline:
             (-1, f"Removing background ...", None)
         )
 
+        if gen_data["input_image"] is None:
+            print(f"ERROR: Could not find input image.")
+            return ["html/error.png"]
+
         rembg_session = rembg.new_session()
         image = self.remove_background(gen_data["input_image"], rembg_session)
 

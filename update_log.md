@@ -1,3 +1,7 @@
+###
+* Enable "context shift" to allow long llama-input
+* Small bugfixes
+
 ### 25.08.31
 * Support WAN 2.2 5b
 * Switch from NexaAI to XLlamaCPP

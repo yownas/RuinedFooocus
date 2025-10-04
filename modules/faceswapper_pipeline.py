@@ -217,6 +217,9 @@ class pipeline:
         input_faces = sorted(
             self.analyser_model.get(input_image), key=lambda x: x.bbox[0]
         )
+        if not len(input_faces):
+            print(f"ERROR: Found no faces in input.")
+            return
 
         prompt = gen_data["prompt"].strip()
         if re.fullmatch("https?://.*\.gif", prompt, re.IGNORECASE) is not None:
@@ -241,7 +244,8 @@ class pipeline:
                     out_faces = sorted(
                         self.analyser_model.get(frame), key=lambda x: x.bbox[0]
                     )
-                    frame = self.swap_faces(frame, input_faces, out_faces)
+                    if len(out_faces):
+                        frame = self.swap_faces(frame, input_faces, out_faces)
                     out_imgs.append(
                         Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
                     )
