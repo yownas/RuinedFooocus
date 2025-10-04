@@ -71,7 +71,7 @@ class Models:
                 "Checkpoint": (checkpoints, self.cache_paths["checkpoints"]),
             }
 
-        # Go though and check previews
+        # Go through and check previews
         for folder in folder_paths:
             for path in folder.rglob("*"):
                 if path.suffix.lower() in self.EXTENSIONS:
@@ -124,15 +124,46 @@ class Models:
                         dest = Path(folder) / baseModel
                         if not dest.exists():
                             dest.mkdir(parents=True, exist_ok=True)
-                        shutil.move(Path(filename), Path(dest) / name)
-                        # Move cache-files
                         cache_file = Path(self.cache_paths[model_type] / name)
-                        suffixes = [".json", ".txt", ".jpeg", ".jpg", ".png", ".gif"]
-                        for suffix in suffixes:
-                            cachefile = cache_file.with_suffix(suffix)
-                            if cachefile.is_file():
-                                shutil.move(cachefile, Path(cache) / cachefile.name)
-                        print(t("Moved {name} to {dest}", mapping={'name': name, 'dest': dest}))
+                        try:
+                            hash_sha256 = model_data["files"][0]["hashes"]["SHA256"]
+                        except:
+                            print(f"ERROR: {name} doesn't have a sha256 hash")
+                            hash_sha256 = ""
+
+                        move = False
+                        rename = False
+                        if cache_file.with_suffix(".json").exists():
+                            with open(cache_file.with_suffix(".json")) as old_json:
+                                old_data = json.load(old_json)
+                            if hash_sha256 == old_data["files"][0]["hashes"]["SHA256"]:
+                                if Path(dest / name).exists():
+                                    print(f"WARNING: {name} already exists. Ignoring.")
+                                else:
+                                    move = True
+                            else:
+                                print(f"WARNING: Renaming to {name}-{sha256} to avoid overwriting old model.")
+                                rename = True
+                                move = True
+
+                        if move:
+                            if rename:
+                                destname = Path(f"{name.stem}-{hash_sha256}{name.suffix}")
+                            else:
+                                destname = name
+                            shutil.move(Path(filename), Path(dest) / destname)
+                            # Move cache-files
+                            suffixes = [".json", ".txt", ".jpeg", ".jpg", ".png", ".gif"]
+                            for suffix in suffixes:
+                                cachefile = cache_file.with_suffix(suffix)
+                                if rename:
+                                    destfile = Path(f"{cache_file.stem}-{hash_sha256}{cache_file.suffix}")
+                                else:
+                                    destfile = cachefile
+                                if cachefile.is_file():
+                                    shutil.move(cachefile, Path(cache) / destfile.name)
+                            print(t("Moved {name} to {dest}", mapping={'name': name, 'dest': dest}))
+
                     else:
                         # If this isn't the inbox, store some info about the "live" model
                         try:
