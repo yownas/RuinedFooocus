@@ -132,7 +132,7 @@ def prepare_environment(offline=False):
                 }
                 if torch_platform not in platform_index:
                     torch_platform = 'cpu'
-                run_pip(f'install xllamacpp==0.2.0 -U --extra-index-url {platform_index[torch_platform]}', "XLlamacpp")
+                run_pip(f'install xllamacpp==0.2.2 -U --extra-index-url {platform_index[torch_platform]}', "XLlamacpp")
         except:
             print("WARNING: Failed to install/update llm modules.")
 

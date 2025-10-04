@@ -96,6 +96,7 @@ class pipeline:
             params.model.path = str(llm_path)
             params.n_predict = 4096
             params.n_ctx = 1024
+            params.ctx_shift = True
             params.cpuparams.n_threads = 4
             params.cpuparams_batch.n_threads = 2
             params.endpoint_metrics = False
@@ -198,7 +199,7 @@ class pipeline:
         else:
             tools = None
             tool_prompt = ""
-        chat = [{"role": "system", "content": system_prompt + tool_prompt}] + h[-3 if len(h) > 3 else -len(h):] # Keep just the last 3 messages
+        chat = [{"role": "system", "content": system_prompt + tool_prompt}] + h[-5 if len(h) > 5 else -len(h):] # Keep just the last 5 messages
 
         print(f"Thinking...")
         with TimeIt("LLM thinking"):
