@@ -163,7 +163,8 @@ def connect_database(path="cache/images.db"):
                 "UPDATE status SET version = ?, date = ?", 
                 (str(version.version), str(time.time()))
             )
-            conn.execute("DROP TABLE images")
+            # Skip dropping "old" table.
+            # conn.execute("DROP TABLE images")
         except:
             pass
     conn.commit()
