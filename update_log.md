@@ -1,4 +1,5 @@
 ###
+* Support character cards for the chatbots
 * Enable "context shift" to allow long llama-input
 * Small bugfixes
 
