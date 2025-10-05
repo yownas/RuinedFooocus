@@ -3,7 +3,7 @@ from shared import path_manager
 import modules.async_worker as worker
 from pathlib import Path
 import json
-
+import aichar
 
 def create_chat():
     def llama_get_assistants():
@@ -16,8 +16,18 @@ def create_chat():
                         info = json.load(f)
                     names.append((info["name"], str(path)))
                 except Exception as e:
-                    print(f"ERROR: in {path}: {e}")
+                    print(f"ERROR: in folder {path}: {e}")
                     pass
+            else:
+                # Ignore png's that has a info.json in the same folder
+                if str(Path(path).suffix).lower() == ".png" and not Path(Path(path).parent / "info.json").exists():
+                    # Try as aichar card
+                    try:
+                        character = aichar.load_character_card_file(str(path))
+                        names.append((character.name, str(path)))
+                    except Exception as e:
+                        print(f"ERROR: in aichar card {path}: {e}")
+                        pass
 
         names.sort(key=lambda x: x[0].casefold())
         return names
@@ -30,16 +40,29 @@ def create_chat():
         }
 
     def _llama_select_assistant(dropdown):
-        folder = Path(dropdown)
+        character = Path(dropdown)
         try:
-            with open(folder / "info.json", "r", encoding='utf-8') as f:
-                info = json.load(f)
-                if "avatar" not in info:
-                    info["avatar"] = folder / "avatar.png"
-                if "embed" in info:
-                    info["embed"] = json.dumps(info["embed"])
-                else:
-                    info["embed"] = json.dumps([])
+            if character.is_dir():
+                with open(character / "info.json", "r", encoding='utf-8') as f:
+                    info = json.load(f)
+                    if "avatar" not in info:
+                        info["avatar"] = character / "avatar.png"
+                    if "embed" in info:
+                        info["embed"] = json.dumps(info["embed"])
+                    else:
+                        info["embed"] = json.dumps([])
+            else: 
+                c = aichar.load_character_card_file(str(character))
+                print("DEBUG")
+                print(dir(c))
+                info = {
+                    "name": c.name,
+                    "greeting": c.greeting_message,
+                    "avatar": c.image_path,
+                    "system": f"Your name is {c.name}.\nYou are: {c.personality}\nScenario: {c.scenario}",
+                    "embed": json.dumps([["text", f"Summary: {c.summary}"]]),
+                }
+
         except Exception as e:
             print(f"ERROR: {dropdown}: {e}")
             info = {
