@@ -53,8 +53,6 @@ def create_chat():
                         info["embed"] = json.dumps([])
             else: 
                 c = aichar.load_character_card_file(str(character))
-                print("DEBUG")
-                print(dir(c))
                 info = {
                     "name": c.name,
                     "greeting": c.greeting_message,
