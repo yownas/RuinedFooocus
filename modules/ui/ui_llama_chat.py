@@ -3,9 +3,57 @@ from shared import path_manager
 import modules.async_worker as worker
 from pathlib import Path
 import json
-import aichar
+from PIL import Image
+import base64
 
 def create_chat():
+    def info_from_char(file):
+        with Image.open(str(file)) as i:
+            i.getexif()
+            if 'chara' in i.info:
+                d = i.info.get('chara', None)
+            else:
+                return None
+
+        b = base64.b64decode(d) 
+        j = json.loads(b)
+        spec= j.get('spec', '')
+
+        if spec == 'chara_card_v3':
+            name = j['data']['name']
+            greeting = j['data']['first_mes']
+            avatar = file
+            personality = j['data']['personality']
+            scenario = j['data']['scenario']
+            summary = j['data']['description']
+        elif spec == 'chara_card_v2':
+            name = j['data']['name']
+            greeting = j['data']['first_mes']
+            avatar = file
+            personality = j['data']['personality']
+            scenario = j['data']['scenario']
+            summary = j['data']['description']
+        elif all(key in j for key in ('name', 'first_mes', 'personality', 'scenario')):
+            # chara_card_v1
+            name = j['name']
+            greeting = j['first_mes']
+            avatar = file
+            personality = j['personality']
+            scenario = j['scenario']
+            summary = j.get('summary', '')
+        else:
+            print(f"WARNING: Can not parse {file}, skipping.")
+            return None
+
+        info = {
+            "name": name,
+            "greeting": greeting,
+            "avatar": avatar,
+            "system": f"Your name is {name}.\nYou are: {personality}\nScenario: {scenario}",
+            "embed": json.dumps([["text", f"Summary: {summary}"]]),
+        }
+        return info
+
     def llama_get_assistants():
         names = []
         folder_path = Path("chatbots")
@@ -23,10 +71,11 @@ def create_chat():
                 if str(Path(path).suffix).lower() == ".png" and not Path(Path(path).parent / "info.json").exists():
                     # Try as aichar card
                     try:
-                        character = aichar.load_character_card_file(str(path))
-                        names.append((character.name, str(path)))
+                        character = info_from_char(path)
+                        if character is not None:
+                            names.append((character.get('name', '???'), str(path)))
                     except Exception as e:
-                        print(f"ERROR: in aichar card {path}: {e}")
+                        print(f"ERROR: in character card {path}: {e}")
                         pass
 
         names.sort(key=lambda x: x[0].casefold())
@@ -52,14 +101,7 @@ def create_chat():
                     else:
                         info["embed"] = json.dumps([])
             else: 
-                c = aichar.load_character_card_file(str(character))
-                info = {
-                    "name": c.name,
-                    "greeting": c.greeting_message,
-                    "avatar": c.image_path,
-                    "system": f"Your name is {c.name}.\nYou are: {c.personality}\nScenario: {c.scenario}",
-                    "embed": json.dumps([["text", f"Summary: {c.summary}"]]),
-                }
+                info = info_from_char(character)
 
         except Exception as e:
             print(f"ERROR: {dropdown}: {e}")
