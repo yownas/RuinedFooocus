@@ -222,7 +222,7 @@ class pipeline:
             return
 
         prompt = gen_data["prompt"].strip()
-        if re.fullmatch("https?://.*\.gif", prompt, re.IGNORECASE) is not None:
+        if re.fullmatch("https?://.*\\.gif", prompt, re.IGNORECASE) is not None:
             x = iio.immeta(prompt)
             duration = x["duration"]
             loop = x["loop"]
