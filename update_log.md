@@ -1,4 +1,6 @@
-###
+### 25.10.07
+* Updated xllamacpp, gradio and transformers
+* Warnings if inbox has already downloaded models
 * Support character cards for the chatbots
 * Enable "context shift" to allow long llama-input
 * Small bugfixes
