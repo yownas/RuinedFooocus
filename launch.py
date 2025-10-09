@@ -48,14 +48,14 @@ git_repos = [
         "name": "ComfyUI",
         "path": "ComfyUI",
         "url": "https://github.com/comfyanonymous/ComfyUI",
-        "hash": "aebac221937b511d46fe601656acdc753435b849",
+        "hash": "cbee7d33909f168a08ab7e53d897ea284a304d84",
         "add_path": "ComfyUI",
     },
     {
         "name": "Calcuis-GGUF",
         "path": "calcuis_gguf",
         "url": "https://github.com/calcuis/gguf",
-        "hash": "1bea57e76f8ac5e3943b3b795d6c568441ffb1cf",
+        "hash": "a64ccbf6c694a46c181a444a1ac9d2d810607309",
         "add_path": "",
     },
 ]
