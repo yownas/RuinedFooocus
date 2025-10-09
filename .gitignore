@@ -25,13 +25,8 @@ notification.mp3
 /textual_inversion
 .vscode
 /extensions
-/test/stdout.txt
-/test/stderr.txt
 /cache.json*
 /config_states/
-/node_modules
-/package-lock.json
-/.coverage*
 /wildcards/*
 !/wildcards/colors.txt
 models/vae/config.json
@@ -49,6 +44,9 @@ performance.json
 /models/diffusers/
 /models/clip/*
 /cache/
+chatbots/
+presets/
+llamas/
 random_prompt/userfiles/obp_presets.json
 reinstall
 prompt_expansion/pytorch_model.bin
