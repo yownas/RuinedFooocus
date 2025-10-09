@@ -4,10 +4,35 @@
         "path": "path_clip",
         "filename": "clip_g.safetensors"
     },
+    "clip/clip_g_hidream.gguf": {
+        "url": "https://huggingface.co/calcuis/hidream-gguf/resolve/main/clip_g_hidream_fp32-f16.gguf",
+        "path": "path_clip",
+        "filename": "clip_g_hidream.gguf"
+    },
     "clip/clip_l.safetensors": {
         "url": "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors",
         "path": "path_clip",
         "filename": "clip_l.safetensors"
+    },
+    "clip/clip_l_hidream.gguf": {
+        "url": "https://huggingface.co/calcuis/hidream-gguf/resolve/main/clip_l_hidream_fp32-f16.gguf",
+        "path": "path_clip",
+        "filename": "clip_l_hidream.gguf"
+    },
+    "clip/gemma_2_2b_fp16.safetensors": {
+	"url": "https://huggingface.co/calcuis/lumina-gguf/resolve/main/gemma_2_2b_fp16.safetensors",
+	"path": "path_clip",
+        "filename": "gemma_2_2b_fp16.safetensors"
+    },
+    "clip/llama_q2.gguf": {
+	"url": "https://huggingface.co/calcuis/hidream-gguf/resolve/main/llama-q2_k.gguf",
+	"path": "path_clip",
+        "filename": "llama_q2.gguf"
+    },
+    "clip/llava_llama3_fp8_scaled.safetensors": {
+	"url": "https://huggingface.co/calcuis/hunyuan-gguf/resolve/main/llava_llama3_fp8_scaled.safetensors",
+	"path": "path_clip",
+        "filename": "llava_llama3_fp8_scaled.safetensors"
     },
     "clip/t5-v1_1-xxl-encoder-Q3_K_L.gguf": {
         "url": "https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-Q3_K_L.gguf",
@@ -63,16 +88,6 @@
         "url": "https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-f32.gguf",
         "path": "path_clip",
         "filename": "t5-v1_1-xxl-encoder-f32.gguf"
-    },
-    "clip/gemma_2_2b_fp16.safetensors": {
-	"url": "https://huggingface.co/calcuis/lumina-gguf/resolve/main/gemma_2_2b_fp16.safetensors",
-	"path": "path_clip",
-        "filename": "gemma_2_2b_fp16.safetensors"
-    },
-    "clip/llava_llama3_fp8_scaled.safetensors": {
-	"url": "https://huggingface.co/calcuis/hunyuan-gguf/resolve/main/llava_llama3_fp8_scaled.safetensors",
-	"path": "path_clip",
-        "filename": "llava_llama3_fp8_scaled.safetensors"
     },
     "clip/umt5_xxl_fp16.safetensors": {
 	"url": "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/text_encoders/umt5_xxl_fp16.safetensors",
