@@ -11,8 +11,8 @@ import modules.prompt_processing as pp
 
 from PIL import Image, ImageOps
 
-# Known models
-from comfy.model_base import BaseModel, SDXL, SD3, Flux, Lumina2
+# Known models (from ComfyUI/comfy/model_base.py)
+from comfy.model_base import BaseModel, Flux, HiDream, Lumina2, SD3, SDXL
 
 from shared import path_manager, settings
 import shared
@@ -113,13 +113,14 @@ class pipeline:
             "clip_g": "clip_g.safetensors",
             "clip_gemma": "gemma_2_2b_fp16.safetensors",
             "clip_l": "clip_l.safetensors",
+            "clip_llama": "llama_q2.gguf",
             "clip_t5": "t5-v1_1-xxl-encoder-Q3_K_S.gguf",
         }
         return settings.default_settings.get(shortname, defaults[shortname] if shortname in defaults else None)
 
-    known_models = [BaseModel, Flux, Lumina2, SD3, SDXL]
+    known_models = [BaseModel, Flux, HiDream, Lumina2, SD3, SDXL]
     def get_clip_and_vae(self, unet_type):
-        if unet_type not in known_models:
+        if unet_type not in self.known_models:
             unet_type = SDXL # Use SDXL as default
         # Add new model setups here and at "Known models" above.
         # Simple workflows with "Load models"->"Sample"->"VAE" might work right away.
@@ -133,6 +134,16 @@ class pipeline:
             Flux: {
                 "clip_type": comfy.sd.CLIPType.FLUX,
                 "clip_names": [self.get_clip_name("clip_l"), self.get_clip_name("clip_t5")],
+                "vae_name": settings.default_settings.get("vae_flux", "ae.safetensors")
+            },
+            HiDream: {
+                "clip_type": comfy.sd.CLIPType.HIDREAM,
+                "clip_names": [
+                    self.get_clip_name("clip_g"),
+                    self.get_clip_name("clip_l"),
+                    self.get_clip_name("clip_llama"),
+                    self.get_clip_name("clip_t5")
+                ],
                 "vae_name": settings.default_settings.get("vae_flux", "ae.safetensors")
             },
             Lumina2: {
@@ -224,7 +235,7 @@ class pipeline:
                         unet = comfy.sd.load_diffusion_model(filename, model_options=model_options)
 
                     # Get text-encoders (clip) and vae to match the unet
-                    models = self.get_clip_and_vae(type(unet))
+                    models = self.get_clip_and_vae(type(unet.model))
 
                     # Special massaging of Lumina2 unet
                     if isinstance(unet.model, Lumina2):
