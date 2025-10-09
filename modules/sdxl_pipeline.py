@@ -11,7 +11,9 @@ import modules.prompt_processing as pp
 
 from PIL import Image, ImageOps
 
+# Known models
 from comfy.model_base import BaseModel, SDXL, SD3, Flux, Lumina2
+
 from shared import path_manager, settings
 import shared
 
@@ -115,6 +117,47 @@ class pipeline:
         }
         return settings.default_settings.get(shortname, defaults[shortname] if shortname in defaults else None)
 
+    known_models = [BaseModel, Flux, Lumina2, SD3, SDXL]
+    def get_clip_and_vae(self, unet_type):
+        if unet_type not in known_models:
+            unet_type = SDXL # Use SDXL as default
+        # Add new model setups here and at "Known models" above.
+        # Simple workflows with "Load models"->"Sample"->"VAE" might work right away.
+        # Add new clip/vae models to settings and pathdb-files.
+        models = {
+            BaseModel: {
+                "clip_type": comfy.sd.CLIPType.STABLE_DIFFUSION,
+                "clip_names": [self.get_clip_name("clip_l")],
+                "vae_name": settings.default_settings.get("vae_sd", "vae_sd.safetensors")
+            },
+            Flux: {
+                "clip_type": comfy.sd.CLIPType.FLUX,
+                "clip_names": [self.get_clip_name("clip_l"), self.get_clip_name("clip_t5")],
+                "vae_name": settings.default_settings.get("vae_flux", "ae.safetensors")
+            },
+            Lumina2: {
+                "clip_type": comfy.sd.CLIPType.LUMINA2,
+                "clip_names": [self.get_clip_name("clip_gemma")],
+                "vae_name": settings.default_settings.get("vae_lumina2", "lumina2_vae_fp32.safetensors")
+            },
+            SD3: {
+                "clip_type": comfy.sd.CLIPType.SD3,
+                "clip_names": [
+                    self.get_clip_name("clip_l"),
+                    self.get_clip_name("clip_g"),
+                    self.get_clip_name("clip_t5")
+                ],
+                "vae_name": settings.default_settings.get("vae_sd3", "sd3_vae.safetensors")
+            },
+            SDXL: {
+                "clip_type": comfy.sd.CLIPType.STABLE_DIFFUSION,
+                "clip_names": [self.get_clip_name("clip_l"), self.get_clip_name("clip_g")],
+                "vae_name": settings.default_settings.get("vae_sdxl", "sdxl_vae.safetensors")
+            }
+        }
+
+        return models.get(unet_type, None)
+
     def load_base_model(self, name, unet_only=False, input_unet=None, hash=None):
         if self.xl_base_hash == name and self.xl_base_patched_extra == set():
             return
@@ -180,39 +223,19 @@ class pipeline:
                         model_options["dtype"] = torch.float8_e4m3fn # FIXME should be a setting
                         unet = comfy.sd.load_diffusion_model(filename, model_options=model_options)
 
-                    # Get text encoders (clip) and vae to match the unet
-                    clip_names = []
+                    # Get text-encoders (clip) and vae to match the unet
+                    models = self.get_clip_and_vae(type(unet))
 
-                    if isinstance(unet.model, Flux):
-                        clip_names.append(self.get_clip_name("clip_l"))
-                        clip_names.append(self.get_clip_name("clip_t5"))
-                        clip_type = comfy.sd.CLIPType.FLUX
-                        vae_name = settings.default_settings.get("vae_flux", "ae.safetensors")
-
-                    elif isinstance(unet.model, SD3):
-                        clip_names.append(self.get_clip_name("clip_l"))
-                        clip_names.append(self.get_clip_name("clip_g"))
-                        clip_names.append(self.get_clip_name("clip_t5"))
-                        clip_type = comfy.sd.CLIPType.SD3
-                        vae_name = settings.default_settings.get("vae_sd3", "sd3_vae.safetensors")
-
-                    elif isinstance(unet.model, Lumina2):
-                        clip_names.append(self.get_clip_name("clip_gemma"))
-                        clip_type = comfy.sd.CLIPType.LUMINA2
-                        vae_name = settings.default_settings.get("vae_lumina2", "lumina2_vae_fp32.safetensors")
+                    # Special massaging of Lumina2 unet
+                    if isinstance(unet.model, Lumina2):
                         unet = ModelSamplingAuraFlow().patch_aura(
                             model=unet,
                             shift=settings.default_settings.get("lumina2_shift", 3.0),
                         )[0]
 
-                    else: # SDXL
-                        clip_names.append(self.get_clip_name("clip_l"))
-                        clip_names.append(self.get_clip_name("clip_g"))
-                        clip_type = comfy.sd.CLIPType.STABLE_DIFFUSION
-                        vae_name = settings.default_settings.get("vae_sdxl", "sdxl_vae.safetensors")
-
+                    # Load everything...
                     clip_paths = []
-                    for clip_name in clip_names:
+                    for clip_name in models['clip_names']:
                         clip_paths.append(
                             str(
                                 path_manager.get_folder_file_path(
@@ -224,19 +247,19 @@ class pipeline:
                         )
 
                     clip_loader = DualCLIPLoaderGGUF()
-                    print(f"Loading CLIP: {clip_names}")
+                    print(f"Loading CLIP: {models['clip_names']}")
                     clip = clip_loader.load_patcher(
                         clip_paths,
-                        clip_type,
+                        models['clip_type'],
                         clip_loader.load_data(clip_paths)
                     )
 
                     vae_path = path_manager.get_folder_file_path(
                         "vae",
-                        vae_name,
-                        default = os.path.join(path_manager.model_paths["vae_path"], vae_name)
+                        models['vae_name'],
+                        default = os.path.join(path_manager.model_paths["vae_path"], models['vae_name'])
                     )
-                    print(f"Loading VAE: {vae_name}")
+                    print(f"Loading VAE: {models['vae_name']}")
                     sd = comfy.utils.load_torch_file(str(vae_path))
                     vae = comfy.sd.VAE(sd=sd)
 
@@ -256,6 +279,7 @@ class pipeline:
                 print(f"ERROR: Failed loading {filename}: {e}")
 
             if sd is not None:
+                # Try to load as All-In-One checkpoint
                 aio = load_state_dict_guess_config(sd)
                 if isinstance(aio, tuple):
                     unet, clip, vae, clip_vision = aio
@@ -273,6 +297,7 @@ class pipeline:
 
                 if sd is not None:
                     # We got something, assume it was a unet
+                    # Re-run load_base_model to get text-encoders and vae
                     self.load_base_model(
                         filename,
                         unet_only=True,
@@ -293,13 +318,7 @@ class pipeline:
             self.xl_base = self.StableDiffusionModel(
                 unet=unet, clip=clip, vae=vae, clip_vision=clip_vision
             )
-            if not (
-                isinstance(self.xl_base.unet.model, BaseModel) or
-                isinstance(self.xl_base.unet.model, SDXL) or
-                isinstance(self.xl_base.unet.model, SD3) or
-                isinstance(self.xl_base.unet.model, Flux) or
-                isinstance(self.xl_base.unet.model, Lumina2)
-            ):
+            if not (type(self.xl_base.unet.model) in self.known_models):
                 print(
                     f"Model {type(self.xl_base.unet.model)} not supported. RuinedFooocus only support SD1.x/SDXL/SD3/Flux/Lumina2 models as the base model."
                 )
@@ -309,17 +328,7 @@ class pipeline:
                 self.xl_base_hash = name
                 self.xl_base_patched = self.xl_base
                 self.xl_base_patched_hash = ""
-                # self.xl_base_patched.unet.model.to("cuda")
-                #print(f"Base model loaded: {self.xl_base_hash}")
-
         return
-
-    def freeu(self, model, b1, b2, s1, s2):
-        freeu_model = FreeU()
-        unet = freeu_model.patch(model=model.unet, b1=b1, b2=b2, s1=s1, s2=s2)[0]
-        return self.StableDiffusionModel(
-            unet=unet, clip=model.clip, vae=model.vae, clip_vision=model.clip_vision
-        )
 
     def load_loras(self, loras):
         loaded_loras = []
@@ -360,9 +369,6 @@ class pipeline:
                 print(f"Error loading LoRA: {filename} {e}")
                 pass
         self.xl_base_patched = model
-        # Uncomment below to enable FreeU shit
-        # self.xl_base_patched = self.freeu(model, 1.01, 1.02, 0.99, 0.95)
-        # self.xl_base_patched_hash = str(loras + [1.01, 1.02, 0.99, 0.95])
         self.xl_base_patched_hash = str(loras)
 
         print(f"LoRAs loaded: {loaded_loras}")
@@ -406,13 +412,7 @@ class pipeline:
         callback=None,
     ):
         try:
-            if self.xl_base_patched == None or not (
-                isinstance(self.xl_base_patched.unet.model, BaseModel) or
-                isinstance(self.xl_base_patched.unet.model, SDXL) or
-                isinstance(self.xl_base_patched.unet.model, SD3) or
-                isinstance(self.xl_base_patched.unet.model, Flux) or 
-                isinstance(self.xl_base_patched.unet.model, Lumina2)
-            ):
+            if self.xl_base_patched == None or type(self.xl_base_patched.unet.model) not in self.known_models:
                 print(f"ERROR: Can only use SD1.x, SDXL, SD3, Flux or Lumina2 models")
                 worker.interrupt_ruined_processing = True
                 if callback is not None:
@@ -491,7 +491,7 @@ class pipeline:
             controlnet = {}
             controlnet["type"] = "None"
 
-        # FIXME need a good whay to check if we are using Flux.1 Kontext
+        # FIXME need a good way to check if we are using Flux.1 Kontext
         if (
             controlnet["type"] == "None" and
             isinstance(self.xl_base.unet.model, Flux) and
@@ -559,11 +559,8 @@ class pipeline:
                 img2img_mode = True
 
         if not img2img_mode:
-            if (
-                isinstance(self.xl_base.unet.model, SD3) or
-                isinstance(self.xl_base.unet.model, Flux) or
-                isinstance(self.xl_base.unet.model, Lumina2)
-            ):
+            # Get the correct of latent image to start with
+            if type(self.xl_base.unet.model) in [Flux, SD3, Lumina2]:
                 latent = EmptySD3LatentImage().generate(
                     width=gen_data["width"], height=gen_data["height"], batch_size=1
                 )[0]
@@ -579,14 +576,12 @@ class pipeline:
             # to not break the ui.
             main_image = Image.open(gen_data["main_view"])
             image = np.asarray(main_image)
-#            image = image[..., :-1]
             image = torch.from_numpy(image)[None,] / 255.0
 
             inpaint_view = Image.fromarray(gen_data["inpaint_view"]["layers"][0])
             red, green, blue, mask = inpaint_view.split()
             mask = mask.resize((main_image.width, main_image.height), Image.Resampling.LANCZOS)
             mask = np.asarray(mask)
-#            mask = mask[:, :, 0]
             mask = torch.from_numpy(mask)[None,] / 255.0
 
             latent = VAEEncodeForInpaint().encode(
