@@ -1,3 +1,5 @@
+* HiDream support
+
 ### 25.10.07
 * Updated xllamacpp, gradio and transformers
 * Warnings if inbox has already downloaded models

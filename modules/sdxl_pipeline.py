@@ -27,7 +27,10 @@ from comfy.sd import load_checkpoint_guess_config, load_state_dict_guess_config
 
 from tqdm import tqdm
 
-from comfy_extras.nodes_model_advanced import ModelSamplingAuraFlow
+from comfy_extras.nodes_model_advanced import (
+    ModelSamplingAuraFlow,
+    ModelSamplingSD3,
+)
 from nodes import (
     CLIPTextEncode,
     CLIPSetLastLayer,
@@ -102,6 +105,7 @@ class pipeline:
     xl_controlnet: StableDiffusionModel = None
     xl_controlnet_hash = ""
 
+    model_info = None
     models = []
     inference_memory = None
 
@@ -125,18 +129,20 @@ class pipeline:
         # Add new model setups here and at "Known models" above.
         # Simple workflows with "Load models"->"Sample"->"VAE" might work right away.
         # Add new clip/vae models to settings and pathdb-files.
-        models = {
+        model_info = {
             BaseModel: {
                 "clip_type": comfy.sd.CLIPType.STABLE_DIFFUSION,
                 "clip_names": [self.get_clip_name("clip_l")],
                 "vae_name": settings.default_settings.get("vae_sd", "vae_sd.safetensors")
             },
             Flux: {
+                "latent": "SD3",
                 "clip_type": comfy.sd.CLIPType.FLUX,
                 "clip_names": [self.get_clip_name("clip_l"), self.get_clip_name("clip_t5")],
                 "vae_name": settings.default_settings.get("vae_flux", "ae.safetensors")
             },
             HiDream: {
+                "latent": "SD3",
                 "clip_type": comfy.sd.CLIPType.HIDREAM,
                 "clip_names": [
                     self.get_clip_name("clip_g"),
@@ -144,21 +150,26 @@ class pipeline:
                     self.get_clip_name("clip_llama"),
                     self.get_clip_name("clip_t5")
                 ],
-                "vae_name": settings.default_settings.get("vae_flux", "ae.safetensors")
+                "vae_name": settings.default_settings.get("vae_flux", "ae.safetensors"),
+                "model_sampling": ('SD3', settings.default_settings.get("hidream_shift", 3.0))
             },
             Lumina2: {
+                "latent": "SD3",
                 "clip_type": comfy.sd.CLIPType.LUMINA2,
                 "clip_names": [self.get_clip_name("clip_gemma")],
-                "vae_name": settings.default_settings.get("vae_lumina2", "lumina2_vae_fp32.safetensors")
+                "vae_name": settings.default_settings.get("vae_lumina2", "lumina2_vae_fp32.safetensors"),
+                "model_sampling": ('AuraFlow', settings.default_settings.get("lumina2_shift", 3.0))
             },
             SD3: {
+                "latent": "SD3",
                 "clip_type": comfy.sd.CLIPType.SD3,
                 "clip_names": [
                     self.get_clip_name("clip_l"),
                     self.get_clip_name("clip_g"),
                     self.get_clip_name("clip_t5")
                 ],
-                "vae_name": settings.default_settings.get("vae_sd3", "sd3_vae.safetensors")
+                "vae_name": settings.default_settings.get("vae_sd3", "sd3_vae.safetensors"),
+                "model_sampling": ('SD3', settings.default_settings.get("sd3_shift", 3.0))
             },
             SDXL: {
                 "clip_type": comfy.sd.CLIPType.STABLE_DIFFUSION,
@@ -167,7 +178,7 @@ class pipeline:
             }
         }
 
-        return models.get(unet_type, None)
+        return model_info.get(unet_type, None)
 
     def load_base_model(self, name, unet_only=False, input_unet=None, hash=None):
         if self.xl_base_hash == name and self.xl_base_patched_extra == set():
@@ -202,6 +213,7 @@ class pipeline:
         self.xl_base_patched_hash = ""
         self.xl_base_patched_extra = set()
         self.conditions = None
+        self.model_info = None
         gc.collect(generation=2)
 
         comfy.model_management.cleanup_models()
@@ -235,18 +247,26 @@ class pipeline:
                         unet = comfy.sd.load_diffusion_model(filename, model_options=model_options)
 
                     # Get text-encoders (clip) and vae to match the unet
-                    models = self.get_clip_and_vae(type(unet.model))
+                    model_info = self.get_clip_and_vae(type(unet.model))
+                    self.model_info = model_info
 
                     # Special massaging of Lumina2 unet
-                    if isinstance(unet.model, Lumina2):
-                        unet = ModelSamplingAuraFlow().patch_aura(
-                            model=unet,
-                            shift=settings.default_settings.get("lumina2_shift", 3.0),
-                        )[0]
+                    if model_info.get('model_sampling', None):
+                        match model_info['model_sampling'][0]:
+                            case 'AuraFlow':
+                                unet = ModelSamplingAuraFlow().patch_aura(
+                                    model=unet,
+                                    shift=model_info['model_sampling'][1]
+                                )[0]
+                            case 'SD3':
+                                unet = ModelSamplingSD3().patch(
+                                    model=unet,
+                                    shift=model_info['model_sampling'][1]
+                                )[0]
 
                     # Load everything...
                     clip_paths = []
-                    for clip_name in models['clip_names']:
+                    for clip_name in model_info['clip_names']:
                         clip_paths.append(
                             str(
                                 path_manager.get_folder_file_path(
@@ -258,19 +278,19 @@ class pipeline:
                         )
 
                     clip_loader = DualCLIPLoaderGGUF()
-                    print(f"Loading CLIP: {models['clip_names']}")
+                    print(f"Loading CLIP: {model_info['clip_names']}")
                     clip = clip_loader.load_patcher(
                         clip_paths,
-                        models['clip_type'],
+                        model_info['clip_type'],
                         clip_loader.load_data(clip_paths)
                     )
 
                     vae_path = path_manager.get_folder_file_path(
                         "vae",
-                        models['vae_name'],
-                        default = os.path.join(path_manager.model_paths["vae_path"], models['vae_name'])
+                        model_info['vae_name'],
+                        default = os.path.join(path_manager.model_paths["vae_path"], model_info['vae_name'])
                     )
-                    print(f"Loading VAE: {models['vae_name']}")
+                    print(f"Loading VAE: {model_info['vae_name']}")
                     sd = comfy.utils.load_torch_file(str(vae_path))
                     vae = comfy.sd.VAE(sd=sd)
 
@@ -571,14 +591,16 @@ class pipeline:
 
         if not img2img_mode:
             # Get the correct of latent image to start with
-            if type(self.xl_base.unet.model) in [Flux, SD3, Lumina2]:
-                latent = EmptySD3LatentImage().generate(
-                    width=gen_data["width"], height=gen_data["height"], batch_size=1
-                )[0]
-            else: # SDXL and unknown
-                latent = EmptyLatentImage().generate(
-                    width=gen_data["width"], height=gen_data["height"], batch_size=1
-                )[0]
+            latent_type = self.model_info.get('latent', None)
+            match latent_type:
+                case 'SD3':
+                    latent = EmptySD3LatentImage().generate(
+                        width=gen_data["width"], height=gen_data["height"], batch_size=1
+                    )[0]
+                case _:
+                    latent = EmptyLatentImage().generate(
+                        width=gen_data["width"], height=gen_data["height"], batch_size=1
+                    )[0]
             force_full_denoise = False
             denoise = None
 

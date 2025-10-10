@@ -215,6 +215,8 @@ def create_settings():
 
                 lumina2_shift = gr.Textbox(label="Lumina2 shift", interactive=True, placeholder=3.0, value=settings.default_settings.get("lumina2_shift", None))
                 add_setting("lumina2_shift", lumina2_shift)
+                sd3_shift = gr.Textbox(label="SD3 shift", interactive=True, placeholder=3.0, value=settings.default_settings.get("sd3_shift", None))
+                add_setting("sd3_shift", sd3_shift)
 
                 vae_flux = gr.Dropdown(label="Flux VAE", interactive=True, choices=[None]+path_manager.get_folder_list("vae"), value=settings.default_settings.get("vae_flux", None),)
                 add_setting("vae_flux", vae_flux)
