@@ -52,7 +52,6 @@ from nodes import (
     VAELoader,
 )
 from comfy.sampler_helpers import (
-    cleanup_additional_models,
     convert_cond,
     get_additional_models,
     prepare_mask,
@@ -180,10 +179,10 @@ class pipeline:
                 "model_sampling": ('AuraFlow', settings.default_settings.get("lumina2_shift", 3.0))
             },
             QwenImage: {
-                "latent": "HunyuanVideo",
+                "latent": "SD3",
                 "clip_type": comfy.sd.CLIPType.QWEN_IMAGE,
                 "clip_names": [self.get_clip_name("clip_qwen2.5")],
-                "vae_name": settings.default_settings.get("qwen_image_vae.safetensors", "qwen_image_vae.safetensors"),
+                "vae_name": settings.default_settings.get("vae_qwen_image", "wan_2.1_vae.safetensors"),
                 "model_sampling": ('AuraFlow', settings.default_settings.get("qwen_image_shift", 3.10))
             },
             SD3: {
@@ -681,6 +680,8 @@ class pipeline:
             cfg = 1.0
 
         latent_image = latent["samples"]
+        latent_image = fix_empty_latent_channels(self.xl_base_patched.unet, latent_image)
+
         batch_inds = latent["batch_index"] if "batch_index" in latent else None
         noise = comfy.sample.prepare_noise(latent_image, seed, batch_inds)
 
@@ -743,33 +744,37 @@ class pipeline:
                 "preview",
                 (-1, f"Start sampling ...", None)
             )
-        samples = sampler.sample(
-            noise,
-            positive_cond,
-            self.conditions["-"]["cache"],
-            **kwargs,
-        )
 
-        cleanup_additional_models(self.models)
-
-        sampled_latent = latent.copy()
-        sampled_latent["samples"] = samples
-
-        if callback is not None:
-            worker.add_result(
-                gen_data["task_id"],
-                "preview",
-                (-1, f"VAE decoding ...", None)
+        try:
+            samples = sampler.sample(
+                noise,
+                positive_cond,
+                self.conditions["-"]["cache"],
+                **kwargs,
             )
 
-        decoded_latent = VAEDecode().decode(
-            samples=sampled_latent, vae=self.xl_base_patched.vae
-        )[0]
+            sampled_latent = latent.copy()
+            sampled_latent["samples"] = samples
 
-        images = [
-            np.clip(255.0 * y.cpu().numpy(), 0, 255).astype(np.uint8)
-            for y in decoded_latent
-        ]
+            if callback is not None:
+                worker.add_result(
+                    gen_data["task_id"],
+                    "preview",
+                    (-1, f"VAE decoding ...", None)
+                )
+
+            decoded_latent = VAEDecode().decode(
+                samples=sampled_latent, vae=self.xl_base_patched.vae
+            )[0]
+
+            images = [
+                np.clip(255.0 * y.cpu().numpy(), 0, 255).astype(np.uint8)
+                for y in decoded_latent
+            ]
+        except Exception as e:
+            traceback.print_exc() 
+            print(f"ERROR: {e}")
+            images = ["html/error.png"]
 
         shared.shared_cache["prev_image"] = images[0]
         if callback is not None:
