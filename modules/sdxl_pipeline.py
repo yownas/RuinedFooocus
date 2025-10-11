@@ -153,7 +153,7 @@ class pipeline:
             BaseModel: {
                 "clip_type": comfy.sd.CLIPType.STABLE_DIFFUSION,
                 "clip_names": [self.get_clip_name("clip_l")],
-                "vae_name": settings.default_settings.get("vae_sd", "vae_sd.safetensors")
+                "vae_name": settings.default_settings.get("vae_sd", "sd15_vae.safetensors")
             },
             CosmosPredict2: {
                 "latent": "SD3",

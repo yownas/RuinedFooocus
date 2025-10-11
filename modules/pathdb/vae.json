@@ -73,5 +73,10 @@
         "url": "https://huggingface.co/calcuis/cosmos-predict2-gguf/resolve/main/pig_wan_vae_fp32-f16.gguf",
         "path": "path_vae",
         "filename": "pig_wan_vae_fp32-f16.gguf"
+    },
+    "vae/sd15_vae.safetensors": {
+        "url": "https://huggingface.co/stable-diffusion-v1-5/stable-diffusion-v1-5/resolve/main/vae/diffusion_pytorch_model.safetensors",
+        "path": "path_vae",
+        "filename": "sd15_vae.safetensors"
     }
 }

@@ -2,6 +2,7 @@
 * CosmoPredict2 support
 * QwenImage support
 * HiDream support
+* SD1.5 (gguf/unet) support
 
 ### 25.10.07
 * Updated xllamacpp, gradio and transformers
