@@ -13,6 +13,7 @@ from PIL import Image, ImageOps
 
 # Known models (from ComfyUI/comfy/model_base.py)
 from comfy.model_base import (
+    AuraFlow,
     BaseModel,
     CosmosPredict2,
     Flux,
@@ -124,6 +125,7 @@ class pipeline:
     def get_clip_name(self, shortname):
         # List of short names and default names for different text encoders
         defaults = {
+            "clip_aura": "clip_aura.safetensors",
             "clip_g": "clip_g.safetensors",
             "clip_gemma": "gemma_2_2b_fp16.safetensors",
             "clip_l": "clip_l.safetensors",
@@ -134,7 +136,7 @@ class pipeline:
         }
         return settings.default_settings.get(shortname, defaults[shortname] if shortname in defaults else None)
 
-    known_models = [BaseModel, CosmosPredict2, Flux, HiDream, Lumina2, QwenImage, SD3, SDXL]
+    known_models = [AuraFlow, BaseModel, CosmosPredict2, Flux, HiDream, Lumina2, QwenImage, SD3, SDXL]
     def get_clip_and_vae(self, unet_type):
         if unet_type not in self.known_models:
             unet_type = SDXL # Use SDXL as default
@@ -142,6 +144,12 @@ class pipeline:
         # Simple workflows with "Load models"->"Sample"->"VAE" might work right away.
         # Add new clip/vae models to settings and pathdb-files.
         model_info = {
+            AuraFlow: {
+                "clip_type": comfy.sd.CLIPType.STABLE_DIFFUSION,
+                "clip_names": [self.get_clip_name("clip_aura")],
+                "vae_name": settings.default_settings.get("vae_auraflow", "auraflow_vae_fp32.safetensors"),
+                "model_sampling": ('AuraFlow', settings.default_settings.get("auraflow_shift", 1.73))
+            },
             BaseModel: {
                 "clip_type": comfy.sd.CLIPType.STABLE_DIFFUSION,
                 "clip_names": [self.get_clip_name("clip_l")],
@@ -379,7 +387,7 @@ class pipeline:
             )
             if not (type(self.xl_base.unet.model) in self.known_models):
                 print(
-                    f"Model {type(self.xl_base.unet.model)} not supported. RuinedFooocus only support SD1.x/SDXL/SD3/Flux/Lumina2 models as the base model."
+                    f"Model {type(self.xl_base.unet.model)} not supported. RuinedFooocus supports {self.known_models} models as the base model."
                 )
                 self.xl_base = None
 
@@ -473,13 +481,13 @@ class pipeline:
     ):
         try:
             if self.xl_base_patched == None or type(self.xl_base_patched.unet.model) not in self.known_models:
-                print(f"ERROR: Can only use SD1.x, SDXL, SD3, Flux or Lumina2 models")
+                print(f"ERROR: Can only use {self.known_models} models")
                 worker.interrupt_ruined_processing = True
                 if callback is not None:
                     worker.add_result(
                         gen_data["task_id"],
                         "preview",
-                        (-1, f"Can only use SDXL, SD3 or Flux models ...", "html/error.png")
+                        (-1, f"Unknown model ...", "html/error.png")
                     )
                 return []
         except Exception as e:
@@ -629,10 +637,6 @@ class pipeline:
                 case 'HunyuanImage':
                     latent = EmptyHunyuanImageLatent().generate(
                         width=gen_data["width"], height=gen_data["height"], batch_size=1
-                    )[0]
-                case 'HunyuanVideo':
-                    latent = EmptyHunyuanLatentVideo().generate(
-                        width=gen_data["width"], height=gen_data["height"], length=1, batch_size=1
                     )[0]
                 case _:
                     latent = EmptyLatentImage().generate(

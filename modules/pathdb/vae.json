@@ -4,6 +4,11 @@
         "path": "path_vae",
         "filename": "ae.safetensors"
     },
+    "vae/auraflow_vae_fp32.safetensors": {
+        "url": "https://huggingface.co/fal/AuraFlow-v0.3/resolve/main/vae/diffusion_pytorch_model.safetensors",
+        "path": "path_vae",
+        "filename": "auraflow_vae_fp32.safetensors"
+    },
     "vae/flux-vae.safetensors": {
         "url": "https://huggingface.co/diffusers/FLUX.1-vae/resolve/main/diffusion_pytorch_model.safetensors",
         "path": "path_vae",
