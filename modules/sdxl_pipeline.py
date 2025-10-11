@@ -387,6 +387,7 @@ class pipeline:
                 self.xl_base_hash = name
                 self.xl_base_patched = self.xl_base
                 self.xl_base_patched_hash = ""
+                self.model_info = self.get_clip_and_vae(type(self.xl_base_patched.unet.model))
         return
 
     def load_loras(self, loras):
