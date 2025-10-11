@@ -12,7 +12,7 @@ import modules.prompt_processing as pp
 from PIL import Image, ImageOps
 
 # Known models (from ComfyUI/comfy/model_base.py)
-from comfy.model_base import BaseModel, Flux, HiDream, Lumina2, SD3, SDXL
+from comfy.model_base import BaseModel, Flux, HiDream, Lumina2, QwenImage, SD3, SDXL
 
 from shared import path_manager, settings
 import shared
@@ -55,6 +55,7 @@ from comfy_extras.nodes_edit_model import ReferenceLatent
 from node_helpers import conditioning_set_values
 
 from comfy.samplers import KSampler
+from comfy.sample import fix_empty_latent_channels
 from comfy_extras.nodes_post_processing import ImageScaleToTotalPixels
 from comfy_extras.nodes_canny import Canny
 from comfy_extras.nodes_freelunch import FreeU
@@ -118,11 +119,12 @@ class pipeline:
             "clip_gemma": "gemma_2_2b_fp16.safetensors",
             "clip_l": "clip_l.safetensors",
             "clip_llama": "llama_q2.gguf",
+            "clip_qwen2.5": "qwen_2.5_vl_7b_fp8_scaled.safetensors",
             "clip_t5": "t5-v1_1-xxl-encoder-Q3_K_S.gguf",
         }
         return settings.default_settings.get(shortname, defaults[shortname] if shortname in defaults else None)
 
-    known_models = [BaseModel, Flux, HiDream, Lumina2, SD3, SDXL]
+    known_models = [BaseModel, Flux, HiDream, Lumina2, QwenImage, SD3, SDXL]
     def get_clip_and_vae(self, unet_type):
         if unet_type not in self.known_models:
             unet_type = SDXL # Use SDXL as default
@@ -160,6 +162,13 @@ class pipeline:
                 "vae_name": settings.default_settings.get("vae_lumina2", "lumina2_vae_fp32.safetensors"),
                 "model_sampling": ('AuraFlow', settings.default_settings.get("lumina2_shift", 3.0))
             },
+            QwenImage: {
+                "latent": "SD3",
+                "clip_type": comfy.sd.CLIPType.QWEN_IMAGE,
+                "clip_names": [self.get_clip_name("clip_qwen2.5")],
+                "vae_name": settings.default_settings.get("qwen_image_vae.safetensors", "qwen_image_vae.safetensors"),
+                "model_sampling": ('AuraFlow', settings.default_settings.get("qwen_image_shift", 3.0))
+            },
             SD3: {
                 "latent": "SD3",
                 "clip_type": comfy.sd.CLIPType.SD3,
@@ -175,7 +184,7 @@ class pipeline:
                 "clip_type": comfy.sd.CLIPType.STABLE_DIFFUSION,
                 "clip_names": [self.get_clip_name("clip_l"), self.get_clip_name("clip_g")],
                 "vae_name": settings.default_settings.get("vae_sdxl", "sdxl_vae.safetensors")
-            }
+            },
         }
 
         return model_info.get(unet_type, None)
@@ -292,6 +301,7 @@ class pipeline:
                     )
                     print(f"Loading VAE: {model_info['vae_name']}")
                     sd = comfy.utils.load_torch_file(str(vae_path))
+                    #sd = load_gguf_sd(str(vae_path))
                     vae = comfy.sd.VAE(sd=sd)
 
                     clip_vision = None
