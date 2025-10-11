@@ -44,6 +44,11 @@
         "path": "path_clip",
         "filename": "qwen_2.5_vl_7b_fp8_scaled.safetensors"
     },
+    "clip/t5xxl_old_fp32-q4_0.gguf": {
+        "url": "https://huggingface.co/calcuis/cosmos-predict2-gguf/resolve/main/t5xxl_old_fp32-q4_0.gguf",
+        "path": "path_clip",
+        "filename": "t5xxl_old_fp32-q4_0.gguf"
+    },
     "clip/t5-v1_1-xxl-encoder-Q3_K_L.gguf": {
         "url": "https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/resolve/main/t5-v1_1-xxl-encoder-Q3_K_L.gguf",
         "path": "path_clip",

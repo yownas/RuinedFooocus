@@ -63,5 +63,10 @@
         "url": "https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/vae/qwen_image_vae.safetensors",
         "path": "path_vae",
         "filename": "qwen_image_vae.safetensors"
+    },
+    "vae/pig_wan_vae_fp32-f16.gguf": {
+        "url": "https://huggingface.co/calcuis/cosmos-predict2-gguf/resolve/main/pig_wan_vae_fp32-f16.gguf",
+        "path": "path_vae",
+        "filename": "pig_wan_vae_fp32-f16.gguf"
     }
 }
