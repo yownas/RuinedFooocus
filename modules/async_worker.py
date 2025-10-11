@@ -5,6 +5,7 @@ import math
 import time
 import pathlib
 from pathlib import Path
+import traceback
 
 import json
 import os
@@ -247,6 +248,11 @@ def _process(gen_data):
             except InterruptProcessingException as iex:
                 stop_batch = True
                 imgs = []
+            except Exception as iex:
+                stop_batch = True
+                imgs = []
+                traceback.print_exc()
+                print(f"ERROR: {iex}")
 
         for x in imgs:
             folder=shared.path_manager.model_paths["temp_outputs_path"]

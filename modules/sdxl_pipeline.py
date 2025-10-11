@@ -746,36 +746,31 @@ class pipeline:
                 (-1, f"Start sampling ...", None)
             )
 
-        try:
-            samples = sampler.sample(
-                noise,
-                positive_cond,
-                self.conditions["-"]["cache"],
-                **kwargs,
+        samples = sampler.sample(
+            noise,
+            positive_cond,
+            self.conditions["-"]["cache"],
+            **kwargs,
+        )
+
+        sampled_latent = latent.copy()
+        sampled_latent["samples"] = samples
+
+        if callback is not None:
+            worker.add_result(
+                gen_data["task_id"],
+                "preview",
+                (-1, f"VAE decoding ...", None)
             )
 
-            sampled_latent = latent.copy()
-            sampled_latent["samples"] = samples
+        decoded_latent = VAEDecode().decode(
+            samples=sampled_latent, vae=self.xl_base_patched.vae
+        )[0]
 
-            if callback is not None:
-                worker.add_result(
-                    gen_data["task_id"],
-                    "preview",
-                    (-1, f"VAE decoding ...", None)
-                )
-
-            decoded_latent = VAEDecode().decode(
-                samples=sampled_latent, vae=self.xl_base_patched.vae
-            )[0]
-
-            images = [
-                np.clip(255.0 * y.cpu().numpy(), 0, 255).astype(np.uint8)
-                for y in decoded_latent
-            ]
-        except Exception as e:
-            traceback.print_exc() 
-            print(f"ERROR: {e}")
-            images = ["html/error.png"]
+        images = [
+            np.clip(255.0 * y.cpu().numpy(), 0, 255).astype(np.uint8)
+            for y in decoded_latent
+        ]
 
         shared.shared_cache["prev_image"] = images[0]
         if callback is not None:
