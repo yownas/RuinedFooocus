@@ -1,6 +1,6 @@
 * AuraFlow support
 * CosmoPredict2 support
-* QwenImage support (broken)
+* QwenImage support
 * HiDream support
 
 ### 25.10.07
