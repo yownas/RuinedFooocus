@@ -553,6 +553,7 @@ class pipeline:
                 image=input_image
             )[0]
             updated_conditions = True
+            img2img_mode = True
             input_images -= 1
         else:
             if callback is not None:
@@ -640,22 +641,23 @@ class pipeline:
             # NOTE: If we are doing img2img, reuse the previous image ("Loopback").
             #       It is not obvious that this is a good idea.
             if controlnet["type"].lower() == "img2img":
-                # If this isn't the first image, do "Loopback"
-                if "preview_count" in shared.state and shared.state["preview_count"] > 0:
-                    input_image = Image.fromarray(shared.shared_cache["prev_image"]).convert("RGB")
-                    input_image = np.array(input_image).astype(np.float32) / 255.0
-                    input_image = torch.from_numpy(input_image)[None,]
-            if controlnet["type"].lower() == "kontext":
-                input_image = FluxKontextImageScale().scale(input_image)[0]
-            if controlnet["type"].lower() in ["img2img", "kontext"]:
-                latent = VAEEncode().encode(
-                    vae=self.xl_base_patched.vae, pixels=input_image
-                )[0]
-                force_full_denoise = False
-                denoise = float(controlnet.get("denoise", controlnet.get("strength", 1)))
                 img2img_mode = True
 
-        if not img2img_mode:
+        if img2img_mode:
+            # If this isn't the first image, do "Loopback"
+            if "preview_count" in shared.state and shared.state["preview_count"] > 0:
+                input_image = Image.fromarray(shared.shared_cache["prev_image"]).convert("RGB")
+                input_image = np.array(input_image).astype(np.float32) / 255.0
+                input_image = torch.from_numpy(input_image)[None,]
+            if controlnet["type"].lower() == "kontext":
+                input_image = FluxKontextImageScale().scale(input_image)[0]
+
+            latent = VAEEncode().encode(
+                vae=self.xl_base_patched.vae, pixels=input_image
+            )[0]
+            force_full_denoise = False
+            denoise = float(controlnet.get("denoise", controlnet.get("strength", 1)))
+        else:
             # Get the correct of latent image to start with
             latent_type = self.model_info.get('latent', None)
             match latent_type:
