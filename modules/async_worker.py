@@ -160,8 +160,9 @@ def _process(gen_data):
             status
         except NameError:
             status = None
-        if step % 10 == 0 or status == None:
-            status = random.choice(lines)
+
+        # Get status based on time (for very slow generations)
+        status = lines[int(time.time() // 10) % len(lines)]
 
         grid_xsize = math.ceil(math.sqrt(shared.state["preview_total"]))
         grid_ysize = math.ceil(shared.state["preview_total"] / grid_xsize)
