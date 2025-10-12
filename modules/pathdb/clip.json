@@ -44,6 +44,11 @@
         "path": "path_clip",
         "filename": "Qwen2.5-VL-7B-Instruct-Q4_K_S.gguf"
     },
+    "clip/qwen_2.5_vl_7b_edit-q2_k.gguf": {
+        "url": "https://huggingface.co/calcuis/pig-encoder/resolve/main/qwen_2.5_vl_7b_edit-q2_k.gguf",
+        "path": "path_clip",
+        "filename": "qwen_2.5_vl_7b_edit-q2_k.gguf"
+    },
     "clip/qwen_2.5_vl_7b_fp8_scaled.safetensors": {
         "url": "https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors",
         "path": "path_clip",

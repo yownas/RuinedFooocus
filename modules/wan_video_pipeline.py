@@ -16,7 +16,7 @@ from shared import path_manager, settings
 
 from pathlib import Path
 import random
-from modules.pipleline_utils import (
+from modules.pipeline_utils import (
     clean_prompt_cond_caches,
     get_previewer,
 )

@@ -62,6 +62,7 @@ from comfy_extras.nodes_sd3 import EmptySD3LatentImage
 from comfy_extras.nodes_flux import FluxKontextImageScale
 from comfy_extras.nodes_hunyuan import EmptyHunyuanImageLatent, EmptyHunyuanLatentVideo
 from comfy_extras.nodes_edit_model import ReferenceLatent
+from comfy_extras.nodes_qwen import TextEncodeQwenImageEdit
 from node_helpers import conditioning_set_values
 
 from comfy.samplers import KSampler
@@ -74,7 +75,7 @@ from comfy.sd import CLIP, VAE
 from comfy.utils import load_torch_file
 from comfy.sd import save_checkpoint
 
-from modules.pipleline_utils import (
+from modules.pipeline_utils import (
     get_previewer,
     clean_prompt_cond_caches,
     set_timestep_range,
@@ -130,7 +131,7 @@ class pipeline:
             "clip_gemma": "gemma_2_2b_fp16.safetensors",
             "clip_l": "clip_l.safetensors",
             "clip_llama": "llama_q2.gguf",
-            "clip_qwen2.5": "Qwen2.5-VL-7B-Instruct-Q4_K_S.gguf",
+            "clip_qwen2.5": "qwen_2.5_vl_7b_edit-q2_k.gguf",
             "clip_oldt5": "t5xxl_old_fp32-q4_0.gguf",
             "clip_t5": "t5-v1_1-xxl-encoder-Q3_K_S.gguf",
         }
@@ -191,7 +192,8 @@ class pipeline:
                 "clip_type": comfy.sd.CLIPType.QWEN_IMAGE,
                 "clip_names": [self.get_clip_name("clip_qwen2.5")],
                 "vae_name": settings.default_settings.get("vae_qwen_image", "qwen_image_vae.safetensors"),
-                "model_sampling": ('AuraFlow', settings.default_settings.get("qwen_image_shift", 3.10))
+                "model_sampling": ('AuraFlow', settings.default_settings.get("qwen_image_shift", 3.10)),
+                "flags": ["has_qwen_encode"]
             },
             SD3: {
                 "latent": "SD3",
@@ -502,59 +504,92 @@ class pipeline:
                 )
             return []
 
-        positive_prompt = gen_data["positive_prompt"]
-        negative_prompt = gen_data["negative_prompt"]
-        input_image = gen_data["input_image"]
-        controlnet = modules.controlnet.get_settings(gen_data)
-
         cfg = gen_data["cfg"]
         sampler_name = gen_data["sampler_name"]
         scheduler = gen_data["scheduler"]
         clip_skip = gen_data["clip_skip"]
-
-        img2img_mode = False
-        input_image_pil = None
+        input_image = gen_data["input_image"]
         seed = gen_data["seed"] if isinstance(gen_data["seed"], int) else random.randint(1, 2**32)
-
-        if callback is not None:
-            worker.add_result(
-                gen_data["task_id"],
-                "preview",
-                (-1, f"Processing text encoding ...", None)
-            )
-        updated_conditions = False
-        if self.conditions is None:
-            self.conditions = clean_prompt_cond_caches()
-
-        if self.textencode("+", positive_prompt, clip_skip):
-            updated_conditions = True
-        if self.textencode("-", negative_prompt, clip_skip):
-            updated_conditions = True
-
-        switched_prompt = []
-        if "[" in positive_prompt and "]" in positive_prompt:
-            if controlnet is not None and input_image is not None:
-                print("ControlNet and [prompt|switching] do not work well together.")
-                print("ControlNet will only be applied to the first prompt.")
-
-            prompt_per_step = pp.prompt_switch_per_step(positive_prompt, gen_data["steps"])
-            perc_per_step = round(100 / gen_data["steps"], 2)
-            for i in range(len(prompt_per_step)):
-                if self.textencode("switch", prompt_per_step[i], clip_skip):
-                    updated_conditions = True
-                positive_switch = self.conditions["switch"]["cache"]
-                start_perc = round((perc_per_step * i) / 100, 2)
-                end_perc = round((perc_per_step * (i + 1)) / 100, 2)
-                if end_perc >= 0.99:
-                    end_perc = 1
-                positive_switch = set_timestep_range(
-                    positive_switch, start_perc, end_perc
-                )
-                switched_prompt += positive_switch
+        positive_prompt = gen_data["positive_prompt"]
+        negative_prompt = gen_data["negative_prompt"]
+        controlnet = modules.controlnet.get_settings(gen_data)
 
         device = comfy.model_management.get_torch_device()
+        switched_prompt = []
+        img2img_mode = False
+        updated_conditions = False
+
+        # Pre-process input-image
+        input_images = 0
+        if input_image:
+            input_image = np.array(input_image.convert("RGB")).astype(np.float32) / 255.0
+            input_image = torch.from_numpy(input_image)[None,]
+            megapixels=float(gen_data["width"])*float(gen_data["height"])/(1024*1024)
+            input_image = ImageScaleToTotalPixels().execute(
+                image=input_image, upscale_method="bicubic", megapixels=megapixels
+            )[0]
+            input_images = 1 # "Counter" for the single input-image we have. (for now)
+
+        # Text-encoding
+        if 'has_qwen_encode' in self.model_info.get('flags', []) and input_images > 0:
+            if callback is not None:
+                worker.add_result(
+                    gen_data["task_id"],
+                    "preview",
+                    (-1, f"Processing image with text encoding ...", None)
+                )
+            controlnet = None # Disable any other controlnet
+            self.conditions = clean_prompt_cond_caches()
+            self.conditions["+"]["cache"] = TextEncodeQwenImageEdit().execute(
+                clip=self.xl_base_patched.clip,
+                prompt=positive_prompt,
+                vae=self.xl_base.vae,
+                image=input_image
+            )[0]
+            self.conditions["-"]["cache"] = TextEncodeQwenImageEdit().execute(
+                clip=self.xl_base_patched.clip,
+                prompt=negative_prompt,
+                vae=self.xl_base.vae,
+                image=input_image
+            )[0]
+            updated_conditions = True
+            input_images -= 1
+        else:
+            if callback is not None:
+                worker.add_result(
+                    gen_data["task_id"],
+                    "preview",
+                    (-1, f"Processing text encoding ...", None)
+                )
+            if self.conditions is None:
+                self.conditions = clean_prompt_cond_caches()
+            if self.textencode("+", positive_prompt, clip_skip):
+                updated_conditions = True
+            if self.textencode("-", negative_prompt, clip_skip):
+                updated_conditions = True
+
+            if "[" in positive_prompt and "]" in positive_prompt:
+                if controlnet is not None and input_image is not None:
+                    print("ControlNet and [prompt|switching] do not work well together.")
+                    print("ControlNet will only be applied to the first prompt.")
+
+                prompt_per_step = pp.prompt_switch_per_step(positive_prompt, gen_data["steps"])
+                perc_per_step = round(100 / gen_data["steps"], 2)
+                for i in range(len(prompt_per_step)):
+                    if self.textencode("switch", prompt_per_step[i], clip_skip):
+                        updated_conditions = True
+                    positive_switch = self.conditions["switch"]["cache"]
+                    start_perc = round((perc_per_step * i) / 100, 2)
+                    end_perc = round((perc_per_step * (i + 1)) / 100, 2)
+                    if end_perc >= 0.99:
+                        end_perc = 1
+                    positive_switch = set_timestep_range(
+                        positive_switch, start_perc, end_perc
+                    )
+                    switched_prompt += positive_switch
 
 
+        # Controlnet / img2img
         if controlnet is None or not "type" in controlnet:
             controlnet = {}
             controlnet["type"] = "None"
@@ -567,20 +602,14 @@ class pipeline:
         ):
             controlnet["type"] = "kontext"
 
-        if controlnet["type"] != "None" and input_image is not None:
+        if controlnet["type"] != "None" and input_images > 0:
             if callback is not None:
                 worker.add_result(
                     gen_data["task_id"],
                     "preview",
                     (-1, f"Powering up ...", None)
                 )
-            input_image_pil = input_image.convert("RGB")
-            input_image = np.array(input_image_pil).astype(np.float32) / 255.0
-            input_image = torch.from_numpy(input_image)[None,]
-            megapixels=float(gen_data["width"])*float(gen_data["height"])/(1024*1024)
-            input_image = ImageScaleToTotalPixels().upscale(
-                image=input_image, upscale_method="bicubic", megapixels=megapixels
-            )[0]
+
             self.refresh_controlnet(name=controlnet["type"])
             match controlnet["type"].lower():
                 case "canny":
@@ -675,8 +704,10 @@ class pipeline:
                 self.xl_base_patched.unet.model_dtype(),
             )
 
+        # KSampler
+
         comfy.model_management.load_models_gpu([self.xl_base_patched.unet])
-        # Use FluxGuidance for Flux
+        # Use FluxGuidance for Flux (FIXME: clean up this code)
         positive_cond = switched_prompt if switched_prompt else self.conditions["+"]["cache"]
         if isinstance(self.xl_base.unet.model, Flux):
             if controlnet.get("type", "") == "kontext":
@@ -757,6 +788,7 @@ class pipeline:
             **kwargs,
         )
 
+        # VAE
         sampled_latent = latent.copy()
         sampled_latent["samples"] = samples
 
