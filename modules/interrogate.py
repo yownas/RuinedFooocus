@@ -3,7 +3,7 @@ from clip_interrogator import Config, Interrogator
 from PIL import Image
 import json
 from shared import path_manager, settings
-from transformers import AutoProcessor, AutoModelForCausalLM 
+from transformers import AutoProcessor, Florence2ForConditionalGeneration
 from modules.util import TimeIt
 
 import os
@@ -71,14 +71,13 @@ def florence_look(image, prompt, gr):
         prompt = "<MORE_DETAILED_CAPTION>"
 
         with patch("transformers.dynamic_module_utils.get_imports", fixed_get_imports):
-            model = AutoModelForCausalLM.from_pretrained(
-                "yownas/Florence-2-large",
-                torch_dtype=torch_dtype,
-                trust_remote_code=True
+            model = Florence2ForConditionalGeneration.from_pretrained(
+                "florence-community/Florence-2-base-ft",
+                dtype=torch.bfloat16,
             ).to(device)
-            processor = AutoProcessor.from_pretrained("yownas/Florence-2-large", trust_remote_code=True)
+            processor = AutoProcessor.from_pretrained("florence-community/Florence-2-large-ft")
 
-        inputs = processor(text=prompt, images=image, return_tensors="pt").to(device, torch_dtype)
+        inputs = processor(text=prompt, images=image, return_tensors="pt").to(device, torch.bfloat16)
         print(f"Judging...")
         generated_ids = model.generate(
             input_ids=inputs["input_ids"],
