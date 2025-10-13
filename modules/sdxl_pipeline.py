@@ -132,7 +132,7 @@ class pipeline:
             "clip_gemma": "gemma_2_2b_fp16.safetensors",
             "clip_l": "clip_l.safetensors",
             "clip_llama": "llama_q2.gguf",
-            "clip_qwen2.5": "qwen_2.5_vl_7b_edit-q2_k.gguf",
+            "clip_qwen25": "qwen_2.5_vl_7b_edit-q2_k.gguf",
             "clip_oldt5": "t5xxl_old_fp32-q4_0.gguf",
             "clip_t5": "t5-v1_1-xxl-encoder-Q3_K_S.gguf",
         }
@@ -211,7 +211,7 @@ class pipeline:
             QwenImage: {
                 "latent": "SD3",
                 "clip_type": comfy.sd.CLIPType.QWEN_IMAGE,
-                "clip_names": [self.get_clip_name("clip_qwen2.5")],
+                "clip_names": [self.get_clip_name("clip_qwen25")],
                 "vae_name": self.get_vae_name("vae_qwen_image"),
                 "model_sampling": ('AuraFlow', settings.default_settings.get("qwen_image_shift", 3.10)),
                 "flags": ["has_qwen_encode"]
