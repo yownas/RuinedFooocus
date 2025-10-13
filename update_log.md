@@ -3,6 +3,7 @@
 * QwenImage support
 * HiDream support
 * SD1.5 (gguf/unet) support
+* PixArt (gguf/unet) support
 
 ### 25.10.07
 * Updated xllamacpp, gradio and transformers
