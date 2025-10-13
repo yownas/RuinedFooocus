@@ -64,6 +64,16 @@
         "path": "path_vae",
         "filename": "pig_wan_2.2_vae_fp32-f16.gguf"
     },
+    "vae/pixart_sigma_vae_fp16.safetensors": {
+        "url": "https://huggingface.co/calcuis/pixart/resolve/main/pixart_sigma_vae_fp16.safetensors",
+        "path": "path_vae",
+        "filename": "pixart_sigma_vae_fp16.safetensors"
+    },
+    "vae/pixart_vae_fp16.safetensors": {
+        "url": "https://huggingface.co/calcuis/pixart/resolve/main/pixart_vae_fp16.safetensors",
+        "path": "path_vae",
+        "filename": "pixart_vae_fp16.safetensors"
+    },
     "vae/qwen_image_vae.safetensors": {
         "url": "https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/vae/qwen_image_vae.safetensors",
         "path": "path_vae",

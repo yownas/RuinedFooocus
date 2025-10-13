@@ -19,6 +19,7 @@ from comfy.model_base import (
     Flux,
     HiDream,
     Lumina2,
+    PixArt,
     QwenImage,
     SD3,
     SDXL
@@ -137,7 +138,7 @@ class pipeline:
         }
         return settings.default_settings.get(shortname, defaults[shortname] if shortname in defaults else None)
 
-    known_models = [AuraFlow, BaseModel, CosmosPredict2, Flux, HiDream, Lumina2, QwenImage, SD3, SDXL]
+    known_models = [AuraFlow, BaseModel, CosmosPredict2, Flux, HiDream, Lumina2, PixArt, QwenImage, SD3, SDXL]
     def get_clip_and_vae(self, unet_type):
         if unet_type not in self.known_models:
             unet_type = SDXL # Use SDXL as default
@@ -186,6 +187,11 @@ class pipeline:
                 "clip_names": [self.get_clip_name("clip_gemma")],
                 "vae_name": settings.default_settings.get("vae_lumina2", "lumina2_vae_fp32.safetensors"),
                 "model_sampling": ('AuraFlow', settings.default_settings.get("lumina2_shift", 3.0))
+            },
+            PixArt: {
+                "clip_type": comfy.sd.CLIPType.PIXART,
+                "clip_names": [self.get_clip_name("clip_t5")],
+                "vae_name": settings.default_settings.get("vae_pixart_a", "pixart_vae_fp16.safetensors"),
             },
             QwenImage: {
                 "latent": "SD3",
