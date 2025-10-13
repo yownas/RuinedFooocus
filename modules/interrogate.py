@@ -72,10 +72,10 @@ def florence_look(image, prompt, gr):
 
         with patch("transformers.dynamic_module_utils.get_imports", fixed_get_imports):
             model = Florence2ForConditionalGeneration.from_pretrained(
-                "florence-community/Florence-2-base-ft",
+                "florence-community/Florence-2-base",
                 dtype=torch.bfloat16,
             ).to(device)
-            processor = AutoProcessor.from_pretrained("florence-community/Florence-2-large-ft")
+            processor = AutoProcessor.from_pretrained("florence-community/Florence-2-large")
 
         inputs = processor(text=prompt, images=image, return_tensors="pt").to(device, torch.bfloat16)
         print(f"Judging...")
