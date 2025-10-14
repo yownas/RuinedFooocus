@@ -1,3 +1,4 @@
+### 25.10.14
 * AuraFlow support
 * CosmoPredict2 support
 * QwenImage support
