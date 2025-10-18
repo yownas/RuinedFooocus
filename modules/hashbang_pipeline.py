@@ -1,7 +1,9 @@
+import os
 import modules.async_worker as worker
 from PIL import Image
 import shared
 import json
+
 
 from comfy.samplers import KSampler
 
@@ -150,6 +152,22 @@ class pipeline:
                 except Exception as e:
                     image = Image.open("html/error.png")
                     print(f"ERROR: {e}")
+
+            case "clean cache":
+                gradio_cache = os.environ['GRADIO_TEMP_DIR']
+                import shutil
+                try:
+                    if gradio_cache.endswith('ruinedfooocus_cache'):
+                        shutil.rmtree(gradio_cache, ignore_errors=True)
+                        print("Cache cleared. Please reload the browser to avoid errors.")
+                    else:
+                        print(f"ERROR: {gradio_cache} doesn't look like a RF cache. Not deleting.")
+                except FileNotFoundError:
+                    pass
+                except PermissionError:
+                    pass
+                except Exception as e:
+                    print(f"ERROR: {str(e)}")
 
             case _:
                 print(f"ERROR: Unknown command #!{cmd}")

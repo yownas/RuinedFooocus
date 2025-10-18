@@ -22,6 +22,7 @@ parser.add_argument("--gpu-device-id", type=int, default=None, metavar="DEVICE_I
 parser.add_argument("--offline", action="store_true", help="Skip update-check during startup.")
 parser.add_argument("--iINSTallLEDmYOwNPaCKaGeS", action="store_true", help=argparse.SUPPRESS)
 parser.add_argument("--language", type=str, default='en', help="UI language.")
+parser.add_argument("--clean-cache", action="store_true", help="Purge old cache before starting.")
 
 # ComfyUI arguments
 parser.add_argument("--directml", type=int, nargs="?", metavar="DIRECTML_DEVICE", const=-1, help="Use torch-directml.")
