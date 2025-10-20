@@ -734,7 +734,7 @@ class pipeline:
         positive_cond = switched_prompt if switched_prompt else self.conditions["+"]["cache"]
         if isinstance(self.xl_base.unet.model, Flux):
             if controlnet.get("type", "") == "kontext":
-                positive_cond = ReferenceLatent().append(positive_cond, latent=latent)[0]
+                positive_cond = ReferenceLatent().execute(positive_cond, latent=latent)[0]
             positive_cond = conditioning_set_values(positive_cond, {"guidance": cfg})
             cfg = 1.0
 
