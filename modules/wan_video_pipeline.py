@@ -26,7 +26,7 @@ import comfy.latent_formats
 import comfy.model_management
 from comfy.sd import load_checkpoint_guess_config
 
-from calcuis_gguf.pig import load_gguf_sd, GGMLOps, GGUFModelPatcher
+from calcuis_gguf.pig import load_gguf_sd, GGMLOps, GGUFModelPatcher, DualClipLoaderGGUF
 
 from nodes import (
     CLIPTextEncode,
@@ -120,16 +120,20 @@ class pipeline:
                     clip_paths = []
                     clip_names = []
 
-                    if isinstance(unet.model, WAN21):
-                        self.wan_version = "WAN21"
+                    self.wan_version = type(unet.model).__name__
+
+                    if self.wan_version == 'WAN21':
                         latent_format = comfy.latent_formats.Wan21()
                         self.latent_rgb_factors = latent_format.latent_rgb_factors
                         self.latent_rgb_factors_bias = latent_format.latent_rgb_factors_bias
-                    elif isinstance(unet.model, WAN22):
-                        self.wan_version = "WAN22"
+                        # https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged
+                        vae_name = settings.default_settings.get("vae_wan", "wan_2.1_vae.safetensors")
+                    elif self.wan_version == 'WAN22':
                         latent_format = comfy.latent_formats.Wan22()
                         self.latent_rgb_factors = latent_format.latent_rgb_factors
                         self.latent_rgb_factors_bias = latent_format.latent_rgb_factors_bias
+                        # https://huggingface.co/calcuis/wan2-gguf/resolve/main/pig_wan2_vae_fp32-f16.gguf
+                        vae_name = settings.default_settings.get("vae_wan", "pig_wan_2.2_vae_fp32-f16.gguf")
                     else:
                         print(f"ERROR: Not a Wan Video model?")
                         unet = None
@@ -147,15 +151,12 @@ class pipeline:
 
                     print(f"Loading CLIP: {clip_names}")
                     clip = comfy.sd.load_clip(ckpt_paths=clip_paths, clip_type=clip_type, model_options={})
-
-
-                    if self.wan_version == "WAN21":
-                        # https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged
-                        vae_name = settings.default_settings.get("vae_wan", "wan_2.1_vae.safetensors")
-                    else:
-                        # FIXME: This is for the 5b model. Might need check for "5b or 14b".
-                        # https://huggingface.co/calcuis/wan2-gguf/resolve/main/pig_wan2_vae_fp32-f16.gguf
-                        vae_name = settings.default_settings.get("vae_wan", "pig_wan_2.2_vae_fp32-f16.gguf")
+                    #clip_loader = DualClipLoaderGGUF()
+                    #clip = clip_loader.load_patcher(
+                    #    clip_paths,
+                    #    clip_type,
+                    #    clip_loader.load_data(clip_paths)
+                    #)
 
                     print(f"Loading VAE: {vae_name}")
                     vae_path = path_manager.get_folder_file_path(
@@ -163,10 +164,12 @@ class pipeline:
                         vae_name,
                         default = os.path.join(path_manager.model_paths["vae_path"], vae_name)
                     )
-
-                    #sd = comfy.utils.load_torch_file(str(vae_path))
-                    sd = load_gguf_sd(str(vae_path))
+                    if str(vae_path).endswith(".gguf"):
+                        sd = load_gguf_sd(str(vae_path))
+                    else:
+                        sd = comfy.utils.load_torch_file(str(vae_path))
                     vae = comfy.sd.VAE(sd=sd)
+
 
                     # FIXME: Is this needed for WAN22?
                     clip_vision_name = settings.default_settings.get("clip_vision", "clip_vision_h_fp8_e4m3fn.safetensors")
@@ -176,7 +179,10 @@ class pipeline:
                         default = os.path.join(path_manager.model_paths["clip_vision_path"], clip_vision_name)
                     )
                     print(f"Loading CLIP Vision: {clip_vision_name}")
-                    sd = comfy.utils.load_torch_file(str(clip_vision_path))
+                    if str(clip_vision_path).endswith(".gguf"):
+                        sd = load_gguf_sd(str(clip_vision_path))
+                    else:
+                        sd = comfy.utils.load_torch_file(str(clip_vision_path))
                     if "visual.transformer.resblocks.0.attn.in_proj_weight" in sd:
                         clip_vision = comfy.clip_vision.load_clipvision_from_sd(sd, prefix="visual.", convert_keys=True)
                     else:
@@ -397,7 +403,7 @@ class pipeline:
                 positive = self.conditions["+"]["cache"]
                 negative = self.conditions["-"]["cache"]
         else: # WAN22
-            latent_image = Wan22ImageToVideoLatent().encode(
+            latent_image = Wan22ImageToVideoLatent().execute(
                 vae = self.model_base_patched.vae,
                 width = gen_data["width"],
                 height = gen_data["height"],
@@ -416,75 +422,79 @@ class pipeline:
 
         noise = comfy.sample.prepare_noise(latent_image["samples"], seed)
 
-        sampled = comfy.sample.sample(
-            model = model_sampling,
-            noise = noise,
-            steps = gen_data["steps"],
-            cfg = gen_data["cfg"],
-            sampler_name = gen_data["sampler_name"],
-            scheduler = gen_data["scheduler"],
-            positive = positive,
-            negative = negative,
-            latent_image = latent_image["samples"],
+        try:
+            sampled = comfy.sample.sample(
+                model = model_sampling,
+                noise = noise,
+                steps = gen_data["steps"],
+                cfg = gen_data["cfg"],
+                sampler_name = gen_data["sampler_name"],
+                scheduler = gen_data["scheduler"],
+                positive = positive,
+                negative = negative,
+                latent_image = latent_image["samples"],
 
-            denoise = 1,
-            callback = callback_function,
-        )
-
-        if callback is not None:
-            worker.add_result(
-                gen_data["task_id"],
-                "preview",
-                (-1, f"VAE Decoding ...", None)
+                denoise = 1,
+                callback = callback_function,
             )
 
-        latent_image["samples"] = sampled
+            if callback is not None:
+                worker.add_result(
+                    gen_data["task_id"],
+                    "preview",
+                    (-1, f"VAE Decoding ...", None)
+                )
 
-        decoded_latent = VAEDecodeTiled().decode(
-            samples=latent_image,
-            tile_size=128,
-            overlap=64,
-            vae=self.model_base_patched.vae,
-        )[0]
+            latent_image["samples"] = sampled
 
-        pil_images = []
-        for image in decoded_latent:
-            i = 255. * image.cpu().numpy()
-            img = Image.fromarray(np.clip(i, 0, 255).astype(np.uint8))
-            pil_images.append(img)
+            decoded_latent = VAEDecodeTiled().decode(
+                samples=latent_image,
+                tile_size=128,
+                overlap=64,
+                vae=self.model_base_patched.vae,
+            )[0]
 
-        if callback is not None:
-            worker.add_result(
-                gen_data["task_id"],
-                "preview",
-                (-1, f"Saving ...", None)
+            pil_images = []
+            for image in decoded_latent:
+                i = 255. * image.cpu().numpy()
+                img = Image.fromarray(np.clip(i, 0, 255).astype(np.uint8))
+                pil_images.append(img)
+
+            if callback is not None:
+                worker.add_result(
+                    gen_data["task_id"],
+                    "preview",
+                    (-1, f"Saving ...", None)
+                )
+
+            file = generate_temp_filename(
+                folder=path_manager.model_paths["temp_outputs_path"], extension="gif"
+            )
+            os.makedirs(os.path.dirname(file), exist_ok=True)
+
+            fps=12.0
+            compress_level=9 # Min = 0, Max = 9
+
+            # Save GIF
+            pil_images[0].save(
+                file,
+                compress_level=compress_level,
+                save_all=True,
+                duration=int(1000.0/fps),
+                append_images=pil_images[1:],
+                optimize=True,
+                loop=0,
             )
 
-        file = generate_temp_filename(
-            folder=path_manager.model_paths["temp_outputs_path"], extension="gif"
-        )
-        os.makedirs(os.path.dirname(file), exist_ok=True)
-
-        fps=12.0
-        compress_level=9 # Min = 0, Max = 9
-
-        # Save GIF
-        pil_images[0].save(
-            file,
-            compress_level=compress_level,
-            save_all=True,
-            duration=int(1000.0/fps),
-            append_images=pil_images[1:],
-            optimize=True,
-            loop=0,
-        )
-
-        # Save mp4
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        mp4_file = file.with_suffix(".mp4")
-        out = cv2.VideoWriter(mp4_file, fourcc, fps, (gen_data["width"], gen_data["height"]))
-        for frame in pil_images:
-            out.write(cv2.cvtColor(np.asarray(frame), cv2.COLOR_BGR2RGB))
-        out.release()
+            # Save mp4
+            fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+            mp4_file = file.with_suffix(".mp4")
+            out = cv2.VideoWriter(mp4_file, fourcc, fps, (gen_data["width"], gen_data["height"]))
+            for frame in pil_images:
+                out.write(cv2.cvtColor(np.asarray(frame), cv2.COLOR_BGR2RGB))
+            out.release()
+        except Exception as e:
+            traceback.print_exc()
+            file = "html/error.png"
 
         return [file]

@@ -205,7 +205,7 @@ os.environ['GRADIO_TEMP_DIR'] = gradio_cache
 # Delete old data
 import shutil
 try:
-    if args.clean-cache and gradio_cache.endswith('ruinedfooocus_cache'):
+    if args.clean_cache and gradio_cache.endswith('ruinedfooocus_cache'):
         shutil.rmtree(gradio_cache)
 except FileNotFoundError:
     pass
