@@ -381,7 +381,7 @@ class pipeline:
             if image is not None:
                 clip_vision_output = self.model_base_patched.clip_vision.encode_image(image)
 
-                (positive, negative, latent_image) = WanImageToVideo().encode(
+                (positive, negative, latent_image) = WanImageToVideo().execute(
                     positive = self.conditions["+"]["cache"],
                     negative = self.conditions["-"]["cache"],
                     vae = self.model_base_patched.vae,
