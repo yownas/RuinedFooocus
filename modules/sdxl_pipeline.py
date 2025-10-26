@@ -623,6 +623,7 @@ class pipeline:
             input_image is not None
         ):
             controlnet["type"] = "kontext"
+            img2img_mode = True
 
         if controlnet["type"] != "None" and input_images > 0:
             if callback is not None:
