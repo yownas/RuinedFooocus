@@ -125,7 +125,10 @@ def _process(gen_data):
             gen_data["cn_selection"] = "None"
             gen_data["cn_type"] = "None"
 
-    seed = int(gen_data["seed"])
+    try:
+        seed = int(gen_data["seed"])
+    except:
+        seed = -1
     max_seed = 2**32
     if not isinstance(seed, int) or seed == -1:
         seed = random.randint(0, max_seed)
