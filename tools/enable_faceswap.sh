@@ -10,7 +10,7 @@ Press enter to continue...
 EOF
 read junk
 
-pip install insightface==0.7.3 gfpgan==1.3.8 git+https://github.com/rodjjo/filterpy.git --require-virtualenv
+pip install insightface==0.7.3 git+https://github.com/rodjjo/filterpy.git --require-virtualenv
 
 cat <<EOF
 pip done...

@@ -3,7 +3,7 @@ echo Some systems fail to install the insightface module, which is why this is n
 echo part of the default install.
 pause
 echo Please wait...
-..\..\python_embeded\python.exe -m pip install insightface==0.7.3 gfpgan==1.3.8 git+https://github.com/rodjjo/filterpy.git
+..\..\python_embeded\python.exe -m pip install insightface==0.7.3 git+https://github.com/rodjjo/filterpy.git
 echo.
 echo Now add this to your RuinedFooocus\settings\powerup.json
 echo.

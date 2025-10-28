@@ -8,6 +8,7 @@ import math
 import modules.controlnet
 import modules.async_worker as worker
 import modules.prompt_processing as pp
+from modules.facerestore import facerestore
 
 from PIL import Image, ImageOps
 
@@ -123,6 +124,7 @@ class pipeline:
     inference_memory = None
 
     ggml_ops = GGMLOps()
+    facefixer = facerestore()
 
     def get_clip_name(self, shortname):
         # List of short names and default names for different text encoders
@@ -835,5 +837,9 @@ class pipeline:
         shared.shared_cache["prev_image"] = images[0]
         if callback is not None:
             callback(gen_data["steps"], 0, 0, gen_data["steps"], images[0])
+
+        if "<facerestore>" in gen_data.get("positive_prompt", ""):
+            self.facefixer.load_gfpgan_model()
+            images = [self.facefixer.process(images[0])]
 
         return images
