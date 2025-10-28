@@ -4,6 +4,7 @@ import os
 import torch
 import traceback
 import math
+import re
 
 import modules.controlnet
 import modules.async_worker as worker
@@ -485,6 +486,7 @@ class pipeline:
 
     def textencode(self, id, text, clip_skip):
         update = False
+        text = re.sub("<[^>]*>", "", text) # Don't encode <lora> and things like that
         hash = f"{text} {clip_skip}"
         if hash != self.conditions[id]["text"]:
             if clip_skip > 1:
@@ -533,6 +535,8 @@ class pipeline:
         clip_skip = gen_data["clip_skip"]
         input_image = gen_data["input_image"]
         seed = gen_data["seed"] if isinstance(gen_data["seed"], int) else random.randint(1, 2**32)
+        if "<facerestore>" in gen_data.get("positive_prompt", ""):
+            gen_data["facerestore"] = True
         positive_prompt = gen_data["positive_prompt"]
         negative_prompt = gen_data["negative_prompt"]
         controlnet = modules.controlnet.get_settings(gen_data)
@@ -838,7 +842,7 @@ class pipeline:
         if callback is not None:
             callback(gen_data["steps"], 0, 0, gen_data["steps"], images[0])
 
-        if "<facerestore>" in gen_data.get("positive_prompt", ""):
+        if gen_data.get("facerestore", False) == True:
             self.facefixer.load_gfpgan_model()
             images = [self.facefixer.process(images[0])]
 

@@ -1,0 +1,7 @@
+{
+    "faceswap/GFPGANv1.4.pth": {
+        "url": "https://github.com/TencentARC/GFPGAN/releases/download/v1.3.0/GFPGANv1.4.pth",
+        "path": "path_faceswap",
+        "filename": "GFPGANv1.4.pth"
+    }
+}

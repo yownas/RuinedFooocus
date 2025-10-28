@@ -68,7 +68,7 @@ def load_styles():
     }
     facerestore_style = {
         "name": "Face restore",
-        "prompt": "{prompt} <facerestore>",
+        "prompt": "{prompt}<facerestore>",
         "negative_prompt": "",
     }
 

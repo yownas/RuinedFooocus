@@ -48,9 +48,6 @@ sys.meta_path.insert(0, ImportRedirector(redirect_map))
 import gfpgan
 from facexlib.utils.face_restoration_helper import FaceRestoreHelper
 
-# Models in models/faceswap/
-# https://github.com/TencentARC/GFPGAN/releases/download/v1.3.0/GFPGANv1.4.pth
-
 class facerestore:
     gfpgan_model = None
 
@@ -58,8 +55,8 @@ class facerestore:
         if self.gfpgan_model is None:
             channel_multiplier = 2
 
-            model_name = "GFPGANv1.4.pth"
-            model_path = os.path.join(path_manager.model_paths["faceswap_path"], model_name)
+            # https://github.com/TencentARC/GFPGAN/releases/download/v1.3.0/GFPGANv1.4.pth
+            model_path = path_manager.get_folder_file_path("faceswap", "GFPGANv1.4.pth")
 
             # https://github.com/TencentARC/GFPGAN/blob/master/inference_gfpgan.py
             self.gfpgan_model = gfpgan.GFPGANer
