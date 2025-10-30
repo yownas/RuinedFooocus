@@ -487,6 +487,7 @@ class pipeline:
     def textencode(self, id, text, clip_skip):
         update = False
         text = re.sub("<[^>]*>", "", text) # Don't encode <lora> and things like that
+        text = text.strip(", ")
         hash = f"{text} {clip_skip}"
         if hash != self.conditions[id]["text"]:
             if clip_skip > 1:
@@ -843,7 +844,17 @@ class pipeline:
             callback(gen_data["steps"], 0, 0, gen_data["steps"], images[0])
 
         if gen_data.get("facerestore", False) == True:
+            if callback is not None:
+                worker.add_result(
+                    gen_data["task_id"],
+                    "preview",
+                    (-1, f"Enhancing ...", None)
+                )
             self.facefixer.load_gfpgan_model()
             images = [self.facefixer.process(images[0])]
+
+            shared.shared_cache["prev_image"] = images[0]
+            if callback is not None:
+                callback(gen_data["steps"], 0, 0, gen_data["steps"], images[0])
 
         return images

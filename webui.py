@@ -259,7 +259,7 @@ def generate_clicked(*args):
                 gen_data["base_model_hash"] = preset_data.get("base_model_hash", None)
                 gen_data["loras"] = preset_data["loras"]
         except Exception as e:
-            print(f"DEBUG: Failed using preset: {e}")
+            print(f"WARNING: Failed using preset: {e}")
             traceback.print_exc()
             pass
 
