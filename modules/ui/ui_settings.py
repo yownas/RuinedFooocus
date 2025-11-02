@@ -190,6 +190,10 @@ def create_settings():
                 curr_localfile = settings.default_settings.get("llama_localfile", None)
                 llama_localfile = gr.Dropdown(label="Local Llama file", interactive=True, choices=[curr_localfile, None]+path_manager.get_folder_list("llm"), value=curr_localfile,)
                 add_setting("llama_localfile", llama_localfile)
+                llm_n_predict = gr.Number(label="n_predict", interactive=True, placeholder=-1, value=settings.default_settings.get("llm_n_predict", None), minimum=-1, step=1)
+                add_setting("llm_n_predict", llm_n_predict)
+                llm_n_ctx = gr.Number(label="n_ctx", interactive=True, placeholder=0, value=settings.default_settings.get("llm_n_ctx", None), minimum=0, step=1)
+                add_setting("llm_n_ctx", llm_n_ctx)
                 enable_llm_tools = gr.Checkbox(label=t("Enable image generation"), value=settings.default_settings.get("enable_llm_tools", False))
                 add_setting("enable_llm_tools", enable_llm_tools)
 

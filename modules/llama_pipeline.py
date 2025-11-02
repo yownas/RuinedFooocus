@@ -94,8 +94,8 @@ class pipeline:
             params = xlc.CommonParams()
             params.prompt = ""
             params.model.path = str(llm_path)
-            params.n_predict = 4096
-            params.n_ctx = 1024
+            params.n_predict = int(settings.default_settings.get("n_predict", -1))
+            params.n_ctx = int(settings.default_settings.get("n_ctx", 0))
             params.ctx_shift = True
             params.cpuparams.n_threads = 4
             params.cpuparams_batch.n_threads = 2
