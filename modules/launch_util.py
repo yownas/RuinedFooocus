@@ -7,6 +7,8 @@ import sys
 import re
 import logging
 from pathlib import Path
+import importlib.metadata
+import packaging.version
 
 logging.getLogger("torch.distributed.nn").setLevel(logging.ERROR)  # sshh...
 logging.getLogger("xformers").addFilter(
@@ -21,6 +23,7 @@ modules_path = Path(__file__).resolve().parent
 script_path = modules_path.parent
 dir_repos = "repositories"
 
+re_requirement = re.compile(r"\s*([-_a-zA-Z0-9]+)\s*(?:==\s*([-+_.a-zA-Z0-9]+))?\s*")
 
 def git_clone(url, dir, name, hash=None):
     try:
@@ -50,12 +53,31 @@ def repo_dir(name):
 
 
 def is_installed(package):
+    m = re.match(re_requirement, package)
+    if m is None:
+        return False
+
+    package = m.group(1).strip()
+    version_required = (m.group(2) or "").strip()
+
     try:
         spec = importlib.util.find_spec(package)
     except ModuleNotFoundError:
         return False
 
-    return spec is not None
+    try:
+        version_installed = re.sub(
+            r"\+.*$",
+            "",
+            importlib.metadata.version(package)
+        )
+    except Exception:
+        return False
+
+    if version_required != "" and packaging.version.parse(version_required) != packaging.version.parse(version_installed):
+        return False
+
+    return True
 
 
 def run(
@@ -109,17 +131,11 @@ def pip_rm(pkgs, desc=None, live=default_command_live):
         live=live,
     )
 
-re_requirement = re.compile(r"\s*([-_a-zA-Z0-9]+)\s*(?:==\s*([-+_.a-zA-Z0-9]+))?\s*")
-
-
 def requirements_met(requirements_file):
     """
     Does a simple parse of a requirements.txt file to determine if all rerqirements in it
     are already installed. Returns True if so, False if not installed or parsing fails.
     """
-
-    import importlib.metadata
-    import packaging.version
 
     with open(requirements_file, "r", encoding="utf8") as file:
         for line in file:
