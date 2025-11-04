@@ -194,6 +194,8 @@ def create_settings():
                 add_setting("llm_n_predict", llm_n_predict)
                 llm_n_ctx = gr.Number(label="n_ctx", interactive=True, placeholder=0, value=settings.default_settings.get("llm_n_ctx", None), minimum=0, step=1)
                 add_setting("llm_n_ctx", llm_n_ctx)
+                llm_n_gpu_layers = gr.Number(label="n_gpu_layers", interactive=True, placeholder=0, value=settings.default_settings.get("llm_n_gpu_layers", None), minimum=-1, step=1)
+                add_setting("llm_n_gpu_layers", llm_n_gpu_layers)
                 enable_llm_tools = gr.Checkbox(label=t("Enable image generation"), value=settings.default_settings.get("enable_llm_tools", False))
                 add_setting("enable_llm_tools", enable_llm_tools)
 
