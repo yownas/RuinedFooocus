@@ -196,7 +196,7 @@ class pipeline:
                     },
                 },
             ]
-            tool_prompt = "\nUse the tool when asked to generate an image. When using the tool you must make sure you use the correct format.\n"
+            tool_prompt = "\nUse the tool when asked to generate an image. You must make sure you use the correct format. Do not reuse old image links, use the tool.\n"
         else:
             tools = None
             tool_prompt = ""
