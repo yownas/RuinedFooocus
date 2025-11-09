@@ -141,6 +141,8 @@ def create_chat():
                     height=600,
                     type="messages",
                     allow_tags=["think", "thinking"],
+                    show_copy_all_button=True,
+                    allow_file_downloads=True,
                     value=_llama_select_assistant(default_bot)["chatstart"],
                 )
                 llama_msg = gr.Textbox(

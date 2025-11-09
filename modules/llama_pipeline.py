@@ -196,11 +196,17 @@ class pipeline:
                     },
                 },
             ]
-            tool_prompt = "\nUse the tool when asked to generate an image. You must make sure you use the correct format. Do not reuse old image links, use the tool.\n"
+            tool_prompt = "\nUse the tool when you intend to generate an image. You must make sure you use the correct format. The image will be shown to the user.\n"
         else:
             tools = None
             tool_prompt = ""
-        chat = [{"role": "system", "content": system_prompt + tool_prompt}] + h[-5 if len(h) > 5 else -len(h):] # Keep just the last 5 messages
+        chat = [{"role": "system", "content": system_prompt + tool_prompt}]
+        history_len = 5 # Keep the 5 last messages in the discussion.
+        history_len = -history_len if len(h) > history_len else -len(h)
+        for idx in range(history_len, 0):
+            c = h[idx].copy()
+            c['content'] = re.sub('!\\[Image\\]\\([^(]*\\)', '', c['content']) # Remove Image-markdown from LLM input
+            chat.append(c)
 
         print(f"Thinking...")
         with TimeIt("LLM thinking"):
