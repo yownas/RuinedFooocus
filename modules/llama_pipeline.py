@@ -95,7 +95,7 @@ class pipeline:
             params.prompt = ""
             params.model.path = str(llm_path)
             params.n_predict = int(settings.default_settings.get("llm_n_predict", -1))
-            params.n_ctx = int(settings.default_settings.get("llm_n_ctx", 0))
+            params.n_ctx = int(settings.default_settings.get("llm_n_ctx", 2048))
             params.n_gpu_layers = int(settings.default_settings.get("llm_n_gpu_layers", -1))
             params.ctx_shift = True
             params.cpuparams.n_threads = 4

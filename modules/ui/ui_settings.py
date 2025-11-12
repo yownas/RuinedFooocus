@@ -192,7 +192,7 @@ def create_settings():
                 add_setting("llama_localfile", llama_localfile)
                 llm_n_predict = gr.Number(label="n_predict", interactive=True, placeholder=-1, value=settings.default_settings.get("llm_n_predict", None), minimum=-1, step=1)
                 add_setting("llm_n_predict", llm_n_predict)
-                llm_n_ctx = gr.Number(label="n_ctx", interactive=True, placeholder=0, value=settings.default_settings.get("llm_n_ctx", None), minimum=0, step=1)
+                llm_n_ctx = gr.Number(label="n_ctx", interactive=True, placeholder=2048, value=settings.default_settings.get("llm_n_ctx", None), minimum=0, step=1)
                 add_setting("llm_n_ctx", llm_n_ctx)
                 llm_n_gpu_layers = gr.Number(label="n_gpu_layers", interactive=True, placeholder=0, value=settings.default_settings.get("llm_n_gpu_layers", None), minimum=-1, step=1)
                 add_setting("llm_n_gpu_layers", llm_n_gpu_layers)
