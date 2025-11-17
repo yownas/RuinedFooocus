@@ -201,7 +201,7 @@ class pipeline:
             tools = None
             tool_prompt = ""
         chat = [{"role": "system", "content": system_prompt + tool_prompt}]
-        history_len = 5 # Keep the 5 last messages in the discussion.
+        history_len = settings.default_settings.get("llm_chat_history", 7) # Keep the some of the last messages in the discussion.
         history_len = -history_len if len(h) > history_len else -len(h)
         for idx in range(history_len, 0):
             c = h[idx].copy()
