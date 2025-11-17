@@ -508,14 +508,14 @@ with shared.gradio_root as block:
                 add_ctrl("cfg", cfg)
                 sampler_name = gr.Dropdown(
                     label=t("Sampler"),
-                    choices=KSampler.SAMPLERS,
+                    choices=sorted(KSampler.SAMPLERS),
                     value=custom_default_values["sampler_name"],
                     visible='hidden',
                 )
                 add_ctrl("sampler_name", sampler_name)
                 scheduler = gr.Dropdown(
                     label=t("Scheduler"),
-                    choices=KSampler.SCHEDULERS,
+                    choices=sorted(KSampler.SCHEDULERS),
                     value=custom_default_values["scheduler"],
                     visible='hidden',
                 )
