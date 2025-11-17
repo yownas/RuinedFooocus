@@ -83,6 +83,7 @@ from modules.pipeline_utils import (
     clean_prompt_cond_caches,
     set_timestep_range,
 )
+from modules.canny_utils import sanitize_canny_thresholds
 
 #from comfyui_gguf.nodes import gguf_sd_loader, DualCLIPLoaderGGUF, GGUFModelPatcher
 #from comfyui_gguf.ops import GGMLOps
@@ -643,10 +644,14 @@ class pipeline:
             self.refresh_controlnet(name=controlnet["type"])
             match controlnet["type"].lower():
                 case "canny":
+                    low, high = sanitize_canny_thresholds(
+                        float(controlnet.get("edge_low", 0.0)),
+                        float(controlnet.get("edge_high", 1.0)),
+                    )
                     input_image = Canny().detect_edge(
                         image=input_image,
-                        low_threshold=float(controlnet["edge_low"]),
-                        high_threshold=float(controlnet["edge_high"]),
+                        low_threshold=low,
+                        high_threshold=high,
                     )[0]
                     updated_conditions = True
                 case "depth":
