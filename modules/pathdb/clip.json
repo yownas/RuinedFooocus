@@ -24,6 +24,11 @@
         "path": "path_clip",
         "filename": "clip_l_hidream.gguf"
     },
+    "clip/cow-mistral3-small-q2_k.gguf": {
+        "url": "https://huggingface.co/chatpig/flux2-dev-gguf/resolve/main/cow-mistral3-small-q2_k.gguf",
+	"path": "path_clip",
+        "filename": "cow-mistral3-small-q2_k.gguf"
+    },
     "clip/gemma_2_2b_fp16.safetensors": {
 	"url": "https://huggingface.co/calcuis/lumina-gguf/resolve/main/gemma_2_2b_fp16.safetensors",
 	"path": "path_clip",

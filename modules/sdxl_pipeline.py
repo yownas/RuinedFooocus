@@ -19,6 +19,7 @@ from comfy.model_base import (
     BaseModel,
     CosmosPredict2,
     Flux,
+    Flux2,
     HiDream,
     Lumina2,
     PixArt,
@@ -62,7 +63,7 @@ from comfy.sampler_helpers import (
 )
 
 from comfy_extras.nodes_sd3 import EmptySD3LatentImage
-from comfy_extras.nodes_flux import FluxKontextImageScale
+from comfy_extras.nodes_flux import FluxKontextImageScale, EmptyFlux2LatentImage
 from comfy_extras.nodes_hunyuan import EmptyHunyuanImageLatent, EmptyHunyuanLatentVideo
 from comfy_extras.nodes_edit_model import ReferenceLatent
 from comfy_extras.nodes_qwen import TextEncodeQwenImageEdit
@@ -91,7 +92,7 @@ from calcuis_gguf.pig import load_gguf_sd, GGMLOps, GGUFModelPatcher
 from calcuis_gguf.pig import DualClipLoaderGGUF as DualCLIPLoaderGGUF
 
 class pipeline:
-    pipeline_type = ["sdxl", "ssd", "sd3", "flux", "lumina2"]
+    pipeline_type = ["sdxl", "ssd", "sd3", "flux", "flux2", "lumina2"]
 
     comfy.model_management.DISABLE_SMART_MEMORY = False
     comfy.model_management.EXTRA_RESERVED_VRAM = 800 * 1024 * 1024
@@ -136,6 +137,7 @@ class pipeline:
             "clip_gemma": "gemma_2_2b_fp16.safetensors",
             "clip_l": "clip_l.safetensors",
             "clip_llama": "llama_q2.gguf",
+            "clip_mistral3": "cow-mistral3-small-q2_k.gguf",
             "clip_qwen25": "qwen_2.5_vl_7b_edit-q2_k.gguf",
             "clip_oldt5": "t5xxl_old_fp32-q4_0.gguf",
             "clip_t5": "t5-v1_1-xxl-encoder-Q3_K_S.gguf",
@@ -147,6 +149,7 @@ class pipeline:
         defaults = {
             "vae_auraflow": "auraflow_vae_fp32.safetensors",
             "vae_flux": "ae.safetensors",
+            "vae_flux2": "pig_flux2_vae_fp32-f16.gguf",
             "vae_lumina2": "lumina2_vae_fp32.safetensors",
             "vae_pixart": "pixart_vae_fp16.safetensors",
             "vae_qwen_image": "qwen_image_vae.safetensors",
@@ -157,7 +160,7 @@ class pipeline:
         }
         return settings.default_settings.get(shortname, defaults[shortname] if shortname in defaults else None)
 
-    known_models = [AuraFlow, BaseModel, CosmosPredict2, Flux, HiDream, Lumina2, PixArt, QwenImage, SD3, SDXL]
+    known_models = [AuraFlow, BaseModel, CosmosPredict2, Flux, Flux2, HiDream, Lumina2, PixArt, QwenImage, SD3, SDXL]
     def get_clip_and_vae(self, unet_type):
         if unet_type not in self.known_models:
             unet_type = SDXL # Use SDXL as default
@@ -187,6 +190,12 @@ class pipeline:
                 "clip_type": comfy.sd.CLIPType.FLUX,
                 "clip_names": [self.get_clip_name("clip_l"), self.get_clip_name("clip_t5")],
                 "vae_name": self.get_vae_name("vae_flux")
+            },
+            Flux2: {
+                "latent": "FLUX2",
+                "clip_type": comfy.sd.CLIPType.STABLE_DIFFUSION, # ???
+                "clip_names": [self.get_clip_name("clip_mistral3")],
+                "vae_name": self.get_vae_name("vae_flux2")
             },
             HiDream: {
                 "latent": "SD3",
@@ -695,6 +704,10 @@ class pipeline:
             # Get the correct of latent image to start with
             latent_type = self.model_info.get('latent', None)
             match latent_type:
+                case 'FLUX2':
+                    latent = EmptyFlux2LatentImage().execute(
+                        width=gen_data["width"], height=gen_data["height"], batch_size=1
+                    )[0]
                 case 'SD3':
                     latent = EmptySD3LatentImage().generate(
                         width=gen_data["width"], height=gen_data["height"], batch_size=1
@@ -768,7 +781,10 @@ class pipeline:
         def callback_function(step, x0, x, total_steps):
             y = None
             if previewer:
-                y = previewer.preview(x0, step, total_steps)
+                try:
+                    y = previewer.preview(x0, step, total_steps)
+                except:
+                    y = None
             if callback is not None:
                 callback(step, x0, x, total_steps, y)
             pbar.update_absolute(step + 1, total_steps, None)
