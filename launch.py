@@ -48,14 +48,14 @@ git_repos = [
         "name": "ComfyUI",
         "path": "ComfyUI",
         "url": "https://github.com/comfyanonymous/ComfyUI",
-        "hash": "560b1bdfca77d9441ca2924fd9d6baa8dda05cd7",
+        "hash": "1105e0d139001ad602d0f883406bfce41e54ae67",
         "add_path": "ComfyUI",
     },
     {
         "name": "Calcuis-GGUF",
         "path": "calcuis_gguf",
         "url": "https://github.com/calcuis/gguf",
-        "hash": "a64ccbf6c694a46c181a444a1ac9d2d810607309",
+        "hash": "c0dbd2dd2106c70dc71d2a6c764de22d6642d134",
         "add_path": "",
     },
 ]
@@ -142,7 +142,7 @@ def clone_git_repos(offline=False):
 
     for repo in git_repos:
         if not offline:
-            git_clone(repo["url"], repo_dir(repo["path"]), repo["name"], repo["hash"])
+            git_clone(repo["url"], repo_dir(repo["path"]), repo["name"], hash=repo["hash"])
         add_path = str(Path(script_path) / dir_repos / repo["add_path"])
         if add_path not in sys.path:
             sys.path.append(add_path)
