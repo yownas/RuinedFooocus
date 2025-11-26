@@ -1,4 +1,7 @@
+### 25.11.26
 * Flux.2 Dev support
+* RF Linux
+* Fixes
 
 ### 25.10.14
 * AuraFlow support
