@@ -78,6 +78,8 @@ class Models:
                     # get file name, add cache path change suffix
                     cache_file = Path(self.cache_paths[model_type] / path.name)
                     model_data = self.get_models_by_path(model_type, str(path))
+                    if model_data is None:
+                        break
 
                     suffixes = [".jpeg", ".jpg", ".png", ".gif"]
                     has_preview = False
@@ -286,6 +288,16 @@ class Models:
         except requests.exceptions.HTTPError as e:
             if response.status_code == 404:
                 print(t("Warning: Could not find {name} on civit.ai", mapping={'name': hash}))
+                # Create our own data
+                data = {
+                    "files": [
+                        {
+                            "hashes": {
+                                "SHA256": hash,
+                            }
+                        }
+                    ]
+                }
             elif response.status_code == 503:
                 print("Error: Civit.ai Service Currently Unavailable")
             else:
@@ -317,21 +329,10 @@ class Models:
         hash = self.model_sha256(path)
         data = self.search_civitai_with_hash(hash)
 
-        if data is None:
-            # Create our own data
-            data = {
-                "files": [
-                    {
-                        "hashes": {
-                            "SHA256": hash,
-                        }
-                    }
-                ]
-            }
-
-        print(t("Update model data: {path}", mapping={'path': json_path}))
-        with open(json_path, "w") as f:
-            json.dump(data, f, indent=2)
+        if data is not None:
+            print(t("Update model data: {path}", mapping={'path': json_path}))
+            with open(json_path, "w") as f:
+                json.dump(data, f, indent=2)
 
         return data
 
