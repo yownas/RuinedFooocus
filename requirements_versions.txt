@@ -1,5 +1,5 @@
 wheel
 packaging
 pygit2
-setuptools
+setuptools==80.9.0
 torchruntime==1.27.0

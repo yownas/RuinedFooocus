@@ -12,7 +12,6 @@ from PIL import Image
 import imageio.v3 as iio
 import numpy as np
 import torch
-import insightface
 
 from importlib.abc import MetaPathFinder, Loader
 from importlib.util import spec_from_loader, module_from_spec
