@@ -27,6 +27,7 @@ from comfy.model_base import (
     SD3,
     SDXL
 )
+from comfy.model_detection import model_config_from_unet
 
 from shared import path_manager, settings
 import shared
@@ -139,6 +140,7 @@ class pipeline:
             "clip_llama": "llama_q2.gguf",
             "clip_mistral3": "cow-mistral3-small-q2_k.gguf",
             "clip_qwen25": "qwen_2.5_vl_7b_edit-q2_k.gguf",
+            "clip_qwen3": "Qwen3-4B-Q4_K_M.gguf",
             "clip_oldt5": "t5xxl_old_fp32-q4_0.gguf",
             "clip_t5": "t5-v1_1-xxl-encoder-Q3_K_S.gguf",
         }
@@ -160,44 +162,50 @@ class pipeline:
         }
         return settings.default_settings.get(shortname, defaults[shortname] if shortname in defaults else None)
 
-    known_models = [AuraFlow, BaseModel, CosmosPredict2, Flux, Flux2, HiDream, Lumina2, PixArt, QwenImage, SD3, SDXL]
-    def get_clip_and_vae(self, unet_type):
+    known_models = ["AuraFlow", "BaseModel", "CosmosPredict2", "Flux", "Flux2", "HiDream", "Lumina2", "PixArt", "QwenImage", "SD3", "SDXL", "ZImage"]
+    def get_clip_and_vae(self, unet):
+        unet_type = unet.model.__class__.__name__
+
+        # Some detective work...
+        if unet_type == "Lumina2" and unet.model_state_dict().get('diffusion_model.cap_embedder.1.weight', []).shape[0] == 3840:
+            unet_type = "ZImage"
+
         if unet_type not in self.known_models:
-            unet_type = SDXL # Use SDXL as default
+            unet_type = "SDXL" # Use SDXL as default
         # Add new model setups here and at "Known models" above.
         # Simple workflows with "Load models"->"Sample"->"VAE" might work right away.
         # Add new clip/vae models to settings and pathdb-files.
         model_info = {
-            AuraFlow: {
+            "AuraFlow": {
                 "clip_type": comfy.sd.CLIPType.STABLE_DIFFUSION,
                 "clip_names": [self.get_clip_name("clip_aura")],
                 "vae_name": self.get_vae_name("vae_auraflow"),
                 "model_sampling": ('AuraFlow', settings.default_settings.get("auraflow_shift", 1.73))
             },
-            BaseModel: {
+            "BaseModel": {
                 "clip_type": comfy.sd.CLIPType.STABLE_DIFFUSION,
                 "clip_names": [self.get_clip_name("clip_l")],
                 "vae_name": self.get_vae_name("vae_sd")
             },
-            CosmosPredict2: {
+            "CosmosPredict2": {
                 "latent": "SD3",
                 "clip_type": comfy.sd.CLIPType.COSMOS,
                 "clip_names": [self.get_clip_name("clip_oldt5")],
                 "vae_name": self.get_vae_name("vae_wan")
             },
-            Flux: {
+            "Flux": {
                 "latent": "SD3",
                 "clip_type": comfy.sd.CLIPType.FLUX,
                 "clip_names": [self.get_clip_name("clip_l"), self.get_clip_name("clip_t5")],
                 "vae_name": self.get_vae_name("vae_flux")
             },
-            Flux2: {
+            "Flux2": {
                 "latent": "FLUX2",
                 "clip_type": comfy.sd.CLIPType.STABLE_DIFFUSION, # ???
                 "clip_names": [self.get_clip_name("clip_mistral3")],
                 "vae_name": self.get_vae_name("vae_flux2")
             },
-            HiDream: {
+            "HiDream": {
                 "latent": "SD3",
                 "clip_type": comfy.sd.CLIPType.HIDREAM,
                 "clip_names": [
@@ -209,19 +217,19 @@ class pipeline:
                 "vae_name": self.get_vae_name("vae_flux"),
                 "model_sampling": ('SD3', settings.default_settings.get("hidream_shift", 3.0))
             },
-            Lumina2: {
+            "Lumina2": {
                 "latent": "SD3",
                 "clip_type": comfy.sd.CLIPType.LUMINA2,
                 "clip_names": [self.get_clip_name("clip_gemma")],
                 "vae_name": self.get_vae_name("vae_lumina2"),
                 "model_sampling": ('AuraFlow', settings.default_settings.get("lumina2_shift", 3.0))
             },
-            PixArt: {
+            "PixArt": {
                 "clip_type": comfy.sd.CLIPType.PIXART,
                 "clip_names": [self.get_clip_name("clip_t5")],
                 "vae_name": self.get_vae_name("vae_pixart"),
             },
-            QwenImage: {
+            "QwenImage": {
                 "latent": "SD3",
                 "clip_type": comfy.sd.CLIPType.QWEN_IMAGE,
                 "clip_names": [self.get_clip_name("clip_qwen25")],
@@ -229,7 +237,7 @@ class pipeline:
                 "model_sampling": ('AuraFlow', settings.default_settings.get("qwen_image_shift", 3.10)),
                 "flags": ["has_qwen_encode"]
             },
-            SD3: {
+            "SD3": {
                 "latent": "SD3",
                 "clip_type": comfy.sd.CLIPType.SD3,
                 "clip_names": [
@@ -240,10 +248,17 @@ class pipeline:
                 "vae_name": self.get_vae_name("vae_sd3"),
                 "model_sampling": ('SD3', settings.default_settings.get("sd3_shift", 3.0))
             },
-            SDXL: {
+            "SDXL": {
                 "clip_type": comfy.sd.CLIPType.STABLE_DIFFUSION,
                 "clip_names": [self.get_clip_name("clip_l"), self.get_clip_name("clip_g")],
                 "vae_name": self.get_vae_name("vae_sdxl")
+            },
+            "ZImage": {
+                "latent": "SD3",
+                "clip_type": comfy.sd.CLIPType.LUMINA2,
+                "clip_names": [self.get_clip_name("clip_qwen3")],
+                "vae_name": self.get_vae_name("vae_lumina2"),
+                "model_sampling": ('AuraFlow', settings.default_settings.get("lumina2_shift", 3.0))
             },
         }
 
@@ -316,7 +331,7 @@ class pipeline:
                         unet = comfy.sd.load_diffusion_model(filename, model_options=model_options)
 
                     # Get text-encoders (clip) and vae to match the unet
-                    model_info = self.get_clip_and_vae(type(unet.model))
+                    model_info = self.get_clip_and_vae(unet)
                     self.model_info = model_info
 
                     # Special massaging of Lumina2 unet
@@ -421,9 +436,9 @@ class pipeline:
             self.xl_base = self.StableDiffusionModel(
                 unet=unet, clip=clip, vae=vae, clip_vision=clip_vision
             )
-            if not (type(self.xl_base.unet.model) in self.known_models):
+            if not (self.xl_base.unet.model.__class__.__name__ in self.known_models):
                 print(
-                    f"Model {type(self.xl_base.unet.model)} not supported. RuinedFooocus supports {self.known_models} models as the base model."
+                    f"Model {self.xl_base.unet.model.__class__.__name__} not supported. RuinedFooocus supports {self.known_models} models as the base model."
                 )
                 self.xl_base = None
 
@@ -431,7 +446,7 @@ class pipeline:
                 self.xl_base_hash = name
                 self.xl_base_patched = self.xl_base
                 self.xl_base_patched_hash = ""
-                self.model_info = self.get_clip_and_vae(type(self.xl_base_patched.unet.model))
+                self.model_info = self.get_clip_and_vae(self.xl_base_patched.unet)
         return
 
     def load_loras(self, loras):
@@ -518,7 +533,7 @@ class pipeline:
         callback=None,
     ):
         try:
-            if self.xl_base_patched == None or type(self.xl_base_patched.unet.model) not in self.known_models:
+            if self.xl_base_patched == None or self.xl_base_patched.unet.model.__class__.__name__ not in self.known_models:
                 print(f"ERROR: Can only use {self.known_models} models")
                 worker.interrupt_ruined_processing = True
                 if callback is not None:

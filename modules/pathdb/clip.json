@@ -59,6 +59,16 @@
         "path": "path_clip",
         "filename": "qwen_2.5_vl_7b_fp8_scaled.safetensors"
     },
+    "clip/qwen_3_4b.safetensors": {
+        "url": "https://huggingface.co/Comfy-Org/z_image_turbo/blob/main/split_files/text_encoders/qwen_3_4b.safetensors",
+        "path": "path_clip",
+        "filename": "qwen_3_4b.safetensors"
+    },
+    "clip/Qwen3-4B-Q4_K_M.gguf": {
+        "url": "https://huggingface.co/unsloth/Qwen3-4B-GGUF/resolve/main/Qwen3-4B-Q4_K_M.gguf",
+        "path": "path_clip",
+        "filename": "Qwen3-4B-Q4_K_M.gguf"
+    },
     "clip/t5xxl_old_fp32-q4_0.gguf": {
         "url": "https://huggingface.co/calcuis/cosmos-predict2-gguf/resolve/main/t5xxl_old_fp32-q4_0.gguf",
         "path": "path_clip",

@@ -1,3 +1,5 @@
+* Z-Image Turbo support
+
 ### 25.11.26
 * Flux.2 Dev support
 * RF Linux
