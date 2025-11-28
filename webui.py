@@ -20,7 +20,29 @@ comfy.cli_args.args.normalvram = args.normalvram
 comfy.cli_args.args.lowvram = args.lowvram
 comfy.cli_args.args.novram = args.novram
 comfy.cli_args.args.reserve_vram = args.reserve_vram
+
+comfy.cli_args.args.force_fp32 = args.force_fp32
+comfy.cli_args.args.force_fp16 = args.force_fp16
+
+comfy.cli_args.args.fp32_unet = args.fp32_unet
+comfy.cli_args.args.fp64_unet = args.fp64_unet
+comfy.cli_args.args.bf16_unet = args.bf16_unet
+comfy.cli_args.args.fp16_unet = args.fp16_unet
+comfy.cli_args.args.fp8_e4m3fn_unet = args.fp8_e4m3fn_unet
+comfy.cli_args.args.fp8_e5m2_unet = args.fp8_e5m2_unet
+comfy.cli_args.args.fp8_e8m0fnu_unet = args.fp8_e8m0fnu_unet
+
+comfy.cli_args.args.fp16_vae = args.fp16_vae
+comfy.cli_args.args.fp32_vae = args.fp32_vae
+comfy.cli_args.args.bf16_vae = args.bf16_vae
+
 comfy.cli_args.args.cpu_vae = args.cpu_vae
+
+comfy.cli_args.args.fp8_e4m3fn_text_enc = args.fp8_e4m3fn_text_enc
+comfy.cli_args.args.fp8_e5m2_text_enc = args.fp8_e5m2_text_enc
+comfy.cli_args.args.fp16_text_enc = args.fp16_text_enc
+comfy.cli_args.args.fp32_text_enc = args.fp32_text_enc
+comfy.cli_args.args.bf16_text_enc = args.bf16_text_enc
 
 # FIXME: Should brobably also check directml and other things...
 if torch_platform == "cpu":
