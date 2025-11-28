@@ -64,10 +64,20 @@
         "path": "path_clip",
         "filename": "qwen_3_4b.safetensors"
     },
+    "clip/Qwen3-4B-Q2_K.gguf": {
+        "url": "https://huggingface.co/unsloth/Qwen3-4B-GGUF/resolve/main/Qwen3-4B-Q2_K.gguf",
+        "path": "path_clip",
+        "filename": "Qwen3-4B-Q2_K.gguf"
+    },
     "clip/Qwen3-4B-Q4_K_M.gguf": {
         "url": "https://huggingface.co/unsloth/Qwen3-4B-GGUF/resolve/main/Qwen3-4B-Q4_K_M.gguf",
         "path": "path_clip",
         "filename": "Qwen3-4B-Q4_K_M.gguf"
+    },
+    "clip/Qwen3-4B-Q8_0.gguf": {
+        "url": "https://huggingface.co/unsloth/Qwen3-4B-GGUF/resolve/main/Qwen3-4B-Q8_0.gguf",
+        "path": "path_clip",
+        "filename": "Qwen3-4B-Q8_0.gguf"
     },
     "clip/t5xxl_old_fp32-q4_0.gguf": {
         "url": "https://huggingface.co/calcuis/cosmos-predict2-gguf/resolve/main/t5xxl_old_fp32-q4_0.gguf",
