@@ -27,8 +27,6 @@ from comfy.model_base import (
     SD3,
     SDXL
 )
-from comfy.model_detection import model_config_from_unet
-
 from shared import path_manager, settings
 import shared
 
