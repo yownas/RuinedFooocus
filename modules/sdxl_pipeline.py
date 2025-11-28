@@ -31,12 +31,11 @@ from shared import path_manager, settings
 import shared
 
 from pathlib import Path
-import json
 import random
 
 import comfy.utils
 import comfy.model_management
-from comfy.sd import load_checkpoint_guess_config, load_state_dict_guess_config
+from comfy.sd import load_state_dict_guess_config
 
 from tqdm import tqdm
 
@@ -56,7 +55,6 @@ from nodes import (
     VAELoader,
 )
 from comfy.sampler_helpers import (
-    convert_cond,
     get_additional_models,
     prepare_mask,
 )
@@ -85,10 +83,10 @@ from modules.pipeline_utils import (
 )
 from modules.canny_utils import sanitize_canny_thresholds
 
-#from comfyui_gguf.nodes import gguf_sd_loader, DualCLIPLoaderGGUF, GGUFModelPatcher
-#from comfyui_gguf.ops import GGMLOps
-from calcuis_gguf.pig import load_gguf_sd, GGMLOps, GGUFModelPatcher
-from calcuis_gguf.pig import DualClipLoaderGGUF as DualCLIPLoaderGGUF
+from comfyui_gguf.nodes import gguf_sd_loader as load_gguf_sd, DualCLIPLoaderGGUF, GGUFModelPatcher
+from comfyui_gguf.ops import GGMLOps
+#from calcuis_gguf.pig import load_gguf_sd, GGMLOps, GGUFModelPatcher
+#from calcuis_gguf.pig import DualClipLoaderGGUF as DualCLIPLoaderGGUF
 
 class pipeline:
     pipeline_type = ["sdxl", "ssd", "sd3", "flux", "flux2", "lumina2"]
@@ -768,7 +766,6 @@ class pipeline:
 
         # KSampler
 
-        comfy.model_management.load_models_gpu([self.xl_base_patched.unet])
         # Use FluxGuidance for Flux (FIXME: clean up this code)
         positive_cond = switched_prompt if switched_prompt else self.conditions["+"]["cache"]
         if isinstance(self.xl_base.unet.model, Flux):

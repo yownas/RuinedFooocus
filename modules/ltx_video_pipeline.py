@@ -21,12 +21,14 @@ from modules.pipeline_utils import (
 )
 
 import comfy.utils
-import comfy.model_management
 from comfy.sd import load_checkpoint_guess_config
 from tqdm import tqdm
 
-from calcuis_gguf.pig import load_gguf_sd, GGMLOps, GGUFModelPatcher, load_gguf_clip
-from calcuis_gguf.pig import DualClipLoaderGGUF as DualCLIPLoaderGGUF
+#from calcuis_gguf.pig import load_gguf_sd, GGMLOps, GGUFModelPatcher, load_gguf_clip
+#from calcuis_gguf.pig import DualClipLoaderGGUF as DualCLIPLoaderGGUF
+from comfyui_gguf.nodes import gguf_sd_loader as load_gguf_sd, DualCLIPLoaderGGUF, GGUFModelPatcher
+from comfyui_gguf.ops import GGMLOps
+
 
 from nodes import (
     CLIPTextEncode,
@@ -157,7 +159,7 @@ class pipeline:
                     )
 
                     print(f"Loading VAE: {vae_name}")
-                    sd = load_gguf_clip(str(vae_path))
+                    sd = load_gguf_sd(str(vae_path))
                     vae = comfy.sd.VAE(sd=sd)
 
 
