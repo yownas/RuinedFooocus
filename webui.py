@@ -1145,8 +1145,10 @@ with shared.gradio_root as block:
                         """,
                     )
 
+            with open("update_log.md") as update_log:
+                hints = update_log.read()
             hint_text = gr.Markdown(
-                value="",
+                value=hints,
                 elem_id="hint-container",
                 elem_classes="hint-container",
             )
