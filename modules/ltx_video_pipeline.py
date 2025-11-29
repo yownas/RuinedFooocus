@@ -136,7 +136,7 @@ class pipeline:
 
                         clip_type = comfy.sd.CLIPType.HUNYUAN_VIDEO
                         # https://huggingface.co/calcuis/hunyuan-gguf/tree/main
-                        vae_name = settings.default_settings.get("vae_ltxv", "pig_video_97_vae_fp32-f16.gguf")
+                        vae_name = settings.default_settings.get("vae_ltxv", "pig_video_97_vae_fp32-f16.gguf") # FIXME!!!
 
                     else:
                         print(f"ERROR: Not a LTX Video model?")

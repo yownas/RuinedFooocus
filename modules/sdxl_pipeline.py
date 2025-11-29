@@ -51,8 +51,7 @@ from nodes import (
     VAEDecode,
     VAEEncode,
     VAEEncodeForInpaint,
-    CLIPLoader,
-    VAELoader,
+    DualCLIPLoader,
 )
 from comfy.sampler_helpers import (
     get_additional_models,
@@ -134,7 +133,7 @@ class pipeline:
             "clip_gemma": "gemma_2_2b_fp16.safetensors",
             "clip_l": "clip_l.safetensors",
             "clip_llama": "llama_q2.gguf",
-            "clip_mistral3": "cow-mistral3-small-q2_k.gguf",
+            "clip_mistral3": "mistral_3_small_flux2_fp8.safetensors",
             "clip_qwen25": "qwen_2.5_vl_7b_edit-q2_k.gguf",
             "clip_qwen3": "Qwen3-4B-Q4_K_M.gguf",
             "clip_oldt5": "t5xxl_old_fp32-q4_0.gguf",
@@ -147,13 +146,13 @@ class pipeline:
         defaults = {
             "vae_auraflow": "auraflow_vae_fp32.safetensors",
             "vae_flux": "ae.safetensors",
-            "vae_flux2": "pig_flux2_vae_fp32-f16.gguf",
+            "vae_flux2": "flux2-vae.safetensors",
             "vae_lumina2": "lumina2_vae_fp32.safetensors",
             "vae_pixart": "pixart_vae_fp16.safetensors",
             "vae_qwen_image": "qwen_image_vae.safetensors",
             "vae_sd": "sd15_vae.safetensors",
             "vae_sd3": "sd3_vae.safetensors",
-            "vae_wan": "pig_wan_vae_fp32-f16.gguf",
+            "vae_wan": "pig_wan_vae_fp32-f16.gguf", # FIXME
             "vae_sdxl": "sdxl_vae.safetensors",
         }
         return settings.default_settings.get(shortname, defaults[shortname] if shortname in defaults else None)
@@ -357,13 +356,20 @@ class pipeline:
                             )
                         )
 
-                    clip_loader = DualCLIPLoaderGGUF()
                     print(f"Loading CLIP: {model_info['clip_names']}")
-                    clip = clip_loader.load_patcher(
-                        clip_paths,
-                        model_info['clip_type'],
-                        clip_loader.load_data(clip_paths)
-                    )
+                    if all(name.endswith(".safetensors") for name in clip_paths):
+                        model_options = {}
+                        device = comfy.model_management.get_torch_device()
+                        if device == "cpu":
+                            model_options["load_device"] = model_options["offload_device"] = torch.device("cpu")
+                        clip = comfy.sd.load_clip(ckpt_paths=clip_paths, clip_type=model_info['clip_type'], model_options=model_options)
+                    else:
+                        clip_loader = DualCLIPLoaderGGUF()
+                        clip = clip_loader.load_patcher(
+                            clip_paths,
+                            model_info['clip_type'],
+                            clip_loader.load_data(clip_paths)
+                        )
 
                     vae_path = path_manager.get_folder_file_path(
                         "vae",

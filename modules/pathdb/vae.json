@@ -19,6 +19,11 @@
         "path": "path_vae",
         "filename": "pig_flux2_vae_fp32-f16.gguf"
     },
+    "vae/flux2-vae.safetensors": {
+        "url": "https://huggingface.co/Comfy-Org/flux2-dev/resolve/main/split_files/vae/flux2-vae.safetensors",
+        "path": "path_vae",
+        "filename": "flux2-vae.safetensors"
+    },
     "vae/sdxl_vae.safetensors": {
         "url": "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/vae/diffusion_pytorch_model.safetensors",
         "path": "path_vae",
