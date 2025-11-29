@@ -145,12 +145,19 @@ class pipeline:
 
                     print(f"Loading CLIP: {clip_names}")
                     clip_type = comfy.sd.CLIPType.LTXV
-                    clip_loader = DualCLIPLoaderGGUF()
-                    clip = clip_loader.load_patcher(
-                        clip_paths,
-                        clip_type,
-                        clip_loader.load_data(clip_paths)
-                    )
+                    if all(name.endswith(".safetensors") for name in clip_paths):
+                        model_options = {}
+                        device = comfy.model_management.get_torch_device()
+                        if device == "cpu":
+                            model_options["load_device"] = model_options["offload_device"] = torch.device("cpu")
+                        clip = comfy.sd.load_clip(ckpt_paths=clip_paths, clip_type=clip_type, model_options=model_options)
+                    else:
+                        clip_loader = DualCLIPLoaderGGUF()
+                        clip = clip_loader.load_patcher(
+                            clip_paths,
+                            clip_type,
+                            clip_loader.load_data(clip_paths)
+                        )
 
                     vae_path = path_manager.get_folder_file_path(
                         "vae",
