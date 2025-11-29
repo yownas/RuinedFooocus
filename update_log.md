@@ -1,4 +1,6 @@
+### 25.11.29
 * Z-Image Turbo support
+* Changed to ComfuUI-GGUF
 
 ### 25.11.26
 * Flux.2 Dev support
