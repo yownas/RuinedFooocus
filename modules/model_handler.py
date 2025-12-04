@@ -114,13 +114,11 @@ class Models:
                     if model_type == "inbox":
                         name = str(path.relative_to(folder_paths[0])) # FIXME handle if inbox is a list
                         filename =  self.get_file_from_name("inbox", name)
-# Remove?
-#                        if model_data is None:
-#                            continue
                         baseModel = self.get_model_base(model_data)
                         folder, cache = folders.get(self.get_model_type(model_data), [None, None])
                         if folder is None or baseModel is None:
                             print(t('Skipping {name} not sure what {type} is.', mapping={'name': str(name), 'type': self.get_model_type(model_data)}))
+                            updated += 1
                             continue
                         # Move model to correct folder
                         dest = Path(folder) / baseModel
@@ -140,7 +138,7 @@ class Models:
                                 old_data = json.load(old_json)
                             if hash_sha256 == old_data["files"][0]["hashes"]["SHA256"]:
                                 if Path(dest / name).exists():
-                                    print(f"WARNING: {name} already exists. Ignoring.")
+                                    print(f"WARNING: {name} in Inbox already exists. Ignoring.")
                                 else:
                                     move = True
                             else:
@@ -165,6 +163,7 @@ class Models:
                                 if cachefile.is_file():
                                     shutil.move(cachefile, Path(cache) / destfile.name)
                             print(t("Moved {name} to {dest}", mapping={'name': name, 'dest': dest}))
+                            updated += 1
 
                     else:
                         # If this isn't the inbox, store some info about the "live" model
@@ -286,8 +285,11 @@ class Models:
             response.raise_for_status()
             data = response.json()
         except requests.exceptions.HTTPError as e:
-            if response.status_code == 404:
-                print(t("Warning: Could not find {name} on civit.ai", mapping={'name': hash}))
+            if response.status_code in [404, 451]:
+                print(
+                    t("Warning: Could not get {name} from civit.ai ({code})",
+                    mapping={'name': hash, 'code': response.status_code})
+                )
                 # Create our own data
                 data = {
                     "files": [
